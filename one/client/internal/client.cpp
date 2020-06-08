@@ -9,6 +9,6 @@ Client::Client() {}
 Client::~Client() {}
 
 // Listen ...
-int Client::Listen() { return 0; }
+int Client::listen() { return 0; }
 
 }  // namespace one

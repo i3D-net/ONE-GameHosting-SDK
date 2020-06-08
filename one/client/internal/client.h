@@ -9,7 +9,7 @@ public:
     ~Client();
 
     // Connection management.
-    int Listen();
+    int listen();
 };
 
 }  // namespace one

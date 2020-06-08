@@ -18,15 +18,21 @@ Follow the build instructions to generate documentation in the /docs folder.
 
 ## Build
 
-#### Build only
+#### Configure the build output and initialize cmake
 ```bash
 cmake -s . -B ./build
 ```
 
 #### Build and run tests
 
+Windows:
 ```bash
-cmake --build ./build --config Release --target all -- -j 4
+cmake --build ./build --config Release --target ALL_BUILD
+```
+
+Linux:
+```bash
+cmake --build ./build --config Release --target all
 ```
 
 The doxygen documentation is built automatically if cmake is able to find the doxygen installed on your system.
