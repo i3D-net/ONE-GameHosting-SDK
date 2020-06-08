@@ -8,5 +8,5 @@ Commit: `bed47374cee07c6f9fec1a84d1afddba887fe731`
 
 ```
 cmake -S . -B ../build/test
-cmake --build ../build/test --target TestClient
+cmake --build ../build/test --target TestHost
 ```

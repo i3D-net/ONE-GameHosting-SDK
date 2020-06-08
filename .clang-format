@@ -1,4 +1,4 @@
-#One Client SDK clang-format configuration
+# C++ clang-format configuration
 
 BasedOnStyle: Google
 Standard: Cpp11

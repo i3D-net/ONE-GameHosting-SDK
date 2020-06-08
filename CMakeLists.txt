@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.13.4...3.17.2)
 
-project(OneClient
+project(OneHost
   VERSION 
   1.0.0 
   LANGUAGES CXX)
@@ -19,7 +19,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 add_subdirectory(one/agent)
-add_subdirectory(one/client)
+add_subdirectory(one/host)
 add_subdirectory(one/game)
 
 configure_file(
