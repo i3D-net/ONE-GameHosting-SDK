@@ -3,12 +3,12 @@
 namespace one {
 
 // Client ...
-Client::Client() {}
+Host::Host() {}
 
-// Client ...
-Client::~Client() {}
+// Host ...
+Host::~Host() {}
 
 // Listen ...
-int Client::listen() { return 0; }
+int Host::listen() { return 0; }
 
 }  // namespace one

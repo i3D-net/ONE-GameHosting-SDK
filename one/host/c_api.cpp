@@ -5,19 +5,20 @@
 namespace one {
 namespace {
 
-OneGameHostPtr create_client() {
-    auto c = new Client();
+OneGameHostPtr create_host() {
+    auto c = new Host();
     return (OneGameHostPtr)c;
 }
-void destroy_client(OneGameHostPtr host) {
-    Client* client = (Client*)host;
+void destroy_host(OneGameHostPtr host) {
+    Host* host = (Host*)host;
     // Assert not null.
-    delete client;
+    delete host;
 }
 
 OneGameHostApiPtr game_host_api() {
     static OneGameHostApi api;
-    api.create_client = create_client;
+    api.create_host = create_host;
+    api.destroy_host = destroy_host;
     return &api;
 }
 

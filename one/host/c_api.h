@@ -25,8 +25,8 @@ struct OneGameHost;
 typedef OneGameHost* OneGameHostPtr;
 
 struct OneGameHostApi {
-    OneGameHostPtr (*create_client)(void);
-    void (*destroy_client)(OneGameHostPtr);
+    OneGameHostPtr (*create_host)(void);
+    void (*destroy_host)(OneGameHostPtr);
 };
 typedef OneGameHostApi* OneGameHostApiPtr;
 
