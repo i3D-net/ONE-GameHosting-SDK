@@ -7,6 +7,7 @@ set(HEADER_FILES
 )
 
 set(SOURCE_FILES
+    c_api.cpp
     internal/arcus.cpp
     internal/host.cpp
     internal/socket.cpp

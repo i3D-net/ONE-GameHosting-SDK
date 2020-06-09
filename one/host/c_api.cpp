@@ -9,10 +9,13 @@ OneGameHostPtr create_host() {
     auto c = new Host();
     return (OneGameHostPtr)c;
 }
+
 void destroy_host(OneGameHostPtr host) {
-    Host* host = (Host*)host;
-    // Assert not null.
-    delete host;
+    auto h = (Host*)host;
+
+    if (h != nullptr) {
+        delete h;
+    }
 }
 
 OneGameHostApiPtr game_host_api() {
