@@ -120,7 +120,7 @@ struct OneGameHostApi {
 typedef OneGameHostApi* OneGameHostApiPtr;
 
 //------------------------------------------------------------------------------
-// Main API Access.
+// API Access.
 
 // Main entry point call to get a reference to the API.
 ONE_EXPORT OneGameHostApiPtr ONE_STDCALL one_game_host_api();
