@@ -108,6 +108,14 @@ struct OneGameHostApi {
     const char * (*message_string)(OneMessagePtr message, const char * key, int* error);
     OneArrayPtr  (*message_array)(OneMessagePtr message, const char * key, int* error);
     OneObjectPtr  (*message_object)(OneMessagePtr message, const char * key, int* error);
+
+    //--------------------------------------------------------------------------
+    // Message Arrays.
+
+    // ...
+
+    //--------------------------------------------------------------------------
+    // Message Objects.
 };
 typedef OneGameHostApi* OneGameHostApiPtr;
 
