@@ -1,16 +1,12 @@
 set(HEADER_FILES
     c_api.h
-    internal/arcus.h
     internal/host.h
-    internal/socket.h
     internal/types.h
 )
 
 set(SOURCE_FILES
     c_api.cpp
-    internal/arcus.cpp
     internal/host.cpp
-    internal/socket.cpp
 )
 
 add_library(one_host ${SOURCE_FILES} ${HEADER_FILES})
