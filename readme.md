@@ -10,7 +10,9 @@ Follow the build instructions to generate documentation in the /docs folder.
 
 1. Doxygen.
     - [Windows](https://www.doxygen.nl/manual/install.html#install_bin_windows)
-    - Ubuntu: `sudo apt-get install doxygen`
+    - Ubuntu:
+        1. `sudo apt-get update`
+        2. `sudo apt-get install doxygen`
 2. CMake.
 3. C++ toolchain. Currently tested environments:
     - Windows 10 Pro w/ VS2017
