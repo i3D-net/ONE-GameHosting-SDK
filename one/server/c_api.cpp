@@ -1,6 +1,6 @@
 #include "c_api.h"
 
-#include "internal/host.h"
+#include "internal/server.h"
 
 namespace one {
 namespace {
