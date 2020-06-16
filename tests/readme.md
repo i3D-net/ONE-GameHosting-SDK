@@ -2,11 +2,19 @@
 
 https://github.com/catchorg/Catch2
 
-Commit: `bed47374cee07c6f9fec1a84d1afddba887fe731`
+tag: `v2.12.2`
+Commit: `b1b5cb812277f367387844aab46eb2d3b15d03cd`
 
-# Build
+# Adding Unit Tests
 
-```
-cmake -S . -B ../build/test
-cmake --build ../build/test --target TestHost
+To add an unit test:
+1. add the corresponding source in the `unit` folder
+2. add the reference in the `CMakeList.txt` in this current folder
+
+```cmake
+add_executable(${UNIT_TEST}
+    main.cpp
+    ...
+    unit/NEW_TEST.cpp
+)
 ```
