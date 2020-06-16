@@ -48,8 +48,8 @@ struct OneMessageApi {
     /// Must be called whenever finished with a message.
     void (*free)(OneMessagePtr message, int* error);
 
-    int (*set_code)(OneMessagePtr message);
-    int (*code)(OneMessagePtr message);
+    void (*set_code)(OneMessagePtr message, int code, int* error);
+    int (*code)(OneMessagePtr message, int* error);
 
     // Getters.
     int  (*val_int)(OneMessagePtr message, const char * key, int* error);
@@ -128,11 +128,13 @@ struct OneServerApi {
     // - the callbacks are called during processing of the update call on the
     // server
     // - if the callbacks are not set, then the messages are ignored
-    // - extract to separate api struct.
+    // - extract to separate api struct
+    // - if the API changes, for example if the "soft stop" one message changes
+    // on the one platform, then these function signatures would change and the
+    // customer would need to update their integration code
     void (*set_soft_stop_callback)(OneServerPtr server, void(*cb)(int timeout));
     void (*set_allocated_callback)(OneServerPtr server, void(*cb)(void));
     void (*set_server_info_request_callback)(OneServerPtr server, void(*cb)(void));
-    // - customer must call free_message when finished
     void (*set_custom_command_callback)(OneServerPtr server, void(*cb)(OneMessagePtr message));
 };
 typedef OneServerApi* OneServerApiPtr;
