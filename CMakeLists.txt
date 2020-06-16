@@ -19,7 +19,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
 endif()
 
 add_subdirectory(one/agent)
-add_subdirectory(one/host)
+add_subdirectory(one/server)
 add_subdirectory(one/game)
 
 configure_file(

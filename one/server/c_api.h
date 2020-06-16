@@ -1,11 +1,11 @@
 #pragma once
 
 //------------------------------------------------------------------------------
-// This is the externally facing interface for the One Game Host SDK.
+// This is the externally facing interface for the One Game Hosting SDK.
 //
 // It is a C API for ABI compatibility and widespread language binding support.
 //
-// Users call the one_game_host_api function to obtain access and make calls
+// Users call the one_game_hosting_api function to obtain access and make calls
 // against its members.
 
 #define ONE_EXPORT
@@ -19,13 +19,13 @@ extern "C" {
 // Errors.
 
 //------------------------------------------------------------------------------
-// One Game Host.
+// One Game Server.
 
-struct OneGameHost;
-typedef OneGameHost* OneGameHostPtr;
+struct OneServer;
+typedef OneServer* OneServerPtr;
 
-struct OneOutMessage;
-typedef OneOutMessage* OneMessagePtr;
+struct OneMessage;
+typedef OneMessage* OneMessagePtr;
 
 struct OneArray;
 typedef OneArray* OneArrayPtr;
@@ -36,7 +36,7 @@ typedef OneObject* OneObjectPtr;
 
 ///
 /// OneMessageApi is used to work with messages either received from or sent to
-/// the OneHostApi.
+/// the OneServerApi.
 ///
 struct OneMessageApi {
     ///
@@ -74,40 +74,41 @@ struct OneMessageApi {
 typedef OneMessageApi* OneMessageApiPtr;
 
 ///
-/// The One Game Host API provides access to the One Game Host interfaces.
-/// The One Game Host communicates with the One Platform. It
+/// The Server API is the main api used to work with the Server..
+/// It allows creating and destroying a server and for communication with the
+/// One Platform. It
 ///     - accepts a connection from One to send and receive messages
-///     - provides an interface for the game server to interact with those
+///     - provides an interface for the game to interact with those
 ///       messages
 /// 
-struct OneHostApi {
+struct OneServerApi {
     //--------------------------------------------------------------------------
-    // Game Host Life Cycle.
+    // One Server Life Cycle.
 
-    OneGameHostPtr (*create)(void);
-    void (*destroy)(OneGameHostPtr);
+    OneServerPtr (*create)(void);
+    void (*destroy)(OneServerPtr);
 
     ///
-    /// Update the host. This must be called frequently in to process incoming
+    /// Update the server. This must be called frequently in to process incoming
     /// communications and push them onto the message stack for reading.
     ///
-    void (*update)(OneGameHostPtr host, int* error);
+    void (*update)(OneServerPtr server, int* error);
 
     ///
     /// Returns the status of the host's listen connection.
     /// \sa listen.
     ///
-    void (*status)(OneGameHostPtr host, int* error);
+    void (*status)(OneServerPtr server, int* error);
 
     ///
     /// Listens for messages on the given port.
     ///
-    void (*listen)(OneGameHostPtr host, unsigned int port, int* error);
+    void (*listen)(OneServerPtr server, unsigned int port, int* error);
 
     ///
     /// Stops listening for messages.
     ///
-    void (*close)(OneGameHostPtr host, int* error);
+    void (*close)(OneServerPtr server, int* error);
 
     //--------------------------------------------------------------------------
     // Outgoing messages.
@@ -116,7 +117,7 @@ struct OneHostApi {
     // for the Metadata opcode 0x40, we would define that opcode somewhere and
     // instructions on its use.
 
-    void (*send)(OneGameHostPtr host, OneMessagePtr message, int* error);
+    void (*send)(OneServerPtr server, OneMessagePtr message, int* error);
 
     //--------------------------------------------------------------------------
     // Incoming Message callbacks.
@@ -125,22 +126,22 @@ struct OneHostApi {
     // - the customer uses these to be notified of incoming messages directed
     // at the game server
     // - the callbacks are called during processing of the update call on the
-    // host
+    // server
     // - if the callbacks are not set, then the messages are ignored
     // - extract to separate api struct.
-    void (*set_soft_stop_callback)(OneGameHostPtr host, void(*cb)(int timeout));
-    void (*set_allocated_callback)(OneGameHostPtr host, void(*cb)(void));
-    void (*set_server_info_request_callback)(OneGameHostPtr host, void(*cb)(void));
+    void (*set_soft_stop_callback)(OneServerPtr server, void(*cb)(int timeout));
+    void (*set_allocated_callback)(OneServerPtr server, void(*cb)(void));
+    void (*set_server_info_request_callback)(OneServerPtr server, void(*cb)(void));
     // - customer must call free_message when finished
-    void (*set_custom_command_callback)(OneGameHostPtr host, void(*cb)(OneMessagePtr message));
+    void (*set_custom_command_callback)(OneServerPtr server, void(*cb)(OneMessagePtr message));
 };
-typedef OneHostApi* OneHostApiPtr;
+typedef OneServerApi* OneServerApiPtr;
 
 ///
 /// The One Game Hosting API provides access to all One interfaces.
 /// 
 struct OneGameHostingApi {
-    OneHostApiPtr host_api; // Main API.
+    OneServerApiPtr server_api; // Main API.
     OneMessageApiPtr message_api; // For working with messages.
 };
 typedef OneGameHostingApi* OneGameHostingApiPtr;

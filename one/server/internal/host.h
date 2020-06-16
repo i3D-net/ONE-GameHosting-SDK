@@ -2,11 +2,11 @@
 
 namespace one {
 
-class Host final {
+class Server final {
 public:
     // Lifecycle.
-    Host();
-    ~Host();
+    Server();
+    ~Server();
 
     // Connection management.
     int listen();

@@ -6,7 +6,7 @@ The `CMakeList.txt` file located in this directory contains the following comman
 doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/one/agent"
     "${PROJECT_SOURCE_DIR}/one/arcus"
-    "${PROJECT_SOURCE_DIR}/one/host"
+    "${PROJECT_SOURCE_DIR}/one/server"
     "${PROJECT_SOURCE_DIR}/one/game"
     ...
 )

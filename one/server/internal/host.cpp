@@ -2,13 +2,13 @@
 
 namespace one {
 
-// Client ...
-Host::Host() {}
+// Constructor ...
+Server::Server() {}
 
-// Host ...
-Host::~Host() {}
+// Destructor ...
+Server::~Server() {}
 
 // Listen ...
-int Host::listen() { return 0; }
+int Server::listen() { return 0; }
 
 }  // namespace one
