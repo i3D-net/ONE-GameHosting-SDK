@@ -5,8 +5,8 @@
 
 int main() {
     std::cout << "Game -> project name: " << ONE_NAME << " version: " << ONE_VERSION << std::endl;
-    OneGameHostApiPtr api = one_game_host_api();
-    auto host = api->create_host();
-    api->destroy_host(host);
+    OneGameHostingApiPtr api = one_game_hosting_api();
+    auto host = api->host_api->create();
+    api->host_api->destroy(host);
     return 0;
 }

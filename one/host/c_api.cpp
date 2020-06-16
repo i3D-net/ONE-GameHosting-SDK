@@ -18,16 +18,19 @@ void destroy_host(OneGameHostPtr host) {
     }
 }
 
-OneGameHostApiPtr game_host_api() {
-    static OneGameHostApi api;
-    api.create_host = create_host;
-    api.destroy_host = destroy_host;
+OneGameHostingApiPtr game_hosting_api() {
+    static OneHostApi host_api;
+    host_api.create = create_host;
+    host_api.destroy = destroy_host;
+
+    static OneGameHostingApi api;
+    api.host_api = &host_api;
     return &api;
 }
 
 }  // Unnamed namespace.
 }  // namespace one
 
-extern "C" ONE_EXPORT OneGameHostApiPtr ONE_STDCALL one_game_host_api() {
-    return one::game_host_api();
+extern "C" ONE_EXPORT OneGameHostingApiPtr ONE_STDCALL one_game_hosting_api() {
+    return one::game_hosting_api();
 };
