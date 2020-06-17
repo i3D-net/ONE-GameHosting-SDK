@@ -11,13 +11,13 @@ class RingBuffer;
 // arbitrary arcus messages.
 class Connection final {
 public:
-    Connection(Socket& socket);
+    Connection(Socket& socket, size_t max_incoming, size_t max_outgoing);
     
     void update(int* error);
-    int status();
+    int status() const;
 
     void push_outgoing(Message* message, int* error);
-    int incoming_count();
+    int incoming_count() const;
     Message* pop_incoming(int* error);
 private:
     Connection();
