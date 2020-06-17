@@ -4,6 +4,7 @@ add_executable(${UNIT_TEST}
     main.cpp
     unit/factorial.cpp
     unit/simple.cpp
+    unit/agent.cpp
 )
 
 target_compile_features(${UNIT_TEST} PRIVATE cxx_std_11)

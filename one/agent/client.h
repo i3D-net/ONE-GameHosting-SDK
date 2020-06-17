@@ -1,4 +1,7 @@
 namespace one {
+
+class Message;
+
 class Client
 {
 public:
@@ -9,23 +12,28 @@ public:
     // Connect to server.
 
     // Check status.
+    int status();
 
     // Send soft stop.
 
     // Request server info.
 
     // Send custom command.
-    send(Message* message);
+    void send(Message* message, int* error);
 private:
     // Arcus connection.
 };
 
-Client::Client(const char* addr)
+Client::Client(const char* addr, int port)
 {
 }
 
 Client::~Client()
 {
+}
+
+int Client::status() {
+    return 0;
 }
 
 } // namespace one
