@@ -2,30 +2,28 @@
 
 namespace one {
 
+class Socket;
 class Message;
+template<typename T>
+class RingBuffer;
 
-class MessageQueue final {
-public:
-    // Todo
-    // - in constructor, preallocate the message buffer to some high amount
-    // that should never be hit in regular use cases
-    // - 
-
-    void PushBack(Message*, int& error);
-    int Count();
-    Message* PopFront(int& error);
-private:
-    // Messages.
-    // _ring_buffer<Message>;
-};
-
+// Connection is a persistent arcus TCP connection. It can send and receive
+// arbitrary arcus messages.
 class Connection final {
 public:
-    // Send(message)
-    // int IncomingCount()
-    // PopIncoming()
+    Connection(Socket& socket);
+    
+    void update(int* error);
+    int status();
+
+    void push_outgoing(Message* message, int* error);
+    int incoming_count();
+    Message* pop_incoming(int* error);
 private:
-    // Incoming messages.
+    Connection();
+    
+    //RingBuffer<Message*> _incomingMessages;
+    //RingBuffer<Message*> _outgoingMessages;
     // Outgoing messages.
 };
 
