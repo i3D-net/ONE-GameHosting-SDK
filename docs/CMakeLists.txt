@@ -1,12 +1,11 @@
 set(DOXYGEN_EXTRACT_ALL YES)
 set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
-set(DOXYGEN_EXCLUDE_PATTERNS "*/rapidjson/*")
+set(DOXYGEN_EXCLUDE_PATTERNS "*/internal/*")
 
 doxygen_add_docs(docs
-    "${PROJECT_SOURCE_DIR}/one/agent"
-    "${PROJECT_SOURCE_DIR}/one/arcus"
+    "${PROJECT_SOURCE_DIR}/docs/mainpage.md"
+    "${PROJECT_SOURCE_DIR}/readme.md"
     "${PROJECT_SOURCE_DIR}/one/server"
-    "${PROJECT_SOURCE_DIR}/one/game"
 )
 
 add_custom_target(doc_doxygen ALL
