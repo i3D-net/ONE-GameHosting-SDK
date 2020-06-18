@@ -1,17 +1,7 @@
 # Docs
 
-The `CMakeList.txt` file located in this directory contains the following command:
+The `CMakeList.txt` file located in this directory defines which folders are parsed by doxygen during the documentation creation.
 
-```cmake
-doxygen_add_docs(docs
-    "${PROJECT_SOURCE_DIR}/one/agent"
-    "${PROJECT_SOURCE_DIR}/one/arcus"
-    "${PROJECT_SOURCE_DIR}/one/server"
-    "${PROJECT_SOURCE_DIR}/one/game"
-    ...
-)
-```
+Documentation is created each cmake build, provided that `doxygen` is installed.
 
-Which defines which folder are parsed by doxygen during the documentation creation.
-
-Currently, we create the documentation at each build, provided that `doxygen` has been installed on you host.
+Doxygen comments should only be added to source code that is part of the external API integrated into and used by game servers to communicate with One. All other source should be documented via regular comments and readme files.

@@ -75,11 +75,12 @@ typedef OneMessageApi* OneMessageApiPtr;
 
 ///
 /// The Server API is the main api used to work with the Server..
-/// It allows creating and destroying a server and for communication with the
+/// It allows creating and destroying a server and communication with the
 /// One Platform. It
 ///     - accepts a connection from One to send and receive messages
 ///     - provides an interface for the game to interact with those
 ///       messages
+///     - is thread-safe
 /// 
 struct OneServerApi {
     //--------------------------------------------------------------------------
@@ -117,6 +118,11 @@ struct OneServerApi {
     // for the Metadata opcode 0x40, we would define that opcode somewhere and
     // instructions on its use.
 
+    ///
+    /// Send a message to the One platform. The message must have its opcode
+    /// set. If it is a standard One API opcode, then the required keys must
+    /// be present and match the expected schema.
+    ///
     void (*send)(OneServerPtr server, OneMessagePtr message, int* error);
 
     //--------------------------------------------------------------------------
@@ -140,7 +146,8 @@ struct OneServerApi {
 typedef OneServerApi* OneServerApiPtr;
 
 ///
-/// The One Game Hosting API provides access to all One interfaces.
+/// The One Game Hosting API provides access to all One interfaces. Call
+/// one_game_hosting_api(void) to obtain access to an instance of this struct.
 /// 
 struct OneGameHostingApi {
     OneServerApiPtr server_api; // Main API.
@@ -151,8 +158,10 @@ typedef OneGameHostingApi* OneGameHostingApiPtr;
 //------------------------------------------------------------------------------
 // API Access.
 
-// Main entry point call to get a reference to the API.
-ONE_EXPORT OneGameHostingApiPtr ONE_STDCALL one_game_hosting_api();
+///
+/// Main entry point call to get a reference to the API.
+///
+ONE_EXPORT OneGameHostingApiPtr ONE_STDCALL one_game_hosting_api(void);
 
 #ifdef __cplusplus
 };
