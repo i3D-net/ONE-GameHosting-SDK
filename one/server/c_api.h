@@ -148,12 +148,23 @@ struct OneServerApi {
 typedef OneServerApi* OneServerApiPtr;
 
 ///
+/// Allows for control of all allocations made within the other APIs. Must be set
+/// at init time, before using any other APIs.
+///
+struct OneAllocatorApi {
+    void (*set_new)(void*(cb)(unsigned int size));
+    void (*set_delete)(void (cb)(void*));
+};
+typedef OneAllocatorApi* OneAllocatorApiPtr;
+
+///
 /// The One Game Hosting API provides access to all One interfaces. Call
 /// ::one_game_hosting_api to obtain access to an instance of this struct.
 /// 
 struct OneGameHostingApi {
     OneServerApiPtr server_api; /// Main API to create a Game Hosting Server that communicates with One.
     OneMessageApiPtr message_api; /// For working with messages.
+    OneAllocatorApi allocator_api; /// For providing custom allocation.
 };
 typedef OneGameHostingApi* OneGameHostingApiPtr;
 
