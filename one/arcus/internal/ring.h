@@ -1,3 +1,5 @@
+#pragma once
+
 namespace one {
 
 // FIFO ring buffer with a fixed capacity.
