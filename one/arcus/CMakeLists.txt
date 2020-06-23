@@ -1,10 +1,18 @@
 set(HEADER_FILES
     arcus.h
+    message.h
+    internal/codec.h
+    internal/connection.h
+    internal/ring.h
     internal/socket.h
 )
 
 set(SOURCE_FILES
     c_api.cpp
+    arcus.cpp
+    message.cpp
+    internal/codec.cpp
+    internal/connection.cpp
     internal/socket.cpp
 )
 

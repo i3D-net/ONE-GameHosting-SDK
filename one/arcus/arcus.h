@@ -1,26 +1,60 @@
+#pragma once
+
+#include <functional>
+
 namespace one {
 
-//------------------------------------------------------------------------------
-// Incoming.
+class Message;
+class Array;
+/// Arcus communication .
+class Arcus
+{
+public:
+    Arcus(/* args */);
+    ~Arcus();
 
-// soft stop(timeout seconds)
+    // Process pending received and outgoing messages. Any incoming messages are
+    // validated according to the Arcus API version standard, and callbacks, if
+    // set, are called. Messages without callbacks set are dropped and ignored.
+    void update(int* error);
 
-// allocated(void)
+    int status() const;
 
-// server info request
+    //------------------------------------------------------------------------------
+    // Callbacks to be notified of all possible incoming Arcus messages.
 
-//------------------------------------------------------------------------------
-// Outgoing.
+    void set_soft_stop_callback(std::function<void(int)>);
 
-// notify one of state change
-// send metadata (key value pairs)
-// server info send(
-//     current players,
-//     max players,
-//     server name,
-//     map,
-//     mode,
-//     version)
+    void set_allocated_callback(std::function<void()>);
+
+    void set_server_info_request_callback(std::function<void()>);
+
+    void set_server_info_callback(std::function<void(int)>);
+
+    void set_custom_command_callback(std::function<void(int)>);
+
+    // TBD: metadata format? why "data" key array?
+    void set_metadata_callback(std::function<void(const Array&)>);
+
+    // all other externally-facing opcode callbacks...
+
+    //------------------------------------------------------------------------------
+    // Outgoing.
+
+    // notify one of state change
+    // send metadata (key value pairs)
+    // server info send(
+    //     current players,
+    //     max players,
+    //     server name,
+    //     map,
+    //     mode,
+    //     version)
+    void send(Message&);
+
+};
+
+
 
 } // namespace one
 
@@ -30,3 +64,4 @@ namespace one {
 // map
 // mode
 // version
+
