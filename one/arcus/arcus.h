@@ -6,7 +6,11 @@ namespace one {
 
 class Message;
 class Array;
-/// Arcus communication .
+///
+/// Arcus is the main interface for an Arcus API Connection.
+/// It manages a TCP listen connection, allowing a single Agent client to connect
+/// and send/receive messages.
+///
 class Arcus
 {
 public:
@@ -41,8 +45,11 @@ public:
     //------------------------------------------------------------------------------
     // Outgoing.
 
+    // WIP.
+
     // notify one of state change
     // send metadata (key value pairs)
+    
     // server info send(
     //     current players,
     //     max players,
@@ -50,18 +57,7 @@ public:
     //     map,
     //     mode,
     //     version)
-    void send(Message&);
-
+    void send_server_info(Message&);
 };
 
-
-
 } // namespace one
-
-// current players
-// max players
-// server name
-// map
-// mode
-// version
-
