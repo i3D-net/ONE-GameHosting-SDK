@@ -1,7 +1,7 @@
 # Fake Agent
 
-A fake One Agent that uses the arcus library to simulate all of the agent behavior that is possible on a real One deployment.
+In One, the Agent is the component that connects to and communicates to the Game Server to send and receive Arcus API messages. In production, it lives alongside the deployed Game Server process.
 
-This can be used to connect to and test a Server of the One Game Hosting SDK.
+The Fake Agent provided here uses the arcus library to simulate all of the agent behavior that is possible on a production One deployment. It is used to connect to and test a Server of the One Game Hosting SDK.
 
-It is *not* meant to be used by real game servers in their own code.
+It is *not* intended to be included in the game server's build nor is it required to build the server or accompanying arcus folder libraries.

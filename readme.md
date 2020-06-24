@@ -11,16 +11,17 @@ Providing game servers the ability to communicate with the i3D One Platform.
 The first release, v1.0, will focus on the following:
 
 1. C/C++ v11 library.
-2. Windows 10 Pro, tested w/ Visual Studio 2017 and VSCode.
-3. Ubuntu 18.04 tested with VSCode.
-4. Pure C API interface.
-5. Source-only build - "copy & drop-in" of files for building
+2. Easy-to-use C API interface for maximum language compatibility.
+3. Source-only build - "copy & drop-in" of files for building.
+4. Supported platforms:
+    - Windows 10 Pro, Visual Studio 2017 and VSCode
+    - Ubuntu 18.04, VSCode
 
 ### Not Included
 
 The below are not currently part of v1.0 goals, however they are on our radar. Please notify us of change requests!
 
-1. Building of static and dll binaries.
+1. Building of static and shared binaries.
 2. Specific Unity or Unreal engine support beyond usage of C API to create own custom integration.
 3. Build testing on CentOS or other Linux distros.
 
