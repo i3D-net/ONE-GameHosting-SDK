@@ -30,8 +30,8 @@ The below are not currently part of v1.0 goals, however they are on our radar. P
 The SDK is made up of code to be integrated into the Game Server and other components to aid in testing, development and integration of the Server components.
 
 1. [Server](one/server/readme.md) is the main interface integrated into a Game Server to communicate with One. See the C API [source file](one/server/c_api.h) for the main interfaces that the game server integration must use.
-2. [Arcus](one/arcus/readme.md) is used by the [Server]() but also by the test and integration components.
-3. [Game](one/game/readme.md) is a fake Game used in testing, development and as a guide and reference for integration of the [Server]() into a Game Server.
+2. [Arcus](one/arcus/readme.md) is used by the [Server](one/server/readme.md) but also by the test and integration components.
+3. [Game](one/game/readme.md) is a fake Game used in testing, development and as a guide and reference for integration of the [Server](one/server/readme.md) into a Game Server.
 4. [Agent](one/agent/readme.md) is a fake One Agent Client used for testing and development. It simulates the behavior of a One Agent connecting to a real Deployment on the One platform.
 
 The [tests](one/tests/readme.md) and [docs](one/docs/readme.md) serve their respective purposes.
