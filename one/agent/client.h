@@ -4,6 +4,7 @@ namespace one {
 
 class Message;
 
+/// Client can connect to a Server and simulate Agent behavior.
 class Client
 {
 public:
