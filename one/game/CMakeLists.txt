@@ -6,9 +6,9 @@ target_link_libraries(game PRIVATE one_server)
 include_directories(${PROJECT_BINARY_DIR})
 
 set(HEADER_FILES
-    server.h
+    game.h
 )
 
 set(SOURCE_FILES
-    server.cpp
+    game.cpp
 )

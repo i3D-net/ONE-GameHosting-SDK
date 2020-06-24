@@ -1,3 +1,5 @@
+#include "game.h"
+
 namespace one {
 
 Game::Game(/* args */)

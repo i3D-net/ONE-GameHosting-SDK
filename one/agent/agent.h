@@ -4,13 +4,13 @@ namespace one {
 
 class Message;
 
-/// Client can connect to a Server and simulate Agent behavior.
-class Client
+/// Agent can connect to a Server and simulate production deployment behavior.
+class Agent
 {
 public:
     // Todo: ip + port or combined as "ip:port" str?
-    Client(const char* ip, int port);
-    ~Client();
+    Agent(const char* ip, int port);
+    ~Agent();
 
     // Connect to server.
 
