@@ -1,6 +1,6 @@
 # i3D.net Game Hosting SDK
 
-Version: Technical Preview
+Version: Technical Preview - Public API (Implementation not included)
 
 Providing game servers the ability to communicate with the i3D.net One Platform.
 
