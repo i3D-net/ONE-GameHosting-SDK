@@ -174,3 +174,15 @@
       of your accepting any such warranty or additional liability.
 
    END OF TERMS AND CONDITIONS
+
+Other dependencies and licenses:
+
+This product bundles RapidJSON, which is available under the "MIT" license. For
+details see one/arcus/internal/rapidjson.
+
+This product bundles, via RapidJSON, The msinttypes r29, which is available
+under the "BSD" license. For details see one/arcus/internal/rapidjson and
+one/arcus/internal/msinttypes.
+
+This product bundles Catch2, which is available under the "Boost Software
+License - Version 1.0" license. For details see tests/catch2.
