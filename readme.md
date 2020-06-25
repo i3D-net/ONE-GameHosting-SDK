@@ -1,8 +1,8 @@
-# i3D Game Hosting SDK
+# i3D.net Game Hosting SDK
 
 Version: Technical Preview
 
-Providing game servers the ability to communicate with the i3D One Platform.
+Providing game servers the ability to communicate with the i3D.net One Platform.
 
 ## v1.0 Plan
 
@@ -38,7 +38,7 @@ The [tests](one/tests/readme.md) and [docs](one/docs/readme.md) serve their resp
 
 ## Source Documentation and Integration Guide
 
-Reference the prebuilt docs on the i3d website, or follow the build instructions to generate the documentation from the repository.
+Reference the prebuilt docs on the i3d.net website, or follow the build instructions to generate the documentation from the repository.
 
 ## Build Requirements
 
