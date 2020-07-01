@@ -188,12 +188,16 @@ struct OneServerApi {
 typedef OneServerApi* OneServerApiPtr;
 
 ///
-/// Allows for control of all allocations made within the other APIs. Must be set
-/// at init time, before using any other APIs.
+/// Allows for control of all allocations made within the SDK.
 ///
 struct OneAllocatorApi {
-    void (*set_new)(void*(cb)(unsigned int size));
-    void (*set_delete)(void (cb)(void*));
+    /// Provide custom memory alloc.
+    /// Must be set at init time, before using any other APIs.
+    void (*set_alloc)(void*(cb)(unsigned int size));
+
+    /// Provide custom memory free.
+    /// Must be set at init time, before using any other APIs.
+    void (*set_free)(void (cb)(void*));
 };
 typedef OneAllocatorApi* OneAllocatorApiPtr;
 
@@ -215,6 +219,10 @@ typedef OneGameHostingApi* OneGameHostingApiPtr;
 
 ///
 /// Main entry point call to get a reference to the APIs.
+/// Sub-Apis can be referenced like so:
+/// OneGameHOstingApiPtr one = one_game_hosting_api();
+/// OneServerApiPtr server_api = one->server_api();
+/// server_api->do_something(); // Fictional example API function.
 ///
 ONE_EXPORT OneGameHostingApiPtr ONE_STDCALL one_game_hosting_api(void);
 
