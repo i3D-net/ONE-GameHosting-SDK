@@ -18,19 +18,17 @@ void destroy_server(OneServerPtr server) {
     }
 }
 
-OneGameHostingApiPtr game_hosting_api() {
-    static OneServerApi server_api;
-    server_api.create = create_server;
-    server_api.destroy = destroy_server;
-
-    static OneGameHostingApi api;
-    api.server_api = &server_api;
-    return &api;
-}
-
 }  // Unnamed namespace.
 }  // namespace one
 
-extern "C" ONE_EXPORT OneGameHostingApiPtr ONE_STDCALL one_game_hosting_api() {
-    return one::game_hosting_api();
-};
+extern "C" {
+
+OneServerPtr one_server_create(void) {
+    return one::create_server();
+}
+
+void one_server_destroy(OneServerPtr server) {
+    one::destroy_server(server);
+}
+
+}; // extern "C"
