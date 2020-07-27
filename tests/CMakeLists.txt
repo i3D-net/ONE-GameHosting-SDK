@@ -5,10 +5,12 @@ add_executable(${UNIT_TEST}
     unit/factorial.cpp
     unit/simple.cpp
     unit/agent.cpp
+    unit/socket.cpp
 )
 
 target_compile_features(${UNIT_TEST} PRIVATE cxx_std_11)
 target_link_libraries(${UNIT_TEST} PRIVATE one_agent)
+target_link_libraries(${UNIT_TEST} PRIVATE one_arcus)
 include_directories(catch2)
 
 add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
