@@ -1,5 +1,7 @@
 #include <utility>
 
+#include "internal/platform.h"
+
 namespace one {
 
 // An array value that can be contained in a message's data.
@@ -34,7 +36,7 @@ public:
 private:
     // TBD
     // RapidJson::Document
-}
+};
 
 // Todo: would a simple struct be better for now? Consider memory pooling both
 // for arcus message and for rapidjson internal data.

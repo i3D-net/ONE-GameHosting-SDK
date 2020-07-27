@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2...3.17.2)
 
-project(OneHost
+project(OneGameHostingSDK
   VERSION 
   1.0.0 
   LANGUAGES CXX)
@@ -18,9 +18,14 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   endif()
 endif()
 
+if(WIN32)
+  add_definitions(-DWINDOWS)
+endif()
+
 add_subdirectory(one/agent)
-add_subdirectory(one/server)
+add_subdirectory(one/arcus)
 add_subdirectory(one/game)
+add_subdirectory(one/server)
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/version.h.in"

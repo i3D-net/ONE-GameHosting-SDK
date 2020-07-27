@@ -90,6 +90,7 @@ Install the plugins:
     3. CMake from twxs
     4. CMake Tools from Microsoft
     5. Clang-format from xaver
+    6. C++ TestMate
 
 #### Settings example
 
