@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #if defined(WINDOWS)
 	#include <winsock2.h>
 #else
@@ -15,9 +17,12 @@ namespace one {
 int init_socket_system();
 
 // A limited, cross-platform, low level TCP socket interface.
-class Socket
+class Socket final
 {
 public:
+    //------------
+    // Life cycle.
+
     // Creates an uninitialized socket. init must be called.
     Socket();
 
@@ -32,10 +37,39 @@ public:
     // Closes active socket, if active.
     int close();
 
+    // Config.
+
+    // Set whether the socket should block. Default is false (blocks).
+    int set_non_blocking(bool enable);
+
+    //--------
+    // Server.
+
+    // Assigns the given IP and port to the socket. Use "" for any ip address
+    // and 0 for any port.
+    int bind(const char* ip, unsigned int port);
+
+    // Assigns the port to the socket. Use 0 for any port.
+    int bind(unsigned int port);
+
+    // Listens for incoming connections. Socket must have bind called
+    // beforehand.
+    int listen(int queueLength);
+
+    // Process incoming listen connections. Returns < 0 if an error occurred
+    // during processing. If a new client connection was accepted, then the
+    // given client socket's IsInitialized will be true.
+    int accept(Socket &client, std::string &ip, unsigned int &port);
+
+    //--------
+    // Client.
+
+    //--------
+    // IO.
+
 private:
-    // Disallowed operations.
-    explicit Socket(const Socket &other);
-    void operator=(const Socket &other);
+    explicit Socket(const Socket &other) = delete;
+    void operator=(const Socket &other) = delete;
 
     SOCKET _socket;
 };
