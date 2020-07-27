@@ -37,6 +37,7 @@ public:
     // Closes active socket, if active.
     int close();
 
+    //--------
     // Config.
 
     // Set whether the socket should block. Default is false (blocks).
@@ -52,6 +53,9 @@ public:
     // Assigns the port to the socket. Use 0 for any port.
     int bind(unsigned int port);
 
+    // Returns the address of this socket.
+    int address(std::string &ip, unsigned int &port);
+
     // Listens for incoming connections. Socket must have bind called
     // beforehand.
     int listen(int queueLength);
@@ -61,8 +65,11 @@ public:
     // given client socket's IsInitialized will be true.
     int accept(Socket &client, std::string &ip, unsigned int &port);
 
+
     //--------
     // Client.
+
+    int connect(const char * ip, const unsigned int  port);
 
     //--------
     // IO.
