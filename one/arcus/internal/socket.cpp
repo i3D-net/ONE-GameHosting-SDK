@@ -95,6 +95,20 @@ int Socket::bind(unsigned int port) {
     return ::bind(_socket, (sockaddr*)&sin, sizeof(sin));
 }
 
+int Socket::address(std::string &ip, unsigned int &port) {
+    sockaddr_in addr;
+    socklen_t addr_size = sizeof(addr);
+
+    int result = ::getsockname(_socket, (sockaddr *)&addr, &addr_size);
+    if (result != 0) {
+        return result;
+    }
+    assert(addr_size == sizeof(addr));
+    ip = std::string(inet_ntoa(addr.sin_addr));
+    port = (unsigned int)(ntohs(addr.sin_port));
+    return 0;
+}
+
 int Socket::listen(int queueLength) {
     assert(_socket != INVALID_SOCKET);
 
@@ -120,6 +134,20 @@ int Socket::accept(Socket &client, std::string &ip, unsigned int &port) {
     port = (unsigned int)ntohs(s->sin_port);
 
     return 0;
+}
+
+int Socket::connect(const char * ip, const unsigned int  port) {
+    assert(_socket != INVALID_SOCKET);
+    if (std::strlen(ip) == 0) {
+        return -1;
+    }
+
+    sockaddr_in sin;
+    sin.sin_port = htons(port);
+    sin.sin_addr.s_addr = inet_addr(ip);
+    sin.sin_family = AF_INET;
+
+    return ::connect(_socket,(sockaddr*)&sin, sizeof(sin));
 }
 
 } // namespace one
