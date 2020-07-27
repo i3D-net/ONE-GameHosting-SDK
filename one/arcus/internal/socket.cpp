@@ -1,11 +1,15 @@
 #include "socket.h"
 
+#include <assert.h>
+#include <cstring>
+
 #ifdef WINDOWS
+    typedef int socklen_t;
 #else
-//#include <netinet/tcp.h>
-//#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
+    #include <arpa/inet.h>
+    #include <fcntl.h>
+    #include <netinet/in.h>
+    #include <unistd.h>
 #endif
 
 #include "platform.h"
@@ -13,10 +17,10 @@
 namespace one {
 
 int init_socket_system() {
-#ifdef WINDOWS
-    WSADATA wsaData;
-    return WSAStartup(MAKEWORD(2,2), &wsaData);
-#endif
+    #ifdef WINDOWS
+        WSADATA wsaData;
+        return WSAStartup(MAKEWORD(2,2), &wsaData);
+    #endif
 }
 
 Socket::Socket():
@@ -24,13 +28,9 @@ Socket::Socket():
 {
 }
 
-Socket::Socket(const Socket &other):
-    _socket(INVALID_SOCKET)
-{
-}
-
 Socket::~Socket()
 {
+    close();
 }
 
 int Socket::init()
@@ -59,6 +59,66 @@ int Socket::close()
         return result;
 
     _socket = INVALID_SOCKET;
+    return 0;
+}
+
+int Socket::set_non_blocking(bool enable) {
+    #if defined(WINDOWS)
+        u_long as_long = (enable ? 1 : 0);
+        return ioctlsocket(_socket, FIONBIO, &as_long);
+    #else
+        return fcntl(_socket, F_SETFL, O_NONBLOCK);
+    #endif
+}
+
+int Socket::bind(const char* ip, unsigned int port) {
+    assert(_socket != INVALID_SOCKET);
+
+    sockaddr_in sin;
+    sin.sin_port = htons(port);
+    if (std::strlen(ip) == 0) {
+        sin.sin_addr.s_addr = INADDR_ANY;
+    } else {
+        sin.sin_addr.s_addr = inet_addr(ip);
+    }
+    sin.sin_family = AF_INET;
+    return ::bind(_socket, (sockaddr*)&sin, sizeof(sin));
+}
+
+int Socket::bind(unsigned int port) {
+    assert(_socket != INVALID_SOCKET);
+
+    sockaddr_in sin;
+    sin.sin_port = htons(port);
+    sin.sin_addr.s_addr = INADDR_ANY;
+    sin.sin_family = AF_INET;
+    return ::bind(_socket, (sockaddr*)&sin, sizeof(sin));
+}
+
+int Socket::listen(int queueLength) {
+    assert(_socket != INVALID_SOCKET);
+
+    return ::listen(_socket, queueLength);
+}
+
+int Socket::accept(Socket &client, std::string &ip, unsigned int &port) {
+    assert(_socket != INVALID_SOCKET);
+    if (client.is_initialized() == true) {
+        return -1;
+    }
+
+    struct sockaddr addr;
+    socklen_t addrLen = (socklen_t)sizeof(sockaddr);
+    SOCKET socket = ::accept(_socket, &addr, &addrLen);
+
+    if (socket == INVALID_SOCKET) 
+        return 0;
+
+    client._socket = socket;
+    struct sockaddr_in *s = (struct sockaddr_in *)&addr;
+    ip = std::string(inet_ntoa(s->sin_addr));
+    port = (unsigned int)ntohs(s->sin_port);
+
     return 0;
 }
 
