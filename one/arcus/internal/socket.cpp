@@ -150,4 +150,34 @@ int Socket::connect(const char * ip, const unsigned int  port) {
     return ::connect(_socket,(sockaddr*)&sin, sizeof(sin));
 }
 
+int Socket::ready(float timeout, bool &is_ready) {
+    if (is_initialized()==false)
+        return -1;
+
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(_socket, &fds);
+
+    const auto seconds = (int)(timeout);
+    const auto microseconds = (int)((timeout - seconds) * 1000000);
+    timeval converted_timeout;
+    converted_timeout.tv_sec = seconds;
+    converted_timeout.tv_usec = microseconds;
+
+    auto result = select((int)_socket + 1, NULL, &fds, NULL, &converted_timeout);
+    if (result > 0) {
+        is_ready = true;
+        return 0;
+    }
+    return result;
+}
+
+int Socket::send(const void *data, size_t length) {
+    return ::send(_socket, (const char *)data, length, 0);
+}
+
+int Socket::receive(void *data, size_t length) {
+    return ::recv(_socket, (char *)data, length, 0);
+}
+
 } // namespace one
