@@ -3,7 +3,7 @@
 #include <string>
 
 #if defined(WINDOWS)
-	#include <winsock2.h>
+    #include <winsock2.h>
 #else
     typedef int SOCKET;
     #ifndef INVALID_SOCKET
@@ -73,6 +73,17 @@ public:
 
     //--------
     // IO.
+
+    // Non-blocking select checks if socket has been changed.
+    int ready(float timeout, bool &is_ready);
+
+    // Send data on the socket. Returns negative number on error, or number of
+    // bytes sent.
+    int send(const void *data, size_t length);
+
+    // Receive data into the given buffer. Returns negative number on error, or
+    // number of bytes received.
+    int receive(void *data, size_t length);
 
 private:
     explicit Socket(const Socket &other) = delete;
