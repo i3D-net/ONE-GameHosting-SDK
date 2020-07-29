@@ -4,9 +4,10 @@ namespace one {
 
 // FIFO ring buffer with a fixed capacity.
 template<typename T>
-class RingBuffer {
+class RingBuffer final {
 public:
     RingBuffer(size_t capacity);
+    ~RingBuffer();
 
     size_t capacity() const;
     size_t size() const;

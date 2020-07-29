@@ -50,7 +50,7 @@ TEST_CASE("socket", "[arcus]") {
 
     auto wait_ready = [](Socket &socket) {
         bool is_ready;
-        REQUIRE(socket.ready(0.05f, is_ready) == 0);
+        REQUIRE(socket.ready(0.1f, is_ready) == 0);
         REQUIRE(is_ready);
     };
 

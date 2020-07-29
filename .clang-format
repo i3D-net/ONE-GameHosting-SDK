@@ -10,3 +10,4 @@ SortUsingDeclarations: false
 BreakConstructorInitializers : BeforeComma
 BreakConstructorInitializersBeforeComma: true
 KeepEmptyLinesAtTheStartOfBlocks: true
+IndentPPDirectives: BeforeHash
