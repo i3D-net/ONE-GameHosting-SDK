@@ -14,6 +14,7 @@ add_library(one_server ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(one_server PRIVATE one_agent)
 
 include_directories(${PROJECT_BINARY_DIR})
+include_directories(${PROJECT_SOURCE_DIR})
 
 target_include_directories(one_server PUBLIC .)
 

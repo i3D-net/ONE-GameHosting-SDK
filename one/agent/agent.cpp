@@ -1,17 +1,11 @@
-#include "agent.h"
+#include <one/agent/agent.h>
 
 namespace one {
 
-Agent::Agent(const char* addr, int port)
-{
-}
+Agent::Agent(const char* addr, int port) {}
 
-Agent::~Agent()
-{
-}
+Agent::~Agent() {}
 
-int Agent::status() {
-    return 0;
-}
+int Agent::status() { return 0; }
 
-} // namespace one
+}  // namespace one

@@ -1,5 +1,5 @@
-#include "../catch2/catch.hpp"
-#include "../../one/agent/agent.h"
+#include <catch.hpp>
+#include <one/agent/agent.h>
 
 using namespace one;
 

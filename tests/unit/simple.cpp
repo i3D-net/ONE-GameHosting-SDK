@@ -1,5 +1,3 @@
-#include "../catch2/catch.hpp"
+#include <catch.hpp>
 
-TEST_CASE("Simple test", "[simple]") {
-    REQUIRE(true);
-}
+TEST_CASE("Simple test", "[simple]") { REQUIRE(true); }

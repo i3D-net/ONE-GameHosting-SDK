@@ -1,4 +1,4 @@
-#include "codec.h"
+#include <one/arcus/internal/codec.h>
 
 #include <cstring>
 #include <stdint.h>

@@ -1,4 +1,4 @@
-#include "socket.h"
+#include <one/arcus/internal/socket.h>
 
 #include <assert.h>
 #include <cstring>
@@ -12,7 +12,7 @@ typedef int socklen_t;
     #include <unistd.h>
 #endif
 
-#include "platform.h"
+#include <one/arcus/internal/platform.h>
 
 namespace one {
 

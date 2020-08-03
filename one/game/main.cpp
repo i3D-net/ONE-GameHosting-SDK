@@ -1,7 +1,7 @@
 #include <iostream>
 #include <version.h>
 
-#include <c_api.h>
+#include <one/server/c_api.h>
 
 int main() {
     std::cout << "Game -> project name: " << ONE_NAME << " version: " << ONE_VERSION << std::endl;

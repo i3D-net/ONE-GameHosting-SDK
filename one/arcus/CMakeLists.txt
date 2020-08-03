@@ -19,6 +19,7 @@ set(SOURCE_FILES
 add_library(one_arcus ${SOURCE_FILES} ${HEADER_FILES})
 
 include_directories(${PROJECT_BINARY_DIR})
+include_directories(${PROJECT_SOURCE_DIR})
 
 target_include_directories(one_arcus PUBLIC .)
 

@@ -1,9 +1,7 @@
-#include <string>
-
-#include "../util.h"
-#include "../catch2/catch.hpp"
-#include "../../one/arcus/internal/connection.h"
-#include "../../one/arcus/internal/socket.h"
+#include <catch.hpp>
+#include <util.h>
+#include <one/arcus/internal/connection.h>
+#include <one/arcus/internal/socket.h>
 
 using namespace one;
 
