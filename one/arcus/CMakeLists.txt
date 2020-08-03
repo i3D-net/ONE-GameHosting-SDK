@@ -1,5 +1,6 @@
 set(HEADER_FILES
     arcus.h
+    c_api.h
     message.h
     internal/codec.h
     internal/connection.h
@@ -10,6 +11,7 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
     arcus.cpp
+    c_api.cpp
     message.cpp
     internal/codec.cpp
     internal/connection.cpp
