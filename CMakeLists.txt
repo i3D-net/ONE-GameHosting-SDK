@@ -25,7 +25,6 @@ endif()
 add_subdirectory(one/agent)
 add_subdirectory(one/arcus)
 add_subdirectory(one/game)
-add_subdirectory(one/server)
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/version.h.in"
