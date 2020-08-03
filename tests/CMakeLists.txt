@@ -3,10 +3,8 @@ set(UNIT_TEST tests)
 add_executable(${UNIT_TEST}
     util.cpp
     main.cpp
-    unit/factorial.cpp
-    unit/simple.cpp
-    unit/agent.cpp
-    unit/socket.cpp
+    agent.cpp
+    arcus.cpp
 )
 
 target_compile_features(${UNIT_TEST} PRIVATE cxx_std_11)
