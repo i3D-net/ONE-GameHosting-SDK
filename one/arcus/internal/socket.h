@@ -5,9 +5,9 @@
 #if defined(WINDOWS)
     #include <winsock2.h>
 #else
-    typedef int SOCKET;
+typedef int SOCKET;
     #ifndef INVALID_SOCKET
-        const int INVALID_SOCKET = -1;
+const int INVALID_SOCKET = -1;
     #endif
 #endif
 
@@ -15,10 +15,11 @@ namespace one {
 
 // Must be called before using Socket.
 int init_socket_system();
+// Call when finished using sockets.
+void shutdown_socket_system();
 
 // A limited, cross-platform, low level TCP socket interface.
-class Socket final
-{
+class Socket final {
 public:
     //------------
     // Life cycle.
@@ -32,10 +33,13 @@ public:
     // Initializes as a TCP socket. Must be called before listen or connect.
     int init();
 
-    bool is_initialized() const {return _socket != INVALID_SOCKET;}
+    bool is_initialized() const { return _socket != INVALID_SOCKET; }
 
     // Closes active socket, if active.
     int close();
+
+    // Returns last socket error.
+    int last_error();
 
     //--------
     // Config.
@@ -48,7 +52,7 @@ public:
 
     // Assigns the given IP and port to the socket. Use "" for any ip address
     // and 0 for any port.
-    int bind(const char* ip, unsigned int port);
+    int bind(const char *ip, unsigned int port);
 
     // Assigns the port to the socket. Use 0 for any port.
     int bind(unsigned int port);
@@ -65,17 +69,16 @@ public:
     // given client socket's IsInitialized will be true.
     int accept(Socket &client, std::string &ip, unsigned int &port);
 
-
     //--------
     // Client.
 
-    int connect(const char * ip, const unsigned int  port);
+    int connect(const char *ip, const unsigned int port);
 
     //--------
     // IO.
 
     // Non-blocking select checks if socket has been changed.
-    int ready(float timeout, bool &is_ready);
+    int select(float timeout);
 
     // Send data on the socket. Returns negative number on error, or number of
     // bytes sent.
@@ -92,4 +95,4 @@ private:
     SOCKET _socket;
 };
 
-} // namespace one
+}  // namespace one
