@@ -1,13 +1,9 @@
-#include "game.h"
+#include <one/game/game.h>
 
 namespace one {
 
-Game::Game(/* args */)
-{
-}
+Game::Game(/* args */) {}
 
-Game::~Game()
-{
-}
+Game::~Game() {}
 
-} // namespace one
+}  // namespace one
