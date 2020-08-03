@@ -1,9 +1,9 @@
-#include "connection.h"
+#include <one/arcus/internal/connection.h>
 
 #include <assert.h>
 
-#include "codec.h"
-#include "socket.h"
+#include <one/arcus/internal/codec.h>
+#include <one/arcus/internal/socket.h>
 
 #ifdef WINDOWS
 #else

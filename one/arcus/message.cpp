@@ -1,9 +1,7 @@
-#include "message.h"
+#include <one/arcus/message.h>
 
 namespace one {
 
-Payload::Payload() {
+Payload::Payload() {}
 
-}
-
-} // namespace one
+}  // namespace one

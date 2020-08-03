@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform.h"
+#include <one/arcus/internal/platform.h>
 
 namespace one {
 

@@ -2,7 +2,6 @@
 
 #include <functional>
 
-
 namespace one {
 
 class Array;
@@ -12,8 +11,7 @@ class Socket;
 
 // An Arcus Server is designed for use by a Game. It allows an Arcus One Agent
 // to connect and communicate with the game.
-class Server final
-{
+class Server final {
 public:
     Server(/* args */);
     ~Server();
@@ -43,7 +41,7 @@ public:
     void set_custom_command_callback(std::function<void(int)>);
 
     // TBD: metadata format? why "data" key array?
-    void set_metadata_callback(std::function<void(const Array&)>);
+    void set_metadata_callback(std::function<void(const Array &)>);
 
     // all other externally-facing opcode callbacks...
 
@@ -54,7 +52,7 @@ public:
 
     // notify one of state change
     // send metadata (key value pairs)
-    
+
     // server info send(
     //     current players,
     //     max players,
@@ -62,7 +60,7 @@ public:
     //     map,
     //     mode,
     //     version)
-    void send_server_info(Message&);
+    void send_server_info(Message &);
 
 private:
     Socket *_listen_socket;
@@ -71,13 +69,12 @@ private:
 };
 
 // The Arcus Client is used by an Arcus One Agent to connect to an Arcus Server.
-class Client final
-{
+class Client final {
 public:
     Client(/* args */);
     ~Client();
 
-    int connect(const char * ip, unsigned int port);
+    int connect(const char *ip, unsigned int port);
 
     int update();
 
@@ -100,4 +97,4 @@ private:
     Connection *_connection;
 };
 
-} // namespace one
+}  // namespace one
