@@ -1,35 +1,31 @@
 #include "codec.h"
 
+#include <cstring>
+#include <stdint.h>
+
 namespace one {
 namespace codec {
 
-bool is_hello(const void *data, size_t length) {
-    if (length != sizeof(Hello)) {
-        return false;
-    }
+const Hello hello = Hello{{'a', 'r', 'c', 0}, (char)0x1, 0};  // namespace codec
 
-    // handle byte order to a specific order for wire
-    // cast to Hello
-    // check each field...
-    // 1. detect static Arcus protocol prefix 4-byte "ARC\0"
-    // 2. ...
-    return true;
+bool validate_hello(const Hello &other) {
+    auto a = (const char *)&hello;
+    auto b = (const char *)&other;
+    return std::strncmp(a, b, hello_size()) == 0;
 }
 
-const void* hello_data() {
-    // Todo: ensure same byte order in result pointer...
-    static const Hello hello{{'a', 'r', 'c', 0}, (char)0x1, 0};
-    return &hello;
-}
+const void *hello_data() { return &hello; }
 
 // Header for regular Arcus messages.
-struct Header
-{
-
+struct Header {
+    char flags;
+    char opcode;
+    char reserved[2];
+    int64_t packet_id;
+    uint64_t length;
 };
 
-int data_to_message(const void *data, size_t length, Message &message)
-{
+int data_to_message(const void *data, size_t length, Message &message) {
     // handle byte order to a specific order for wire
 
     // 1. Reader static header struct
@@ -41,9 +37,7 @@ int data_to_message(const void *data, size_t length, Message &message)
     return -1;
 }
 
-
-int message_to_data(const Message &message, std::vector<char> &data)
-{
+int message_to_data(const Message &message, std::vector<char> &data) {
     // handle byte order to a specific order for wire
 
     // 1. Create output header struct.
@@ -54,5 +48,5 @@ int message_to_data(const Message &message, std::vector<char> &data)
     return -1;
 }
 
-} // namespace codec
-} // namespace one
+}  // namespace codec
+}  // namespace one

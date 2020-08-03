@@ -1,6 +1,7 @@
 set(UNIT_TEST tests)
 
 add_executable(${UNIT_TEST}
+    util.cpp
     main.cpp
     unit/factorial.cpp
     unit/simple.cpp

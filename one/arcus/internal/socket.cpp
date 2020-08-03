@@ -4,7 +4,7 @@
 #include <cstring>
 
 #ifdef WINDOWS
-    typedef int socklen_t;
+typedef int socklen_t;
 #else
     #include <arpa/inet.h>
     #include <fcntl.h>
@@ -16,62 +16,94 @@
 
 namespace one {
 
+struct Endianness {
+    enum Arch { Big, Little };
+
+    static Arch which() {
+        union _ {
+            int asInt;
+            char asChar[sizeof(int)];
+        } u;
+
+        u.asInt = 1;
+        return (u.asChar[sizeof(int) - 1] == 1) ? Big : Little;
+    }
+};
+
+namespace endianness {
+
+enum Type { big, little };
+
+Type which() {
+    union {
+        uint32_t i;
+        char c[4];
+    } big_int = {0x01020304};
+
+    return (big_int.c[0] == 1 ? big : little);
+}
+
+}  // namespace endianness
+
 int init_socket_system() {
-    #ifdef WINDOWS
-        WSADATA wsaData;
-        return WSAStartup(MAKEWORD(2,2), &wsaData);
-    #endif
+#ifdef WINDOWS
+    WSADATA wsaData;
+    return WSAStartup(MAKEWORD(2, 2), &wsaData);
+#endif
 }
 
-Socket::Socket():
-    _socket(INVALID_SOCKET)
-{
+void shutdown_socket_system() {
+#ifdef WINDOWS
+    WSACleanup();
+#endif
 }
 
-Socket::~Socket()
-{
-    close();
-}
+Socket::Socket() : _socket(INVALID_SOCKET) {}
 
-int Socket::init()
-{
+Socket::~Socket() { close(); }
+
+int Socket::init() {
     _socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (_socket == INVALID_SOCKET)
-    {
+    if (_socket == INVALID_SOCKET) {
         // Todo errors...
         return -1;
     }
     return 0;
 }
 
-int Socket::close()
-{
-    if (_socket == INVALID_SOCKET)
-        return 0;
+int Socket::close() {
+    if (_socket == INVALID_SOCKET) return 0;
 
-    #if defined(WINDOWS)
-        int result = closesocket(_socket);
-    #else
-        int result = ::close(_socket);
-    #endif
+#if defined(WINDOWS)
+    int result = ::closesocket(_socket);
+#else
+    int result = ::close(_socket);
+#endif
 
-    if (result != 0)
-        return result;
+    if (result != 0) return result;
 
     _socket = INVALID_SOCKET;
     return 0;
 }
 
-int Socket::set_non_blocking(bool enable) {
-    #if defined(WINDOWS)
-        u_long as_long = (enable ? 1 : 0);
-        return ioctlsocket(_socket, FIONBIO, &as_long);
-    #else
-        return fcntl(_socket, F_SETFL, O_NONBLOCK);
-    #endif
+int Socket::last_error() {
+#ifdef WINDOWS
+    return WSAGetLastError();
+#else
+    return errno;
+#endif
 }
 
-int Socket::bind(const char* ip, unsigned int port) {
+int Socket::set_non_blocking(bool enable) {
+#if defined(WINDOWS)
+    u_long as_long = (enable ? 1 : 0);
+    return ioctlsocket(_socket, FIONBIO, &as_long);
+#else
+    return fcntl(_socket, F_SETFL, O_NONBLOCK);
+#endif
+}
+
+int Socket::bind(const char *ip, unsigned int port) {
     assert(_socket != INVALID_SOCKET);
 
     sockaddr_in sin;
@@ -82,7 +114,7 @@ int Socket::bind(const char* ip, unsigned int port) {
         sin.sin_addr.s_addr = inet_addr(ip);
     }
     sin.sin_family = AF_INET;
-    return ::bind(_socket, (sockaddr*)&sin, sizeof(sin));
+    return ::bind(_socket, (sockaddr *)&sin, sizeof(sin));
 }
 
 int Socket::bind(unsigned int port) {
@@ -92,7 +124,7 @@ int Socket::bind(unsigned int port) {
     sin.sin_port = htons(port);
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_family = AF_INET;
-    return ::bind(_socket, (sockaddr*)&sin, sizeof(sin));
+    return ::bind(_socket, (sockaddr *)&sin, sizeof(sin));
 }
 
 int Socket::address(std::string &ip, unsigned int &port) {
@@ -125,8 +157,7 @@ int Socket::accept(Socket &client, std::string &ip, unsigned int &port) {
     socklen_t addrLen = (socklen_t)sizeof(sockaddr);
     SOCKET socket = ::accept(_socket, &addr, &addrLen);
 
-    if (socket == INVALID_SOCKET) 
-        return 0;
+    if (socket == INVALID_SOCKET) return 0;
 
     client._socket = socket;
     struct sockaddr_in *s = (struct sockaddr_in *)&addr;
@@ -136,7 +167,7 @@ int Socket::accept(Socket &client, std::string &ip, unsigned int &port) {
     return 0;
 }
 
-int Socket::connect(const char * ip, const unsigned int  port) {
+int Socket::connect(const char *ip, const unsigned int port) {
     assert(_socket != INVALID_SOCKET);
     if (std::strlen(ip) == 0) {
         return -1;
@@ -147,12 +178,11 @@ int Socket::connect(const char * ip, const unsigned int  port) {
     sin.sin_addr.s_addr = inet_addr(ip);
     sin.sin_family = AF_INET;
 
-    return ::connect(_socket,(sockaddr*)&sin, sizeof(sin));
+    return ::connect(_socket, (sockaddr *)&sin, sizeof(sin));
 }
 
-int Socket::ready(float timeout, bool &is_ready) {
-    if (is_initialized()==false)
-        return -1;
+int Socket::select(float timeout) {
+    if (is_initialized() == false) return -1;
 
     fd_set fds;
     FD_ZERO(&fds);
@@ -164,20 +194,13 @@ int Socket::ready(float timeout, bool &is_ready) {
     converted_timeout.tv_sec = seconds;
     converted_timeout.tv_usec = microseconds;
 
-    auto result = select((int)_socket + 1, NULL, &fds, NULL, &converted_timeout);
-    if (result > 0) {
-        is_ready = true;
-        return 0;
-    }
-    return result;
+    return ::select((int)_socket + 1, NULL, &fds, NULL, &converted_timeout);
 }
 
 int Socket::send(const void *data, size_t length) {
     return ::send(_socket, (const char *)data, length, 0);
 }
 
-int Socket::receive(void *data, size_t length) {
-    return ::recv(_socket, (char *)data, length, 0);
-}
+int Socket::receive(void *data, size_t length) { return ::recv(_socket, (char *)data, length, 0); }
 
-} // namespace one
+}  // namespace one
