@@ -1,5 +1,5 @@
 #include <iostream>
-#include <version.h>
+#include <one/arcus/internal/version.h>
 
 #include <one/arcus/c_api.h>
 

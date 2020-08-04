@@ -1,7 +1,6 @@
 add_executable(agent main.cpp)
 target_compile_features(agent PRIVATE cxx_std_11)
 
-include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR})
 
 set(HEADER_FILES

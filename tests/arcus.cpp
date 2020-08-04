@@ -3,10 +3,45 @@
 #include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/socket.h>
+#include <one/arcus/internal/opcodes.h>
+#include <one/arcus/internal/version.h>
 
 using namespace one;
 
-void wait_ready(Socket &socket) { REQUIRE(socket.select(0.1f) >= 0); };
+TEST_CASE("current arcus version", "[arcus]") {
+    REQUIRE(arcus_protocol::current_version() == ArcusVersion::V0);
+}
+
+TEST_CASE("opcode version V0 validation", "[arcus]") {
+    REQUIRE(is_opcode_supported_v0(Opcodes::hello));
+    REQUIRE(is_opcode_supported_v0(Opcodes::soft_stop));
+    REQUIRE(is_opcode_supported_v0(Opcodes::allocated));
+    REQUIRE(is_opcode_supported_v0(Opcodes::unsuported_v0) == false);
+    REQUIRE(is_opcode_supported_v0(Opcodes::unsuported_v1) == false);
+    REQUIRE(is_opcode_supported_v0(Opcodes::unknown) == false);
+}
+
+TEST_CASE("opcode version V1 validation", "[arcus]") {
+    REQUIRE(is_opcode_supported_v1(Opcodes::hello));
+    REQUIRE(is_opcode_supported_v1(Opcodes::soft_stop));
+    REQUIRE(is_opcode_supported_v1(Opcodes::allocated));
+    REQUIRE(is_opcode_supported_v1(Opcodes::unsuported_v0));
+    REQUIRE(is_opcode_supported_v1(Opcodes::unsuported_v1) == false);
+    REQUIRE(is_opcode_supported_v1(Opcodes::unknown) == false);
+}
+
+TEST_CASE("opcode current version validation", "[arcus]") {
+    REQUIRE(is_opcode_supported(Opcodes::hello));
+    REQUIRE(is_opcode_supported(Opcodes::soft_stop));
+    REQUIRE(is_opcode_supported(Opcodes::allocated));
+    REQUIRE(is_opcode_supported(Opcodes::unsuported_v0) == false);
+    REQUIRE(is_opcode_supported(Opcodes::unsuported_v1) == false);
+    REQUIRE(is_opcode_supported(Opcodes::unknown) == false);
+}
+
+void wait_ready(Socket &socket) {
+    REQUIRE(socket.select(0.1f) >= 0);
+};
 
 void listen(Socket &server, unsigned int &port) {
     REQUIRE(server.init() == 0);

@@ -1,10 +1,10 @@
 #pragma once
 
-#define ONE_NAME "@PROJECT_NAME@"
-#define ONE_VERSION "@PROJECT_VERSION@"
-#define ONE_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
-#define ONE_VERSION_MINOR @PROJECT_VERSION_MINOR@
-#define ONE_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define ONE_NAME "OneGameHostingSDK"
+#define ONE_VERSION "1.0.0"
+#define ONE_VERSION_MAJOR 1
+#define ONE_VERSION_MINOR 0
+#define ONE_VERSION_PATCH 0
 
 namespace one {
 
@@ -201,7 +201,7 @@ enum class ArcusVersion { V0, V1 };
 
 struct arcus_protocol {
     static constexpr ArcusVersion current_version() {
-        return ArcusVersion::@PROJECT_ARCUS_PROTOCOL_VERSION@;
+        return ArcusVersion::V0;
     }
 };
 

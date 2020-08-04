@@ -4,9 +4,11 @@ set(HEADER_FILES
     message.h
     internal/codec.h
     internal/connection.h
+    internal/opcodes.h
     internal/platform.h
     internal/ring.h
     internal/socket.h
+    internal/version.h
 )
 
 set(SOURCE_FILES
