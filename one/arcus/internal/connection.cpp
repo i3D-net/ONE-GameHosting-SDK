@@ -1,8 +1,10 @@
 #include <one/arcus/internal/connection.h>
 
 #include <assert.h>
+#include <cstring>
 
 #include <one/arcus/internal/codec.h>
+#include <one/arcus/internal/opcodes.h>
 #include <one/arcus/internal/socket.h>
 
 #ifdef WINDOWS
@@ -26,7 +28,7 @@ bool is_error_try_again(int err) {
 }
 
 int Connection::send(const void* data, size_t length) {
-    const auto result = _socket.send(data, codec::hello_size());
+    const auto result = _socket.send(data, length);
     if (result >= 0) {
         return result;
     }
@@ -47,7 +49,9 @@ int Connection::receive(void* data, size_t length) {
     return -1;
 }
 
-Connection::Status Connection::status() const { return _status; }
+Connection::Status Connection::status() const {
+    return _status;
+}
 
 void Connection::initiate_handshake() {
     assert(_status == Status::handshake_not_started);
@@ -66,11 +70,19 @@ int Connection::update() {
     return process_messages();
 }
 
-void Connection::reset() { _status = Status::handshake_not_started; }
+void Connection::reset() {
+    _status = Status::handshake_not_started;
+}
 
 int Connection::process_handshake(bool is_socket_ready) {
     // Check if handshake timed out.
     // return 0;
+
+    // There are two hello packets. The initial codec::hello sent from the
+    // handshake initiater, and the response codec::Header message with a
+    // hello opcode sent in response. This is the response header.
+    static codec::Header hello_header = {0};
+    hello_header.opcode = static_cast<char>(Opcodes::hello);
 
     if (_status == Status::handshake_not_started) {
         // Check if hello received.
@@ -86,7 +98,13 @@ int Connection::process_handshake(bool is_socket_ready) {
             return -1;
         }
 
-        // Todo: send back a hello Message.
+        // Send back a hello Message.
+        result = send(&hello_header, codec::header_size());
+        if (result < 0) {  // Error.
+            return result;
+        } else if (result == 0) {  // No error but nothing sent.
+            return 0;              // Retry next attempt.
+        }
 
         // Assume handshaking is complete now. This side is free to send other
         // Messages now. If handshaking fails on the server, then the connection
@@ -109,11 +127,26 @@ int Connection::process_handshake(bool is_socket_ready) {
         }
         _status = Status::handshake_hello_sent;
     } else if (_status == Status::handshake_hello_sent) {
+        // Check if hello message Header received back.
+        codec::Header header = {0};
+        auto result = receive(&header, codec::header_size());
+        if (result < 0) return -1;
+        if (result != codec::header_size()) {
+            _status = Status::error;
+            return -1;
+        }
+        if (std::memcmp(&header, &hello_header, codec::header_size()) != 0) {
+            _status = Status::error;
+            return -1;
+        }
+        _status = Status::ready;
     }
 
     return 0;
 }
 
-int Connection::process_messages() { return 0; }
+int Connection::process_messages() {
+    return 0;
+}
 
 }  // namespace one

@@ -1,7 +1,6 @@
 #include <one/arcus/internal/codec.h>
 
 #include <cstring>
-#include <stdint.h>
 
 namespace one {
 namespace codec {
@@ -16,28 +15,19 @@ bool validate_hello(const Hello &other) {
 
 const Hello &valid_hello() { return hello; }
 
-// Header for regular Arcus messages.
-struct Header {
-    char flags;
-    char opcode;
-    char reserved[2];
-    int64_t packet_id;
-    uint64_t length;
-};
-
-int data_to_message(const void *data, size_t length, Message &message) {
+int data_to_header(const void *data, size_t length, Header &header) {
     // handle byte order to a specific order for wire
 
     // 1. Reader static header struct
     // 2. validate
     // 3. convert payload, if any, from (char*, size_t) to one::Payload.
-    // 4. Configure and return message.
+    // 4. Configure and return header.
     // 5. Error handling throughout.
 
     return -1;
 }
 
-int message_to_data(const Message &message, std::vector<char> &data) {
+int header_to_data(const Header &header, std::vector<char> &data) {
     // handle byte order to a specific order for wire
 
     // 1. Create output header struct.
