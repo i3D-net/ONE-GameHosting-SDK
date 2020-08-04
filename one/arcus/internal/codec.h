@@ -5,6 +5,7 @@ namespace one {
 
 class Message;
 
+// The codec provides conversion to and from byte data for Arcus types.
 namespace codec {
 
 // The first packet, used for handshaking, is a hello packet.
@@ -17,6 +18,8 @@ static_assert(sizeof(Hello) == 8, "hello struct alignment");
 
 inline size_t hello_size() { return sizeof(Hello); }
 
+// Returns true if the given Hello packet matches what is expected by
+// this version of the SDK.
 bool validate_hello(const Hello &hello);
 
 // Returns the valid, expected Hello values.
