@@ -84,6 +84,10 @@ public:
     // bytes sent.
     int send(const void *data, size_t length);
 
+    // Puts number of bytes available for reading into the given length.
+    // Returns < 0 on error.
+    int available(size_t &length);
+
     // Receive data into the given buffer. Returns negative number on error, or
     // number of bytes received.
     int receive(void *data, size_t length);

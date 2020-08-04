@@ -9,6 +9,7 @@ typedef int socklen_t;
     #include <arpa/inet.h>
     #include <fcntl.h>
     #include <netinet/in.h>
+    #include <sys/ioctl.h>
     #include <unistd.h>
 #endif
 
@@ -60,7 +61,9 @@ void shutdown_socket_system() {
 
 Socket::Socket() : _socket(INVALID_SOCKET) {}
 
-Socket::~Socket() { close(); }
+Socket::~Socket() {
+    close();
+}
 
 int Socket::init() {
     _socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -201,6 +204,18 @@ int Socket::send(const void *data, size_t length) {
     return ::send(_socket, (const char *)data, length, 0);
 }
 
-int Socket::receive(void *data, size_t length) { return ::recv(_socket, (char *)data, length, 0); }
+int Socket::available(size_t &length) {
+    int result;
+#ifdef WINDOWS
+    result = ioctlsocket(_socket, FIONREAD, (unsigned long *)&length);
+#else
+    result = ioctl(_socket, FIONREAD, &length);
+#endif
+    return result;
+}
+
+int Socket::receive(void *data, size_t length) {
+    return ::recv(_socket, (char *)data, length, 0);
+}
 
 }  // namespace one
