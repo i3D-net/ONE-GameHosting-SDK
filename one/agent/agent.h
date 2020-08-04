@@ -1,30 +1,36 @@
 #pragma once
 
+#include <one/arcus/arcus.h>
+
 namespace one {
 
 class Message;
 
 /// Agent can connect to a Server and simulate production deployment behavior.
-class Agent
-{
+class Agent {
 public:
-    // Todo: ip + port or combined as "ip:port" str?
-    Agent(const char* ip, int port);
-    ~Agent();
+    Agent() = default;
+    ~Agent() = default;
 
     // Connect to server.
+    int connect(const char* ip, int port);
 
     // Check status.
     int status();
 
+    int update();
+
     // Send soft stop.
+    int send_soft_stop();
 
     // Request server info.
+    int request_server_info();
 
     // Send custom command.
-    void send(Message* message, int* error);
+    int send(Message* message);
+
 private:
-    // Arcus connection.
+    Client _client;
 };
 
-} // namespace one
+}  // namespace one

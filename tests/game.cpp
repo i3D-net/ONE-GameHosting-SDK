@@ -7,17 +7,17 @@ using namespace one;
 
 TEST_CASE("fake game life cycle", "[fake game]") {
     Game fakeGame(4242);
-    REQUIRE(fakeGame.init() == -1);    // TODO: toggle it to == 0, when the implementation is done.
-    REQUIRE(fakeGame.deinit() == -1);  // TODO: toggle it to == 0, when the implementation is done.
+    REQUIRE(fakeGame.init() == 0);
+    REQUIRE(fakeGame.deinit() == 0);
 }
 
 TEST_CASE("fake game listen, status, update & close", "[fake game]") {
     Game fakeGame(4242);
-    REQUIRE(fakeGame.init() == -1);  // TODO: toggle it to == 0, when the implementation is done.
-    REQUIRE(fakeGame.tick() == -1);  // TODO: toggle it to == 0, when the implementation is done.
+    REQUIRE(fakeGame.init() == 0);
+    REQUIRE(fakeGame.tick() == 0);
     sleep(1);
-    REQUIRE(fakeGame.tick() == -1);  // TODO: toggle it to == 0, when the implementation is done.
+    REQUIRE(fakeGame.tick() == 0);
     sleep(1);
-    REQUIRE(fakeGame.tick() == -1);    // TODO: toggle it to == 0, when the implementation is done.
-    REQUIRE(fakeGame.deinit() == -1);  // TODO: toggle it to == 0, when the implementation is done.
+    REQUIRE(fakeGame.tick() == 0);
+    REQUIRE(fakeGame.deinit() == 0);
 }
