@@ -12,6 +12,8 @@ int Server::update() { return -1; }
 
 int Server::status() const { return -1; }
 
+int Server::close() { return -1; }
+
 Client::Client(/* args */) {}
 
 Client::~Client() {}

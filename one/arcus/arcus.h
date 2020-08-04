@@ -25,6 +25,8 @@ public:
 
     int status() const;
 
+    int close();
+
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
 

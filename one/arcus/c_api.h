@@ -56,25 +56,25 @@ struct OneMessageApi {
     /// Prepares a new outgoing message. Must be called to start setting
     /// values on the message. end_outgoing must be called when finished.
     ///
-    OneMessagePtr (*create)(int* error);
+    OneMessagePtr (*create)();
 
     /// Must be called whenever finished with a message.
-    void (*free)(OneMessagePtr message, int* error);
+    void (*free)(OneMessagePtr message);
 
-    void (*set_code)(OneMessagePtr message, int code, int* error);
-    int (*code)(OneMessagePtr message, int* error);
+    void (*set_code)(OneMessagePtr message, int code);
+    void (*code)(OneMessagePtr message, int* code);
 
     // Getters.
-    int  (*val_int)(OneMessagePtr message, const char * key, int* error);
-    const char * (*val_string)(OneMessagePtr message, const char * key, int* error);
-    OneArrayPtr  (*val_array)(OneMessagePtr message, const char * key, int* error);
-    OneObjectPtr  (*val_object)(OneMessagePtr message, const char * key, int* error);
+    int (*val_int)(OneMessagePtr message, const char* key, int* val);
+    int (*val_string)(OneMessagePtr message, const char* key, const char* val);
+    int (*val_array)(OneMessagePtr message, const char* key, OneArrayPtr val);
+    int (*val_object)(OneMessagePtr message, const char* key, OneObjectPtr val);
 
     // Setters.
-    void (*set_val_int)(OneMessagePtr message, const char * key, int val, int* error);
-    void (*set_val_string)(OneMessagePtr message, const char * key, const char* val, int* error);
-    void (*set_val_array)(OneMessagePtr message, const char * key, OneArrayPtr val, int* error);
-    void (*set_val_object)(OneMessagePtr message, const char * key, OneObjectPtr val, int* error);
+    int (*set_val_int)(OneMessagePtr message, const char* key, int val);
+    int (*set_val_string)(OneMessagePtr message, const char* key, const char* val);
+    int (*set_val_array)(OneMessagePtr message, const char* key, OneArrayPtr val);
+    int (*set_val_object)(OneMessagePtr message, const char* key, OneObjectPtr val);
 };
 typedef OneMessageApi* OneMessageApiPtr;
 
@@ -109,8 +109,8 @@ struct OneServerApi {
     //--------------------------------------------------------------------------
     // One Server Life Cycle.
 
-    OneServerPtr (*create)(void);
-    void (*destroy)(OneServerPtr);
+    int (*create)(OneServerPtr* server);
+    void (*destroy)(OneServerPtr* server);
 
     ///
     /// Update the server. This must be called frequently to process incoming
@@ -118,23 +118,23 @@ struct OneServerApi {
     /// respective incoming callbacks. If the a callback for a message is not set
     /// then the message is ignored.
     ///
-    void (*update)(OneServerPtr server, int* error);
+    int (*update)(OneServerPtr server);
 
     ///
     /// Returns the status of the listen connection.
     /// \sa listen.
     ///
-    void (*status)(OneServerPtr server, int* error);
+    int (*status)(OneServerPtr const server);
 
     ///
     /// Listens for messages on the given port.
     ///
-    void (*listen)(OneServerPtr server, unsigned int port, int* error);
+    int (*listen)(OneServerPtr server, unsigned int port);
 
     ///
     /// Stops listening for messages.
     ///
-    void (*close)(OneServerPtr server, int* error);
+    int (*close)(OneServerPtr server);
 
     //--------------------------------------------------------------------------
     // Outgoing messages.
@@ -148,11 +148,11 @@ struct OneServerApi {
     ///
     /// Send the Arcus API server metadata opcode message.
     ///
-    void (*send_metadata)(OneServerPtr server, OneArrayPtr data, int* error);
+    int (*send_metadata)(OneServerPtr server, OneArrayPtr data);
 
     // Todo: struct containing required server info config fields that must be
     // sent...to be passed here by caller.
-    void (*send_server_info)(OneServerPtr server, OneArrayPtr data, int* error);
+    int (*send_server_info)(OneServerPtr server, OneArrayPtr data);
 
     //--------------------------------------------------------------------------
     // Incoming Message callbacks.
@@ -175,15 +175,15 @@ struct OneServerApi {
     // should stop at its earliest convenience. If the server process is still
     // active after the given timeout (seconds), then One will terminate the
     // process directly on the deployment.
-    void (*set_soft_stop_callback)(OneServerPtr server, void(*cb)(int timeout));
+    void (*set_soft_stop_callback)(OneServerPtr server, void (*cb)(int timeout));
 
     // Required: Register the callback to be notified of when the server has been
     // allocated for matchmaking.
-    void (*set_allocated_callback)(OneServerPtr server, void(*cb)(void));
+    void (*set_allocated_callback)(OneServerPtr server, void (*cb)(void));
 
     // Required: Register to be notified of when the game must call
     // send_server_info.
-    void (*set_server_info_request_callback)(OneServerPtr server, void(*cb)(void));
+    void (*set_server_info_request_callback)(OneServerPtr server, void (*cb)(void));
 };
 typedef OneServerApi* OneServerApiPtr;
 
@@ -197,20 +197,21 @@ struct OneAllocatorApi {
 
     /// Provide custom memory free.
     /// Must be set at init time, before using any other APIs.
-    void (*set_free)(void (cb)(void*));
+    void (*set_free)(void(cb)(void*));
 };
 typedef OneAllocatorApi* OneAllocatorApiPtr;
 
 ///
 /// The One Game Hosting API provides access to all One interfaces. Call
 /// ::one_game_hosting_api to obtain access to an instance of this struct.
-/// 
+///
 struct OneGameHostingApi {
-    OneServerApiPtr server_api; /// Main API to create a Game Hosting Server that communicates with One.
-    OneMessageApiPtr message_api; /// For working with messages.
-    OneArrayApiPtr array_api; /// For working with array types contained in messages.
-    OneObjectApiPtr object_api; /// For working with object types contained in messages.
-    OneAllocatorApi allocator_api; /// For providing custom allocation.
+    OneServerApiPtr
+        server_api;  /// Main API to create a Game Hosting Server that communicates with One.
+    OneMessageApiPtr message_api;   /// For working with messages.
+    OneArrayApiPtr array_api;       /// For working with array types contained in messages.
+    OneObjectApiPtr object_api;     /// For working with object types contained in messages.
+    OneAllocatorApi allocator_api;  /// For providing custom allocation.
 };
 typedef OneGameHostingApi* OneGameHostingApiPtr;
 
