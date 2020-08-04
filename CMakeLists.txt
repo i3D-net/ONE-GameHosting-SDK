@@ -26,9 +26,11 @@ add_subdirectory(one/agent)
 add_subdirectory(one/arcus)
 add_subdirectory(one/game)
 
+set(PROJECT_ARCUS_PROTOCOL_VERSION V0)
+
 configure_file(
   "${PROJECT_SOURCE_DIR}/version.h.in"
-  "${PROJECT_BINARY_DIR}/version.h"
+  "${PROJECT_SOURCE_DIR}/one/arcus/internal/version.h"
 )
 
 # Testing only available if this is the main app

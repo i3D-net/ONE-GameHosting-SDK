@@ -3,7 +3,6 @@ target_compile_features(game PRIVATE cxx_std_11)
 
 target_link_libraries(game PRIVATE one_arcus)
 
-include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR})
 
 set(HEADER_FILES
@@ -15,9 +14,6 @@ set(SOURCE_FILES
 )
 
 add_library(one_game ${SOURCE_FILES} ${HEADER_FILES})
-
-include_directories(${PROJECT_BINARY_DIR})
-include_directories(${PROJECT_SOURCE_DIR})
 
 target_include_directories(one_game PUBLIC .)
 
