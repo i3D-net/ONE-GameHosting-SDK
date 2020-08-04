@@ -14,7 +14,7 @@ bool validate_hello(const Hello &other) {
     return std::strncmp(a, b, hello_size()) == 0;
 }
 
-const void *hello_data() { return &hello; }
+const Hello &valid_hello() { return hello; }
 
 // Header for regular Arcus messages.
 struct Header {
