@@ -30,6 +30,10 @@ public:
     // queued outgoing messages.
     int update();
 
+    // Reset the status to match construction time and clear any accumulated
+    // buffers.
+    void reset();
+
     enum class Status {
         handshake_not_started,
         handshake_hello_scheduled,
@@ -51,6 +55,7 @@ private:
     int process_handshake(bool is_socket_ready);
     int process_messages();
     int send(const void* data, size_t length);
+    int receive(void* data, size_t length);
 
     Status _status;
     Socket& _socket;

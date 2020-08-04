@@ -14,15 +14,13 @@ struct Hello {
     char dummy[3];
 };
 static_assert(sizeof(Hello) == 8, "hello struct alignment");
-// Todo: ensure equal alignment on all platforms.
-// Should be equal since char is byte by standard, but needs confirmation.
 
 inline size_t hello_size() { return sizeof(Hello); }
 
 bool validate_hello(const Hello &hello);
 
-// Returns the data for the hello packet. Length is hello_size().
-const void *hello_data();
+// Returns the valid, expected Hello values.
+const Hello &valid_hello();
 
 // Convert byte data to a Message.
 int data_to_message(const void *data, size_t length, Message &message);

@@ -36,6 +36,17 @@ int Connection::send(const void* data, size_t length) {
     return -1;
 }
 
+int Connection::receive(void* data, size_t length) {
+    const auto result = _socket.receive(data, length);
+    if (result >= 0) {
+        return result;
+    }
+    const auto err = _socket.last_error();
+    if (is_error_try_again(err)) return 0;
+    _status = Status::error;
+    return -1;
+}
+
 Connection::Status Connection::status() const { return _status; }
 
 void Connection::initiate_handshake() {
@@ -55,6 +66,8 @@ int Connection::update() {
     return process_messages();
 }
 
+void Connection::reset() { _status = Status::handshake_not_started; }
+
 int Connection::process_handshake(bool is_socket_ready) {
     // Check if handshake timed out.
     // return 0;
@@ -62,8 +75,9 @@ int Connection::process_handshake(bool is_socket_ready) {
     if (_status == Status::handshake_not_started) {
         // Check if hello received.
         codec::Hello hello = {0};
-        auto result = _socket.receive(&hello, codec::hello_size());
-        if (result < 0 || result != codec::hello_size()) {
+        auto result = receive(&hello, codec::hello_size());
+        if (result < 0) return -1;
+        if (result != codec::hello_size()) {
             _status = Status::error;
             return -1;
         }
@@ -79,8 +93,15 @@ int Connection::process_handshake(bool is_socket_ready) {
         // will be closed and the Messages will be ignored.
         _status = Status::ready;
     } else if (_status == Status::handshake_hello_scheduled) {
-        const void* hello_data = codec::hello_data();
-        auto result = send(hello_data, codec::hello_size());
+        // Ensure nothing is received. Arcus client should not send
+        // until it receives a Hello.
+        char byte;
+        auto result = receive(&byte, 1);
+        if (result != 0) {
+            return -1;
+        }
+        // Send the hello.
+        result = send(&codec::valid_hello(), codec::hello_size());
         if (result < 0) {  // Error.
             return result;
         } else if (result == 0) {  // No error but nothing sent.

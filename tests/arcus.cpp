@@ -1,11 +1,44 @@
 #include <catch.hpp>
 #include <util.h>
+#include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/socket.h>
 
 using namespace one;
 
-// Test both Socket and Connection basics.
+void wait_ready(Socket &socket) { REQUIRE(socket.select(0.1f) >= 0); };
+
+void listen(Socket &server, unsigned int &port) {
+    REQUIRE(server.init() == 0);
+    REQUIRE(server.bind(0) == 0);
+
+    std::string server_ip;
+    REQUIRE(server.address(server_ip, port) == 0);
+    REQUIRE(server_ip.length() > 0);
+    REQUIRE(port != 0);
+
+    REQUIRE(server.set_non_blocking(true) == 0);
+    REQUIRE(server.listen(1) == 0);
+}
+
+void connect(Socket &client, unsigned int port) {
+    client.init();
+    REQUIRE(client.connect("127.0.0.1", port) == 0);
+    REQUIRE(client.set_non_blocking(true) == 0);
+}
+
+void accept(Socket &server, Socket &in_client) {
+    // Accept client on server.
+    wait_ready(server);
+    std::string client_ip;
+    unsigned int client_port;
+    REQUIRE(server.accept(in_client, client_ip, client_port) == 0);
+    REQUIRE(client_ip.length() > 0);
+    REQUIRE(client_port != 0);
+    REQUIRE(in_client.set_non_blocking(true) == 0);
+}
+
+// Socket and Connection normal external behavior.
 TEST_CASE("connection", "[arcus]") {
     init_socket_system();
     Socket server;
@@ -21,18 +54,8 @@ TEST_CASE("connection", "[arcus]") {
     //---------------
     // Server listen.
 
-    // Init socket.
-    REQUIRE(server.init() == 0);
-    REQUIRE(server.bind(0) == 0);
-    std::string server_ip;
     unsigned int server_port;
-    REQUIRE(server.address(server_ip, server_port) == 0);
-    REQUIRE(server_ip.length() > 0);
-    REQUIRE(server_port != 0);
-    REQUIRE(server.set_non_blocking(true) == 0);
-
-    // Listen.
-    REQUIRE(server.listen(1) == 0);
+    listen(server, server_port);
 
     // Confirm no incoming connections.
     Socket in_client;
@@ -46,22 +69,10 @@ TEST_CASE("connection", "[arcus]") {
 
     // Init client socket.
     Socket out_client;
-    out_client.init();
-    REQUIRE(out_client.is_initialized() == true);
-
-    auto wait_ready = [](Socket &socket) { REQUIRE(socket.select(0.1f) >= 0); };
-
-    // Connect to server. Wait for connection to establish, with a timeout.
-    REQUIRE(out_client.connect("127.0.0.1", server_port) == 0);
-    REQUIRE(out_client.set_non_blocking(true) == 0);
+    connect(out_client, server_port);
 
     // Accept client on server.
-    wait_ready(server);
-    REQUIRE(server.accept(in_client, client_ip, client_port) == 0);
-    REQUIRE(in_client.is_initialized() == true);
-    REQUIRE(client_ip.length() > 0);
-    REQUIRE(client_port != 0);
-    REQUIRE(in_client.set_non_blocking(true) == 0);
+    accept(server, in_client);
 
     //------------------
     // Send and receive.
@@ -100,6 +111,59 @@ TEST_CASE("connection", "[arcus]") {
     // Todo finish handshaking.
     // REQUIRE(server_connection.status() == Connection::Status::ready);
     // REQUIRE(client_connection.status() == Connection::Status::ready);
+
+    server.close();
+    out_client.close();
+    in_client.close();
+    shutdown_socket_system();
+}
+
+// Handshake abnormalities.
+TEST_CASE("handshake", "[arcus]") {
+    init_socket_system();
+
+    Socket server;
+    unsigned int server_port;
+    listen(server, server_port);
+
+    Socket out_client;
+    connect(out_client, server_port);
+
+    // Accept client on server.
+    Socket in_client;
+    accept(server, in_client);
+
+    auto server_connection = Connection(in_client, 2, 2);
+    server_connection.initiate_handshake();
+
+    //----------------------------------------------------------
+    // Test - client sends a hello to server before server does.
+
+    wait_ready(out_client);
+    codec::Hello hello = codec::valid_hello();
+    auto result = out_client.send(&hello, codec::hello_size());
+    REQUIRE(result == codec::hello_size());
+    auto did_fail = false;
+    for (int i = 0; i < 5; i++) {
+        did_fail = server_connection.update() < 0;  // Todo Error type.
+        if (did_fail) break;
+        sleep(10);
+    }
+    REQUIRE(did_fail);
+    // todo get error reason
+    server_connection.reset();
+
+    //----------------------------------
+    // Test - client sends bad response.
+
+    // Receive the hello from server.
+
+    // Send wrong thing back.
+
+    // Ensure the connection and socket were closed by server.
+
+    //--------------------------
+    // Test - handshake timeout.
 
     server.close();
     out_client.close();
