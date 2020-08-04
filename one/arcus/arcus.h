@@ -13,7 +13,7 @@ class Socket;
 // to connect and communicate with the game.
 class Server final {
 public:
-    Server(/* args */);
+    Server();
     ~Server();
 
     int listen(unsigned int port);
@@ -73,7 +73,7 @@ private:
 // The Arcus Client is used by an Arcus One Agent to connect to an Arcus Server.
 class Client final {
 public:
-    Client(/* args */);
+    Client();
     ~Client();
 
     int connect(const char *ip, unsigned int port);
@@ -85,7 +85,9 @@ public:
 
     // todo.
 
-    // send_soft_stop(...)
+    int send_soft_stop();
+    int request_server_info();
+    int send(Message *message);
 
     // ...
 
