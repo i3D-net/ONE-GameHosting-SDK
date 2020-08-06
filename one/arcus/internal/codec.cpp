@@ -7,17 +7,17 @@ namespace codec {
 
 const Hello hello = Hello{{'a', 'r', 'c', 0}, (char)0x1, 0};  // namespace codec
 
-bool validate_hello(const Hello& other) {
-    auto a = (const char*)&hello;
-    auto b = (const char*)&other;
+bool validate_hello(const Hello &other) {
+    auto a = (const char *)&hello;
+    auto b = (const char *)&other;
     return std::strncmp(a, b, hello_size()) == 0;
 }
 
-const Hello& valid_hello() {
+const Hello &valid_hello() {
     return hello;
 }
 
-int data_to_header(const void* data, size_t length, Header& header) {
+int data_to_header(const void *data, size_t length, Header &header) {
     // handle byte order to a specific order for wire
 
     // 1. Reader static header struct
@@ -29,7 +29,7 @@ int data_to_header(const void* data, size_t length, Header& header) {
     return -1;
 }
 
-int header_to_data(const Header& header, std::vector<char>& data) {
+int header_to_data(const Header &header, std::vector<char> &data) {
     // handle byte order to a specific order for wire
 
     // 1. Create output header struct.

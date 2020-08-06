@@ -5,7 +5,7 @@
 namespace one {
 namespace {
 
-int create_server(OneServerPtr* server) {
+int create_server(OneServerPtr *server) {
     if (server == nullptr) {
         return -1;
     }
@@ -25,12 +25,12 @@ int create_server(OneServerPtr* server) {
     return 0;
 }
 
-void destroy_server(OneServerPtr* server) {
+void destroy_server(OneServerPtr *server) {
     if (server == nullptr) {
         return;
     }
 
-    auto s = (Server*)(*server);
+    auto s = (Server *)(*server);
     if (s != nullptr) {
         delete s;
         *server = nullptr;
@@ -38,7 +38,7 @@ void destroy_server(OneServerPtr* server) {
 }
 
 int update(OneServerPtr server) {
-    auto s = (Server*)server;
+    auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
@@ -47,7 +47,7 @@ int update(OneServerPtr server) {
 }
 
 int status(OneServerPtr const server) {
-    auto s = (Server*)server;
+    auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
@@ -56,7 +56,7 @@ int status(OneServerPtr const server) {
 }
 
 int listen(OneServerPtr server, unsigned int port) {
-    auto s = (Server*)server;
+    auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
@@ -65,7 +65,7 @@ int listen(OneServerPtr server, unsigned int port) {
 }
 
 int close(OneServerPtr server) {
-    auto s = (Server*)server;
+    auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
@@ -74,12 +74,12 @@ int close(OneServerPtr server) {
 }
 
 int send_server_info(OneServerPtr server, OneMessagePtr data) {
-    auto s = (Server*)server;
+    auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
 
-    auto m = (Message*)data;
+    auto m = (Message *)data;
     if (m == nullptr) {
         return -1;
     }
@@ -88,7 +88,7 @@ int send_server_info(OneServerPtr server, OneMessagePtr data) {
 }
 
 int set_soft_stop_callback(OneServerPtr server, void (*cb)(int)) {
-    auto s = (Server*)server;
+    auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
@@ -102,7 +102,7 @@ int set_soft_stop_callback(OneServerPtr server, void (*cb)(int)) {
 }
 
 int set_live_state_request_callback(OneServerPtr server, void (*cb)(void)) {
-    auto s = (Server*)server;
+    auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }

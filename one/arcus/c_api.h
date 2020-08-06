@@ -29,20 +29,20 @@ extern "C" {
 
 // The type operated on by the OneMessageApi.
 struct OneMessage;
-typedef OneMessage* OneMessagePtr;
+typedef OneMessage *OneMessagePtr;
 
 // Type type operated on by the OneArrayApi.
 struct OneArray;
-typedef OneArray* OneArrayPtr;
+typedef OneArray *OneArrayPtr;
 
 // Type type operated on by the OneObjectApi.
 struct OneObject;
-typedef OneObject* OneObjectPtr;
+typedef OneObject *OneObjectPtr;
 
 // The type operated on by the OneServerApi, and central object to manage a One
 // Server.
 struct OneServer;
-typedef OneServer* OneServerPtr;
+typedef OneServer *OneServerPtr;
 
 //------------------------------------------------------------------------------
 // Apis.
@@ -62,21 +62,21 @@ struct OneMessageApi {
     void (*free)(OneMessagePtr message);
 
     void (*set_code)(OneMessagePtr message, int code);
-    void (*code)(OneMessagePtr message, int* code);
+    void (*code)(OneMessagePtr message, int *code);
 
     // Getters.
-    int (*val_int)(OneMessagePtr message, const char* key, int* val);
-    int (*val_string)(OneMessagePtr message, const char* key, const char* val);
-    int (*val_array)(OneMessagePtr message, const char* key, OneArrayPtr val);
-    int (*val_object)(OneMessagePtr message, const char* key, OneObjectPtr val);
+    int (*val_int)(OneMessagePtr message, const char *key, int *val);
+    int (*val_string)(OneMessagePtr message, const char *key, const char *val);
+    int (*val_array)(OneMessagePtr message, const char *key, OneArrayPtr val);
+    int (*val_object)(OneMessagePtr message, const char *key, OneObjectPtr val);
 
     // Setters.
-    int (*set_val_int)(OneMessagePtr message, const char* key, int val);
-    int (*set_val_string)(OneMessagePtr message, const char* key, const char* val);
-    int (*set_val_array)(OneMessagePtr message, const char* key, OneArrayPtr val);
-    int (*set_val_object)(OneMessagePtr message, const char* key, OneObjectPtr val);
+    int (*set_val_int)(OneMessagePtr message, const char *key, int val);
+    int (*set_val_string)(OneMessagePtr message, const char *key, const char *val);
+    int (*set_val_array)(OneMessagePtr message, const char *key, OneArrayPtr val);
+    int (*set_val_object)(OneMessagePtr message, const char *key, OneObjectPtr val);
 };
-typedef OneMessageApi* OneMessageApiPtr;
+typedef OneMessageApi *OneMessageApiPtr;
 
 ///
 /// OneArrayApi is used to work with an array to retrieve from or set in the
@@ -85,7 +85,7 @@ typedef OneMessageApi* OneMessageApiPtr;
 struct OneArrayApi {
     // ...
 };
-typedef OneArrayApi* OneArrayApiPtr;
+typedef OneArrayApi *OneArrayApiPtr;
 
 ///
 /// OneObjectApi is used to work with an object to retrieve from or set in the
@@ -94,7 +94,7 @@ typedef OneArrayApi* OneArrayApiPtr;
 struct OneObjectApi {
     // ...
 };
-typedef OneObjectApi* OneObjectApiPtr;
+typedef OneObjectApi *OneObjectApiPtr;
 
 ///
 /// The Server API is the main api used to work with the Server.
@@ -109,8 +109,8 @@ struct OneServerApi {
     //--------------------------------------------------------------------------
     // One Server Life Cycle.
 
-    int (*create)(OneServerPtr* server);
-    void (*destroy)(OneServerPtr* server);
+    int (*create)(OneServerPtr *server);
+    void (*destroy)(OneServerPtr *server);
 
     ///
     /// Update the server. This must be called frequently to process incoming
@@ -185,7 +185,7 @@ struct OneServerApi {
     // send_server_info.
     int (*set_live_state_request_callback)(OneServerPtr server, void (*cb)(void));
 };
-typedef OneServerApi* OneServerApiPtr;
+typedef OneServerApi *OneServerApiPtr;
 
 ///
 /// Allows for control of all allocations made within the SDK.
@@ -193,13 +193,13 @@ typedef OneServerApi* OneServerApiPtr;
 struct OneAllocatorApi {
     /// Provide custom memory alloc.
     /// Must be set at init time, before using any other APIs.
-    void (*set_alloc)(void*(cb)(unsigned int size));
+    void (*set_alloc)(void *(cb)(unsigned int size));
 
     /// Provide custom memory free.
     /// Must be set at init time, before using any other APIs.
-    void (*set_free)(void(cb)(void*));
+    void (*set_free)(void(cb)(void *));
 };
-typedef OneAllocatorApi* OneAllocatorApiPtr;
+typedef OneAllocatorApi *OneAllocatorApiPtr;
 
 ///
 /// The One Game Hosting API provides access to all One interfaces. Call
@@ -213,7 +213,7 @@ struct OneGameHostingApi {
     OneObjectApiPtr object_api;     /// For working with object types contained in messages.
     OneAllocatorApi allocator_api;  /// For providing custom allocation.
 };
-typedef OneGameHostingApi* OneGameHostingApiPtr;
+typedef OneGameHostingApi *OneGameHostingApiPtr;
 
 //------------------------------------------------------------------------------
 // API Access.

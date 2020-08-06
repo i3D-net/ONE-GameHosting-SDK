@@ -16,7 +16,7 @@ public:
     // during processing will be returned as errors, and it is the caller's
     // responsibilty to either destroy the Connection, or restore the Socket's
     // state for communication.
-    Connection(Socket& socket, size_t max_messages_in, size_t max_messages_out);
+    Connection(Socket &socket, size_t max_messages_in, size_t max_messages_out);
     ~Connection() = default;
 
     // Marks this side of the connection as responsible for initiating the
@@ -43,22 +43,22 @@ public:
     };
     Status status() const;
 
-    int push_outgoing(const Message& message);
+    int push_outgoing(const Message &message);
 
     int incoming_count() const;
 
-    int pop_incoming(Message** message);
+    int pop_incoming(Message **message);
 
 private:
     Connection() = delete;
 
     int process_handshake(bool is_socket_ready);
     int process_messages();
-    int send(const void* data, size_t length);
-    int receive(void* data, size_t length);
+    int send(const void *data, size_t length);
+    int receive(void *data, size_t length);
 
     Status _status;
-    Socket& _socket;
+    Socket &_socket;
 
     // RingBuffer<Message*> _incomingMessages;
     // RingBuffer<Message*> _outgoingMessages;

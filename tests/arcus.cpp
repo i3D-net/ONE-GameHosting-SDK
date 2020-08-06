@@ -45,11 +45,11 @@ TEST_CASE("soft stop message callback", "[arcus]") {
     // REQUIRE(Message::update(m, soft_stop_callback) == 0);
 }
 
-void wait_ready(Socket& socket) {
+void wait_ready(Socket &socket) {
     REQUIRE(socket.select(0.1f) >= 0);
 };
 
-void listen(Socket& server, unsigned int& port) {
+void listen(Socket &server, unsigned int &port) {
     REQUIRE(server.init() == 0);
     REQUIRE(server.bind(0) == 0);
 
@@ -62,13 +62,13 @@ void listen(Socket& server, unsigned int& port) {
     REQUIRE(server.listen(1) == 0);
 }
 
-void connect(Socket& client, unsigned int port) {
+void connect(Socket &client, unsigned int port) {
     client.init();
     REQUIRE(client.connect("127.0.0.1", port) == 0);
     REQUIRE(client.set_non_blocking(true) == 0);
 }
 
-void accept(Socket& server, Socket& in_client) {
+void accept(Socket &server, Socket &in_client) {
     // Accept client on server.
     wait_ready(server);
     std::string client_ip;

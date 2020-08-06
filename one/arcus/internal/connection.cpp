@@ -14,7 +14,7 @@
 
 namespace one {
 
-Connection::Connection(Socket& socket, size_t max_messages_in, size_t max_messages_out)
+Connection::Connection(Socket &socket, size_t max_messages_in, size_t max_messages_out)
     : _status(Status::handshake_not_started), _socket(socket) {
     assert(socket.is_initialized());
 }
@@ -27,7 +27,7 @@ bool is_error_try_again(int err) {
 #endif
 }
 
-int Connection::send(const void* data, size_t length) {
+int Connection::send(const void *data, size_t length) {
     const auto result = _socket.send(data, length);
     if (result >= 0) {
         return result;
@@ -38,7 +38,7 @@ int Connection::send(const void* data, size_t length) {
     return -1;
 }
 
-int Connection::receive(void* data, size_t length) {
+int Connection::receive(void *data, size_t length) {
     const auto result = _socket.receive(data, length);
     if (result >= 0) {
         return result;
@@ -53,7 +53,7 @@ Connection::Status Connection::status() const {
     return _status;
 }
 
-int Connection::push_outgoing(const Message& message) {
+int Connection::push_outgoing(const Message &message) {
     return 0;
 }
 
@@ -61,7 +61,7 @@ int Connection::incoming_count() const {
     return 0;
 }
 
-int Connection::pop_incoming(Message** message) {
+int Connection::pop_incoming(Message **message) {
     return 0;
 }
 

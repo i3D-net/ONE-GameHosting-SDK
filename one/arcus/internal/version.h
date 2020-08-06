@@ -208,7 +208,7 @@ struct arcus_protocol {
 template <ArcusVersion version>
 struct arcus_selector {};
 
-template<>
+template <>
 struct arcus_selector<ArcusVersion::V2> {
     static constexpr bool is_version_supported(ArcusVersion version) {
         return version == ArcusVersion::V2;

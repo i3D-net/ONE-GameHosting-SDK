@@ -29,14 +29,14 @@ struct LifeState {
 }  // namespace params
 
 namespace validate {
-int soft_stop(const Message& message, params::SoftStop& params);
-int live_state_request(const Message& message, params::LifeStateRequest& params);
-int live_state(const Message& message, params::LifeState& params);
+int soft_stop(const Message &message, params::SoftStop &params);
+int live_state_request(const Message &message, params::LifeStateRequest &params);
+int live_state(const Message &message, params::LifeState &params);
 }  // namespace validate
 
 namespace invoke {
-int soft_stop(const Message& message, std::function<void(int)> callback);
-int live_state_request(const Message& message, std::function<void()> callback);
+int soft_stop(const Message &message, std::function<void(int)> callback);
+int live_state_request(const Message &message, std::function<void()> callback);
 }  // namespace invoke
 
 }  // namespace one
