@@ -53,6 +53,18 @@ Connection::Status Connection::status() const {
     return _status;
 }
 
+int Connection::push_outgoing(const Message& message) {
+    return 0;
+}
+
+int Connection::incoming_count() const {
+    return 0;
+}
+
+int Connection::pop_incoming(Message** message) {
+    return 0;
+}
+
 void Connection::initiate_handshake() {
     assert(_status == Status::handshake_not_started);
     _status = Status::handshake_hello_scheduled;

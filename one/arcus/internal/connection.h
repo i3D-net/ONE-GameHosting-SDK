@@ -43,7 +43,7 @@ public:
     };
     Status status() const;
 
-    void push_outgoing(Message* message, int* error);
+    int push_outgoing(const Message& message);
 
     int incoming_count() const;
 

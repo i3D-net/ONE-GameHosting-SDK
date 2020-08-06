@@ -1,49 +1,55 @@
 #include <catch.hpp>
 #include <util.h>
+
 #include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/connection.h>
-#include <one/arcus/internal/socket.h>
 #include <one/arcus/internal/opcodes.h>
+#include <one/arcus/internal/socket.h>
 #include <one/arcus/internal/version.h>
+#include <one/arcus/message.h>
+
+#include <functional>
+#include <iostream>
 
 using namespace one;
 
 TEST_CASE("current arcus version", "[arcus]") {
-    REQUIRE(arcus_protocol::current_version() == ArcusVersion::V0);
-}
-
-TEST_CASE("opcode version V0 validation", "[arcus]") {
-    REQUIRE(is_opcode_supported_v0(Opcodes::hello));
-    REQUIRE(is_opcode_supported_v0(Opcodes::soft_stop));
-    REQUIRE(is_opcode_supported_v0(Opcodes::allocated));
-    REQUIRE(is_opcode_supported_v0(Opcodes::unsuported_v0) == false);
-    REQUIRE(is_opcode_supported_v0(Opcodes::unsuported_v1) == false);
-    REQUIRE(is_opcode_supported_v0(Opcodes::unknown) == false);
+    REQUIRE(arcus_protocol::current_version() == ArcusVersion::V2);
 }
 
 TEST_CASE("opcode version V1 validation", "[arcus]") {
-    REQUIRE(is_opcode_supported_v1(Opcodes::hello));
-    REQUIRE(is_opcode_supported_v1(Opcodes::soft_stop));
-    REQUIRE(is_opcode_supported_v1(Opcodes::allocated));
-    REQUIRE(is_opcode_supported_v1(Opcodes::unsuported_v0));
-    REQUIRE(is_opcode_supported_v1(Opcodes::unsuported_v1) == false);
-    REQUIRE(is_opcode_supported_v1(Opcodes::unknown) == false);
+    REQUIRE(is_opcode_supported_v2(Opcodes::hello));
+    REQUIRE(is_opcode_supported_v2(Opcodes::soft_stop));
+    REQUIRE(is_opcode_supported_v2(Opcodes::allocated));
+    REQUIRE(is_opcode_supported_v2(Opcodes::live_state_request));
+    REQUIRE(is_opcode_supported_v2(Opcodes::live_state));
+    REQUIRE(is_opcode_supported_v2(Opcodes::invalid) == false);
 }
 
 TEST_CASE("opcode current version validation", "[arcus]") {
     REQUIRE(is_opcode_supported(Opcodes::hello));
     REQUIRE(is_opcode_supported(Opcodes::soft_stop));
     REQUIRE(is_opcode_supported(Opcodes::allocated));
-    REQUIRE(is_opcode_supported(Opcodes::unsuported_v0) == false);
-    REQUIRE(is_opcode_supported(Opcodes::unsuported_v1) == false);
-    REQUIRE(is_opcode_supported(Opcodes::unknown) == false);
+    REQUIRE(is_opcode_supported(Opcodes::live_state_request));
+    REQUIRE(is_opcode_supported(Opcodes::live_state));
+    REQUIRE(is_opcode_supported(Opcodes::invalid) == false);
 }
 
-void wait_ready(Socket &socket) {
+void soft_stop_callback(int timeout) {
+    std::cout << "timeout is: " << timeout << std::endl;
+}
+
+TEST_CASE("soft stop message callback", "[arcus]") {
+    Message m;
+    m.init(Opcodes::soft_stop, nullptr, 0);
+    // REQUIRE(Message::update(m, soft_stop_callback) == 0);
+}
+
+void wait_ready(Socket& socket) {
     REQUIRE(socket.select(0.1f) >= 0);
 };
 
-void listen(Socket &server, unsigned int &port) {
+void listen(Socket& server, unsigned int& port) {
     REQUIRE(server.init() == 0);
     REQUIRE(server.bind(0) == 0);
 
@@ -56,13 +62,13 @@ void listen(Socket &server, unsigned int &port) {
     REQUIRE(server.listen(1) == 0);
 }
 
-void connect(Socket &client, unsigned int port) {
+void connect(Socket& client, unsigned int port) {
     client.init();
     REQUIRE(client.connect("127.0.0.1", port) == 0);
     REQUIRE(client.set_non_blocking(true) == 0);
 }
 
-void accept(Socket &server, Socket &in_client) {
+void accept(Socket& server, Socket& in_client) {
     // Accept client on server.
     wait_ready(server);
     std::string client_ip;

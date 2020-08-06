@@ -152,7 +152,7 @@ struct OneServerApi {
 
     // Todo: struct containing required server info config fields that must be
     // sent...to be passed here by caller.
-    int (*send_server_info)(OneServerPtr server, OneArrayPtr data);
+    int (*send_server_info)(OneServerPtr server, OneMessagePtr data);
 
     //--------------------------------------------------------------------------
     // Incoming Message callbacks.
@@ -175,15 +175,15 @@ struct OneServerApi {
     // should stop at its earliest convenience. If the server process is still
     // active after the given timeout (seconds), then One will terminate the
     // process directly on the deployment.
-    void (*set_soft_stop_callback)(OneServerPtr server, void (*cb)(int timeout));
+    int (*set_soft_stop_callback)(OneServerPtr server, void (*cb)(int timeout));
 
     // Required: Register the callback to be notified of when the server has been
     // allocated for matchmaking.
-    void (*set_allocated_callback)(OneServerPtr server, void (*cb)(void));
+    int (*set_allocated_callback)(OneServerPtr server, void (*cb)(void));
 
     // Required: Register to be notified of when the game must call
     // send_server_info.
-    void (*set_server_info_request_callback)(OneServerPtr server, void (*cb)(void));
+    int (*set_live_state_request_callback)(OneServerPtr server, void (*cb)(void));
 };
 typedef OneServerApi* OneServerApiPtr;
 

@@ -4,6 +4,7 @@ set(HEADER_FILES
     message.h
     internal/codec.h
     internal/connection.h
+    internal/message.h
     internal/opcodes.h
     internal/platform.h
     internal/ring.h
@@ -17,12 +18,12 @@ set(SOURCE_FILES
     message.cpp
     internal/codec.cpp
     internal/connection.cpp
+    internal/message.cpp
     internal/socket.cpp
 )
 
 add_library(one_arcus ${SOURCE_FILES} ${HEADER_FILES})
 
-include_directories(${PROJECT_BINARY_DIR})
 include_directories(${PROJECT_SOURCE_DIR})
 
 target_include_directories(one_arcus PUBLIC .)

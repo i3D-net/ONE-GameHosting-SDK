@@ -8,8 +8,7 @@ int main() {
     OneGameHostingApiPtr api = one_game_hosting_api();
     OneServerPtr server{nullptr};
 
-    const int error = api->server_api->create(&server);
-
+    int error = api->server_api->create(&server);
     if (error != 0) {
         return error;
     }
