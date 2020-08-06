@@ -2,7 +2,7 @@
 
 namespace one {
 
-int Agent::connect(const char* addr, int port) {
+int Agent::connect(const char *addr, int port) {
     int error = _client.connect(addr, port);
     if (error != 0) {
         return error;
@@ -42,7 +42,7 @@ int Agent::request_server_info() {
     return 0;
 }
 
-int Agent::send(Message* message) {
+int Agent::send(Message *message) {
     int error = _client.send(message);
     if (error != 0) {
         return error;

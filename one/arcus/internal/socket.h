@@ -54,13 +54,13 @@ public:
 
     // Assigns the given IP and port to the socket. Use "" for any ip address
     // and 0 for any port.
-    int bind(const char* ip, unsigned int port);
+    int bind(const char *ip, unsigned int port);
 
     // Assigns the port to the socket. Use 0 for any port.
     int bind(unsigned int port);
 
     // Returns the address of this socket.
-    int address(std::string& ip, unsigned int& port);
+    int address(std::string &ip, unsigned int &port);
 
     // Listens for incoming connections. Socket must have bind called
     // beforehand.
@@ -69,12 +69,12 @@ public:
     // Process incoming listen connections. Returns < 0 if an error occurred
     // during processing. If a new client connection was accepted, then the
     // given client socket's IsInitialized will be true.
-    int accept(Socket& client, std::string& ip, unsigned int& port);
+    int accept(Socket &client, std::string &ip, unsigned int &port);
 
     //--------
     // Client.
 
-    int connect(const char* ip, const unsigned int port);
+    int connect(const char *ip, const unsigned int port);
 
     //--------
     // IO.
@@ -84,19 +84,19 @@ public:
 
     // Send data on the socket. Returns negative number on error, or number of
     // bytes sent.
-    int send(const void* data, size_t length);
+    int send(const void *data, size_t length);
 
     // Puts number of bytes available for reading into the given length.
     // Returns < 0 on error.
-    int available(size_t& length);
+    int available(size_t &length);
 
     // Receive data into the given buffer. Returns negative number on error, or
     // number of bytes received.
-    int receive(void* data, size_t length);
+    int receive(void *data, size_t length);
 
 private:
-    explicit Socket(const Socket& other) = delete;
-    void operator=(const Socket& other) = delete;
+    explicit Socket(const Socket &other) = delete;
+    void operator=(const Socket &other) = delete;
 
     SOCKET _socket;
 };

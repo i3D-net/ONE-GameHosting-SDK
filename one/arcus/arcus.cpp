@@ -87,7 +87,7 @@ int Server::update() {
     }
 
     // Read pending incoming messages.
-    Message* message = nullptr;
+    Message *message = nullptr;
     while (_client_connection->incoming_count() > 0) {
         error = _client_connection->pop_incoming(&message);
         if (error != 0) {
@@ -123,7 +123,7 @@ void Server::set_live_state_request_callback(std::function<void()> callback) {
     _live_state_request_callback = callback;
 }
 
-int Server::send_server_info(const Message& message) {
+int Server::send_server_info(const Message &message) {
     int error = process_outgoing_message(message);
     if (error != 0) {
         return -1;
@@ -132,7 +132,7 @@ int Server::send_server_info(const Message& message) {
     return 0;
 }
 
-int Server::process_incoming_message(const Message& message) {
+int Server::process_incoming_message(const Message &message) {
     switch (message.code()) {
         case Opcodes::soft_stop:
             if (_soft_stop_callback == nullptr) {
@@ -151,7 +151,7 @@ int Server::process_incoming_message(const Message& message) {
     }
 }
 
-int Server::process_outgoing_message(const Message& message) {
+int Server::process_outgoing_message(const Message &message) {
     int error = 0;
     switch (message.code()) {
         case Opcodes::live_state: {
@@ -193,7 +193,7 @@ Client::~Client() {
     }
 }
 
-int Client::connect(const char* ip, unsigned int port) {
+int Client::connect(const char *ip, unsigned int port) {
     return 0;
 }
 
@@ -209,7 +209,7 @@ int Client::request_server_info() {
     return 0;
 }
 
-int Client::send(Message* message) {
+int Client::send(Message *message) {
     return 0;
 }
 

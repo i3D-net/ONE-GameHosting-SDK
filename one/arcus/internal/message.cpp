@@ -9,7 +9,7 @@ namespace one {
 
 namespace validate {
 
-int soft_stop(const Message& message, params::SoftStop& params) {
+int soft_stop(const Message &message, params::SoftStop &params) {
     const auto code = message.code();
 
     if (!is_opcode_supported(code)) {
@@ -20,7 +20,7 @@ int soft_stop(const Message& message, params::SoftStop& params) {
         return -1;
     }
 
-    const auto& payload = message.payload();
+    const auto &payload = message.payload();
 
     const int error = payload.val_int("timeout", params._timeout);
 
@@ -31,7 +31,7 @@ int soft_stop(const Message& message, params::SoftStop& params) {
     return 0;
 }
 
-int live_state_request(const Message& message, params::LifeStateRequest&) {
+int live_state_request(const Message &message, params::LifeStateRequest &) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return -1;
@@ -48,7 +48,7 @@ int live_state_request(const Message& message, params::LifeStateRequest&) {
     return 0;
 }
 
-int live_state(const Message& message, params::LifeState& params) {
+int live_state(const Message &message, params::LifeState &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return -1;
@@ -58,7 +58,7 @@ int live_state(const Message& message, params::LifeState& params) {
         return -1;
     }
 
-    const auto& payload = message.payload();
+    const auto &payload = message.payload();
 
     int error = payload.val_int("players", params._players);
     if (error != 0) {
@@ -97,7 +97,7 @@ int live_state(const Message& message, params::LifeState& params) {
 
 namespace invoke {
 
-int soft_stop(const Message& message, std::function<void(int)> callback) {
+int soft_stop(const Message &message, std::function<void(int)> callback) {
     if (callback == nullptr) {
         return -1;
     }
@@ -112,7 +112,7 @@ int soft_stop(const Message& message, std::function<void(int)> callback) {
     return 0;
 }
 
-int live_state_request(const Message& message, std::function<void()> callback) {
+int live_state_request(const Message &message, std::function<void()> callback) {
     if (callback == nullptr) {
         return -1;
     }

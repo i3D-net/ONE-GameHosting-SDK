@@ -13,7 +13,7 @@ public:
     ~Agent() = default;
 
     // Connect to server.
-    int connect(const char* ip, int port);
+    int connect(const char *ip, int port);
 
     // Check status.
     int status();
@@ -27,7 +27,7 @@ public:
     int request_server_info();
 
     // Send custom command.
-    int send(Message* message);
+    int send(Message *message);
 
 private:
     Client _client;

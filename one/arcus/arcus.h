@@ -55,15 +55,15 @@ public:
     //     map,
     //     mode,
     //     version)
-    int send_server_info(const Message& message);
+    int send_server_info(const Message &message);
 
 private:
-    int process_incoming_message(const Message& message);
-    int process_outgoing_message(const Message& message);
+    int process_incoming_message(const Message &message);
+    int process_outgoing_message(const Message &message);
 
-    Socket* _listen_socket;
-    Socket* _client_socket;
-    Connection* _client_connection;
+    Socket *_listen_socket;
+    Socket *_client_socket;
+    Connection *_client_connection;
 
     std::function<void(int)> _soft_stop_callback;
     std::function<void()> _live_state_request_callback;
@@ -75,7 +75,7 @@ public:
     Client();
     ~Client();
 
-    int connect(const char* ip, unsigned int port);
+    int connect(const char *ip, unsigned int port);
 
     int update();
 
@@ -86,7 +86,7 @@ public:
 
     int send_soft_stop();
     int request_server_info();
-    int send(Message* message);
+    int send(Message *message);
 
     // ...
 
@@ -96,8 +96,8 @@ public:
     // todo.
 
 private:
-    Socket* _socket;
-    Connection* _connection;
+    Socket *_socket;
+    Connection *_connection;
 };
 
 }  // namespace one
