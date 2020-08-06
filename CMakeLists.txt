@@ -26,7 +26,7 @@ add_subdirectory(one/agent)
 add_subdirectory(one/arcus)
 add_subdirectory(one/game)
 
-set(PROJECT_ARCUS_PROTOCOL_VERSION V0)
+set(PROJECT_ARCUS_PROTOCOL_VERSION V2)
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/version.h.in"

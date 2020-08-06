@@ -12,3 +12,5 @@ BreakConstructorInitializersBeforeComma: true
 KeepEmptyLinesAtTheStartOfBlocks: true
 IndentPPDirectives: BeforeHash
 AllowShortFunctionsOnASingleLine: Empty
+PointerAlignment: Left
+DerivePointerAlignment: false

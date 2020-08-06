@@ -16,6 +16,8 @@ public:
     Server();
     ~Server();
 
+    int init();
+
     int listen(unsigned int port);
 
     // Process pending received and outgoing messages. Any incoming messages are
@@ -32,18 +34,9 @@ public:
 
     // Todo: update functions to match complete list from One API v2.
 
-    void set_soft_stop_callback(std::function<void(int)>);
+    void set_soft_stop_callback(std::function<void(int)> callback);
 
-    void set_allocated_callback(std::function<void()>);
-
-    void set_server_info_request_callback(std::function<void()>);
-
-    void set_server_info_callback(std::function<void(int)>);
-
-    void set_custom_command_callback(std::function<void(int)>);
-
-    // TBD: metadata format? why "data" key array?
-    void set_metadata_callback(std::function<void(const Array &)>);
+    void set_live_state_request_callback(std::function<void()> callback);
 
     // all other externally-facing opcode callbacks...
 
@@ -62,12 +55,18 @@ public:
     //     map,
     //     mode,
     //     version)
-    void send_server_info(Message &);
+    int send_server_info(const Message& message);
 
 private:
-    Socket *_listen_socket;
-    Socket *_client_socket;
-    Connection *_client_connection;
+    int process_incoming_message(const Message& message);
+    int process_outgoing_message(const Message& message);
+
+    Socket* _listen_socket;
+    Socket* _client_socket;
+    Connection* _client_connection;
+
+    std::function<void(int)> _soft_stop_callback;
+    std::function<void()> _live_state_request_callback;
 };
 
 // The Arcus Client is used by an Arcus One Agent to connect to an Arcus Server.
@@ -76,7 +75,7 @@ public:
     Client();
     ~Client();
 
-    int connect(const char *ip, unsigned int port);
+    int connect(const char* ip, unsigned int port);
 
     int update();
 
@@ -87,7 +86,7 @@ public:
 
     int send_soft_stop();
     int request_server_info();
-    int send(Message *message);
+    int send(Message* message);
 
     // ...
 
@@ -97,8 +96,8 @@ public:
     // todo.
 
 private:
-    Socket *_socket;
-    Connection *_connection;
+    Socket* _socket;
+    Connection* _connection;
 };
 
 }  // namespace one

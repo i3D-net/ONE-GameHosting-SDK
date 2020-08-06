@@ -3,8 +3,7 @@
 namespace one {
 
 int Agent::connect(const char* addr, int port) {
-    const int error = _client.connect(addr, port);
-
+    int error = _client.connect(addr, port);
     if (error != 0) {
         return error;
     }
@@ -17,8 +16,7 @@ int Agent::status() {
 }
 
 int Agent::update() {
-    const int error = _client.update();
-
+    int error = _client.update();
     if (error != 0) {
         return error;
     }
@@ -27,8 +25,7 @@ int Agent::update() {
 }
 
 int Agent::send_soft_stop() {
-    const int error = _client.send_soft_stop();
-
+    int error = _client.send_soft_stop();
     if (error != 0) {
         return error;
     }
@@ -37,8 +34,7 @@ int Agent::send_soft_stop() {
 }
 
 int Agent::request_server_info() {
-    const int error = _client.request_server_info();
-
+    int error = _client.request_server_info();
     if (error != 0) {
         return error;
     }
@@ -47,8 +43,7 @@ int Agent::request_server_info() {
 }
 
 int Agent::send(Message* message) {
-    const int error = _client.send(message);
-
+    int error = _client.send(message);
     if (error != 0) {
         return error;
     }

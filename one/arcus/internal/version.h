@@ -197,11 +197,11 @@ namespace one {
 // ACL 2.0 continues to progress nicely. It is still missing a few features but it is already an
 // amazing step up from 1.3.
 
-enum class ArcusVersion { V0, V1 };
+enum class ArcusVersion { V2 };
 
 struct arcus_protocol {
     static constexpr ArcusVersion current_version() {
-        return ArcusVersion::V0;
+        return ArcusVersion::V2;
     }
 };
 
@@ -209,16 +209,9 @@ template <ArcusVersion version>
 struct arcus_selector {};
 
 template<>
-struct arcus_selector<ArcusVersion::V0> {
+struct arcus_selector<ArcusVersion::V2> {
     static constexpr bool is_version_supported(ArcusVersion version) {
-        return version == ArcusVersion::V0;
-    }
-};
-
-template<>
-struct arcus_selector<ArcusVersion::V1> {
-    static constexpr bool is_version_supported(ArcusVersion version) {
-        return version == ArcusVersion::V1;
+        return version == ArcusVersion::V2;
     }
 };
 

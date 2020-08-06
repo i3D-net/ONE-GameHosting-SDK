@@ -11,8 +11,13 @@ int create_server(OneServerPtr* server) {
     }
 
     auto s = new Server();
-
     if (s == nullptr) {
+        return -1;
+    }
+
+    int error = s->init();
+    if (error != 0) {
+        delete s;
         return -1;
     }
 
@@ -26,7 +31,6 @@ void destroy_server(OneServerPtr* server) {
     }
 
     auto s = (Server*)(*server);
-
     if (s != nullptr) {
         delete s;
         *server = nullptr;
@@ -35,7 +39,6 @@ void destroy_server(OneServerPtr* server) {
 
 int update(OneServerPtr server) {
     auto s = (Server*)server;
-
     if (s == nullptr) {
         return -1;
     }
@@ -45,7 +48,6 @@ int update(OneServerPtr server) {
 
 int status(OneServerPtr const server) {
     auto s = (Server*)server;
-
     if (s == nullptr) {
         return -1;
     }
@@ -55,7 +57,6 @@ int status(OneServerPtr const server) {
 
 int listen(OneServerPtr server, unsigned int port) {
     auto s = (Server*)server;
-
     if (s == nullptr) {
         return -1;
     }
@@ -65,12 +66,53 @@ int listen(OneServerPtr server, unsigned int port) {
 
 int close(OneServerPtr server) {
     auto s = (Server*)server;
-
     if (s == nullptr) {
         return -1;
     }
 
     return s->close();
+}
+
+int send_server_info(OneServerPtr server, OneMessagePtr data) {
+    auto s = (Server*)server;
+    if (s == nullptr) {
+        return -1;
+    }
+
+    auto m = (Message*)data;
+    if (m == nullptr) {
+        return -1;
+    }
+
+    return s->send_server_info(*m);
+}
+
+int set_soft_stop_callback(OneServerPtr server, void (*cb)(int)) {
+    auto s = (Server*)server;
+    if (s == nullptr) {
+        return -1;
+    }
+
+    if (cb == nullptr) {
+        return -1;
+    }
+
+    s->set_soft_stop_callback(cb);
+    return 0;
+}
+
+int set_live_state_request_callback(OneServerPtr server, void (*cb)(void)) {
+    auto s = (Server*)server;
+    if (s == nullptr) {
+        return -1;
+    }
+
+    if (cb == nullptr) {
+        return -1;
+    }
+
+    s->set_live_state_request_callback(cb);
+    return 0;
 }
 
 OneGameHostingApiPtr game_hosting_api() {
@@ -81,6 +123,9 @@ OneGameHostingApiPtr game_hosting_api() {
     server_api.status = status;
     server_api.listen = listen;
     server_api.close = close;
+    server_api.send_server_info = send_server_info;
+    server_api.set_soft_stop_callback = set_soft_stop_callback;
+    server_api.set_live_state_request_callback = set_live_state_request_callback;
 
     static OneGameHostingApi api;
     api.server_api = &server_api;

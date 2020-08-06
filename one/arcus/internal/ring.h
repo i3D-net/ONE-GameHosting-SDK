@@ -3,7 +3,7 @@
 namespace one {
 
 // FIFO ring buffer with a fixed capacity.
-template<typename T>
+template <typename T>
 class RingBuffer final {
 public:
     RingBuffer(size_t capacity);
@@ -17,10 +17,9 @@ public:
 
 private:
     // Todo: some reasonable storage buffer type, allocator overriding.
-    //std::vector<T>	_buffer;
-    //unsigned int _next;
-    //size_t _size;
+    // std::vector<T>	_buffer;
+    // unsigned int _next;
+    // size_t _size;
 };
 
-
-} // namespace one
+}  // namespace one
