@@ -7,7 +7,7 @@ namespace one {
 Game::Game(unsigned int port) : _api(nullptr), _server(nullptr), _port(port), _number_players(0) {}
 
 Game::~Game() {
-    deinit();
+    shutdown();
 }
 
 int Game::init() {
@@ -33,18 +33,15 @@ int Game::init() {
     return 0;
 }
 
-int Game::deinit() {
+int Game::shutdown() {
     if (_server == nullptr && _api == nullptr) {
         return 0;
     }
-
-    assert(_api != nullptr && _api->server_api != nullptr && _server != nullptr);
-
-    int error = close();
+    assert(_api != nullptr);
     _api->server_api->destroy(&_server);
+    _server = nullptr;
     _api = nullptr;
-
-    return error;
+    return 0;
 }
 
 int Game::tick() {
@@ -87,10 +84,6 @@ int Game::status() const {
 
 int Game::listen() {
     return _api->server_api->listen(_server, _port);
-}
-
-int Game::close() {
-    return _api->server_api->close(_server);
 }
 
 }  // namespace one

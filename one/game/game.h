@@ -11,7 +11,7 @@ public:
     ~Game();
 
     int init();
-    int deinit();
+    int shutdown();
 
     int tick();
 
@@ -23,7 +23,6 @@ private:
     int update();
     int status() const;
     int listen();
-    int close();
 
     OneGameHostingApiPtr _api;
     OneServerPtr _server;
