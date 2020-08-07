@@ -6,7 +6,7 @@
 using namespace one;
 
 TEST_CASE("Agent standalone tests", "[agent]") {
-    Agent agent = Agent();
+    Agent agent;
     REQUIRE(agent.connect("127.0.0.1", 9001) == 0);
     REQUIRE(agent.status() == 0);
 }
@@ -15,7 +15,7 @@ TEST_CASE("Agent send request to game", "[agent]") {
     Game game(9001);
     REQUIRE(game.init() == 0);
 
-    Agent agent = Agent();
+    Agent agent;
     REQUIRE(agent.connect("127.0.0.1", 9001) == 0);
     REQUIRE(agent.status() == 0);
 

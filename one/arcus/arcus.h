@@ -14,6 +14,8 @@ class Socket;
 class Server final {
 public:
     Server();
+    Server(const Server &) = delete;
+    Server &operator=(const Server &) = delete;
     ~Server();
 
     int init();
@@ -73,6 +75,8 @@ private:
 class Client final {
 public:
     Client();
+    Client(const Client &) = delete;
+    Client &operator=(const Client &) = delete;
     ~Client();
 
     int connect(const char *ip, unsigned int port);
