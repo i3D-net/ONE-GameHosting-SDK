@@ -20,16 +20,16 @@ public:
 
     int init();
 
+    int close();
+
+    int status() const;
+
     int listen(unsigned int port);
 
     // Process pending received and outgoing messages. Any incoming messages are
     // validated according to the Arcus API version standard, and callbacks, if
     // set, are called. Messages without callbacks set are dropped and ignored.
     int update();
-
-    int status() const;
-
-    int close();
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.

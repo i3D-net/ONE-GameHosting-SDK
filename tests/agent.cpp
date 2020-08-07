@@ -37,5 +37,5 @@ TEST_CASE("Agent send request to game", "[agent]") {
     REQUIRE(game.tick() == -1);  // FIXME: when the socket & handshake if fully merged in.
     REQUIRE(agent.update() == 0);
 
-    REQUIRE(game.deinit() == 0);
+    REQUIRE(game.shutdown() == 0);
 }

@@ -15,20 +15,7 @@ Server::Server()
     , _soft_stop_callback(nullptr) {}
 
 Server::~Server() {
-    if (_listen_socket != nullptr) {
-        delete _listen_socket;
-        _listen_socket = nullptr;
-    }
-
-    if (_client_socket != nullptr) {
-        delete _client_socket;
-        _client_socket = nullptr;
-    }
-
-    if (_client_connection != nullptr) {
-        delete _client_connection;
-        _client_connection = nullptr;
-    }
+    close();
 }
 
 int Server::init() {
@@ -43,30 +30,51 @@ int Server::init() {
 
     int error = _listen_socket->init();
     if (error != 0) {
-        delete _listen_socket;
+        close();
         return -1;
     }
 
     _client_socket = new Socket();
     if (_client_socket == nullptr) {
-        delete _listen_socket;
+        close();
         return -1;
     }
 
     error = _client_socket->init();
     if (error != 0) {
-        delete _listen_socket;
-        delete _client_socket;
+        close();
         return -1;
     }
 
     _client_connection = new Connection(*_listen_socket, 1024, 1024);
     if (_client_connection == nullptr) {
-        delete _listen_socket;
-        delete _client_socket;
+        close();
         return -1;
     }
 
+    return 0;
+}
+
+int Server::close() {
+    if (_client_connection != nullptr) {
+        delete _client_connection;
+        _client_connection = nullptr;
+    }
+
+    if (_listen_socket != nullptr) {
+        delete _listen_socket;
+        _listen_socket = nullptr;
+    }
+
+    if (_client_socket != nullptr) {
+        delete _client_socket;
+        _client_socket = nullptr;
+    }
+
+    return 0;
+}
+
+int Server::status() const {
     return 0;
 }
 
@@ -104,14 +112,6 @@ int Server::update() {
         }
     }
 
-    return 0;
-}
-
-int Server::status() const {
-    return 0;
-}
-
-int Server::close() {
     return 0;
 }
 
