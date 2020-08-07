@@ -9,20 +9,11 @@ enum class Opcodes { hello, soft_stop, allocated, live_state_request, live_state
 
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcodes code) {
-    switch (code) {
-        case Opcodes::hello:
-        case Opcodes::soft_stop:
-        case Opcodes::allocated:
-        case Opcodes::live_state_request:
-        case Opcodes::live_state:
-            return true;
-        case Opcodes::invalid:
-        default:
-            return false;
-    }
+    return code == Opcodes::hello || code == Opcodes::soft_stop || code == Opcodes::allocated ||
+           code == Opcodes::live_state_request || code == Opcodes::live_state;
 }
 
-constexpr bool is_opcode_supported(Opcodes code) {
+inline bool is_opcode_supported(Opcodes code) {
     if (arcus_selector<arcus_protocol::current_version()>::is_version_supported(ArcusVersion::V2)) {
         return is_opcode_supported_v2(code);
     }

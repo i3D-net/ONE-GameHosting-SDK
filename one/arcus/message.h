@@ -1,3 +1,5 @@
+#pragma once
+
 #include <utility>
 
 #include <one/arcus/internal/platform.h>
