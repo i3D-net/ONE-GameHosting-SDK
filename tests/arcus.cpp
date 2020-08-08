@@ -155,9 +155,8 @@ TEST_CASE("connection", "[arcus]") {
             client_connection.status() == Connection::Status::ready)
             break;
     }
-    // Todo finish handshaking.
-    // REQUIRE(server_connection.status() == Connection::Status::ready);
-    // REQUIRE(client_connection.status() == Connection::Status::ready);
+    REQUIRE(server_connection.status() == Connection::Status::ready);
+    REQUIRE(client_connection.status() == Connection::Status::ready);
 
     server.close();
     out_client.close();
