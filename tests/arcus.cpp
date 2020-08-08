@@ -35,6 +35,9 @@ TEST_CASE("opcode current version validation", "[arcus]") {
     REQUIRE(is_opcode_supported(Opcodes::invalid) == false);
 }
 
+//------------------------------------------------------------------------------
+// Message tests.
+
 void soft_stop_callback(int timeout) {
     std::cout << "timeout is: " << timeout << std::endl;
 }
@@ -44,6 +47,9 @@ TEST_CASE("soft stop message callback", "[arcus]") {
     m.init(Opcodes::soft_stop, nullptr, 0);
     // REQUIRE(Message::update(m, soft_stop_callback) == 0);
 }
+
+//------------------------------------------------------------------------------
+// Socket & Connection tests.
 
 void wait_ready(Socket &socket) {
     REQUIRE(socket.select(0.1f) >= 0);

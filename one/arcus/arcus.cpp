@@ -15,13 +15,15 @@ Server::Server()
     , _soft_stop_callback(nullptr) {}
 
 Server::~Server() {
-    close();
+    shutdown();
 }
 
 int Server::init() {
     if (_listen_socket != nullptr || _client_socket != nullptr || _client_connection != nullptr) {
         return -1;
     }
+
+    init_socket_system();
 
     _listen_socket = new Socket();
     if (_listen_socket == nullptr) {
@@ -30,32 +32,32 @@ int Server::init() {
 
     int error = _listen_socket->init();
     if (error != 0) {
-        close();
+        shutdown();
         return -1;
     }
 
     _client_socket = new Socket();
     if (_client_socket == nullptr) {
-        close();
+        shutdown();
         return -1;
     }
 
     error = _client_socket->init();
     if (error != 0) {
-        close();
+        shutdown();
         return -1;
     }
 
     _client_connection = new Connection(*_listen_socket, 1024, 1024);
     if (_client_connection == nullptr) {
-        close();
+        shutdown();
         return -1;
     }
 
     return 0;
 }
 
-int Server::close() {
+int Server::shutdown() {
     if (_client_connection != nullptr) {
         delete _client_connection;
         _client_connection = nullptr;
@@ -70,6 +72,8 @@ int Server::close() {
         delete _client_socket;
         _client_socket = nullptr;
     }
+
+    shutdown_socket_system();
 
     return 0;
 }
@@ -182,6 +186,15 @@ int Server::process_outgoing_message(const Message &message) {
 Client::Client() : _socket(nullptr), _connection(nullptr) {}
 
 Client::~Client() {
+    shutdown();
+}
+
+int Client::init() {
+    init_socket_system();
+    return 0;
+}
+
+int Client::shutdown() {
     if (_socket != nullptr) {
         delete _socket;
         _socket = nullptr;
@@ -191,6 +204,9 @@ Client::~Client() {
         delete _connection;
         _connection = nullptr;
     }
+
+    shutdown_socket_system();
+    return 0;
 }
 
 int Client::connect(const char *ip, unsigned int port) {

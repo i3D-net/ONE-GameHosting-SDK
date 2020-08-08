@@ -134,7 +134,7 @@ struct OneServerApi {
     ///
     /// Stops listening for messages.
     ///
-    int (*close)(OneServerPtr server);
+    int (*shutdown)(OneServerPtr server);
 
     //--------------------------------------------------------------------------
     // Outgoing messages.

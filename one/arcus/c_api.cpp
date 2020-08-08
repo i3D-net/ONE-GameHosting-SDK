@@ -64,13 +64,13 @@ int listen(OneServerPtr server, unsigned int port) {
     return s->listen(port);
 }
 
-int close(OneServerPtr server) {
+int shutdown(OneServerPtr server) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
 
-    return s->close();
+    return s->shutdown();
 }
 
 int send_server_info(OneServerPtr server, OneMessagePtr data) {
@@ -122,7 +122,7 @@ OneGameHostingApiPtr game_hosting_api() {
     server_api.update = update;
     server_api.status = status;
     server_api.listen = listen;
-    server_api.close = close;
+    server_api.shutdown = shutdown;
     server_api.send_server_info = send_server_info;
     server_api.set_soft_stop_callback = set_soft_stop_callback;
     server_api.set_live_state_request_callback = set_live_state_request_callback;
