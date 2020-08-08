@@ -13,9 +13,17 @@ const int INVALID_SOCKET = -1;
 
 namespace one {
 
-// Must be called before using Socket.
+// Must be called before using Socket. Safe to call multiple times. Calls to
+// init_socket_system must have matching calls to shutdown_socket_system.
+// The first init call does the initializing. Any calls after the first init
+// call only serve to increment a counter to track the number of shutdowns
+// needed before the actual shutdown is performed.
 int init_socket_system();
-// Call when finished using sockets.
+
+// Call when finished using sockets. Safe to call multiple times.
+// Must have a matching call to init_socket_subsystem, called first. Only the
+// final matching shutdown call actually performs cleanup, the preceding
+// calls decrement counters matching the number of times init was called.
 void shutdown_socket_system();
 
 // A limited, cross-platform, low level TCP socket interface.

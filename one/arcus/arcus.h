@@ -20,7 +20,7 @@ public:
 
     int init();
 
-    int close();
+    int shutdown();
 
     int status() const;
 
@@ -79,8 +79,9 @@ public:
     Client &operator=(const Client &) = delete;
     ~Client();
 
+    int init();
+    int shutdown();
     int connect(const char *ip, unsigned int port);
-
     int update();
 
     //-------------------
