@@ -95,6 +95,9 @@ public:
     int connect(const char *address, unsigned int port);
     int update();
 
+    enum class Status { handshake, ready, error };
+    Status status();
+
     //-------------------
     // Outgoing Messages.
 

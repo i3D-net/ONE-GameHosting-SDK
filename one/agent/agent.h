@@ -35,6 +35,10 @@ public:
                            const std::string &map, const std::string &mode,
                            const std::string &version)>);
 
+    Client &client() {
+        return _client;
+    }
+
 private:
     Client _client;
 };

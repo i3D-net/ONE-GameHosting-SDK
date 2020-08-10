@@ -1,5 +1,7 @@
 #include <one/arcus/arcus.h>
 
+#include <assert.h>
+
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/message.h>
 #include <one/arcus/internal/opcodes.h>
@@ -237,6 +239,21 @@ int Client::connect(const char *address, unsigned int port) {
 
 int Client::update() {
     return 0;
+}
+
+Client::Status Client::status() {
+    assert(_connection != nullptr);
+    const auto status = _connection->status();
+    switch (status) {
+        case Connection::Status::handshake_not_started:
+        case Connection::Status::handshake_hello_scheduled:
+        case Connection::Status::handshake_hello_sent:
+            return Status::handshake;
+        case Connection::Status::ready:
+            return Status::ready;
+        default:
+            return Status::error;
+    }
 }
 
 int Client::send_soft_stop() {
