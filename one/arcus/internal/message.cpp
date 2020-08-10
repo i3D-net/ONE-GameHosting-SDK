@@ -97,7 +97,7 @@ int live_state(const Message &message, params::LifeState &params) {
 
 namespace invoke {
 
-int soft_stop(const Message &message, std::function<void(int)> callback) {
+int soft_stop(const Message &message, std::function<void(void *, int)> callback, void *data) {
     if (callback == nullptr) {
         return -1;
     }
@@ -108,11 +108,11 @@ int soft_stop(const Message &message, std::function<void(int)> callback) {
         return error;
     }
 
-    callback(params._timeout);
+    callback(data, params._timeout);
     return 0;
 }
 
-int live_state_request(const Message &message, std::function<void()> callback) {
+int live_state_request(const Message &message, std::function<void(void *)> callback, void *data) {
     if (callback == nullptr) {
         return -1;
     }
@@ -123,7 +123,26 @@ int live_state_request(const Message &message, std::function<void()> callback) {
         return error;
     }
 
-    callback();
+    callback(data);
+    return 0;
+}
+
+int live_state(const Message &message,
+               std::function<void(int, int, const std::string &, const std::string &,
+                                  const std::string &, const std::string &)>
+                   callback) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
+    params::LifeState params;
+    const int error = validate::live_state(message, params);
+    if (error != 0) {
+        return error;
+    }
+
+    callback(params._players, params._max_players, params._name, params._map, params._mode,
+             params._version);
     return 0;
 }
 

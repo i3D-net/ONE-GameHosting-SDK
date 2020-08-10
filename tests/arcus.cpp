@@ -9,7 +9,8 @@
 #include <one/arcus/message.h>
 
 #include <functional>
-#include <iostream>
+#include <string>
+#include <utility>
 
 using namespace one;
 
@@ -17,7 +18,7 @@ TEST_CASE("current arcus version", "[arcus]") {
     REQUIRE(arcus_protocol::current_version() == ArcusVersion::V2);
 }
 
-TEST_CASE("opcode version V1 validation", "[arcus]") {
+TEST_CASE("opcode version V2 validation", "[arcus]") {
     REQUIRE(is_opcode_supported_v2(Opcodes::hello));
     REQUIRE(is_opcode_supported_v2(Opcodes::soft_stop));
     REQUIRE(is_opcode_supported_v2(Opcodes::allocated));
@@ -38,14 +39,32 @@ TEST_CASE("opcode current version validation", "[arcus]") {
 //------------------------------------------------------------------------------
 // Message tests.
 
-void soft_stop_callback(int timeout) {
-    std::cout << "timeout is: " << timeout << std::endl;
+TEST_CASE("message handling", "[arcus]") {
+    Message m;
+    const std::string payload = "{}";
+    REQUIRE(m.init(Opcodes::soft_stop, {payload.c_str(), payload.size()}) == 0);
+    REQUIRE(m.code() == Opcodes::soft_stop);
+    // FIXME: uncomment when the payload class is properlly implemented.
+    // REQUIRE(m.payload().is_empty() == false);
+    REQUIRE(m.init(Opcodes::soft_stop, {nullptr, 0}) == 0);
+    m.reset();
+    REQUIRE(m.code() == Opcodes::invalid);
+    REQUIRE(m.payload().is_empty());
+    REQUIRE(m.init(static_cast<int>(Opcodes::soft_stop), {nullptr, 0}) == 0);
+    REQUIRE(m.code() == Opcodes::soft_stop);
+    REQUIRE(m.payload().is_empty());
+    m.reset();
+    REQUIRE(m.code() == Opcodes::invalid);
+    REQUIRE(m.payload().is_empty());
 }
 
-TEST_CASE("soft stop message callback", "[arcus]") {
+TEST_CASE("message prepare", "[arcus]") {
     Message m;
-    m.init(Opcodes::soft_stop, nullptr, 0);
-    // REQUIRE(Message::update(m, soft_stop_callback) == 0);
+    REQUIRE(messages::prepare_live_state(1, 16, "test server", "test map", "test mode",
+                                         "test version", m) == 0);
+    REQUIRE(m.code() == Opcodes::live_state);
+    // FIXME: uncomment when the payload class is properlly implemented.
+    // REQUIRE(m.payload().is_empty() == false);
 }
 
 //------------------------------------------------------------------------------

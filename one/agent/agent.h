@@ -2,6 +2,8 @@
 
 #include <one/arcus/arcus.h>
 
+#include <functional>
+
 namespace one {
 
 class Message;
@@ -18,16 +20,20 @@ public:
     // Check status.
     int status();
 
+    // Update: process incomming message & outgoing messages.
     int update();
 
     // Send soft stop.
     int send_soft_stop();
 
-    // Request server info.
-    int request_server_info();
+    // Request live_state_request message.
+    int send_live_state_request();
 
-    // Send custom command.
-    int send(Message *message);
+    // Set live_state callback.
+    int set_live_state_callback(
+        std::function<void(int player, int max_player, const std::string &name,
+                           const std::string &map, const std::string &mode,
+                           const std::string &version)>);
 
 private:
     Client _client;

@@ -12,7 +12,12 @@ Server::Server()
     : _listen_socket(nullptr)
     , _client_socket(nullptr)
     , _client_connection(nullptr)
-    , _soft_stop_callback(nullptr) {}
+    , _soft_stop_callback(nullptr)
+    , _soft_stop_callback_data(nullptr)
+    , _live_state_request_callback(nullptr)
+    , _live_state_request_callback_data(nullptr)
+
+{}
 
 Server::~Server() {
     shutdown();
@@ -75,6 +80,10 @@ int Server::shutdown() {
 
     shutdown_socket_system();
 
+    _soft_stop_callback = nullptr;
+    _soft_stop_callback_data = nullptr;
+    _live_state_request_callback = nullptr;
+    _live_state_request_callback_data = nullptr;
     return 0;
 }
 
@@ -119,15 +128,27 @@ int Server::update() {
     return 0;
 }
 
-void Server::set_soft_stop_callback(std::function<void(int)> callback) {
+int Server::set_soft_stop_callback(std::function<void(void *, int)> callback, void *data) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
     _soft_stop_callback = callback;
+    _soft_stop_callback_data = data;
+    return 0;
 }
 
-void Server::set_live_state_request_callback(std::function<void()> callback) {
+int Server::set_live_state_request_callback(std::function<void(void *)> callback, void *data) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
     _live_state_request_callback = callback;
+    _live_state_request_callback_data = data;
+    return 0;
 }
 
-int Server::send_server_info(const Message &message) {
+int Server::send_live_state(const Message &message) {
     int error = process_outgoing_message(message);
     if (error != 0) {
         return -1;
@@ -143,13 +164,14 @@ int Server::process_incoming_message(const Message &message) {
                 return 0;
             }
 
-            return invoke::soft_stop(message, _soft_stop_callback);
+            return invoke::soft_stop(message, _soft_stop_callback, _soft_stop_callback_data);
         case Opcodes::live_state_request:
             if (_live_state_request_callback == nullptr) {
                 return 0;
             }
 
-            return invoke::live_state_request(message, _live_state_request_callback);
+            return invoke::live_state_request(message, _live_state_request_callback,
+                                              _live_state_request_callback_data);
         default:
             return 0;
     }
@@ -183,7 +205,7 @@ int Server::process_outgoing_message(const Message &message) {
     return 0;
 }
 
-Client::Client() : _socket(nullptr), _connection(nullptr) {}
+Client::Client() : _socket(nullptr), _connection(nullptr), _live_state_callback(nullptr) {}
 
 Client::~Client() {
     shutdown();
@@ -209,7 +231,7 @@ int Client::shutdown() {
     return 0;
 }
 
-int Client::connect(const char *ip, unsigned int port) {
+int Client::connect(const char *address, unsigned int port) {
     return 0;
 }
 
@@ -225,7 +247,15 @@ int Client::request_server_info() {
     return 0;
 }
 
-int Client::send(Message *message) {
+int Client::set_live_state_callback(
+    std::function<void(int, int, const std::string &, const std::string &, const std::string &,
+                       const std::string &)>
+        callback) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
+    _live_state_callback = callback;
     return 0;
 }
 

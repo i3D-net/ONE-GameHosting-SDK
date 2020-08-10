@@ -56,17 +56,17 @@ struct OneMessageApi {
     /// Prepares a new outgoing message. Must be called to start setting
     /// values on the message. end_outgoing must be called when finished.
     ///
-    OneMessagePtr (*create)();
+    int (*create)(OneMessagePtr *message);
 
     /// Must be called whenever finished with a message.
-    void (*free)(OneMessagePtr message);
+    void (*destroy)(OneMessagePtr *message);
 
-    void (*set_code)(OneMessagePtr message, int code);
-    void (*code)(OneMessagePtr message, int *code);
+    int (*init)(OneMessagePtr message, int code, const char *data, unsigned int size);
+    int (*code)(OneMessagePtr message, int *code);
 
     // Getters.
     int (*val_int)(OneMessagePtr message, const char *key, int *val);
-    int (*val_string)(OneMessagePtr message, const char *key, const char *val);
+    int (*val_string)(OneMessagePtr message, const char *key, char **val);
     int (*val_array)(OneMessagePtr message, const char *key, OneArrayPtr val);
     int (*val_object)(OneMessagePtr message, const char *key, OneObjectPtr val);
 
@@ -77,6 +77,17 @@ struct OneMessageApi {
     int (*set_val_object)(OneMessagePtr message, const char *key, OneObjectPtr val);
 };
 typedef OneMessageApi *OneMessageApiPtr;
+
+///
+/// OneMessagePrepareApi is used to streamlie working with messages. Providing prepare helpers &
+/// others.
+///
+struct OneMessagePrepareApi {
+    /// Must be called whenever finished with a message.
+    int (*prepare_live_state)(OneMessagePtr message, int player, int max_player, const char *name,
+                              const char *map, const char *mode, const char *version);
+};
+typedef OneMessagePrepareApi *OneMessagePrepareApiPtr;
 
 ///
 /// OneArrayApi is used to work with an array to retrieve from or set in the
@@ -146,13 +157,17 @@ struct OneServerApi {
     // information.
 
     ///
-    /// Send the Arcus API server metadata opcode message.
-    ///
-    int (*send_metadata)(OneServerPtr server, OneArrayPtr data);
-
-    // Todo: struct containing required server info config fields that must be
-    // sent...to be passed here by caller.
-    int (*send_server_info)(OneServerPtr server, OneMessagePtr data);
+    /// Send the Arcus API server live_state opcode message.
+    /// Message Mandatory Content:
+    /// {
+    ///   players : 0,
+    ///   max players : 0,
+    ///   server name : "",
+    ///   server map : "",
+    ///   server mode : "",
+    ///   server version : "",
+    /// }
+    int (*send_live_state)(OneServerPtr server, OneMessagePtr message);
 
     //--------------------------------------------------------------------------
     // Incoming Message callbacks.
@@ -171,19 +186,16 @@ struct OneServerApi {
     // - if the callbacks are not set, then the messages are ignored
     // - extract to separate api struct
 
-    // Required: Register the callback to be notified of a soft stop. The process
+    // Required: Register the callback to be notified of a soft_stop. The process
     // should stop at its earliest convenience. If the server process is still
     // active after the given timeout (seconds), then One will terminate the
     // process directly on the deployment.
-    int (*set_soft_stop_callback)(OneServerPtr server, void (*cb)(int timeout));
-
-    // Required: Register the callback to be notified of when the server has been
-    // allocated for matchmaking.
-    int (*set_allocated_callback)(OneServerPtr server, void (*cb)(void));
+    int (*set_soft_stop_callback)(OneServerPtr server, void (*cb)(void *data, int timeout),
+                                  void *data);
 
     // Required: Register to be notified of when the game must call
-    // send_server_info.
-    int (*set_live_state_request_callback)(OneServerPtr server, void (*cb)(void));
+    // live_state_request.
+    int (*set_live_state_request_callback)(OneServerPtr server, void (*cb)(void *data), void *data);
 };
 typedef OneServerApi *OneServerApiPtr;
 
@@ -208,7 +220,8 @@ typedef OneAllocatorApi *OneAllocatorApiPtr;
 struct OneGameHostingApi {
     OneServerApiPtr
         server_api;  /// Main API to create a Game Hosting Server that communicates with One.
-    OneMessageApiPtr message_api;   /// For working with messages.
+    OneMessageApiPtr message_api;                 /// For working with messages.
+    OneMessagePrepareApiPtr message_prepare_api;  /// For working with messages.
     OneArrayApiPtr array_api;       /// For working with array types contained in messages.
     OneObjectApiPtr object_api;     /// For working with object types contained in messages.
     OneAllocatorApi allocator_api;  /// For providing custom allocation.
