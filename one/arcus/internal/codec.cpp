@@ -8,9 +8,8 @@ namespace codec {
 const Hello hello = Hello{{'a', 'r', 'c', 0}, (char)0x1, 0};  // namespace codec
 
 bool validate_hello(const Hello &other) {
-    auto a = (const char *)&hello;
-    auto b = (const char *)&other;
-    return std::strncmp(a, b, hello_size()) == 0;
+    const auto cmp = std::memcmp(&hello, &other, hello_size());
+    return cmp == 0;
 }
 
 const Hello &valid_hello() {
