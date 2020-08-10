@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <string>
 
 namespace one {
 
@@ -36,9 +37,17 @@ public:
 
     // Todo: update functions to match complete list from One API v2.
 
-    void set_soft_stop_callback(std::function<void(int)> callback);
+    // set the callback for when a soft_stop message in received.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    int set_soft_stop_callback(std::function<void(void *, int)> callback, void *data);
 
-    void set_live_state_request_callback(std::function<void()> callback);
+    // set the callback for when a live_state_request message in received.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    int set_live_state_request_callback(std::function<void(void *)> callback, void *data);
 
     // all other externally-facing opcode callbacks...
 
@@ -47,17 +56,17 @@ public:
 
     // Todo: update functions to match complete list from One API v2.
 
-    // notify one of state change
-    // send metadata (key value pairs)
-
-    // server info send(
-    //     current players,
-    //     max players,
-    //     server name,
-    //     map,
-    //     mode,
-    //     version)
-    int send_server_info(const Message &message);
+    // send live_state opcode message.
+    // Message Mandatory Content:
+    // {
+    //   players : 0,
+    //   max players : 0,
+    //   server name : "",
+    //   server map : "",
+    //   server mode : "",
+    //   server version : "",
+    // }
+    int send_live_state(const Message &message);
 
 private:
     int process_incoming_message(const Message &message);
@@ -67,8 +76,10 @@ private:
     Socket *_client_socket;
     Connection *_client_connection;
 
-    std::function<void(int)> _soft_stop_callback;
-    std::function<void()> _live_state_request_callback;
+    std::function<void(void *, int)> _soft_stop_callback;
+    void *_soft_stop_callback_data;
+    std::function<void(void *)> _live_state_request_callback;
+    void *_live_state_request_callback_data;
 };
 
 // The Arcus Client is used by an Arcus One Agent to connect to an Arcus Server.
@@ -81,28 +92,34 @@ public:
 
     int init();
     int shutdown();
-    int connect(const char *ip, unsigned int port);
+    int connect(const char *address, unsigned int port);
     int update();
 
     //-------------------
     // Outgoing Messages.
 
-    // todo.
+    // Todo: update functions to match complete list from One API v2.
 
     int send_soft_stop();
     int request_server_info();
-    int send(Message *message);
 
-    // ...
+    //------------------------------------------------------------------------------
+    // Callbacks to be notified of all possible incoming Arcus messages.
 
-    //-------------------
-    // Incoming Messages.
+    // Todo: update functions to match complete list from One API v2.
 
-    // todo.
+    int set_live_state_callback(
+        std::function<void(int, int, const std::string &, const std::string &, const std::string &,
+                           const std::string &)>
+            callback);
 
 private:
     Socket *_socket;
     Connection *_connection;
+
+    std::function<void(int, int, const std::string &, const std::string &, const std::string &,
+                       const std::string &)>
+        _live_state_callback;
 };
 
 }  // namespace one

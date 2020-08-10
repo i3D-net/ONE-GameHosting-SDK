@@ -33,7 +33,7 @@ int Agent::send_soft_stop() {
     return 0;
 }
 
-int Agent::request_server_info() {
+int Agent::send_live_state_request() {
     int error = _client.request_server_info();
     if (error != 0) {
         return error;
@@ -42,12 +42,15 @@ int Agent::request_server_info() {
     return 0;
 }
 
-int Agent::send(Message *message) {
-    int error = _client.send(message);
-    if (error != 0) {
-        return error;
+int Agent::set_live_state_callback(
+    std::function<void(int, int, const std::string &, const std::string &, const std::string &,
+                       const std::string &)>
+        callback) {
+    if (callback == nullptr) {
+        return -1;
     }
 
+    _client.set_live_state_callback(callback);
     return 0;
 }
 

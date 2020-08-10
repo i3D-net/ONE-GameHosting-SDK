@@ -7,6 +7,7 @@
 
 #include <functional>
 #include <string>
+#include <utility>
 
 namespace one {
 
@@ -22,7 +23,7 @@ public:
     Payload() = default;
     ~Payload() = default;
 
-    void from_json(const char *, size_t);
+    void from_json(std::pair<const char *, size_t> data);
     std::pair<const char *, size_t> to_json() const;
 
     bool is_empty() const;
@@ -35,12 +36,14 @@ public:
 
     // Getters.
     int val_int(const char *key, int &val) const;
+    int val_string(const char *key, char **val) const;
     int val_string(const char *key, std::string &val) const;
     int val_array(const char *key, Array &val) const;
     int val_object(const char *key, Object &val) const;
 
     // Setters.
     int set_val_int(const char *key, int val);
+    int set_val_string(const char *key, const char *val);
     int set_val_string(const char *key, const std::string &val);
     int set_val_array(const char *key, const Array &val);
     int set_val_object(const char *key, const Object &val);
@@ -57,17 +60,24 @@ public:
     Message();
     ~Message() = default;
 
-    int init(int code, const char *data, size_t size);
-    int init(Opcodes code, const char *data, size_t size);
+    int init(int code, std::pair<const char *, size_t> data);
+    int init(Opcodes code, std::pair<const char *, size_t> data);
+    int init(Opcodes code, const Payload &payload);
 
     void reset();
 
     Opcodes code() const;
+    Payload &payload();
     const Payload &payload() const;
 
 private:
     Opcodes _code;
     Payload _payload;
 };
+
+namespace messages {
+int prepare_live_state(int player, int max_player, const char *name, const char *map,
+                       const char *mode, const char *version, Message &message);
+}
 
 }  // namespace one

@@ -4,7 +4,7 @@
 
 namespace one {
 
-void Payload::from_json(const char *, size_t) {}
+void Payload::from_json(std::pair<const char *, size_t> data) {}
 
 std::pair<const char *, size_t> Payload::to_json() const {
     return std::pair<const char *, size_t>();
@@ -36,6 +36,10 @@ int Payload::val_int(const char *key, int &val) const {
     return 0;
 }
 
+int Payload::val_string(const char *key, char **val) const {
+    return 0;
+}
+
 int Payload::val_string(const char *key, std::string &val) const {
     return 0;
 }
@@ -49,6 +53,10 @@ int Payload::val_object(const char *key, Object &val) const {
 }
 
 int Payload::set_val_int(const char *key, int val) {
+    return 0;
+}
+
+int Payload::set_val_string(const char *key, const char *val) {
     return 0;
 }
 
@@ -66,13 +74,19 @@ int Payload::set_val_object(const char *key, const Object &val) {
 
 Message::Message() : _code(Opcodes::invalid) {}
 
-int Message::init(int code, const char *data, size_t size) {
-    return init(static_cast<Opcodes>(code), data, size);
+int Message::init(int code, std::pair<const char *, size_t> data) {
+    return init(static_cast<Opcodes>(code), data);
 }
 
-int Message::init(Opcodes code, const char *data, size_t size) {
+int Message::init(Opcodes code, std::pair<const char *, size_t> data) {
     _code = code;
-    _payload.from_json(data, size);
+    _payload.from_json(data);
+    return 0;
+}
+
+int Message::init(Opcodes code, const Payload &payload) {
+    _code = code;
+    _payload = payload;
     return 0;
 }
 
@@ -85,8 +99,50 @@ Opcodes Message::code() const {
     return _code;
 }
 
+Payload &Message::payload() {
+    return _payload;
+}
+
 const Payload &Message::payload() const {
     return _payload;
 }
+
+namespace messages {
+
+int prepare_live_state(int player, int max_player, const char *name, const char *map,
+                       const char *mode, const char *version, Message &message) {
+    Payload payload;
+    int error = payload.set_val_int("player", player);
+    if (error != 0) {
+        return -1;
+    }
+    error = payload.set_val_int("max_player", max_player);
+    if (error != 0) {
+        return -1;
+    }
+    error = payload.set_val_string("name", name);
+    if (error != 0) {
+        return -1;
+    }
+    error = payload.set_val_string("map", map);
+    if (error != 0) {
+        return -1;
+    }
+    error = payload.set_val_string("mode", mode);
+    if (error != 0) {
+        return -1;
+    }
+    error = payload.set_val_string("version", version);
+    if (error != 0) {
+        return -1;
+    }
+
+    message.reset();
+    message.init(Opcodes::live_state, payload);
+
+    return 0;
+}
+
+}  // namespace messages
 
 }  // namespace one

@@ -1,11 +1,12 @@
 set(UNIT_TEST tests)
 
 add_executable(${UNIT_TEST}
-    util.cpp
-    main.cpp
     agent.cpp
     arcus.cpp
     game.cpp
+    integration.cpp
+    main.cpp
+    util.cpp
 )
 
 target_compile_features(${UNIT_TEST} PRIVATE cxx_std_11)

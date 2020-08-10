@@ -35,8 +35,12 @@ int live_state(const Message &message, params::LifeState &params);
 }  // namespace validate
 
 namespace invoke {
-int soft_stop(const Message &message, std::function<void(int)> callback);
-int live_state_request(const Message &message, std::function<void()> callback);
+int soft_stop(const Message &message, std::function<void(void *, int)> callback, void *data);
+int live_state_request(const Message &message, std::function<void(void *)> callback, void *data);
+int live_state(const Message &message,
+               std::function<void(int, int, const std::string &, const std::string &,
+                                  const std::string &, const std::string &)>
+                   callback);
 }  // namespace invoke
 
 }  // namespace one
