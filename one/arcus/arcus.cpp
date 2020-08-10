@@ -102,8 +102,8 @@ int Server::update() {
         return -1;
     }
 
-    int error = _client_connection->update();
-    if (error != 0) {
+    auto error = _client_connection->update();
+    if (is_error(error)) {
         return error;
     }
 

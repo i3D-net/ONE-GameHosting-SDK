@@ -218,4 +218,32 @@ int Socket::receive(void *data, size_t length) {
     return ::recv(_socket, (char *)data, length, 0);
 }
 
+bool is_error_try_again(int err) {
+#ifdef WINDOWS
+    return err == WSATRY_AGAIN || err == WSAEWOULDBLOCK;
+#else
+    return err == EAGAIN;
+#endif
+}
+
+int lazy_socket_send(Socket &socket, const void *data, size_t length) {
+    const auto result = socket.send(data, length);
+    if (result >= 0) {
+        return result;
+    }
+    const auto err = socket.last_error();
+    if (is_error_try_again(err)) return 0;
+    return result;
+}
+
+int lazy_socket_receive(Socket &socket, void *data, size_t length) {
+    const auto result = socket.receive(data, length);
+    if (result >= 0) {
+        return result;
+    }
+    const auto err = socket.last_error();
+    if (is_error_try_again(err)) return 0;
+    return -1;
+}
+
 }  // namespace one

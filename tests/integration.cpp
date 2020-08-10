@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <util.h>
 #include <one/agent/agent.h>
+#include <one/arcus/error.h>
 #include <one/game/game.h>
 
 #include <iostream>
@@ -53,7 +54,7 @@ TEST_CASE("Agent send request to game", "[agent]") {
 
     sleep(1);
 
-    REQUIRE(game.tick() == -1);  // FIXME: when the socket & handshake if fully merged in.
+    REQUIRE(is_error(game.tick()));  // FIXME: when the socket & handshake if fully merged in.
     REQUIRE(agent.update() == 0);
 
     // TODO: add more agent request & custom messages.
@@ -64,7 +65,7 @@ TEST_CASE("Agent send request to game", "[agent]") {
 
     sleep(1);
 
-    REQUIRE(game.tick() == -1);  // FIXME: when the socket & handshake if fully merged in.
+    REQUIRE(is_error(game.tick()));  // FIXME: when the socket & handshake if fully merged in.
     REQUIRE(agent.update() == 0);
 
     REQUIRE(game.shutdown() == 0);

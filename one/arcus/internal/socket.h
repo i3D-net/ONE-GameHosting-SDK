@@ -91,7 +91,8 @@ public:
     int select(float timeout);
 
     // Send data on the socket. Returns negative number on error, or number of
-    // bytes sent.
+    // bytes sent. A failure because socket is not ready, e.g. due to
+    // EAGAIN on Linux, returns 0.
     int send(const void *data, size_t length);
 
     // Puts number of bytes available for reading into the given length.
@@ -99,7 +100,8 @@ public:
     int available(size_t &length);
 
     // Receive data into the given buffer. Returns negative number on error, or
-    // number of bytes received.
+    // number of bytes received. A failure because socket is not ready, e.g. due to
+    // EAGAIN on Linux, returns 0.
     int receive(void *data, size_t length);
 
 private:
@@ -108,5 +110,13 @@ private:
 
     SOCKET _socket;
 };
+
+// Sends, but ignores errors due to socket not ready, e.g. EGAIN on linux.
+// 0 is returned in those cases.
+int lazy_socket_send(Socket &socket, const void *data, size_t length);
+
+// Receives, but ignores errors due to socket not ready, e.g. EGAIN on linux.
+// 0 is returned in those cases.
+int lazy_socket_receive(Socket &socket, void *data, size_t length);
 
 }  // namespace one

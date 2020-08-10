@@ -1,5 +1,6 @@
 #include <catch.hpp>
 #include <util.h>
+#include <one/arcus/error.h>
 #include <one/agent/agent.h>
 
 using namespace one;
