@@ -18,11 +18,9 @@ extern "C" {
 //------------------------------------------------------------------------------
 // Errors.
 
-// This section will contain integer error codes returned throughout the
-// api as well as a method to convert the human-readable strings for easier
-// logging and debugging.
+typedef int OneError;
 
-// A typedef will be provided instead of the ints currently present below.
+// See the C++ error.h file for error values.
 
 //------------------------------------------------------------------------------
 // Opaque types returned by Apis.

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <one/arcus/error.h>
 #include <one/arcus/internal/platform.h>
 
 namespace one {
@@ -28,7 +29,7 @@ public:
     // Update process incoming and outgoing messges. It attempts to read
     // all incoming messages that are available. It attempts to send all
     // queued outgoing messages.
-    int update();
+    Error update();
 
     // Reset the status to match construction time and clear any accumulated
     // buffers.
@@ -43,19 +44,17 @@ public:
     };
     Status status() const;
 
-    int push_outgoing(const Message &message);
+    Error push_outgoing(const Message &message);
 
-    int incoming_count() const;
+    Error incoming_count() const;
 
-    int pop_incoming(Message **message);
+    Error pop_incoming(Message **message);
 
 private:
     Connection() = delete;
 
-    int process_handshake(bool is_socket_ready);
-    int process_messages();
-    int send(const void *data, size_t length);
-    int receive(void *data, size_t length);
+    Error process_handshake(bool is_socket_ready);
+    Error process_messages();
 
     Status _status;
     Socket &_socket;

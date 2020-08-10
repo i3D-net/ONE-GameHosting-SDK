@@ -6,6 +6,7 @@
 #include <one/arcus/internal/opcodes.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/internal/version.h>
+#include <one/arcus/error.h>
 #include <one/arcus/message.h>
 
 #include <functional>
@@ -165,10 +166,8 @@ TEST_CASE("connection", "[arcus]") {
 
     server_connection.initiate_handshake();
     for (auto i = 0; i < 10; ++i) {
-        result = server_connection.update();
-        REQUIRE(result == 0);
-        result = client_connection.update();
-        REQUIRE(result == 0);
+        REQUIRE(!is_error(server_connection.update()));
+        REQUIRE(!is_error(client_connection.update()));
         sleep(10);
         if (server_connection.status() == Connection::Status::ready &&
             client_connection.status() == Connection::Status::ready)
@@ -183,55 +182,93 @@ TEST_CASE("connection", "[arcus]") {
     shutdown_socket_system();
 }
 
-// Handshake abnormalities.
-TEST_CASE("handshake", "[arcus]") {
+struct HandshakeTestObjects {
+    Socket server;
+    Socket out_client;
+    Socket in_client;
+    Connection *server_connection;
+    unsigned int server_port;
+};
+
+void init_handshake_test(HandshakeTestObjects &objects) {
     init_socket_system();
 
-    Socket server;
-    unsigned int server_port;
-    listen(server, server_port);
+    listen(objects.server, objects.server_port);
+    connect(objects.out_client, objects.server_port);
+    accept(objects.server, objects.in_client);
+    objects.server_connection = new Connection(objects.in_client, 2, 2);
+}
 
-    Socket out_client;
-    connect(out_client, server_port);
+void shutdown_handshake_test(HandshakeTestObjects &objects) {
+    objects.server.close();
+    objects.out_client.close();
+    objects.in_client.close();
+    delete objects.server_connection;
+    shutdown_socket_system();
+}
 
-    // Accept client on server.
-    Socket in_client;
-    accept(server, in_client);
+TEST_CASE("handshake early hello", "[arcus]") {
+    HandshakeTestObjects objects;
+    init_handshake_test(objects);
 
-    auto server_connection = Connection(in_client, 2, 2);
-    server_connection.initiate_handshake();
-
-    //----------------------------------------------------------
-    // Test - client sends a hello to server before server does.
-
-    wait_ready(out_client);
+    objects.server_connection->initiate_handshake();
+    wait_ready(objects.out_client);
     codec::Hello hello = codec::valid_hello();
-    auto result = out_client.send(&hello, codec::hello_size());
+    auto result = objects.out_client.send(&hello, codec::hello_size());
     REQUIRE(result == codec::hello_size());
     auto did_fail = false;
     for (int i = 0; i < 5; i++) {
-        did_fail = server_connection.update() < 0;  // Todo Error type.
+        did_fail = is_error(objects.server_connection->update());  // Todo Error type.
         if (did_fail) break;
         sleep(10);
     }
     REQUIRE(did_fail);
     // todo get error reason
-    server_connection.reset();
 
-    //----------------------------------
-    // Test - client sends bad response.
+    shutdown_handshake_test(objects);
+}
+
+TEST_CASE("handshake hello bad response", "[arcus]") {
+    HandshakeTestObjects objects;
+    init_handshake_test(objects);
+
+    // Wait for server to enter sent state.
+    objects.server_connection->initiate_handshake();
+    for (int i = 0; i < 10; i++) {
+        REQUIRE(!is_error(objects.server_connection->update()));
+        if (objects.server_connection->status() == Connection::Status::handshake_hello_sent) {
+            break;
+        }
+        sleep(1);
+    }
+    REQUIRE(objects.server_connection->status() == Connection::Status::handshake_hello_sent);
 
     // Receive the hello from server.
+    codec::Hello hello = {0};
+    auto result = lazy_socket_receive(objects.out_client, &hello, codec::hello_size());
+    REQUIRE(result == codec::hello_size());
+    REQUIRE(codec::validate_hello(hello));
 
-    // Send wrong thing back.
+    // Send wrong opcode back.
+    static codec::Header hello_header = {0};
+    hello_header.opcode = static_cast<char>(Opcodes::soft_stop);
+    auto sent = lazy_socket_send(objects.out_client, &hello_header, codec::header_size());
+    REQUIRE(sent == codec::header_size());
 
-    // Ensure the connection and socket were closed by server.
+    // Ensure the server connection enters an error state.
+    Error err;
+    for (int i = 0; i < 10; i++) {
+        err = (objects.server_connection->update());
+        if (is_error(err)) {
+            break;
+        }
+        sleep(1);
+    }
+    REQUIRE(err == ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID);
 
-    //--------------------------
-    // Test - handshake timeout.
-
-    server.close();
-    out_client.close();
-    in_client.close();
-    shutdown_socket_system();
+    shutdown_handshake_test(objects);
 }
+
+//--------------------------
+// Test - handshake timeout.
+TEST_CASE("handshake timeout", "[arcus]") {}

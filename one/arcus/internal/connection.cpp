@@ -19,49 +19,19 @@ Connection::Connection(Socket &socket, size_t max_messages_in, size_t max_messag
     assert(socket.is_initialized());
 }
 
-bool is_error_try_again(int err) {
-#ifdef WINDOWS
-    return err == WSATRY_AGAIN || err == WSAEWOULDBLOCK;
-#else
-    return err == EAGAIN;
-#endif
-}
-
-int Connection::send(const void *data, size_t length) {
-    const auto result = _socket.send(data, length);
-    if (result >= 0) {
-        return result;
-    }
-    const auto err = _socket.last_error();
-    if (is_error_try_again(err)) return 0;
-    _status = Status::error;
-    return -1;
-}
-
-int Connection::receive(void *data, size_t length) {
-    const auto result = _socket.receive(data, length);
-    if (result >= 0) {
-        return result;
-    }
-    const auto err = _socket.last_error();
-    if (is_error_try_again(err)) return 0;
-    _status = Status::error;
-    return -1;
-}
-
 Connection::Status Connection::status() const {
     return _status;
 }
 
-int Connection::push_outgoing(const Message &message) {
+Error Connection::push_outgoing(const Message &message) {
     return 0;
 }
 
-int Connection::incoming_count() const {
+Error Connection::incoming_count() const {
     return 0;
 }
 
-int Connection::pop_incoming(Message **message) {
+Error Connection::pop_incoming(Message **message) {
     return 0;
 }
 
@@ -70,12 +40,12 @@ void Connection::initiate_handshake() {
     _status = Status::handshake_hello_scheduled;
 }
 
-int Connection::update() {
-    if (_status == Status::error) return -1;
+Error Connection::update() {
+    if (_status == Status::error) return ONE_ERROR_CONNECTION_UPDATE_AFTER_ERROR;
 
     // Return if socket has no activity or has an error.
     const auto select = _socket.select(0.f);
-    if (select < 0) return select;
+    if (select < 0) return ONE_ERROR_CONNECTION_UPDATE_READY_FAIL;
 
     if (_status != Status::ready) return process_handshake(select > 0);
 
@@ -88,7 +58,7 @@ void Connection::reset() {
 
 int Connection::process_handshake(bool is_socket_ready) {
     // Check if handshake timed out.
-    // return 0;
+    // return ONE_ERROR_NONE;
 
     // There are two hello packets. The initial codec::hello sent from the
     // handshake initiater, and the response codec::Header message with a
@@ -99,23 +69,28 @@ int Connection::process_handshake(bool is_socket_ready) {
     if (_status == Status::handshake_not_started) {
         // Check if hello received.
         codec::Hello hello = {0};
-        auto result = receive(&hello, codec::hello_size());
-        if (result < 0) return -1;
+        auto result = lazy_socket_receive(_socket, &hello, codec::hello_size());
+        if (result < 0) {
+            _status = Status::error;
+            return ONE_ERROR_CONNECTION_HELLO_RECEIVE_FAILED;
+        }
+        // todo - hello buffering
         if (result != codec::hello_size()) {
             _status = Status::error;
-            return -1;
+            return ONE_ERROR_CONNECTION_HELLO_TOO_BIG;
         }
         if (!codec::validate_hello(hello)) {
             _status = Status::error;
-            return -1;
+            return ONE_ERROR_CONNECTION_HELLO_INVALID;
         }
 
         // Send back a hello Message.
-        result = send(&hello_header, codec::header_size());
+        result = lazy_socket_send(_socket, &hello_header, codec::header_size());
         if (result < 0) {  // Error.
-            return result;
-        } else if (result == 0) {  // No error but nothing sent.
-            return 0;              // Retry next attempt.
+            _status = Status::error;
+            return ONE_ERROR_CONNECTION_HELLO_MESSAGE_SEND_FAILED;
+        } else if (result == 0) {   // No error but nothing sent.
+            return ONE_ERROR_NONE;  // Retry next attempt.
         }
 
         // Assume handshaking is complete now. This side is free to send other
@@ -126,39 +101,45 @@ int Connection::process_handshake(bool is_socket_ready) {
         // Ensure nothing is received. Arcus client should not send
         // until it receives a Hello.
         char byte;
-        auto result = receive(&byte, 1);
+        auto result = lazy_socket_receive(_socket, &byte, 1);
         if (result != 0) {
-            return -1;
+            _status = Status::error;
+            return ONE_ERROR_CONNECTION_RECEIVE_BEFORE_SEND;
         }
         // Send the hello.
-        result = send(&codec::valid_hello(), codec::hello_size());
+        result = lazy_socket_send(_socket, &codec::valid_hello(), codec::hello_size());
         if (result < 0) {  // Error.
-            return result;
-        } else if (result == 0) {  // No error but nothing sent.
-            return 0;              // Retry next attempt.
+            _status = Status::error;
+            return ONE_ERROR_CONNECTION_HELLO_SEND_FAILED;
+        } else if (result == 0) {   // No error but nothing sent.
+            return ONE_ERROR_NONE;  // Retry next attempt.
         }
         _status = Status::handshake_hello_sent;
     } else if (_status == Status::handshake_hello_sent) {
         // Check if hello message Header received back.
         codec::Header header = {0};
-        auto result = receive(&header, codec::header_size());
-        if (result < 0) return -1;
+        auto result = lazy_socket_receive(_socket, &header, codec::header_size());
+        // Todo - buffer.
+        if (result < 0) {
+            _status = Status::error;
+            return ONE_ERROR_CONNECTION_HELLO_MESSAGE_RECEIVE_FAILED;
+        }
         if (result != codec::header_size()) {
             _status = Status::error;
-            return -1;
+            return ONE_ERROR_CONNECTION_HELLO_MESSAGE_HEADER_TOO_BIG;
         }
         if (std::memcmp(&header, &hello_header, codec::header_size()) != 0) {
             _status = Status::error;
-            return -1;
+            return ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID;
         }
         _status = Status::ready;
     }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 int Connection::process_messages() {
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 }  // namespace one
