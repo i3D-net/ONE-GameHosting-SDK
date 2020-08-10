@@ -49,6 +49,10 @@ inline size_t header_size() {
     return sizeof(Header);
 }
 
+// No header validation in the codec at the moment. No implicit restrictions
+// are placed on any of the fields at the codec level. Opcodes will be handled
+// by message layer. Length will be handled by document reader.
+
 // Convert byte data to a Header. Length must be header_size().
 int data_to_header(const void *data, size_t length, Header &header);
 

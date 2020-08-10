@@ -3,6 +3,7 @@ set(UNIT_TEST tests)
 add_executable(${UNIT_TEST}
     agent.cpp
     arcus.cpp
+    codec.cpp
     game.cpp
     integration.cpp
     main.cpp
