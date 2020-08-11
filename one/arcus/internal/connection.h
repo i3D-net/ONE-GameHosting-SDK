@@ -53,7 +53,7 @@ public:
 private:
     Connection() = delete;
 
-    Error process_handshake(bool is_socket_ready);
+    Error process_handshake();
     Error process_messages();
 
     Status _status;
