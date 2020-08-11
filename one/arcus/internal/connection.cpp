@@ -47,7 +47,7 @@ Error Connection::update() {
     const auto select = _socket.select(0.f);
     if (select < 0) return ONE_ERROR_CONNECTION_UPDATE_READY_FAIL;
 
-    if (_status != Status::ready) return process_handshake(select > 0);
+    if (_status != Status::ready) return process_handshake();
 
     return process_messages();
 }
@@ -56,7 +56,7 @@ void Connection::reset() {
     _status = Status::handshake_not_started;
 }
 
-int Connection::process_handshake(bool is_socket_ready) {
+int Connection::process_handshake() {
     // Check if handshake timed out.
     // return ONE_ERROR_NONE;
 
