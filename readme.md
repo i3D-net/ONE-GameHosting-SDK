@@ -42,12 +42,14 @@ Reference the prebuilt docs on the i3d.net website, or follow the build instruct
 
 ## Build Requirements
 
-1. Doxygen.
-    - [Windows](https://www.doxygen.nl/manual/install.html#install_bin_windows)
+1. To generate the documentation (optional)
+    - Windows:
+        1. [doxygen](https://www.doxygen.nl/manual/install.html#install_bin_windows)
+        2. [graphviz](https://graphviz.org/download/)
     - Ubuntu:
         1. `sudo apt-get update`
-        2. `sudo apt-get install doxygen`
-2. CMake. See CMakeLists.txt in the root for tested versions.
+        2. `sudo apt-get install doxygen graphviz`
+2. CMake. See `CMakeLists.txt` in the root for tested versions.
 3. C++ toolchain. Currently tested environments:
     - Windows 10 Pro w/ VS2017
     - Ubuntu 18.04
@@ -55,6 +57,8 @@ Reference the prebuilt docs on the i3d.net website, or follow the build instruct
 ## Build
 
 ### Configure the build output and initialize cmake
+
+Make sure to create the folder `build` beforehand.
 
 ```bash
 cmake -s . -B ./build
@@ -77,6 +81,10 @@ cmake --build ./build --config Release --target all
 The doxygen documentation is built automatically if cmake is able to find the doxygen installed on your system.
 
 By default, the tests will run as part of the build process. Set `RUN_TEST_AFTER_BUILD` to false to disable this behavior.
+
+## Clean build
+
+In order to make a clean build & delete the `build` folder & recreate it empty. It'll purge any previous `cmake` cache & previous build artefacts.
 
 ## IDE Support
 
