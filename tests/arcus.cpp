@@ -112,22 +112,20 @@ void wait_ready(Socket &socket) {
 };
 
 void listen(Socket &server, unsigned int &port) {
-    REQUIRE(server.init() == 0);
-    REQUIRE(server.bind(0) == 0);
+    REQUIRE(!is_error(server.init()));
+    REQUIRE(!is_error(server.bind(0)));
 
     std::string server_ip;
-    REQUIRE(server.address(server_ip, port) == 0);
+    REQUIRE(!is_error(server.address(server_ip, port)));
     REQUIRE(server_ip.length() > 0);
     REQUIRE(port != 0);
 
-    REQUIRE(server.set_non_blocking(true) == 0);
-    REQUIRE(server.listen(1) == 0);
+    REQUIRE(!is_error(server.listen(1)));
 }
 
 void connect(Socket &client, unsigned int port) {
     client.init();
-    REQUIRE(client.connect("127.0.0.1", port) == 0);
-    REQUIRE(client.set_non_blocking(true) == 0);
+    REQUIRE(!is_error(client.connect("127.0.0.1", port)));
 }
 
 void accept(Socket &server, Socket &in_client) {
@@ -135,10 +133,9 @@ void accept(Socket &server, Socket &in_client) {
     wait_ready(server);
     std::string client_ip;
     unsigned int client_port;
-    REQUIRE(server.accept(in_client, client_ip, client_port) == 0);
+    REQUIRE(!is_error(server.accept(in_client, client_ip, client_port)));
     REQUIRE(client_ip.length() > 0);
     REQUIRE(client_port != 0);
-    REQUIRE(in_client.set_non_blocking(true) == 0);
 }
 
 // Socket and Connection normal external behavior.
@@ -149,9 +146,9 @@ TEST_CASE("connection", "[arcus]") {
     //-----------
     // Lifecycle.
     REQUIRE(server.is_initialized() == false);
-    REQUIRE(server.init() == 0);
+    REQUIRE(!is_error(server.init()));
     REQUIRE(server.is_initialized() == true);
-    REQUIRE(server.close() == 0);
+    REQUIRE(!is_error(server.close()));
     REQUIRE(server.is_initialized() == false);
 
     //---------------
@@ -164,7 +161,7 @@ TEST_CASE("connection", "[arcus]") {
     Socket in_client;
     std::string client_ip;
     unsigned int client_port;
-    REQUIRE(server.accept(in_client, client_ip, client_port) == 0);
+    REQUIRE(!is_error(server.accept(in_client, client_ip, client_port)));
     REQUIRE(in_client.is_initialized() == false);
 
     //--------------------------
@@ -183,13 +180,18 @@ TEST_CASE("connection", "[arcus]") {
     // Send to server.
     wait_ready(out_client);
     const unsigned char out_data = 'a';
-    auto result = out_client.send(&out_data, 1);
-    REQUIRE(result == 1);
+    size_t sent;
+    auto result = out_client.send(&out_data, 1, sent);
+    REQUIRE(!is_error(result));
+    REQUIRE(sent == 1);
 
     // Receive on accepted server-side client socket.
     wait_ready(in_client);
     unsigned char in_data[128] = {0};
-    REQUIRE(in_client.receive(in_data, 128) == 1);
+    size_t received;
+    result = in_client.receive(in_data, 128, received);
+    REQUIRE(!is_error(result));
+    REQUIRE(received == 1);
     REQUIRE(in_data[0] == out_data);
 
     //-------------
@@ -250,8 +252,10 @@ TEST_CASE("handshake early hello", "[arcus]") {
     objects.server_connection->initiate_handshake();
     wait_ready(objects.out_client);
     codec::Hello hello = codec::valid_hello();
-    auto result = objects.out_client.send(&hello, codec::hello_size());
-    REQUIRE(result == codec::hello_size());
+    size_t sent;
+    auto result = objects.out_client.send(&hello, codec::hello_size(), sent);
+    REQUIRE(!is_error(result));
+    REQUIRE(sent == codec::hello_size());
     auto did_fail = false;
     for (int i = 0; i < 5; i++) {
         did_fail = is_error(objects.server_connection->update());  // Todo Error type.
@@ -281,14 +285,18 @@ TEST_CASE("handshake hello bad response", "[arcus]") {
 
     // Receive the hello from server.
     codec::Hello hello = {0};
-    auto result = lazy_socket_receive(objects.out_client, &hello, codec::hello_size());
-    REQUIRE(result == codec::hello_size());
+    size_t received;
+    auto result = objects.out_client.receive(&hello, codec::hello_size(), received);
+    REQUIRE(!is_error(result));
+    REQUIRE(received == codec::hello_size());
     REQUIRE(codec::validate_hello(hello));
 
     // Send wrong opcode back.
     static codec::Header hello_header = {0};
     hello_header.opcode = static_cast<char>(Opcodes::soft_stop_request);
-    auto sent = lazy_socket_send(objects.out_client, &hello_header, codec::header_size());
+    size_t sent;
+    result = objects.out_client.send(&hello_header, codec::header_size(), sent);
+    REQUIRE(!is_error(result));
     REQUIRE(sent == codec::header_size());
 
     // Ensure the server connection enters an error state.
