@@ -75,11 +75,6 @@ int Client::connect(const char *address, unsigned int port) {
         return -1;
     }
 
-    error = _socket->set_non_blocking(true);
-    if (error != 0) {
-        return -1;
-    }
-
     return 0;
 }
 

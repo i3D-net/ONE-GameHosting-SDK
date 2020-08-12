@@ -69,18 +69,19 @@ Error Connection::process_handshake() {
     if (_status == Status::handshake_not_started) {
         // Check if hello received.
         codec::Hello hello = {0};
-        auto result = lazy_socket_receive(_socket, &hello, codec::hello_size());
-        if (result < 0) {
+        size_t received;
+        auto err = _socket.receive(&hello, codec::hello_size(), received);
+        if (is_error(err)) {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_RECEIVE_FAILED;
         }
 
-        if (result == 0) {          // No error but nothing sent.
+        if (received == 0) {        // No error but nothing received.
             return ONE_ERROR_NONE;  // Retry next attempt.
         }
 
         // todo - hello buffering
-        if (result != codec::hello_size()) {
+        if (received != codec::hello_size()) {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_TOO_BIG;
         }
@@ -90,11 +91,13 @@ Error Connection::process_handshake() {
         }
 
         // Send back a hello Message.
-        result = lazy_socket_send(_socket, &hello_header, codec::header_size());
-        if (result < 0) {  // Error.
+        size_t sent;
+        err = _socket.send(&hello_header, codec::header_size(), sent);
+        if (is_error(err)) {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_MESSAGE_SEND_FAILED;
         }
+        // Todo - buffer outgoing send, send remaining if sent < codec::header_size().
 
         // Assume handshaking is complete now. This side is free to send other
         // Messages now. If handshaking fails on the server, then the connection
@@ -104,32 +107,45 @@ Error Connection::process_handshake() {
         // Ensure nothing is received. Arcus client should not send
         // until it receives a Hello.
         char byte;
-        auto result = lazy_socket_receive(_socket, &byte, 1);
-        if (result != 0) {
+        size_t received;
+        auto err = _socket.receive(&byte, 1, received);
+        if (is_error(err)) {
+            _status = Status::error;
+            return err;
+        }
+        if (received > 0) {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_RECEIVE_BEFORE_SEND;
         }
         // Send the hello.
-        result = lazy_socket_send(_socket, &codec::valid_hello(), codec::hello_size());
-        if (result < 0) {  // Error.
+        size_t sent;
+        err = _socket.send(&codec::valid_hello(), codec::hello_size(), sent);
+        if (is_error(err)) {  // Error.
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_SEND_FAILED;
-        } else if (result == 0) {   // No error but nothing sent.
+        } else if (sent == 0) {     // No error but nothing sent.
             return ONE_ERROR_NONE;  // Retry next attempt.
         }
+        // Todo - above send buffering, ensure all is sent if partial send.
+
         _status = Status::handshake_hello_sent;
     } else if (_status == Status::handshake_hello_sent) {
         // Check if hello message Header received back.
         codec::Header header = {0};
-        auto result = lazy_socket_receive(_socket, &header, codec::header_size());
+        size_t received;
+        auto err = _socket.receive(&header, codec::header_size(), received);
         // Todo - buffer.
-        if (result < 0) {
+        if (is_error(err)) {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_MESSAGE_RECEIVE_FAILED;
         }
-        if (result != codec::header_size()) {
+        if (received > codec::header_size()) {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_MESSAGE_HEADER_TOO_BIG;
+        }
+        if (received < codec::header_size()) {
+            _status = Status::error;
+            return ONE_ERROR_CONNECTION_HELLO_MESSAGE_HEADER_TOO_SMALL;
         }
         if (std::memcmp(&header, &hello_header, codec::header_size()) != 0) {
             _status = Status::error;

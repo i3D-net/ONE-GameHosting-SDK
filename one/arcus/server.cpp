@@ -136,8 +136,6 @@ int Server::update() {
             return 0;
         }
 
-        _client_socket->set_non_blocking(true);
-
         // TODO: avoid allocation, use reset & init.
         auto connection = new Connection(*_client_socket, 1024, 1024);
         if (connection == nullptr) {
