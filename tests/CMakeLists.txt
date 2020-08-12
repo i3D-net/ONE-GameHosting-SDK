@@ -1,6 +1,7 @@
 set(UNIT_TEST tests)
 
 add_executable(${UNIT_TEST}
+    accumulator.cpp
     agent.cpp
     arcus.cpp
     codec.cpp
