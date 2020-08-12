@@ -1,0 +1,37 @@
+#pragma once
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Note - when adding errors:
+//    1. Never change an existing number mapping.
+//    2. Add the new error symbol the string function in error.cpp.
+typedef enum OneError {
+    ONE_ERROR_NONE = 0,
+    ONE_ERROR_SOCKET,
+    ONE_ERROR_CONNECTION_RECEIVE_BEFORE_SEND,
+    ONE_ERROR_CONNECTION_HELLO_SEND_FAILED,
+    ONE_ERROR_CONNECTION_HELLO_RECEIVE_FAILED,
+    ONE_ERROR_CONNECTION_HELLO_VERSION_MISMATCH,
+    ONE_ERROR_CONNECTION_HELLO_TOO_BIG,
+    ONE_ERROR_CONNECTION_HELLO_INVALID,
+    ONE_ERROR_CONNECTION_HELLO_MESSAGE_SEND_FAILED,
+    ONE_ERROR_CONNECTION_HELLO_MESSAGE_RECEIVE_FAILED,
+    ONE_ERROR_CONNECTION_HELLO_MESSAGE_HEADER_TOO_BIG,
+    ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID,
+    ONE_ERROR_CONNECTION_UPDATE_AFTER_ERROR,
+    ONE_ERROR_CONNECTION_UPDATE_READY_FAIL,
+    ONE_ERROR_CONNECTION_SEND_FAIL,
+    ONE_ERROR_CONNECTION_RECEIVE_FAIL
+} OneError;
+
+constexpr bool is_error(OneError err) {
+    return err != ONE_ERROR_NONE;
+}
+
+const char *error_text(OneError);
+
+#ifdef __cplusplus
+};
+#endif

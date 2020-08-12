@@ -40,7 +40,7 @@ struct Header {
     char flags;
     char opcode;
     char reserved[2];
-    int32_t packet_id;
+    uint32_t packet_id;
     uint32_t length;
 };
 static_assert(sizeof(Header) == 12, "header struct alignment");

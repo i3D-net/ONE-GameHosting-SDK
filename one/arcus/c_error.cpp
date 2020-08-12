@@ -1,14 +1,14 @@
-#include "error.h"
+#include <one/arcus/c_error.h>
 
-#include <hash_map>
+#include <unordered_map>
 #include <string>
 
 namespace one {
 namespace {
 
 #define ERROR_MAP_PAIR(e) e, #e
-const char *error_text(Error err) {
-    static std::hash_map<Error, std::string> lookup = {
+const char *error_text(OneError err) {
+    static std::unordered_map<OneError, std::string> lookup = {
         {ERROR_MAP_PAIR(ONE_ERROR_NONE)},
         {ERROR_MAP_PAIR(ONE_ERROR_CONNECTION_RECEIVE_BEFORE_SEND)},
         {ERROR_MAP_PAIR(ONE_ERROR_CONNECTION_HELLO_SEND_FAILED)},
@@ -28,7 +28,7 @@ const char *error_text(Error err) {
     if (it == lookup.end()) {
         return "";
     }
-    return it.second.c_str();
+    return it->second.c_str();
 }
 }  // unnamed namespace
 
@@ -38,7 +38,7 @@ const char *error_text(Error err) {
 extern "C" {
 #endif
 
-const char *error_text(Error err) {
+const char *error_text(OneError err) {
     return one::error_text(err);
 }
 

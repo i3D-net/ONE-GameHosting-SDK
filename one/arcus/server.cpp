@@ -169,7 +169,7 @@ int Server::update() {
             return -1;
         }
 
-        error = process_incoming_message(*message);
+        error = (Error)process_incoming_message(*message);
         if (error != 0) {
             return -1;
         }

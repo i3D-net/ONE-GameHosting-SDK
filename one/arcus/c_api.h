@@ -11,18 +11,13 @@
 #define ONE_EXPORT
 #define ONE_STDCALL
 
-#include <stddef.h>
+#include "c_error.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//------------------------------------------------------------------------------
-// Errors.
-
-typedef int OneError;
-
-// See the C++ error.h file for error values.
+// See c_error.h file for error values.
 
 //------------------------------------------------------------------------------
 // Opaque types returned by Apis.
