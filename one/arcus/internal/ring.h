@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 namespace one {
 
 // FIFO ring buffer with a fixed capacity.
@@ -17,7 +19,7 @@ public:
 
 private:
     // Todo: some reasonable storage buffer type, allocator overriding.
-    // std::vector<T>	_buffer;
+    std::vector<T> _buffer;
     // unsigned int _next;
     // size_t _size;
 };

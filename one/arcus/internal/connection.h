@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <one/arcus/error.h>
 #include <one/arcus/internal/platform.h>
 
