@@ -2,6 +2,7 @@
 #include <one/arcus/internal/accumulator.h>
 
 #include <string.h>
+#include <cstring>
 
 using namespace one;
 

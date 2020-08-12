@@ -109,6 +109,73 @@ const Payload &Message::payload() const {
 
 namespace messages {
 
+int prepare_error(Message &message) {
+    message.reset();
+    int error = message.init(Opcodes::error_response, Payload());
+    if (error != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int prepare_soft_stop(int timeout, Message &message) {
+    Payload payload;
+    int error = payload.set_val_int("timeout", timeout);
+    if (error != 0) {
+        return -1;
+    }
+
+    message.reset();
+    error = message.init(Opcodes::soft_stop_request, payload);
+    if (error != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int prepare_allocated(Array &array, Message &message) {
+    Payload payload;
+    int error = payload.set_val_array("data", array);
+    if (error != 0) {
+        return -1;
+    }
+
+    message.reset();
+    error = message.init(Opcodes::allocated_request, payload);
+    if (error != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int prepare_meta_data(Array &array, Message &message) {
+    Payload payload;
+    int error = payload.set_val_array("data", array);
+    if (error != 0) {
+        return -1;
+    }
+
+    message.reset();
+    error = message.init(Opcodes::meta_data_request, payload);
+    if (error != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int prepare_live_state_request(Message &message) {
+    int error = message.init(Opcodes::live_state_request, Payload());
+    if (error != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
 int prepare_live_state(int player, int max_player, const char *name, const char *map,
                        const char *mode, const char *version, Message &message) {
     Payload payload;
@@ -138,7 +205,19 @@ int prepare_live_state(int player, int max_player, const char *name, const char 
     }
 
     message.reset();
-    message.init(Opcodes::live_state, payload);
+    error = message.init(Opcodes::live_state_response, payload);
+    if (error != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int prepare_host_information_request(Message &message) {
+    int error = message.init(Opcodes::host_information_request, Payload());
+    if (error != 0) {
+        return -1;
+    }
 
     return 0;
 }

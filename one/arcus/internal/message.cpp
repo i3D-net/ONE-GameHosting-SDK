@@ -7,16 +7,34 @@
 
 namespace one {
 
-namespace validate {
+namespace validation {
 
-int soft_stop(const Message &message, params::SoftStop &params) {
+int error_request(const Message &message, params::ErrorResponse &) {
     const auto code = message.code();
 
     if (!is_opcode_supported(code)) {
         return -1;
     }
 
-    if (code != Opcodes::soft_stop) {
+    if (code != Opcodes::error_response) {
+        return -1;
+    }
+
+    if (!message.payload().is_empty()) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int soft_stop_request(const Message &message, params::SoftStopRequest &params) {
+    const auto code = message.code();
+
+    if (!is_opcode_supported(code)) {
+        return -1;
+    }
+
+    if (code != Opcodes::soft_stop_request) {
         return -1;
     }
 
@@ -26,6 +44,46 @@ int soft_stop(const Message &message, params::SoftStop &params) {
 
     if (error != 0) {
         return error;
+    }
+
+    return 0;
+}
+
+int allocated_request(const Message &message, params::AllocatedRequest &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return -1;
+    }
+
+    if (code != Opcodes::allocated_request) {
+        return -1;
+    }
+
+    const auto &payload = message.payload();
+
+    int error = payload.val_array("data", params._data);
+    if (error != 0) {
+        return -1;
+    }
+
+    return 0;
+}
+
+int meta_data_request(const Message &message, params::MetaDataRequest &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return -1;
+    }
+
+    if (code != Opcodes::meta_data_request) {
+        return -1;
+    }
+
+    const auto &payload = message.payload();
+
+    int error = payload.val_array("data", params._data);
+    if (error != 0) {
+        return -1;
     }
 
     return 0;
@@ -48,13 +106,13 @@ int live_state_request(const Message &message, params::LifeStateRequest &) {
     return 0;
 }
 
-int live_state(const Message &message, params::LifeState &params) {
+int live_state_response(const Message &message, params::LifeStateResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return -1;
     }
 
-    if (code != Opcodes::live_state) {
+    if (code != Opcodes::live_state_response) {
         return -1;
     }
 
@@ -93,22 +151,87 @@ int live_state(const Message &message, params::LifeState &params) {
     return 0;
 }
 
-}  // namespace validate
+int host_information_request(const Message &message, params::HostInformationRequest &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return -1;
+    }
 
-namespace invoke {
+    if (code != Opcodes::host_information_request) {
+        return -1;
+    }
 
-int soft_stop(const Message &message, std::function<void(void *, int)> callback, void *data) {
+    if (!message.payload().is_empty()) {
+        return -1;
+    }
+
+    return 0;
+}
+
+}  // namespace validation
+
+namespace invocation {
+
+int error_response(const Message &message, std::function<void(void *)> callback, void *data) {
     if (callback == nullptr) {
         return -1;
     }
 
-    params::SoftStop params;
-    const int error = validate::soft_stop(message, params);
+    params::ErrorResponse params;
+    const int error = validation::error_request(message, params);
+    if (error != 0) {
+        return error;
+    }
+
+    callback(data);
+    return 0;
+}
+
+int soft_stop_request(const Message &message, std::function<void(void *, int)> callback,
+                      void *data) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
+    params::SoftStopRequest params;
+    const int error = validation::soft_stop_request(message, params);
     if (error != 0) {
         return error;
     }
 
     callback(data, params._timeout);
+    return 0;
+}
+
+int allocated_request(const Message &message, std::function<void(void *, Array *)> callback,
+                      void *data) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
+    params::AllocatedRequest params;
+    const int error = validation::allocated_request(message, params);
+    if (error != 0) {
+        return error;
+    }
+
+    callback(data, &params._data);
+    return 0;
+}
+
+int meta_data_request(const Message &message, std::function<void(void *, Array *)> callback,
+                      void *data) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
+    params::MetaDataRequest params;
+    const int error = validation::meta_data_request(message, params);
+    if (error != 0) {
+        return error;
+    }
+
+    callback(data, &params._data);
     return 0;
 }
 
@@ -118,7 +241,7 @@ int live_state_request(const Message &message, std::function<void(void *)> callb
     }
 
     params::LifeStateRequest params;
-    const int error = validate::live_state_request(message, params);
+    const int error = validation::live_state_request(message, params);
     if (error != 0) {
         return error;
     }
@@ -127,25 +250,43 @@ int live_state_request(const Message &message, std::function<void(void *)> callb
     return 0;
 }
 
-int live_state(const Message &message,
-               std::function<void(int, int, const std::string &, const std::string &,
-                                  const std::string &, const std::string &)>
-                   callback) {
+int live_state_response(
+    const Message &message,
+    std::function<void(void *, int, int, const std::string &, const std::string &,
+                       const std::string &, const std::string &)>
+        callback,
+    void *data) {
     if (callback == nullptr) {
         return -1;
     }
 
-    params::LifeState params;
-    const int error = validate::live_state(message, params);
+    params::LifeStateResponse params;
+    const int error = validation::live_state_response(message, params);
     if (error != 0) {
         return error;
     }
 
-    callback(params._players, params._max_players, params._name, params._map, params._mode,
+    callback(data, params._players, params._max_players, params._name, params._map, params._mode,
              params._version);
     return 0;
 }
 
-}  // namespace invoke
+int host_informatio_request(const Message &message, std::function<void(void *)> callback,
+                            void *data) {
+    if (callback == nullptr) {
+        return -1;
+    }
+
+    params::HostInformationRequest params;
+    const int error = validation::host_information_request(message, params);
+    if (error != 0) {
+        return error;
+    }
+
+    callback(data);
+    return 0;
+}
+
+}  // namespace invocation
 
 }  // namespace one

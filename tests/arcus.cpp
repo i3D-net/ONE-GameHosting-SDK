@@ -21,19 +21,25 @@ TEST_CASE("current arcus version", "[arcus]") {
 
 TEST_CASE("opcode version V2 validation", "[arcus]") {
     REQUIRE(is_opcode_supported_v2(Opcodes::hello));
-    REQUIRE(is_opcode_supported_v2(Opcodes::soft_stop));
-    REQUIRE(is_opcode_supported_v2(Opcodes::allocated));
+    REQUIRE(is_opcode_supported_v2(Opcodes::error_response));
+    REQUIRE(is_opcode_supported_v2(Opcodes::soft_stop_request));
+    REQUIRE(is_opcode_supported_v2(Opcodes::allocated_request));
+    REQUIRE(is_opcode_supported_v2(Opcodes::meta_data_request));
     REQUIRE(is_opcode_supported_v2(Opcodes::live_state_request));
-    REQUIRE(is_opcode_supported_v2(Opcodes::live_state));
+    REQUIRE(is_opcode_supported_v2(Opcodes::live_state_response));
+    REQUIRE(is_opcode_supported_v2(Opcodes::host_information_request));
     REQUIRE(is_opcode_supported_v2(Opcodes::invalid) == false);
 }
 
 TEST_CASE("opcode current version validation", "[arcus]") {
     REQUIRE(is_opcode_supported(Opcodes::hello));
-    REQUIRE(is_opcode_supported(Opcodes::soft_stop));
-    REQUIRE(is_opcode_supported(Opcodes::allocated));
+    REQUIRE(is_opcode_supported(Opcodes::error_response));
+    REQUIRE(is_opcode_supported(Opcodes::soft_stop_request));
+    REQUIRE(is_opcode_supported(Opcodes::allocated_request));
+    REQUIRE(is_opcode_supported(Opcodes::meta_data_request));
     REQUIRE(is_opcode_supported(Opcodes::live_state_request));
-    REQUIRE(is_opcode_supported(Opcodes::live_state));
+    REQUIRE(is_opcode_supported(Opcodes::live_state_response));
+    REQUIRE(is_opcode_supported(Opcodes::host_information_request));
     REQUIRE(is_opcode_supported(Opcodes::invalid) == false);
 }
 
@@ -43,16 +49,16 @@ TEST_CASE("opcode current version validation", "[arcus]") {
 TEST_CASE("message handling", "[arcus]") {
     Message m;
     const std::string payload = "{}";
-    REQUIRE(m.init(Opcodes::soft_stop, {payload.c_str(), payload.size()}) == 0);
-    REQUIRE(m.code() == Opcodes::soft_stop);
+    REQUIRE(m.init(Opcodes::soft_stop_request, {payload.c_str(), payload.size()}) == 0);
+    REQUIRE(m.code() == Opcodes::soft_stop_request);
     // FIXME: uncomment when the payload class is properlly implemented.
     // REQUIRE(m.payload().is_empty() == false);
-    REQUIRE(m.init(Opcodes::soft_stop, {nullptr, 0}) == 0);
+    REQUIRE(m.init(Opcodes::soft_stop_request, {nullptr, 0}) == 0);
     m.reset();
     REQUIRE(m.code() == Opcodes::invalid);
     REQUIRE(m.payload().is_empty());
-    REQUIRE(m.init(static_cast<int>(Opcodes::soft_stop), {nullptr, 0}) == 0);
-    REQUIRE(m.code() == Opcodes::soft_stop);
+    REQUIRE(m.init(static_cast<int>(Opcodes::soft_stop_request), {nullptr, 0}) == 0);
+    REQUIRE(m.code() == Opcodes::soft_stop_request);
     REQUIRE(m.payload().is_empty());
     m.reset();
     REQUIRE(m.code() == Opcodes::invalid);
@@ -61,9 +67,39 @@ TEST_CASE("message handling", "[arcus]") {
 
 TEST_CASE("message prepare", "[arcus]") {
     Message m;
+    REQUIRE(messages::prepare_error(m) == 0);
+    REQUIRE(m.code() == Opcodes::error_response);
+    REQUIRE(m.payload().is_empty() == true);
+
+    m.reset();
+    REQUIRE(messages::prepare_soft_stop(1000, m) == 0);
+    REQUIRE(m.code() == Opcodes::soft_stop_request);
+    // FIXME: uncomment when the payload class is properlly implemented.
+    // REQUIRE(m.payload().is_empty() == false);
+
+    m.reset();
+    Array allocated;
+    REQUIRE(messages::prepare_allocated(allocated, m) == 0);
+    REQUIRE(m.code() == Opcodes::allocated_request);
+    // FIXME: uncomment when the payload class is properlly implemented.
+    // REQUIRE(m.payload().is_empty() == false);
+
+    m.reset();
+    Array meta_data;
+    REQUIRE(messages::prepare_meta_data(meta_data, m) == 0);
+    REQUIRE(m.code() == Opcodes::meta_data_request);
+    // FIXME: uncomment when the payload class is properlly implemented.
+    // REQUIRE(m.payload().is_empty() == false);
+
+    m.reset();
+    REQUIRE(messages::prepare_live_state_request(m) == 0);
+    REQUIRE(m.code() == Opcodes::live_state_request);
+    REQUIRE(m.payload().is_empty() == true);
+
+    m.reset();
     REQUIRE(messages::prepare_live_state(1, 16, "test server", "test map", "test mode",
                                          "test version", m) == 0);
-    REQUIRE(m.code() == Opcodes::live_state);
+    REQUIRE(m.code() == Opcodes::live_state_response);
     // FIXME: uncomment when the payload class is properlly implemented.
     // REQUIRE(m.payload().is_empty() == false);
 }
@@ -251,7 +287,7 @@ TEST_CASE("handshake hello bad response", "[arcus]") {
 
     // Send wrong opcode back.
     static codec::Header hello_header = {0};
-    hello_header.opcode = static_cast<char>(Opcodes::soft_stop);
+    hello_header.opcode = static_cast<char>(Opcodes::soft_stop_request);
     auto sent = lazy_socket_send(objects.out_client, &hello_header, codec::header_size());
     REQUIRE(sent == codec::header_size());
 

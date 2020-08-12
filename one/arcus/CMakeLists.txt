@@ -1,7 +1,6 @@
 set(HEADER_FILES
-    arcus.h
+    client.h
     c_api.h
-    message.h
     internal/accumulator.h
     internal/codec.h
     internal/connection.h
@@ -11,17 +10,20 @@ set(HEADER_FILES
     internal/ring.h
     internal/socket.h
     internal/version.h
+    message.h
+    server.cpp
 )
 
 set(SOURCE_FILES
-    arcus.cpp
+    client.cpp
     c_api.cpp
-    message.cpp
     internal/accumulator.cpp
     internal/codec.cpp
     internal/connection.cpp
     internal/message.cpp
     internal/socket.cpp
+    message.cpp
+    server.cpp
 )
 
 add_library(one_arcus ${SOURCE_FILES} ${HEADER_FILES})

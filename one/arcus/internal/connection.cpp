@@ -74,6 +74,11 @@ int Connection::process_handshake() {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_RECEIVE_FAILED;
         }
+
+        if (result == 0) {          // No error but nothing sent.
+            return ONE_ERROR_NONE;  // Retry next attempt.
+        }
+
         // todo - hello buffering
         if (result != codec::hello_size()) {
             _status = Status::error;
@@ -89,8 +94,6 @@ int Connection::process_handshake() {
         if (result < 0) {  // Error.
             _status = Status::error;
             return ONE_ERROR_CONNECTION_HELLO_MESSAGE_SEND_FAILED;
-        } else if (result == 0) {   // No error but nothing sent.
-            return ONE_ERROR_NONE;  // Retry next attempt.
         }
 
         // Assume handshaking is complete now. This side is free to send other
