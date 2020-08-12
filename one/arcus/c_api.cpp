@@ -1,6 +1,6 @@
 #include <one/arcus/c_api.h>
 
-#include <one/arcus/arcus.h>
+#include <one/arcus/server.h>
 #include <one/arcus/message.h>
 
 #include <utility>
@@ -229,7 +229,7 @@ int prepare_live_state(OneMessagePtr message, int player, int max_player, const 
     return messages::prepare_live_state(player, max_player, name, map, mode, version, *m);
 }
 
-int create_server(OneServerPtr *server) {
+int create_server(OneServerPtr *server, size_t max_message_in, size_t max_message_out) {
     if (server == nullptr) {
         return -1;
     }
@@ -239,7 +239,7 @@ int create_server(OneServerPtr *server) {
         return -1;
     }
 
-    int error = s->init();
+    int error = s->init(max_message_in, max_message_out);
     if (error != 0) {
         delete s;
         return -1;
@@ -276,16 +276,16 @@ int status(OneServerPtr const server) {
         return -1;
     }
 
-    return s->status();
+    return static_cast<int>(s->status());
 }
 
-int listen(OneServerPtr server, unsigned int port) {
+int listen(OneServerPtr server, unsigned int port, int queueLength) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
 
-    return s->listen(port);
+    return s->listen(port, queueLength);
 }
 
 int shutdown(OneServerPtr server) {
@@ -297,7 +297,7 @@ int shutdown(OneServerPtr server) {
     return s->shutdown();
 }
 
-int send_live_state(OneServerPtr server, OneMessagePtr message) {
+int send_error_response(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -308,7 +308,35 @@ int send_live_state(OneServerPtr server, OneMessagePtr message) {
         return -1;
     }
 
-    return s->send_live_state(*m);
+    return s->send_error_response(*m);
+}
+
+int send_live_state_response(OneServerPtr server, OneMessagePtr message) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return -1;
+    }
+
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return -1;
+    }
+
+    return s->send_live_state_response(*m);
+}
+
+int send_host_information_request(OneServerPtr server, OneMessagePtr message) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return -1;
+    }
+
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return -1;
+    }
+
+    return s->send_host_information_request(*m);
 }
 
 int set_soft_stop_callback(OneServerPtr server, void (*cb)(void *, int), void *data) {
@@ -322,6 +350,34 @@ int set_soft_stop_callback(OneServerPtr server, void (*cb)(void *, int), void *d
     }
 
     s->set_soft_stop_callback(cb, data);
+    return 0;
+}
+
+int set_allocated_callback(OneServerPtr server, void (*cb)(void *, void *), void *data) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return -1;
+    }
+
+    if (cb == nullptr) {
+        return -1;
+    }
+
+    s->set_allocated_callback(cb, data);
+    return 0;
+}
+
+int set_meta_data_callback(OneServerPtr server, void (*cb)(void *, void *), void *data) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return -1;
+    }
+
+    if (cb == nullptr) {
+        return -1;
+    }
+
+    s->set_meta_data_callback(cb, data);
     return 0;
 }
 
@@ -360,8 +416,12 @@ OneGameHostingApiPtr game_hosting_api() {
     server_api.status = status;
     server_api.listen = listen;
     server_api.shutdown = shutdown;
-    server_api.send_live_state = send_live_state;
+    server_api.send_error_response = send_error_response;
+    server_api.send_live_state_response = send_live_state_response;
+    server_api.send_host_information_request = send_host_information_request;
     server_api.set_soft_stop_callback = set_soft_stop_callback;
+    server_api.set_allocated_callback = set_allocated_callback;
+    server_api.set_meta_data_callback = set_meta_data_callback;
     server_api.set_live_state_request_callback = set_live_state_request_callback;
 
     static OneGameHostingApi api;

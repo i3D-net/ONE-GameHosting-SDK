@@ -5,12 +5,24 @@
 namespace one {
 
 // Todo - set final opcode values.
-enum class Opcodes { hello, soft_stop, allocated, live_state_request, live_state, invalid };
+enum class Opcodes {
+    hello,
+    error_response,
+    soft_stop_request,
+    allocated_request,
+    meta_data_request,
+    live_state_request,
+    live_state_response,
+    host_information_request,
+    invalid
+};
 
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcodes code) {
-    return code == Opcodes::hello || code == Opcodes::soft_stop || code == Opcodes::allocated ||
-           code == Opcodes::live_state_request || code == Opcodes::live_state;
+    return code == Opcodes::hello || code == Opcodes::error_response ||
+           code == Opcodes::soft_stop_request || code == Opcodes::allocated_request ||
+           code == Opcodes::meta_data_request || code == Opcodes::live_state_request ||
+           code == Opcodes::live_state_response || code == Opcodes::host_information_request;
 }
 
 inline bool is_opcode_supported(Opcodes code) {

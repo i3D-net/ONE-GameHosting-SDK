@@ -11,6 +11,8 @@
 #define ONE_EXPORT
 #define ONE_STDCALL
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -118,7 +120,7 @@ struct OneServerApi {
     //--------------------------------------------------------------------------
     // One Server Life Cycle.
 
-    int (*create)(OneServerPtr *server);
+    int (*create)(OneServerPtr *server, size_t max_message_in, size_t max_message_out);
     void (*destroy)(OneServerPtr *server);
 
     ///
@@ -138,7 +140,7 @@ struct OneServerApi {
     ///
     /// Listens for messages on the given port.
     ///
-    int (*listen)(OneServerPtr server, unsigned int port);
+    int (*listen)(OneServerPtr server, unsigned int port, int queueLength);
 
     ///
     /// Stops listening for messages.
@@ -156,6 +158,12 @@ struct OneServerApi {
 
     ///
     /// Send the Arcus API server live_state opcode message.
+    /// Message Empty Content:
+    /// {}
+    int (*send_error_response)(OneServerPtr server, OneMessagePtr message);
+
+    ///
+    /// Send the Arcus API server live_state opcode message.
     /// Message Mandatory Content:
     /// {
     ///   players : 0,
@@ -165,7 +173,13 @@ struct OneServerApi {
     ///   server mode : "",
     ///   server version : "",
     /// }
-    int (*send_live_state)(OneServerPtr server, OneMessagePtr message);
+    int (*send_live_state_response)(OneServerPtr server, OneMessagePtr message);
+
+    ///
+    /// Send the Arcus API server live_state opcode message.
+    /// Message Empty Content:
+    /// {}
+    int (*send_host_information_request)(OneServerPtr server, OneMessagePtr message);
 
     //--------------------------------------------------------------------------
     // Incoming Message callbacks.
@@ -184,11 +198,30 @@ struct OneServerApi {
     // - if the callbacks are not set, then the messages are ignored
     // - extract to separate api struct
 
-    // Required: Register the callback to be notified of a soft_stop. The process
+    // Required: Register the callback to be notified of a soft_stop_request. The process
     // should stop at its earliest convenience. If the server process is still
     // active after the given timeout (seconds), then One will terminate the
     // process directly on the deployment.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
     int (*set_soft_stop_callback)(OneServerPtr server, void (*cb)(void *data, int timeout),
+                                  void *data);
+
+    // Required: Register the callback to be notified of a allocated_request.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    // The `void *array` must be of type OneArrayPtr or the callback will error out.
+    int (*set_allocated_callback)(OneServerPtr server, void (*cb)(void *data, void *array),
+                                  void *data);
+
+    // Required: Register the callback to be notified of a meta_data_request.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    // The `void *array` must be of type OneArrayPtr or the callback will error out.
+    int (*set_meta_data_callback)(OneServerPtr server, void (*cb)(void *data, void *array),
                                   void *data);
 
     // Required: Register to be notified of when the game must call

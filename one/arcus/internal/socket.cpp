@@ -51,6 +51,7 @@ int init_socket_system() {
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData);
 #endif
+    return 0;
 }
 
 void shutdown_socket_system() {
