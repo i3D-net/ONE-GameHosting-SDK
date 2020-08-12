@@ -1,6 +1,8 @@
 set(HEADER_FILES
     client.h
     c_api.h
+    c_error.h
+    error.h
     internal/accumulator.h
     internal/codec.h
     internal/connection.h
@@ -17,6 +19,7 @@ set(HEADER_FILES
 set(SOURCE_FILES
     client.cpp
     c_api.cpp
+    c_error.cpp
     internal/accumulator.cpp
     internal/codec.cpp
     internal/connection.cpp

@@ -24,15 +24,15 @@ Connection::Status Connection::status() const {
 }
 
 Error Connection::push_outgoing(const Message &message) {
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 Error Connection::incoming_count() const {
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 Error Connection::pop_incoming(Message **message) {
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 void Connection::initiate_handshake() {
@@ -56,7 +56,7 @@ void Connection::reset() {
     _status = Status::handshake_not_started;
 }
 
-int Connection::process_handshake() {
+Error Connection::process_handshake() {
     // Check if handshake timed out.
     // return ONE_ERROR_NONE;
 
@@ -141,7 +141,7 @@ int Connection::process_handshake() {
     return ONE_ERROR_NONE;
 }
 
-int Connection::process_messages() {
+Error Connection::process_messages() {
     return ONE_ERROR_NONE;
 }
 
