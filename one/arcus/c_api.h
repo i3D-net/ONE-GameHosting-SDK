@@ -11,7 +11,9 @@
 #define ONE_EXPORT
 #define ONE_STDCALL
 
-#include "c_error.h"
+#include <one/arcus/c_error.h>
+
+#include <cstddef>
 
 #ifdef __cplusplus
 extern "C" {
@@ -79,8 +81,11 @@ typedef OneMessageApi *OneMessageApiPtr;
 ///
 struct OneMessagePrepareApi {
     /// Must be called whenever finished with a message.
-    int (*prepare_live_state)(OneMessagePtr message, int player, int max_player, const char *name,
-                              const char *map, const char *mode, const char *version);
+    int (*prepare_error_response)(OneMessagePtr message);
+    int (*prepare_live_state_response)(int player, int max_player, const char *name,
+                                       const char *map, const char *mode, const char *version,
+                                       OneMessagePtr message);
+    int (*prepare_host_information_request)(OneMessagePtr message);
 };
 typedef OneMessagePrepareApi *OneMessagePrepareApiPtr;
 
@@ -115,7 +120,7 @@ struct OneServerApi {
     //--------------------------------------------------------------------------
     // One Server Life Cycle.
 
-    int (*create)(OneServerPtr *server, size_t max_message_in, size_t max_message_out);
+    int (*create)(size_t max_message_in, size_t max_message_out, OneServerPtr *server);
     void (*destroy)(OneServerPtr *server);
 
     ///

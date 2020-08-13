@@ -7,10 +7,12 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 set(HEADER_FILES
     game.h
+    one_server_wrapper.h
 )
 
 set(SOURCE_FILES
     game.cpp
+    one_server_wrapper.cpp
 )
 
 add_library(one_game ${SOURCE_FILES} ${HEADER_FILES})

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <one/arcus/c_api.h>
+#include <one/game/one_server_wrapper.h>
 
 #include <functional>
 #include <string>
@@ -22,24 +23,17 @@ public:
     int status() const;
 
     int send_error_response();
+    int send_host_information_request();
 
     int set_live_state_request_callback();
     static void send_live_state_callback(void *data);
-
-    int send_host_information_request();
 
     int set_soft_stop_request_callback(void (*callback)(void *data, int timeout), void *data);
     int set_allocated_request_callback(void (*callback)(void *data, void *), void *data);
     int set_meta_data_request_callback(void (*callback)(void *data, void *), void *data);
 
 private:
-    int listen();
-
-    OneGameHostingApiPtr _api;
-    OneServerPtr _server;
-
-    const unsigned int _port;
-    const int _queueLength;
+    OneServerWrapper _server;
 
     int _players;
     int _max_players;

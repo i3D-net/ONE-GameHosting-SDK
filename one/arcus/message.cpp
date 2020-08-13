@@ -109,7 +109,7 @@ const Payload &Message::payload() const {
 
 namespace messages {
 
-int prepare_error(Message &message) {
+int prepare_error_response(Message &message) {
     message.reset();
     int error = message.init(Opcodes::error_response, Payload());
     if (error != 0) {
@@ -119,7 +119,7 @@ int prepare_error(Message &message) {
     return 0;
 }
 
-int prepare_soft_stop(int timeout, Message &message) {
+int prepare_soft_stop_request(int timeout, Message &message) {
     Payload payload;
     int error = payload.set_val_int("timeout", timeout);
     if (error != 0) {
@@ -135,7 +135,7 @@ int prepare_soft_stop(int timeout, Message &message) {
     return 0;
 }
 
-int prepare_allocated(Array &array, Message &message) {
+int prepare_allocated_request(Array &array, Message &message) {
     Payload payload;
     int error = payload.set_val_array("data", array);
     if (error != 0) {
@@ -151,7 +151,7 @@ int prepare_allocated(Array &array, Message &message) {
     return 0;
 }
 
-int prepare_meta_data(Array &array, Message &message) {
+int prepare_meta_data_request(Array &array, Message &message) {
     Payload payload;
     int error = payload.set_val_array("data", array);
     if (error != 0) {
@@ -176,8 +176,8 @@ int prepare_live_state_request(Message &message) {
     return 0;
 }
 
-int prepare_live_state(int player, int max_player, const char *name, const char *map,
-                       const char *mode, const char *version, Message &message) {
+int prepare_live_state_response(int player, int max_player, const char *name, const char *map,
+                                const char *mode, const char *version, Message &message) {
     Payload payload;
     int error = payload.set_val_int("player", player);
     if (error != 0) {
