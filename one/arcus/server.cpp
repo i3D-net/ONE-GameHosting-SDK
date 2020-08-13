@@ -131,10 +131,9 @@ int Server::update() {
         if (is_error(err)) {
             return (int)err;
         }
-        // eldebug
-        // if (!is_ready) {
-        //     return 0;
-        // }
+        if (!is_ready) {
+            return 0;
+        }
 
         std::string client_ip;
         unsigned int client_port;

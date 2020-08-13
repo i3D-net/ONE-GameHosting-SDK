@@ -212,8 +212,8 @@ int prepare_error_response(OneMessagePtr message) {
     return messages::prepare_error_response(*m);
 }
 
-int prepare_live_state_response(int player, int max_player, const char *name,
-                       const char *map, const char *mode, const char *version, OneMessagePtr message) {
+int prepare_live_state_response(int player, int max_player, const char *name, const char *map,
+                                const char *mode, const char *version, OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
