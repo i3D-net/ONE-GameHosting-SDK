@@ -150,6 +150,15 @@ Error Socket::listen(int queueLength) {
     int result = set_non_blocking(_socket, true);
     if (result < 0) return ONE_ERROR_SOCKET_LISTEN_NON_BLOCKING_FAILED;
 
+#ifndef WINDOWS
+    int enable = 1;
+    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+        return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
+
+    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) < 0)
+        return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
+#endif
+
     result = ::listen(_socket, queueLength);
     if (result < 0) return ONE_ERROR_SOCKET_LISTEN_FAILED;
 
@@ -171,7 +180,7 @@ Error Socket::accept(Socket &client, std::string &ip, unsigned int &port) {
 
     // Client received.
 
-    const auto result = set_non_blocking(_socket, true);
+    const auto result = set_non_blocking(socket, true);
     if (result < 0) return ONE_ERROR_SOCKET_ACCEPT_NON_BLOCKING_FAILED;
 
     client._socket = socket;
@@ -202,7 +211,28 @@ Error Socket::connect(const char *ip, const unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::select(float timeout) {
+Error Socket::ready_for_read(float timeout, bool &is_ready) {
+    is_ready = false;
+    if (is_initialized() == false) return ONE_ERROR_SOCKET_SELECT_UNINITIALIZED;
+
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(_socket, &fds);
+
+    const auto seconds = (int)(timeout);
+    const auto microseconds = (int)((timeout - seconds) * 1000000);
+    timeval converted_timeout;
+    converted_timeout.tv_sec = seconds;
+    converted_timeout.tv_usec = microseconds;
+
+    const int result = ::select((int)_socket + 1, &fds, NULL, NULL, &converted_timeout);
+    if (result < 0) return ONE_ERROR_SOCKET_SELECT_FAILED;
+    if (result > 0) is_ready = true;
+    return ONE_ERROR_NONE;
+}
+
+Error Socket::ready_for_send(float timeout, bool &is_ready) {
+    is_ready = false;
     if (is_initialized() == false) return ONE_ERROR_SOCKET_SELECT_UNINITIALIZED;
 
     fd_set fds;
@@ -217,6 +247,7 @@ Error Socket::select(float timeout) {
 
     const int result = ::select((int)_socket + 1, NULL, &fds, NULL, &converted_timeout);
     if (result < 0) return ONE_ERROR_SOCKET_SELECT_FAILED;
+    if (result > 0) is_ready = true;
     return ONE_ERROR_NONE;
 }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 //------------------------------------------------------------------------------
 // This is the externally facing interface for the One Game Hosting SDK.
 //

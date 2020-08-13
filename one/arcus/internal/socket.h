@@ -80,8 +80,11 @@ public:
     //--------
     // IO.
 
-    // Non-blocking select checks if socket has been changed.
-    Error select(float timeout);
+    // Sets is_ready to true if the socket is ready for reading (accept or receive).
+    Error ready_for_read(float timeout, bool &is_ready);
+
+    // Sets is_ready to true if the socket is ready for sending.
+    Error ready_for_send(float timeout, bool &is_ready);
 
     // Sends data on the socket, setting the given length_sent to the number of
     // bytes sent. A failure to due to the socket not being ready, e.g.

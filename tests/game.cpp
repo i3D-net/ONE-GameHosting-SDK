@@ -11,5 +11,3 @@ TEST_CASE("fake game life cycle", "[fake game]") {
     REQUIRE(fakeGame.init(1024, 1024) == 0);
     REQUIRE(fakeGame.shutdown() == 0);
 }
-
-

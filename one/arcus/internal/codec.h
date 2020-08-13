@@ -25,7 +25,7 @@ inline size_t hello_size() {
     return sizeof(Hello);
 }
 
-// Returns true if the given Hello packet matches what is expected by
+// Returns true if the given Hello matches what is expected by
 // this version of the SDK.
 bool validate_hello(const Hello &hello);
 
@@ -49,9 +49,9 @@ inline size_t header_size() {
     return sizeof(Header);
 }
 
-// No header validation in the codec at the moment. No implicit restrictions
-// are placed on any of the fields at the codec level. Opcodes will be handled
-// by message layer. Length will be handled by document reader.
+// Returns true if the given Header matches what is expected by
+// this version of the SDK.
+bool validate_header(const Header &header);
 
 // Convert byte data to a Header. Length must be header_size().
 int data_to_header(const void *data, size_t length, Header &header);

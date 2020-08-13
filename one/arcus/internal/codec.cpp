@@ -16,6 +16,13 @@ const Hello &valid_hello() {
     return hello;
 }
 
+bool validate_header(const Header &header) {
+    // Minimal validation in the codec at the moment. Opcodes will be handled
+    // by message layer. Length will be handled by document reader.
+    // Flags are not used at the moment and should be zero.
+    return header.flags == (char)0x0;
+}
+
 int data_to_header(const void *data, size_t length, Header &header) {
     // handle byte order to a specific order for wire
 

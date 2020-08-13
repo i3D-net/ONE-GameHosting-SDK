@@ -53,30 +53,35 @@ void soft_stop_callback(void *, int timeout) {
     soft_stop_callback_has_been_called = true;
 }
 
-int handshake(Agent &agent, Game &game) {
-    while (true) {
-        if (game.update() != 0) {
-            return -1;
-        }
+void handshake(Agent &agent, Game &game) {
+    // REQUIRE(!wait_with_cancel(1000, [&] {
+    //     REQUIRE(game.update() == 0);
 
-        if (agent.update() != 0) {
-            return -1;
-        }
+    //     REQUIRE(agent.update() == 0);
 
-        bool not_finished = wait_with_cancel(10, [&] {
-            return game.status() == static_cast<int>(Server::Status::ready) &&
-                   agent.status() == static_cast<int>(Client::Status::ready);
-        });
+    //     return game.status() == static_cast<int>(Server::Status::ready) &&
+    //            agent.status() == static_cast<int>(Client::Status::ready);
+    // }));
 
-        if (!not_finished) {
-            return 0;
-        }
-    }
+    for_sleep(10, 10, [&]() {
+        REQUIRE(game.update() == 0);
+
+        REQUIRE(agent.update() == 0);
+
+        if (game.status() == static_cast<int>(Server::Status::ready) &&
+            agent.status() == static_cast<int>(Client::Status::ready))
+            return true;
+
+        return false;
+    });
+    auto ready = game.status() == static_cast<int>(Server::Status::ready) &&
+                 agent.status() == static_cast<int>(Client::Status::ready);
+    REQUIRE(ready);
 }
 
 TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     const auto address = "127.0.0.1";
-    const unsigned int port = 90001;
+    const unsigned int port = 9001;
 
     Game game(port, 1, 1, 16, "test", "test", "test", "test");
     REQUIRE(game.init(1024, 1024) == 0);
@@ -91,7 +96,7 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     REQUIRE(agent.set_live_state_response_callback(live_state_callback, nullptr) == 0);
     REQUIRE(agent.set_host_information_request_callback(host_information_callback, nullptr) == 0);
 
-    REQUIRE(handshake(agent, game) == 0);
+    handshake(agent, game);
 
     // FIXME: remove one the messages are sent over the socket.
     REQUIRE(game.shutdown() == 0);
