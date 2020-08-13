@@ -63,9 +63,14 @@ int OneServerWrapper::shutdown() {
     assert(_api != nullptr);
     assert(_api->server_api != nullptr);
     _api->server_api->destroy(&_server);
+    _server = nullptr;
     _api->message_api->destroy(&_error);
+    _error = nullptr;
     _api->message_api->destroy(&_live_state);
+    _live_state = nullptr;
     _api->message_api->destroy(&_host_information);
+    _host_information = nullptr;
+
     _api = nullptr;
     return 0;
 }

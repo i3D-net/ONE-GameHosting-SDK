@@ -54,15 +54,6 @@ void soft_stop_callback(void *, int timeout) {
 }
 
 void handshake(Agent &agent, Game &game) {
-    // REQUIRE(!wait_with_cancel(1000, [&] {
-    //     REQUIRE(game.update() == 0);
-
-    //     REQUIRE(agent.update() == 0);
-
-    //     return game.status() == static_cast<int>(Server::Status::ready) &&
-    //            agent.status() == static_cast<int>(Client::Status::ready);
-    // }));
-
     for_sleep(10, 10, [&]() {
         REQUIRE(game.update() == 0);
 
