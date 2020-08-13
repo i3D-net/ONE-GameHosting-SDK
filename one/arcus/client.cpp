@@ -111,7 +111,7 @@ Client::Status Client::status() {
 
 int Client::send_soft_stop_request(int timeout) {
     Message message;
-    messages::prepare_soft_stop(timeout, message);
+    messages::prepare_soft_stop_request(timeout, message);
     int error = process_outgoing_message(message);
     if (error != 0) {
         return -1;
@@ -126,7 +126,7 @@ int Client::send_allocated_request(Array *data) {
     }
 
     Message message;
-    messages::prepare_allocated(*data, message);
+    messages::prepare_allocated_request(*data, message);
     int error = process_outgoing_message(message);
     if (error != 0) {
         return -1;
@@ -141,7 +141,7 @@ int Client::send_meta_data_request(Array *data) {
     }
 
     Message message;
-    messages::prepare_meta_data(*data, message);
+    messages::prepare_meta_data_request(*data, message);
     int error = process_outgoing_message(message);
     if (error != 0) {
         return -1;

@@ -203,8 +203,17 @@ int set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
     return m->payload().set_val_object(key, *o);
 }
 
-int prepare_live_state(OneMessagePtr message, int player, int max_player, const char *name,
-                       const char *map, const char *mode, const char *version) {
+int prepare_error_response(OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return -1;
+    }
+
+    return messages::prepare_error_response(*m);
+}
+
+int prepare_live_state_response(int player, int max_player, const char *name,
+                       const char *map, const char *mode, const char *version, OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -226,10 +235,19 @@ int prepare_live_state(OneMessagePtr message, int player, int max_player, const 
         return -1;
     }
 
-    return messages::prepare_live_state(player, max_player, name, map, mode, version, *m);
+    return messages::prepare_live_state_response(player, max_player, name, map, mode, version, *m);
 }
 
-int create_server(OneServerPtr *server, size_t max_message_in, size_t max_message_out) {
+int prepare_host_information_request(OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return -1;
+    }
+
+    return messages::prepare_host_information_request(*m);
+}
+
+int create_server(size_t max_message_in, size_t max_message_out, OneServerPtr *server) {
     if (server == nullptr) {
         return -1;
     }
@@ -407,7 +425,9 @@ OneGameHostingApiPtr game_hosting_api() {
     message_api.val_object = val_object;
 
     static OneMessagePrepareApi message_prepare_api;
-    message_prepare_api.prepare_live_state = prepare_live_state;
+    message_prepare_api.prepare_error_response = prepare_error_response;
+    message_prepare_api.prepare_live_state_response = prepare_live_state_response;
+    message_prepare_api.prepare_host_information_request = prepare_host_information_request;
 
     static OneServerApi server_api;
     server_api.create = create_server;

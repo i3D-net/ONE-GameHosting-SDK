@@ -76,13 +76,13 @@ private:
 };
 
 namespace messages {
-int prepare_error(Message &message);
-int prepare_soft_stop(int timeout, Message &message);
-int prepare_allocated(Array &array, Message &message);
-int prepare_meta_data(Array &array, Message &message);
+int prepare_error_response(Message &message);
+int prepare_soft_stop_request(int timeout, Message &message);
+int prepare_allocated_request(Array &array, Message &message);
+int prepare_meta_data_request(Array &array, Message &message);
 int prepare_live_state_request(Message &message);
-int prepare_live_state(int player, int max_player, const char *name, const char *map,
-                       const char *mode, const char *version, Message &message);
+int prepare_live_state_response(int player, int max_player, const char *name, const char *map,
+                                const char *mode, const char *version, Message &message);
 int prepare_host_information_request(Message &message);
 }  // namespace messages
 
