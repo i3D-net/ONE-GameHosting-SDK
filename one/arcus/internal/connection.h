@@ -3,6 +3,7 @@
 #include <vector>
 
 #include <one/arcus/error.h>
+#include <one/arcus/internal/accumulator.h>
 #include <one/arcus/internal/platform.h>
 
 namespace one {
@@ -39,6 +40,7 @@ public:
 
     enum class Status {
         handshake_not_started,
+        handshake_hello_received,
         handshake_hello_scheduled,
         handshake_hello_sent,
         ready,
@@ -58,8 +60,21 @@ private:
     Error process_handshake();
     Error process_messages();
 
+    Error accumulate_receive(const void *, size_t);
+    Error accumulate_send(const void *, size_t);
+
+    // Handshake helpers.
+    Error ensure_nothing_received();
+    Error try_send_hello();  // The initial hello type.
+    Error try_receive_hello();
+    Error try_send_hello_message();  // Hello as a Message with opcode.
+    Error try_receive_hello_message();
+
     Status _status;
     Socket &_socket;
+
+    Accumulator _receive_stream;
+    Accumulator _send_stream;
 
     // RingBuffer<Message*> _incomingMessages;
     // RingBuffer<Message*> _outgoingMessages;

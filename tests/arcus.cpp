@@ -107,8 +107,16 @@ TEST_CASE("message prepare", "[arcus]") {
 //------------------------------------------------------------------------------
 // Socket & Connection tests.
 
-void wait_ready(Socket &socket) {
-    REQUIRE(socket.select(0.1f) >= 0);
+void wait_ready_for_read(Socket &socket) {
+    bool is_ready;
+    REQUIRE(!is_error(socket.ready_for_read(0.1f, is_ready)));
+    REQUIRE(is_ready);
+};
+
+void wait_ready_for_send(Socket &socket) {
+    bool is_ready;
+    REQUIRE(!is_error(socket.ready_for_send(0.1f, is_ready)));
+    REQUIRE(is_ready);
 };
 
 void listen(Socket &server, unsigned int &port) {
@@ -130,7 +138,7 @@ void connect(Socket &client, unsigned int port) {
 
 void accept(Socket &server, Socket &in_client) {
     // Accept client on server.
-    wait_ready(server);
+    wait_ready_for_read(server);
     std::string client_ip;
     unsigned int client_port;
     REQUIRE(!is_error(server.accept(in_client, client_ip, client_port)));
@@ -178,7 +186,7 @@ TEST_CASE("connection", "[arcus]") {
     // Send and receive.
 
     // Send to server.
-    wait_ready(out_client);
+    wait_ready_for_send(out_client);
     const unsigned char out_data = 'a';
     size_t sent;
     auto result = out_client.send(&out_data, 1, sent);
@@ -186,7 +194,7 @@ TEST_CASE("connection", "[arcus]") {
     REQUIRE(sent == 1);
 
     // Receive on accepted server-side client socket.
-    wait_ready(in_client);
+    wait_ready_for_read(in_client);
     unsigned char in_data[128] = {0};
     size_t received;
     result = in_client.receive(in_data, 128, received);
@@ -199,8 +207,8 @@ TEST_CASE("connection", "[arcus]") {
 
     // Arcus connections around the server-side and client-side sockets that
     // are connected to each other.
-    auto server_connection = Connection(in_client, 2, 2);
-    auto client_connection = Connection(out_client, 2, 2);
+    Connection server_connection(in_client, 2, 2);
+    Connection client_connection(out_client, 2, 2);
 
     server_connection.initiate_handshake();
     for (auto i = 0; i < 10; ++i) {
@@ -250,7 +258,7 @@ TEST_CASE("handshake early hello", "[arcus]") {
     init_handshake_test(objects);
 
     objects.server_connection->initiate_handshake();
-    wait_ready(objects.out_client);
+    wait_ready_for_send(objects.out_client);
     codec::Hello hello = codec::valid_hello();
     size_t sent;
     auto result = objects.out_client.send(&hello, codec::hello_size(), sent);

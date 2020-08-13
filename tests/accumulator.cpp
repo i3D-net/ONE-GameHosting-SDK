@@ -19,7 +19,7 @@ TEST_CASE("accumulator", "[arcus]") {
 
     // Check data is good.
     char *data = nullptr;
-    accumulator.peek(full.size(), &data);
+    accumulator.peek(full.size(), reinterpret_cast<void **>(&data));
     REQUIRE(std::strncmp(data, full.data(), full.size()) == 0);
 
     // Remove all.
@@ -38,7 +38,7 @@ TEST_CASE("accumulator", "[arcus]") {
     REQUIRE(accumulator.size() == quarter.size() * 2);
 
     // Check data.
-    accumulator.peek(two_quarters.size(), &data);
+    accumulator.peek(two_quarters.size(), reinterpret_cast<void **>(&data));
     REQUIRE(std::strncmp(data, two_quarters.data(), two_quarters.size()) == 0);
 
     // Remove a quarter.
@@ -47,6 +47,6 @@ TEST_CASE("accumulator", "[arcus]") {
     REQUIRE(accumulator.size() == quarter.size());
 
     // Check data.
-    accumulator.peek(quarter.size(), &data);
+    accumulator.peek(quarter.size(), reinterpret_cast<void **>(&data));
     REQUIRE(std::strncmp(data, quarter.data(), quarter.size()) == 0);
 }

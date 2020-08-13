@@ -123,16 +123,28 @@ int Server::update() {
 
     // Only accept new connection if client is not connected.
     if (!_client_socket->is_initialized()) {
-        const auto select = _listen_socket->select(0.f);
-
-        if (select < 0) {
-            return 0;
+        if (_client_connection != nullptr) {
+            return -1;
         }
+        bool is_ready;
+        const auto err = _listen_socket->ready_for_read(0.f, is_ready);
+        if (is_error(err)) {
+            return (int)err;
+        }
+        // eldebug
+        // if (!is_ready) {
+        //     return 0;
+        // }
 
         std::string client_ip;
         unsigned int client_port;
         int error = _listen_socket->accept(*_client_socket, client_ip, client_port);
         if (error != 0) {
+            return 0;
+        }
+
+        // If no client was accepted, exit.
+        if (!_client_socket->is_initialized()) {
             return 0;
         }
 

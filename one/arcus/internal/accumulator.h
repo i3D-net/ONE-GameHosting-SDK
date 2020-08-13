@@ -19,16 +19,18 @@ public:
     }
 
     // length must be less than or equal to capacity - size.
-    void put(const char *data, size_t length);
+    void put(const void *data, size_t length);
 
     // Provides a pointer to data from the beginning of the stream. Sets the
-    // given data pointer to the data and returns the number of bytes in the
-    // data. length must be <= size.
-    void peek(size_t length, char **data);
+    // given data pointer to the data. length must be <= size.
+    void peek(size_t length, void **data);
 
     // Drops the number of given bytes from the beginning of the stream, making
     // capacity at the end. length must be less than size.
     void trim(size_t length);
+
+    // Get is a util equivalent to peek + trim.
+    void get(size_t length, void **data);
 
 private:
     Accumulator() = delete;

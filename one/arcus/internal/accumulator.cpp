@@ -15,7 +15,7 @@ Accumulator::~Accumulator() {
     }
 }
 
-void Accumulator::put(const char *data, size_t length) {
+void Accumulator::put(const void *data, size_t length) {
     if (_buffer == nullptr) {
         return;
     }
@@ -24,7 +24,7 @@ void Accumulator::put(const char *data, size_t length) {
     _size += length;
 }
 
-void Accumulator::peek(size_t length, char **data) {
+void Accumulator::peek(size_t length, void **data) {
     if (_buffer == nullptr) {
         return;
     }
@@ -40,6 +40,11 @@ void Accumulator::trim(size_t length) {
     assert(length <= _size);
     memmove(_buffer, _buffer + length, _size - length);
     _size -= length;
+}
+
+void Accumulator::get(size_t length, void **data) {
+    peek(length, data);
+    trim(length);
 }
 
 }  // namespace one

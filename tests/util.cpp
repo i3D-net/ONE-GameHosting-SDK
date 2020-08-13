@@ -1,3 +1,4 @@
+#include <iostream>  // eldebug
 #include <util.h>
 #include <chrono>
 #include <thread>
@@ -22,9 +23,11 @@ bool wait_with_cancel(int wait_ms, std::function<bool()> cb) {
     while (duration_cast<milliseconds>(steady_clock::now() - start).count() > wait_ms) {
         std::this_thread::sleep_for(milliseconds(1));
         if (cb()) {
+            std::cout << "here\n";
             return false;
         }
     }
+    std::cout << "there\n";
     return true;
 }
 
