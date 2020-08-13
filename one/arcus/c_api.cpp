@@ -28,7 +28,7 @@ void destroy_message(OneMessagePtr *message) {
         return;
     }
 
-    auto m = (Message *)(message);
+    auto m = (Message *)(*message);
     if (m != nullptr) {
         delete m;
         *message = nullptr;

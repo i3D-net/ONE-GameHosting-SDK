@@ -56,7 +56,8 @@ int OneServerWrapper::init(size_t max_message_in, size_t max_message_out) {
 }
 
 int OneServerWrapper::shutdown() {
-    if (_server == nullptr && _api == nullptr) {
+    if (_server == nullptr && _error == nullptr && _live_state == nullptr &&
+        _host_information == nullptr && _api == nullptr) {
         return 0;
     }
     assert(_api != nullptr);
@@ -65,7 +66,6 @@ int OneServerWrapper::shutdown() {
     _api->message_api->destroy(&_error);
     _api->message_api->destroy(&_live_state);
     _api->message_api->destroy(&_host_information);
-    _server = nullptr;
     _api = nullptr;
     return 0;
 }

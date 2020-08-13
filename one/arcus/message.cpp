@@ -86,7 +86,7 @@ int Message::init(Opcodes code, std::pair<const char *, size_t> data) {
 
 int Message::init(Opcodes code, const Payload &payload) {
     _code = code;
-    _payload = payload;
+    //_payload = payload;
     return 0;
 }
 
