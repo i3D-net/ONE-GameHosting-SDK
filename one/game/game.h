@@ -14,6 +14,8 @@ public:
     Game(unsigned int port, int queueLength, int _players, int _max_players,
          const std::string &name, const std::string &map, const std::string &mode,
          const std::string &version);
+    Game(const Game &) = delete;
+    Game &operator=(const Game &) = delete;
     ~Game();
 
     int init(size_t max_message_in, size_t max_message_out);

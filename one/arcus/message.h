@@ -21,6 +21,8 @@ class Object final {};
 class Payload final {
 public:
     Payload() = default;
+    Payload(const Payload &) = delete;
+    Payload &operator=(const Payload &) = delete;
     ~Payload() = default;
 
     void from_json(std::pair<const char *, size_t> data);
@@ -58,6 +60,8 @@ private:
 class Message final {
 public:
     Message();
+    Message(const Message &) = delete;
+    Message &operator=(const Message &) = delete;
     ~Message() = default;
 
     int init(int code, std::pair<const char *, size_t> data);
