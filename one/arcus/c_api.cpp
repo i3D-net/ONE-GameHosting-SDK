@@ -9,7 +9,7 @@
 namespace one {
 namespace {
 
-int create_message(OneMessagePtr *message) {
+int message_create(OneMessagePtr *message) {
     if (message == nullptr) {
         return -1;
     }
@@ -23,7 +23,7 @@ int create_message(OneMessagePtr *message) {
     return 0;
 }
 
-void destroy_message(OneMessagePtr *message) {
+void message_destroy(OneMessagePtr *message) {
     if (message == nullptr) {
         return;
     }
@@ -35,7 +35,7 @@ void destroy_message(OneMessagePtr *message) {
     }
 }
 
-int init_message(OneMessagePtr message, int code, const char *data, unsigned int size) {
+int message_init(OneMessagePtr message, int code, const char *data, unsigned int size) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -44,7 +44,7 @@ int init_message(OneMessagePtr message, int code, const char *data, unsigned int
     return m->init(code, {data, size});
 }
 
-int code_message(OneMessagePtr message, int *code) {
+int message_code(OneMessagePtr message, int *code) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -58,7 +58,7 @@ int code_message(OneMessagePtr message, int *code) {
     return 0;
 }
 
-int val_int(OneMessagePtr message, const char *key, int *val) {
+int message_val_int(OneMessagePtr message, const char *key, int *val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -75,7 +75,7 @@ int val_int(OneMessagePtr message, const char *key, int *val) {
     return m->payload().val_int(key, *val);
 }
 
-int val_string(OneMessagePtr message, const char *key, char **val) {
+int message_val_string(OneMessagePtr message, const char *key, char **val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -101,7 +101,7 @@ int val_string(OneMessagePtr message, const char *key, char **val) {
     return 0;
 }
 
-int val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
+int message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -119,7 +119,7 @@ int val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
     return m->payload().val_array(key, *a);
 }
 
-int val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
+int message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -137,7 +137,7 @@ int val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
     return m->payload().val_object(key, *o);
 }
 
-int set_val_int(OneMessagePtr message, const char *key, int val) {
+int message_set_val_int(OneMessagePtr message, const char *key, int val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -150,7 +150,7 @@ int set_val_int(OneMessagePtr message, const char *key, int val) {
     return m->payload().set_val_int(key, val);
 }
 
-int set_val_string(OneMessagePtr message, const char *key, const char *val) {
+int message_set_val_string(OneMessagePtr message, const char *key, const char *val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -167,7 +167,7 @@ int set_val_string(OneMessagePtr message, const char *key, const char *val) {
     return m->payload().set_val_string(key, val);
 }
 
-int set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
+int message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -185,7 +185,7 @@ int set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
     return m->payload().set_val_array(key, *a);
 }
 
-int set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
+int message_set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -203,7 +203,7 @@ int set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
     return m->payload().set_val_object(key, *o);
 }
 
-int prepare_error_response(OneMessagePtr message) {
+int message_prepare_error_response(OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -212,7 +212,7 @@ int prepare_error_response(OneMessagePtr message) {
     return messages::prepare_error_response(*m);
 }
 
-int prepare_live_state_response(int player, int max_player, const char *name, const char *map,
+int message_prepare_live_state_response(int player, int max_player, const char *name, const char *map,
                                 const char *mode, const char *version, OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
@@ -238,7 +238,7 @@ int prepare_live_state_response(int player, int max_player, const char *name, co
     return messages::prepare_live_state_response(player, max_player, name, map, mode, version, *m);
 }
 
-int prepare_host_information_request(OneMessagePtr message) {
+int message_prepare_host_information_request(OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return -1;
@@ -247,7 +247,7 @@ int prepare_host_information_request(OneMessagePtr message) {
     return messages::prepare_host_information_request(*m);
 }
 
-int create_server(size_t max_message_in, size_t max_message_out, OneServerPtr *server) {
+int server_create(size_t max_message_in, size_t max_message_out, OneServerPtr *server) {
     if (server == nullptr) {
         return -1;
     }
@@ -267,7 +267,7 @@ int create_server(size_t max_message_in, size_t max_message_out, OneServerPtr *s
     return 0;
 }
 
-void destroy_server(OneServerPtr *server) {
+void server_destroy(OneServerPtr *server) {
     if (server == nullptr) {
         return;
     }
@@ -279,7 +279,7 @@ void destroy_server(OneServerPtr *server) {
     }
 }
 
-int update(OneServerPtr server) {
+int server_update(OneServerPtr server) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -288,7 +288,7 @@ int update(OneServerPtr server) {
     return s->update();
 }
 
-int status(OneServerPtr const server) {
+int server_status(OneServerPtr const server) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -297,7 +297,7 @@ int status(OneServerPtr const server) {
     return static_cast<int>(s->status());
 }
 
-int listen(OneServerPtr server, unsigned int port, int queueLength) {
+int server_listen(OneServerPtr server, unsigned int port, int queueLength) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -306,7 +306,7 @@ int listen(OneServerPtr server, unsigned int port, int queueLength) {
     return s->listen(port, queueLength);
 }
 
-int shutdown(OneServerPtr server) {
+int server_shutdown(OneServerPtr server) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -315,7 +315,7 @@ int shutdown(OneServerPtr server) {
     return s->shutdown();
 }
 
-int send_error_response(OneServerPtr server, OneMessagePtr message) {
+int server_send_error_response(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -329,7 +329,7 @@ int send_error_response(OneServerPtr server, OneMessagePtr message) {
     return s->send_error_response(*m);
 }
 
-int send_live_state_response(OneServerPtr server, OneMessagePtr message) {
+int server_send_live_state_response(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -343,7 +343,7 @@ int send_live_state_response(OneServerPtr server, OneMessagePtr message) {
     return s->send_live_state_response(*m);
 }
 
-int send_host_information_request(OneServerPtr server, OneMessagePtr message) {
+int server_send_host_information_request(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
@@ -357,103 +357,202 @@ int send_host_information_request(OneServerPtr server, OneMessagePtr message) {
     return s->send_host_information_request(*m);
 }
 
-int set_soft_stop_callback(OneServerPtr server, void (*cb)(void *, int), void *data) {
+int server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *, int), void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
 
-    if (cb == nullptr) {
+    if (callback == nullptr) {
         return -1;
     }
 
-    s->set_soft_stop_callback(cb, data);
+    s->set_soft_stop_callback(callback, data);
     return 0;
 }
 
-int set_allocated_callback(OneServerPtr server, void (*cb)(void *, void *), void *data) {
+int server_set_allocated_callback(OneServerPtr server, void (*callback)(void *, void *), void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
 
-    if (cb == nullptr) {
+    if (callback == nullptr) {
         return -1;
     }
 
-    s->set_allocated_callback(cb, data);
+    s->set_allocated_callback(callback, data);
     return 0;
 }
 
-int set_meta_data_callback(OneServerPtr server, void (*cb)(void *, void *), void *data) {
+int server_set_meta_data_callback(OneServerPtr server, void (*callback)(void *, void *), void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
 
-    if (cb == nullptr) {
+    if (callback == nullptr) {
         return -1;
     }
 
-    s->set_meta_data_callback(cb, data);
+    s->set_meta_data_callback(callback, data);
     return 0;
 }
 
-int set_live_state_request_callback(OneServerPtr server, void (*cb)(void *), void *data) {
+int server_set_live_state_request_callback(OneServerPtr server, void (*callback)(void *), void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return -1;
     }
 
-    if (cb == nullptr) {
+    if (callback == nullptr) {
         return -1;
     }
 
-    s->set_live_state_request_callback(cb, data);
+    s->set_live_state_request_callback(callback, data);
     return 0;
 }
 
-OneGameHostingApiPtr game_hosting_api() {
-    static OneMessageApi message_api;
-    message_api.create = create_message;
-    message_api.destroy = destroy_message;
-    message_api.init = init_message;
-    message_api.code = code_message;
-    message_api.val_int = val_int;
-    message_api.val_string = val_string;
-    message_api.val_array = val_array;
-    message_api.val_object = val_object;
+void allocator_set_alloc(void *(callback)(unsigned int size)) {
+    // Todo: implement.
 
-    static OneMessagePrepareApi message_prepare_api;
-    message_prepare_api.prepare_error_response = prepare_error_response;
-    message_prepare_api.prepare_live_state_response = prepare_live_state_response;
-    message_prepare_api.prepare_host_information_request = prepare_host_information_request;
+}
 
-    static OneServerApi server_api;
-    server_api.create = create_server;
-    server_api.destroy = destroy_server;
-    server_api.update = update;
-    server_api.status = status;
-    server_api.listen = listen;
-    server_api.shutdown = shutdown;
-    server_api.send_error_response = send_error_response;
-    server_api.send_live_state_response = send_live_state_response;
-    server_api.send_host_information_request = send_host_information_request;
-    server_api.set_soft_stop_callback = set_soft_stop_callback;
-    server_api.set_allocated_callback = set_allocated_callback;
-    server_api.set_meta_data_callback = set_meta_data_callback;
-    server_api.set_live_state_request_callback = set_live_state_request_callback;
-
-    static OneGameHostingApi api;
-    api.message_api = &message_api;
-    api.message_prepare_api = &message_prepare_api;
-    api.server_api = &server_api;
-    return &api;
+void allocator_set_free(void(callback)(void *)) {
+    // Todo: implement.
 }
 
 }  // Unnamed namespace.
 }  // namespace one
 
-extern "C" ONE_EXPORT OneGameHostingApiPtr ONE_STDCALL one_game_hosting_api() {
-    return one::game_hosting_api();
-};
+extern "C" {
+
+int one_message_create(OneMessagePtr *message) {
+    return one::message_create(message);
+}
+
+void one_message_destroy(OneMessagePtr *message) {
+    return one::message_destroy(message);
+}
+
+int one_message_init(OneMessagePtr message, int code, const char *data, unsigned int size) {
+    return one::message_init(message, code, data, size);
+}
+
+int one_message_code(OneMessagePtr message, int *code) {
+    return one::message_code(message, code);
+}
+
+int one_message_val_int(OneMessagePtr message, const char *key, int *val) {
+    return one::message_val_int(message, key, val);
+}
+
+int one_message_val_string(OneMessagePtr message, const char *key, char **val) {
+    return one::message_val_string(message, key, val);
+}
+
+int one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
+    return one::message_val_array(message, key, val);
+}
+
+int one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
+    return one::message_val_object(message, key, val);
+}
+
+int one_message_set_val_int(OneMessagePtr message, const char *key, int val) {
+    return one::message_set_val_int(message, key, val);
+}
+
+int one_message_set_val_string(OneMessagePtr message, const char *key, const char *val) {
+    return one::message_set_val_string(message, key, val);
+}
+
+int one_message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
+    return one::message_set_val_array(message, key, val);
+}
+
+int one_message_set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
+    return one::message_set_val_object(message, key, val);
+}
+
+int one_message_prepare_error_response(OneMessagePtr message) {
+    return one::message_prepare_error_response(message);
+}
+
+int one_message_prepare_live_state_response(int player, int max_player, const char *name,
+                                            const char *map, const char *mode, const char *version,
+                                            OneMessagePtr message) {
+    return one::message_prepare_live_state_response(player, max_player, name, map, mode, version, message);
+}
+
+int one_message_prepare_host_information_request(OneMessagePtr message) {
+    return one::message_prepare_host_information_request(message);
+}
+
+int one_server_create(size_t max_message_in, size_t max_message_out, OneServerPtr *server) {
+    return one::server_create(max_message_in, max_message_out, server);
+}
+
+void one_server_destroy(OneServerPtr *server) {
+    return one::server_destroy(server);
+}
+
+int one_server_update(OneServerPtr server) {
+    return one::server_update(server);
+}
+
+int one_server_status(OneServerPtr const server) {
+    return one::server_status(server);
+}
+
+int one_server_listen(OneServerPtr server, unsigned int port, int queueLength) {
+    return one::server_listen(server, port, queueLength);
+}
+
+int one_server_shutdown(OneServerPtr server) {
+    return one::server_shutdown(server);
+}
+
+int one_server_send_error_response(OneServerPtr server, OneMessagePtr message) {
+    return one::server_send_error_response(server, message);
+}
+
+int one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message) {
+    return one::server_send_live_state_response(server, message);
+}
+
+int one_server_send_host_information_request(OneServerPtr server, OneMessagePtr message) {
+    return one::server_send_host_information_request(server, message);
+}
+
+int one_server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *data, int timeout),
+                                      void *data) {
+    return one::server_set_soft_stop_callback(server, callback, data);
+}
+
+int one_server_set_allocated_callback(OneServerPtr server, void (*callback)(void *data, void *array),
+                                      void *data) {
+    return one::server_set_allocated_callback(server, callback, data);
+}
+
+int one_server_set_meta_data_callback(OneServerPtr server, void (*callback)(void *data, void *array),
+                                      void *data) {
+    return one::server_set_meta_data_callback(server, callback, data);
+}
+
+int one_server_set_live_state_request_callback(OneServerPtr server, void (*callback)(void *data),
+                                               void *data) {
+    return one::server_set_live_state_request_callback(server, callback, data);
+}
+
+void one_allocator_set_alloc(void *(callback)(unsigned int size)) {
+    one::allocator_set_alloc(callback);
+
+}
+
+void one_allocator_set_free(void(callback)(void *)) {
+    one::allocator_set_free(callback);
+}
+
+}; // extern "C"
+

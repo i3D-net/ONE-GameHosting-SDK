@@ -5,14 +5,12 @@
 
 int main() {
     std::cout << "Game -> project name: " << ONE_NAME << " version: " << ONE_VERSION << std::endl;
-    OneGameHostingApiPtr api = one_game_hosting_api();
     OneServerPtr server{nullptr};
-
-    int error = api->server_api->create(1024, 1024, &server);
+    int error = one_server_create(1024, 1024, &server);
     if (error != 0) {
         return error;
     }
 
-    api->server_api->destroy(&server);
+    one_server_destroy(&server);
     return 0;
 }
