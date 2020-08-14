@@ -45,7 +45,7 @@ struct Header {
 };
 static_assert(sizeof(Header) == 12, "header struct alignment");
 
-inline size_t header_size() {
+constexpr size_t header_size() {
     return sizeof(Header);
 }
 

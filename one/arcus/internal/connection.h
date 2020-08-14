@@ -8,6 +8,9 @@
 
 namespace one {
 
+namespace codec {
+class Header;
+}
 class Socket;
 class Message;
 template <typename T>
@@ -62,6 +65,9 @@ private:
 
     Error accumulate_receive(const void *, size_t);
     Error accumulate_send(const void *, size_t);
+
+    // Message helpers.
+    Error Connection::try_receive_message_header(codec::Header &header);
 
     // Handshake helpers.
     Error ensure_nothing_received();
