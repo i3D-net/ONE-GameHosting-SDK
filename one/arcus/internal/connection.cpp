@@ -52,7 +52,7 @@ Error Connection::update() {
     if (_status == Status::error) return ONE_ERROR_CONNECTION_UPDATE_AFTER_ERROR;
 
     // Return if socket has no activity or has an error.
-    bool is_ready;
+    bool is_ready = false;
     auto err = _socket.ready_for_send(0.f, is_ready);
     if (is_error(err)) return err;
     if (!is_ready) return ONE_ERROR_NONE;
@@ -186,9 +186,7 @@ Error Connection::try_send_hello_message() {
     return ONE_ERROR_NONE;
 }
 
-Error Connection::try_receive_hello_message() {
-    // Check if hello message Header received back.
-    codec::Header header = {0};
+Error Connection::try_receive_message_header(codec::Header &header) {
     size_t received;
     auto err = _socket.receive(&header, codec::header_size(), received);
     if (is_error(err)) {
@@ -206,12 +204,25 @@ Error Connection::try_receive_hello_message() {
         return ONE_ERROR_TRY_AGAIN;
     }
 
-    // Read and validate the full hello from the receive buffer.
-    codec::Header *data;
+    // Read the full hello from the receive buffer.
+    codec::Header *data = nullptr;
     _receive_stream.get(codec::header_size(), reinterpret_cast<void **>(&data));
     assert(data != nullptr);
+    memcpy(&header, data, codec::header_size());
 
-    if (std::memcmp(data, &hello_message(), codec::header_size()) != 0) {
+    if (!codec::validate_header(*data)) return ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER;
+
+    return ONE_ERROR_NONE;
+}
+
+Error Connection::try_receive_hello_message() {
+    codec::Header header = {0};
+    auto err = try_receive_message_header(header);
+    if (is_error(err)) {
+        return err;
+    }
+
+    if (std::memcmp(&header, &hello_message(), codec::header_size()) != 0) {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID;
     }
@@ -236,7 +247,7 @@ Error Connection::process_handshake() {
             if (is_error(err)) return fail(err);
 
             {
-                bool is_ready;
+                bool is_ready = false;
                 err = _socket.ready_for_send(0.f, is_ready);
                 if (is_error(err)) return err;
                 if (!is_ready) break;
@@ -279,6 +290,36 @@ Error Connection::process_handshake() {
 }
 
 Error Connection::process_messages() {
+    codec::Header header = {0};
+    auto err = ONE_ERROR_NONE;
+
+    auto read_header_and_continue = [&]() -> bool {
+        err = try_receive_message_header(header);
+        if (err == ONE_ERROR_TRY_AGAIN) {
+            err = ONE_ERROR_NONE;
+            return false;
+        }
+        if (is_error(err)) {
+            return false;
+        }
+        return true;
+    };
+
+    while (read_header_and_continue()) {
+        // Convert to Message.
+
+        // Store in incoming queue for consumption.
+
+        // Check if socket is ready to check another.
+        // Return if socket has no activity or has an error.
+        bool is_ready = false;
+        auto err = _socket.ready_for_send(0.f, is_ready);
+        if (is_error(err)) return err;
+        if (!is_ready) return ONE_ERROR_NONE;
+    }
+
+    if (is_error(err)) _status = Status::error;
+
     return ONE_ERROR_NONE;
 }
 

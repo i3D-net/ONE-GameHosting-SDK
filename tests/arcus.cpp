@@ -222,6 +222,23 @@ TEST_CASE("connection", "[arcus]") {
     REQUIRE(server_connection.status() == Connection::Status::ready);
     REQUIRE(client_connection.status() == Connection::Status::ready);
 
+    // After handshake, the connection is ready to send and receive only
+    // Messages. Sending an invalid message should result in a error on server
+    // connection.
+    wait_ready_for_send(out_client);
+    // Send at last the size of a full message header or else the data will
+    // just wait in incoming buffer and be be processed.
+    const unsigned char bad_data[codec::header_size()] = {0xF};
+    auto err = out_client.send(&bad_data, codec::header_size(), sent);
+    REQUIRE(!is_error(err));
+    REQUIRE(sent == codec::header_size());
+    for_sleep(10, 10, [&]() {
+        REQUIRE(!is_error(server_connection.update()));
+        if (server_connection.status() == Connection::Status::error) return true;
+        return false;
+    });
+    REQUIRE(server_connection.status() == Connection::Status::error);
+
     server.close();
     out_client.close();
     in_client.close();
