@@ -6,6 +6,7 @@ namespace one {
 
 // Todo - set final opcode values.
 enum class Opcodes {
+    invalid = 0,
     hello,
     error_response,
     soft_stop_request,
@@ -13,8 +14,7 @@ enum class Opcodes {
     meta_data_request,
     live_state_request,
     live_state_response,
-    host_information_request,
-    invalid
+    host_information_request
 };
 
 // To finalize when the list of supported opcode is confirmed.

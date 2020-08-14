@@ -80,13 +80,34 @@ Error Connection::ensure_nothing_received() {
 }
 
 Error Connection::try_send_hello() {
+    auto &stream = _send_stream;
+
+    // Buffer outgoing message if not yet done so. Nearly all the time the
+    // send will succeed since it is tiny and partial sends
+    // are rare edge cases in general.
+    if (stream.size() == 0) {
+        stream.put(&codec::valid_hello(), codec::hello_size());
+    }
+
+    // Get remaining buffer.
+    const auto size = stream.size();
+    assert(size > 0);
+    void *data = nullptr;
+    stream.peek(size, &data);
+    assert(data != nullptr);
+
+    // Send as much as possible.
     size_t sent;
-    auto err = _socket.send(&codec::valid_hello(), codec::hello_size(), sent);
+    auto err = _socket.send(data, size, sent);
     if (is_error(err)) {  // Error.
         return ONE_ERROR_CONNECTION_HELLO_SEND_FAILED;
     }
     if (sent == 0) return ONE_ERROR_TRY_AGAIN;
-    // Todo - above send buffering, ensure all is sent if partial send.
+
+    // Remove from send stream, check if finished.
+    stream.trim(sent);
+    if (stream.size() > 0) return ONE_ERROR_TRY_AGAIN;
+
     return ONE_ERROR_NONE;
 }
 
@@ -114,9 +135,11 @@ Error Connection::try_receive_hello() {
     }
 
     // Read and validate the full hello from the receive buffer.
-    codec::Hello *pHello;
-    _receive_stream.get(codec::hello_size(), reinterpret_cast<void **>(&pHello));
-    if (!codec::validate_hello(hello)) {
+    codec::Hello *data;
+    _receive_stream.get(codec::hello_size(), reinterpret_cast<void **>(&data));
+    assert(data != nullptr);
+
+    if (!codec::validate_hello(*data)) {
         return ONE_ERROR_CONNECTION_HELLO_INVALID;
     }
     return ONE_ERROR_NONE;
@@ -125,20 +148,41 @@ Error Connection::try_receive_hello() {
 // There are two hello packets. The initial codec::hello sent from the
 // handshake initiater, and the response codec::Header message with a
 // hello opcode sent in response. This is the response header.
-codec::Header &hello_message() {
+const codec::Header &hello_message() {
     static codec::Header message = {0};
     message.opcode = static_cast<char>(Opcodes::hello);
     return message;
 }
 
 Error Connection::try_send_hello_message() {
-    // Send back a hello Message.
+    auto &stream = _send_stream;
+
+    // Buffer outgoing message if not yet done so. Nearly all the time the send
+    // will succeed since it is tiny and partial sends are rare edge cases in
+    // general.
+    if (stream.size() == 0) {
+        stream.put(&hello_message(), codec::header_size());
+    }
+
+    // Get remaining buffer.
+    const auto size = stream.size();
+    assert(size > 0);
+    void *data = nullptr;
+    stream.peek(size, &data);
+    assert(data != nullptr);
+
+    // Send.
     size_t sent;
-    auto err = _socket.send(&hello_message(), codec::header_size(), sent);
+    auto err = _socket.send(data, size, sent);
     if (is_error(err)) {
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_SEND_FAILED;
     }
-    // Todo - buffer outgoing send, send remaining if sent < codec::header_size().
+    if (sent == 0) return ONE_ERROR_TRY_AGAIN;
+
+    // Remove from send stream, check if finished.
+    stream.trim(sent);
+    if (stream.size() > 0) return ONE_ERROR_TRY_AGAIN;
+
     return ONE_ERROR_NONE;
 }
 
@@ -147,7 +191,6 @@ Error Connection::try_receive_hello_message() {
     codec::Header header = {0};
     size_t received;
     auto err = _socket.receive(&header, codec::header_size(), received);
-    // Todo - buffer.
     if (is_error(err)) {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_RECEIVE_FAILED;
@@ -156,11 +199,19 @@ Error Connection::try_receive_hello_message() {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_HEADER_TOO_BIG;
     }
-    if (received < codec::header_size()) {
-        _status = Status::error;
-        return ONE_ERROR_CONNECTION_HELLO_MESSAGE_HEADER_TOO_SMALL;
+
+    // Buffer bytes read.
+    _receive_stream.put(&header, received);
+    if (_receive_stream.size() < codec::header_size()) {
+        return ONE_ERROR_TRY_AGAIN;
     }
-    if (std::memcmp(&header, &hello_message(), codec::header_size()) != 0) {
+
+    // Read and validate the full hello from the receive buffer.
+    codec::Header *data;
+    _receive_stream.get(codec::header_size(), reinterpret_cast<void **>(&data));
+    assert(data != nullptr);
+
+    if (std::memcmp(data, &hello_message(), codec::header_size()) != 0) {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID;
     }
