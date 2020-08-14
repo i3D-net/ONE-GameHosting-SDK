@@ -39,7 +39,6 @@ public:
 private:
     int listen();
 
-    OneGameHostingApiPtr _api;
     OneServerPtr _server;
     OneMessagePtr _error;
     OneMessagePtr _live_state;
