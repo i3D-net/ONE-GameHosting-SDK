@@ -67,7 +67,7 @@ private:
     Error accumulate_send(const void *, size_t);
 
     // Message helpers.
-    Error Connection::try_receive_message_header(codec::Header &header);
+    Error try_receive_message_header(codec::Header &header);
 
     // Handshake helpers.
     Error ensure_nothing_received();
