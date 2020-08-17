@@ -174,7 +174,7 @@ int Server::update() {
         if (is_error(error)) return -1;
         if (count == 0) break;
 
-        error = _client_connection->pop_incoming(message);
+        error = _client_connection->pop_incoming(&message);
         if (error != 0) {
             return -1;
         }

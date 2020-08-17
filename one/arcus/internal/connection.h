@@ -66,7 +66,7 @@ public:
     // ownership of returned pointer is transferred to the caller and must be
     // freed by the caller. Returns ONE_ERROR_EMPTY if the incoming_count is
     // zero and there is no message to pop.
-    Error pop_incoming(Message *message);
+    Error pop_incoming(Message **message);
 
 private:
     Connection() = delete;

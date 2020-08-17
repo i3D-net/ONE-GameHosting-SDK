@@ -254,34 +254,37 @@ TEST_CASE("connection", "[arcus]") {
     shutdown_socket_system();
 }
 
-struct HandshakeTestObjects {
+struct ClientServerTestObjects {
     Socket server;
     Socket out_client;
     Socket in_client;
     Connection *server_connection;
+    Connection *client_connection;
     unsigned int server_port;
 };
 
-void init_handshake_test(HandshakeTestObjects &objects) {
+void init_client_server_test(ClientServerTestObjects &objects) {
     init_socket_system();
 
     listen(objects.server, objects.server_port);
     connect(objects.out_client, objects.server_port);
     accept(objects.server, objects.in_client);
     objects.server_connection = new Connection(objects.in_client, 2, 2);
+    objects.client_connection = new Connection(objects.out_client, 2, 2);
 }
 
-void shutdown_handshake_test(HandshakeTestObjects &objects) {
+void shutdown_client_server_test(ClientServerTestObjects &objects) {
     objects.server.close();
     objects.out_client.close();
     objects.in_client.close();
     delete objects.server_connection;
+    delete objects.client_connection;
     shutdown_socket_system();
 }
 
 TEST_CASE("handshake early hello", "[arcus]") {
-    HandshakeTestObjects objects;
-    init_handshake_test(objects);
+    ClientServerTestObjects objects;
+    init_client_server_test(objects);
 
     objects.server_connection->initiate_handshake();
     wait_ready_for_send(objects.out_client);
@@ -299,12 +302,12 @@ TEST_CASE("handshake early hello", "[arcus]") {
     REQUIRE(did_fail);
     // todo get error reason
 
-    shutdown_handshake_test(objects);
+    shutdown_client_server_test(objects);
 }
 
 TEST_CASE("handshake hello bad response", "[arcus]") {
-    HandshakeTestObjects objects;
-    init_handshake_test(objects);
+    ClientServerTestObjects objects;
+    init_client_server_test(objects);
 
     // Wait for server to enter sent state.
     objects.server_connection->initiate_handshake();
@@ -344,9 +347,59 @@ TEST_CASE("handshake hello bad response", "[arcus]") {
     }
     REQUIRE(err == ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID);
 
-    shutdown_handshake_test(objects);
+    shutdown_client_server_test(objects);
 }
 
 //--------------------------
 // Test - handshake timeout.
 TEST_CASE("handshake timeout", "[arcus]") {}
+
+//--------------------------------
+// Message send and receive tests.
+
+TEST_CASE("message send and receive", "[arcus]") {
+    ClientServerTestObjects objects;
+    init_client_server_test(objects);
+
+    objects.server_connection->initiate_handshake();
+    for_sleep(10, 1, [&]() {
+        REQUIRE(!is_error(objects.server_connection->update()));
+        REQUIRE(!is_error(objects.client_connection->update()));
+        if (objects.server_connection->status() == Connection::Status::ready &&
+            objects.client_connection->status() == Connection::Status::ready)
+            return true;
+        return false;
+    });
+    REQUIRE(objects.server_connection->status() == Connection::Status::ready);
+    REQUIRE(objects.client_connection->status() == Connection::Status::ready);
+
+    // Ensure no messages waiting anywhere.
+    unsigned int count = 0;
+    REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
+    REQUIRE(count == 0);
+    REQUIRE(!is_error(objects.client_connection->incoming_count(count)));
+    REQUIRE(count == 0);
+    Message *message;
+    REQUIRE(objects.server_connection->pop_incoming(&message) == ONE_ERROR_EMPTY);
+    REQUIRE(objects.client_connection->pop_incoming(&message) == ONE_ERROR_EMPTY);
+
+    // Send a message from client to server.
+    message = new Message();
+    message->init(Opcode::soft_stop_request, {nullptr, 0});
+    objects.client_connection->push_outgoing(message);
+    for_sleep(10, 1, [&]() {
+        REQUIRE(!is_error(objects.server_connection->update()));
+        REQUIRE(!is_error(objects.client_connection->update()));
+        return false;
+    });
+
+    // Check it on server.
+    REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
+    REQUIRE(count == 1);
+    // Message pointer was consumed by client connection, can re-use var safely without leak.
+    REQUIRE(!is_error(objects.server_connection->pop_incoming(&message)));
+    REQUIRE(message->code() == Opcode::soft_stop_request);
+    delete message;
+
+    shutdown_client_server_test(objects);
+}
