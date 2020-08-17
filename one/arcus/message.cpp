@@ -1,6 +1,6 @@
 #include <one/arcus/message.h>
 
-#include <one/arcus/internal/opcodes.h>
+#include <one/arcus/opcode.h>
 
 namespace one {
 
@@ -72,30 +72,26 @@ int Payload::set_val_object(const char *key, const Object &val) {
     return 0;
 }
 
-Message::Message() : _code(Opcodes::invalid) {}
+Message::Message() : _code(Opcode::invalid) {}
 
-int Message::init(int code, std::pair<const char *, size_t> data) {
-    return init(static_cast<Opcodes>(code), data);
-}
-
-int Message::init(Opcodes code, std::pair<const char *, size_t> data) {
+int Message::init(Opcode code, std::pair<const char *, size_t> data) {
     _code = code;
     _payload.from_json(data);
     return 0;
 }
 
-int Message::init(Opcodes code, const Payload &payload) {
+int Message::init(Opcode code, const Payload &payload) {
     _code = code;
     //_payload = payload;
     return 0;
 }
 
 void Message::reset() {
-    _code = Opcodes::invalid;
+    _code = Opcode::invalid;
     _payload.clear();
 }
 
-Opcodes Message::code() const {
+Opcode Message::code() const {
     return _code;
 }
 
@@ -111,7 +107,7 @@ namespace messages {
 
 int prepare_error_response(Message &message) {
     message.reset();
-    int error = message.init(Opcodes::error_response, Payload());
+    int error = message.init(Opcode::error_response, Payload());
     if (error != 0) {
         return -1;
     }
@@ -127,7 +123,7 @@ int prepare_soft_stop_request(int timeout, Message &message) {
     }
 
     message.reset();
-    error = message.init(Opcodes::soft_stop_request, payload);
+    error = message.init(Opcode::soft_stop_request, payload);
     if (error != 0) {
         return -1;
     }
@@ -143,7 +139,7 @@ int prepare_allocated_request(Array &array, Message &message) {
     }
 
     message.reset();
-    error = message.init(Opcodes::allocated_request, payload);
+    error = message.init(Opcode::allocated_request, payload);
     if (error != 0) {
         return -1;
     }
@@ -159,7 +155,7 @@ int prepare_meta_data_request(Array &array, Message &message) {
     }
 
     message.reset();
-    error = message.init(Opcodes::meta_data_request, payload);
+    error = message.init(Opcode::meta_data_request, payload);
     if (error != 0) {
         return -1;
     }
@@ -168,7 +164,7 @@ int prepare_meta_data_request(Array &array, Message &message) {
 }
 
 int prepare_live_state_request(Message &message) {
-    int error = message.init(Opcodes::live_state_request, Payload());
+    int error = message.init(Opcode::live_state_request, Payload());
     if (error != 0) {
         return -1;
     }
@@ -205,7 +201,7 @@ int prepare_live_state_response(int player, int max_player, const char *name, co
     }
 
     message.reset();
-    error = message.init(Opcodes::live_state_response, payload);
+    error = message.init(Opcode::live_state_response, payload);
     if (error != 0) {
         return -1;
     }
@@ -214,7 +210,7 @@ int prepare_live_state_response(int player, int max_player, const char *name, co
 }
 
 int prepare_host_information_request(Message &message) {
-    int error = message.init(Opcodes::host_information_request, Payload());
+    int error = message.init(Opcode::host_information_request, Payload());
     if (error != 0) {
         return -1;
     }

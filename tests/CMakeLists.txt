@@ -8,6 +8,7 @@ add_executable(${UNIT_TEST}
     game.cpp
     integration.cpp
     main.cpp
+    ring.cpp
     util.cpp
 )
 

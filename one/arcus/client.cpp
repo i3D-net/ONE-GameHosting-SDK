@@ -2,7 +2,7 @@
 
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/message.h>
-#include <one/arcus/internal/opcodes.h>
+#include <one/arcus/opcode.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/message.h>
 
@@ -198,14 +198,14 @@ int Client::set_host_information_request_callback(std::function<void(void *)> ca
 
 int Client::process_incoming_message(const Message &message) {
     switch (message.code()) {
-        case Opcodes::live_state_response:
+        case Opcode::live_state_response:
             if (_callbacks._live_state_response == nullptr) {
                 return 0;
             }
 
             return invocation::live_state_response(message, _callbacks._live_state_response,
                                                    _callbacks._live_state_response_data);
-        case Opcodes::host_information_request:
+        case Opcode::host_information_request:
             if (_callbacks._host_information_request == nullptr) {
                 return 0;
             }
@@ -221,7 +221,7 @@ int Client::process_incoming_message(const Message &message) {
 int Client::process_outgoing_message(const Message &message) {
     int error = 0;
     switch (message.code()) {
-        case Opcodes::live_state_request: {
+        case Opcode::live_state_request: {
             params::LifeStateRequest params;
             error = validation::live_state_request(message, params);
             if (error != 0) {
@@ -238,10 +238,12 @@ int Client::process_outgoing_message(const Message &message) {
         return -1;
     }
 
-    error = _connection->push_outgoing(message);
-    if (error != 0) {
-        return -1;
-    }
+    // Todo: message pointer here, passing ownership of memory from client to
+    // connection.
+    // error = _connection->push_outgoing(message);
+    // if (is_error(error)) {
+    //     return -1;
+    // }
 
     return 0;
 }

@@ -5,6 +5,7 @@
 #include <one/arcus/error.h>
 #include <one/arcus/internal/accumulator.h>
 #include <one/arcus/internal/platform.h>
+#include <one/arcus/internal/ring.h>
 
 namespace one {
 
@@ -38,7 +39,7 @@ public:
     Error update();
 
     // Reset the status to match construction time and clear any accumulated
-    // buffers.
+    // buffers. Retains sockets.
     void reset();
 
     enum class Status {
@@ -51,17 +52,32 @@ public:
     };
     Status status() const;
 
-    Error push_outgoing(const Message &message);
+    // Pushes the given Message for sending during the next call to update. The
+    // ownership of the pointer is transferred to the connection and will be
+    // freed after sending. If the outgoing message queue is full, then the
+    // push fails with ONE_ERROR_INSUFFICIENT_SPACE and the queue is not
+    // modified.
+    Error push_outgoing(Message *message);
 
-    Error incoming_count() const;
+    // The number of incoming messages available for pop.
+    Error incoming_count(unsigned int &count) const;
 
-    Error pop_incoming(Message **message);
+    // Removes and returns one message from the incoming message queue. The
+    // ownership of returned pointer is transferred to the caller and must be
+    // freed by the caller. Returns ONE_ERROR_EMPTY if the incoming_count is
+    // zero and there is no message to pop.
+    Error pop_incoming(Message *message);
 
 private:
     Connection() = delete;
 
     Error process_handshake();
-    Error process_messages();
+    // Reads all available incoming messages from the socket and stores them in
+    // the incoming message queue.
+    Error process_incoming_messages();
+    // Sends all outgoing messages in the queue as long as the socket is ready
+    // for sending.
+    Error process_outgoing_messages();
 
     Error accumulate_receive(const void *, size_t);
     Error accumulate_send(const void *, size_t);
@@ -79,11 +95,11 @@ private:
     Status _status;
     Socket &_socket;
 
-    Accumulator _receive_stream;
-    Accumulator _send_stream;
+    Accumulator _in_stream;
+    Accumulator _out_stream;
 
-    // RingBuffer<Message*> _incomingMessages;
-    // RingBuffer<Message*> _outgoingMessages;
+    Ring<Message *> _incoming_messages;
+    Ring<Message *> _outgoing_messages;
 };
 
 }  // namespace one
