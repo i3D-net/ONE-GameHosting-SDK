@@ -17,7 +17,7 @@ const Hello &valid_hello() {
 }
 
 bool validate_header(const Header &header) {
-    // Minimal validation in the codec at the moment. Opcodes will be handled
+    // Minimal validation in the codec at the moment. Opcode will be handled
     // by message layer. Length will be handled by document reader.
     // Flags are not used at the moment and should be zero.
     return header.flags == (char)0x0;
@@ -35,15 +35,10 @@ int data_to_header(const void *data, size_t length, Header &header) {
     return -1;
 }
 
-int header_to_data(const Header &header, std::vector<char> &data) {
-    // handle byte order to a specific order for wire
+void header_to_data(const Header &header, std::array<char, header_size()> &data) {
+    // Todo: handle byte order to a specific order for wire
 
-    // 1. Create output header struct.
-    // 2. Set opcode.
-    // 3. Serialize Payload to char*, size_t
-    // 4. Error handling throughout.
-
-    return -1;
+    std::memcpy(data.data(), &header, data.size());
 }
 
 }  // namespace codec

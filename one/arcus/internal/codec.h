@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include <vector>
+#include <array>
 
 namespace one {
 
@@ -57,7 +57,7 @@ bool validate_header(const Header &header);
 int data_to_header(const void *data, size_t length, Header &header);
 
 // Convert a Header to byte data.
-int header_to_data(const Header &message, std::vector<char> &data);
+void header_to_data(const Header &message, std::array<char, header_size()> &data);
 
 }  // namespace codec
 }  // namespace one

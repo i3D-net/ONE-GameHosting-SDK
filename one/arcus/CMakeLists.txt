@@ -7,12 +7,12 @@ set(HEADER_FILES
     internal/codec.h
     internal/connection.h
     internal/message.h
-    internal/opcodes.h
     internal/platform.h
     internal/ring.h
     internal/socket.h
     internal/version.h
     message.h
+    opcode.h
     server.cpp
 )
 

@@ -93,6 +93,16 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     REQUIRE(game.shutdown() == 0);
     return;
 
+    {
+        REQUIRE(agent.send_soft_stop_request(1000) == 0);
+        for_sleep(5, 1, [&]() {
+            REQUIRE(agent.update() == 0);
+            REQUIRE(game.update() == 0);
+            return soft_stop_callback_has_been_called;
+        });
+        REQUIRE(soft_stop_callback_has_been_called == true);
+    }
+
     // error_response
     {
         REQUIRE(game.send_error_response() == 0);
@@ -141,16 +151,6 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     }
 
     // TODO: add more agent request & custom messages.
-
-    // sotf_stop_request
-    {
-        REQUIRE(agent.send_soft_stop_request(1000) == 0);
-        REQUIRE(agent.update() == 0);
-        sleep(10);
-        REQUIRE(game.update() == 0);
-
-        REQUIRE(soft_stop_callback_has_been_called == true);
-    }
 
     REQUIRE(game.shutdown() == 0);
 }

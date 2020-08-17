@@ -2,6 +2,7 @@
 
 #include <one/arcus/server.h>
 #include <one/arcus/message.h>
+#include <one/arcus/opcode.h>
 
 #include <utility>
 #include <string>
@@ -41,7 +42,7 @@ int message_init(OneMessagePtr message, int code, const char *data, unsigned int
         return -1;
     }
 
-    return m->init(code, {data, size});
+    return m->init(static_cast<Opcode>(code), {data, size});
 }
 
 int message_code(OneMessagePtr message, int *code) {

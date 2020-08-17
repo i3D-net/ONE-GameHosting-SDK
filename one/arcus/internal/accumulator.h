@@ -18,7 +18,12 @@ public:
         return _size;
     }
 
-    // length must be less than or equal to capacity - size.
+    void clear() {
+        trim(size());
+    };
+
+    // Copies the given data and adds it to the stream. length must be less than
+    // or equal to capacity - size.
     void put(const void *data, size_t length);
 
     // Provides a pointer to data from the beginning of the stream. Sets the

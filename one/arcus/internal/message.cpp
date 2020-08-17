@@ -1,6 +1,6 @@
 #include <one/arcus/internal/message.h>
 
-#include <one/arcus/internal/opcodes.h>
+#include <one/arcus/opcode.h>
 #include <one/arcus/message.h>
 
 #include <functional>
@@ -16,7 +16,7 @@ int error_request(const Message &message, params::ErrorResponse &) {
         return -1;
     }
 
-    if (code != Opcodes::error_response) {
+    if (code != Opcode::error_response) {
         return -1;
     }
 
@@ -34,7 +34,7 @@ int soft_stop_request(const Message &message, params::SoftStopRequest &params) {
         return -1;
     }
 
-    if (code != Opcodes::soft_stop_request) {
+    if (code != Opcode::soft_stop_request) {
         return -1;
     }
 
@@ -55,7 +55,7 @@ int allocated_request(const Message &message, params::AllocatedRequest &params) 
         return -1;
     }
 
-    if (code != Opcodes::allocated_request) {
+    if (code != Opcode::allocated_request) {
         return -1;
     }
 
@@ -75,7 +75,7 @@ int meta_data_request(const Message &message, params::MetaDataRequest &params) {
         return -1;
     }
 
-    if (code != Opcodes::meta_data_request) {
+    if (code != Opcode::meta_data_request) {
         return -1;
     }
 
@@ -95,7 +95,7 @@ int live_state_request(const Message &message, params::LifeStateRequest &) {
         return -1;
     }
 
-    if (code != Opcodes::live_state_request) {
+    if (code != Opcode::live_state_request) {
         return -1;
     }
 
@@ -112,7 +112,7 @@ int live_state_response(const Message &message, params::LifeStateResponse &param
         return -1;
     }
 
-    if (code != Opcodes::live_state_response) {
+    if (code != Opcode::live_state_response) {
         return -1;
     }
 
@@ -157,7 +157,7 @@ int host_information_request(const Message &message, params::HostInformationRequ
         return -1;
     }
 
-    if (code != Opcodes::host_information_request) {
+    if (code != Opcode::host_information_request) {
         return -1;
     }
 

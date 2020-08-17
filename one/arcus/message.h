@@ -3,7 +3,7 @@
 #include <utility>
 
 #include <one/arcus/internal/platform.h>
-#include <one/arcus/internal/opcodes.h>
+#include <one/arcus/opcode.h>
 
 #include <functional>
 #include <string>
@@ -64,18 +64,17 @@ public:
     Message &operator=(const Message &) = delete;
     ~Message() = default;
 
-    int init(int code, std::pair<const char *, size_t> data);
-    int init(Opcodes code, std::pair<const char *, size_t> data);
-    int init(Opcodes code, const Payload &payload);
+    int init(Opcode code, std::pair<const char *, size_t> data);
+    int init(Opcode code, const Payload &payload);
 
     void reset();
 
-    Opcodes code() const;
+    Opcode code() const;
     Payload &payload();
     const Payload &payload() const;
 
 private:
-    Opcodes _code;
+    Opcode _code;
     Payload _payload;
 };
 

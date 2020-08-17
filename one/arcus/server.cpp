@@ -2,7 +2,7 @@
 
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/message.h>
-#include <one/arcus/internal/opcodes.h>
+#include <one/arcus/opcode.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/message.h>
 
@@ -168,12 +168,16 @@ int Server::update() {
 
     // Read pending incoming messages.
     Message *message = nullptr;
-    while (_client_connection->incoming_count() > 0) {
-        error = _client_connection->pop_incoming(&message);
+    while (true) {
+        unsigned int count = 0;
+        error = _client_connection->incoming_count(count);
+        if (is_error(error)) return -1;
+        if (count == 0) break;
+
+        error = _client_connection->pop_incoming(message);
         if (error != 0) {
             return -1;
         }
-
         if (message == nullptr) {
             return -1;
         }
@@ -182,6 +186,8 @@ int Server::update() {
         if (error != 0) {
             return -1;
         }
+
+        delete message;
     }
 
     return 0;
@@ -256,28 +262,28 @@ int Server::send_host_information_request(const Message &message) {
 
 int Server::process_incoming_message(const Message &message) {
     switch (message.code()) {
-        case Opcodes::soft_stop_request:
+        case Opcode::soft_stop_request:
             if (_callbacks._soft_stop_request == nullptr) {
                 return 0;
             }
 
             return invocation::soft_stop_request(message, _callbacks._soft_stop_request,
                                                  _callbacks._soft_stop_request_data);
-        case Opcodes::allocated_request:
+        case Opcode::allocated_request:
             if (_callbacks._allocated_request == nullptr) {
                 return 0;
             }
 
             return invocation::allocated_request(message, _callbacks._allocated_request,
                                                  _callbacks._allocated_request_data);
-        case Opcodes::meta_data_request:
+        case Opcode::meta_data_request:
             if (_callbacks._meta_data_request == nullptr) {
                 return 0;
             }
 
             return invocation::meta_data_request(message, _callbacks._meta_data_request,
                                                  _callbacks._meta_data_request_data);
-        case Opcodes::live_state_request:
+        case Opcode::live_state_request:
             if (_callbacks._live_state_request == nullptr) {
                 return 0;
             }
@@ -292,7 +298,7 @@ int Server::process_incoming_message(const Message &message) {
 int Server::process_outgoing_message(const Message &message) {
     int error = 0;
     switch (message.code()) {
-        case Opcodes::live_state_response: {
+        case Opcode::live_state_response: {
             params::LifeStateResponse params;
             error = validation::live_state_response(message, params);
             if (error != 0) {
@@ -301,7 +307,7 @@ int Server::process_outgoing_message(const Message &message) {
 
             break;
         }
-        case Opcodes::host_information_request: {
+        case Opcode::host_information_request: {
             params::HostInformationRequest params;
             error = validation::host_information_request(message, params);
             if (error != 0) {
@@ -318,10 +324,11 @@ int Server::process_outgoing_message(const Message &message) {
         return -1;
     }
 
-    error = _client_connection->push_outgoing(message);
-    if (error != 0) {
-        return -1;
-    }
+    // Todo - pointer here, passing ownership to connection.
+    // error = _client_connection->push_outgoing(message);
+    // if (is_error(error)) {
+    //     return -1;
+    // }
 
     return 0;
 }
