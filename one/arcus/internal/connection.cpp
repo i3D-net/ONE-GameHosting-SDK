@@ -48,9 +48,12 @@ Error Connection::incoming_count(unsigned int &count) const {
     return ONE_ERROR_NONE;
 }
 
-Error Connection::pop_incoming(Message *message) {
-    if (_incoming_messages.size() > 0) message = _incoming_messages.pop();
-
+Error Connection::pop_incoming(Message **message) {
+    if (_incoming_messages.size() == 0) {
+        *message = nullptr;
+        return ONE_ERROR_EMPTY;
+    }
+    *message = _incoming_messages.pop();
     return ONE_ERROR_NONE;
 }
 
