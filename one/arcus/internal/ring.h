@@ -33,7 +33,7 @@ public:
         return _size;
     }
 
-    void push(T val) {
+    void push(const T &val) {
         _buffer[_next] = val;
         _next++;
         if (_next >= _capacity) _next = 0;
@@ -41,7 +41,7 @@ public:
     }
 
     // Pops the oldest pushed value. Asserts if size is zero.
-    T pop() {
+    const T &pop() {
         assert(_size > 0);
         // Cache the current last before incrementing so that the new
         // last can be error checked against the front of the ring, before
