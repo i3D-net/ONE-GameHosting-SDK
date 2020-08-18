@@ -21,15 +21,14 @@ namespace one {
 // socket.
 constexpr size_t stream_send_buffer_size = 1024 * 128;
 constexpr size_t stream_receive_buffer_size = 1024 * 128;
-constexpr size_t message_queue_size = 512;
 
 Connection::Connection(Socket &socket, size_t max_messages_in, size_t max_messages_out)
     : _status(Status::handshake_not_started)
     , _socket(socket)
     , _out_stream(stream_send_buffer_size)
     , _in_stream(stream_receive_buffer_size)
-    , _incoming_messages(message_queue_size)
-    , _outgoing_messages(message_queue_size) {
+    , _incoming_messages(max_messages_in)
+    , _outgoing_messages(max_messages_out) {
     assert(socket.is_initialized());
 }
 
@@ -54,7 +53,8 @@ Error Connection::incoming_count(unsigned int &count) const {
     return ONE_ERROR_NONE;
 }
 
-Error Connection::remove_incoming(std::function<Error(const Message &message)> read_callback) {
+Error Connection::remove_incoming(
+    std::function<Error(const Message &message)> read_callback) {
     assert(read_callback);
 
     if (_incoming_messages.size() == 0) {
@@ -244,7 +244,8 @@ Error Connection::try_receive_message_header(codec::Header &header) {
     assert(data != nullptr);
     memcpy(&header, data, codec::header_size());
 
-    if (!codec::validate_header(*data)) return ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER;
+    if (!codec::validate_header(*data))
+        return ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER;
 
     return ONE_ERROR_NONE;
 }
