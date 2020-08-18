@@ -1,8 +1,8 @@
 #pragma once
 
-#include <utility>
-
+#include <one/arcus/error.h>
 #include <one/arcus/internal/platform.h>
+#include <one/arcus/internal/rapidjson/document.h>
 #include <one/arcus/opcode.h>
 
 #include <functional>
@@ -11,48 +11,45 @@
 
 namespace one {
 
-// An array value that can be contained in a message's data.
-class Array final {};
-
-// An object value that can be contained in a message's data.
-class Object final {};
+class Array;
+class Object;
 
 // Payload provides abstraction for JSON data.
 class Payload final {
 public:
-    Payload() = default;
-    Payload(const Payload &) = delete;
-    Payload &operator=(const Payload &) = delete;
+    Payload();
+    Payload(const Payload &other);
+    Payload &operator=(const Payload &other);
     ~Payload() = default;
 
-    void from_json(std::pair<const char *, size_t> data);
-    std::pair<const char *, size_t> to_json() const;
+    Error from_json(std::pair<const char *, size_t> data);
+    std::string to_json() const;
 
     bool is_empty() const;
     void clear();
 
+    bool is_val_bool(const char *key) const;
     bool is_val_int(const char *key) const;
     bool is_val_string(const char *key) const;
     bool is_val_array(const char *key) const;
     bool is_val_object(const char *key) const;
 
     // Getters.
-    int val_int(const char *key, int &val) const;
-    int val_string(const char *key, char **val) const;
-    int val_string(const char *key, std::string &val) const;
-    int val_array(const char *key, Array &val) const;
-    int val_object(const char *key, Object &val) const;
+    Error val_bool(const char *key, bool &val) const;
+    Error val_int(const char *key, int &val) const;
+    Error val_string(const char *key, std::string &val) const;
+    Error val_array(const char *key, Array &val) const;
+    Error val_object(const char *key, Object &val) const;
 
     // Setters.
-    int set_val_int(const char *key, int val);
-    int set_val_string(const char *key, const char *val);
-    int set_val_string(const char *key, const std::string &val);
-    int set_val_array(const char *key, const Array &val);
-    int set_val_object(const char *key, const Object &val);
+    Error set_val_bool(const char *key, bool val);
+    Error set_val_int(const char *key, int val);
+    Error set_val_string(const char *key, const std::string &val);
+    Error set_val_array(const char *key, const Array &val);
+    Error set_val_object(const char *key, const Object &val);
 
 private:
-    // TBD
-    // RapidJson::Document
+    rapidjson::Document _doc;
 };
 
 // Todo: would a simple struct be better for now? Consider memory pooling both
@@ -64,8 +61,8 @@ public:
     Message &operator=(const Message &) = delete;
     ~Message() = default;
 
-    int init(Opcode code, std::pair<const char *, size_t> data);
-    int init(Opcode code, const Payload &payload);
+    Error init(Opcode code, std::pair<const char *, size_t> data);
+    Error init(Opcode code, const Payload &payload);
 
     void reset();
 
@@ -79,14 +76,14 @@ private:
 };
 
 namespace messages {
-int prepare_error_response(Message &message);
-int prepare_soft_stop_request(int timeout, Message &message);
-int prepare_allocated_request(Array &array, Message &message);
-int prepare_meta_data_request(Array &array, Message &message);
-int prepare_live_state_request(Message &message);
-int prepare_live_state_response(int player, int max_player, const char *name, const char *map,
-                                const char *mode, const char *version, Message &message);
-int prepare_host_information_request(Message &message);
+Error prepare_error_response(Message &message);
+Error prepare_soft_stop_request(int timeout, Message &message);
+Error prepare_allocated_request(Array &array, Message &message);
+Error prepare_meta_data_request(Array &array, Message &message);
+Error prepare_live_state_request(Message &message);
+Error prepare_live_state_response(int player, int max_player, const char *name, const char *map,
+                                  const char *mode, const char *version, Message &message);
+Error prepare_host_information_request(Message &message);
 }  // namespace messages
 
 }  // namespace one

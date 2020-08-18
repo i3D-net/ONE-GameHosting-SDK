@@ -1,4 +1,5 @@
 set(HEADER_FILES
+    array.h
     client.h
     c_api.h
     c_error.h
@@ -13,10 +14,12 @@ set(HEADER_FILES
     internal/version.h
     message.h
     opcode.h
-    server.cpp
+    object.h
+    server.h
 )
 
 set(SOURCE_FILES
+    array.cpp
     client.cpp
     c_api.cpp
     c_error.cpp
@@ -26,6 +29,7 @@ set(SOURCE_FILES
     internal/message.cpp
     internal/socket.cpp
     message.cpp
+    object.cpp
     server.cpp
 )
 

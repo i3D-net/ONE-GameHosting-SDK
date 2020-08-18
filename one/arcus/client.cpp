@@ -210,9 +210,9 @@ int Client::process_incoming_message(const Message &message) {
                 return 0;
             }
 
-            return invocation::host_informatio_request(message,
-                                                       _callbacks._host_information_request,
-                                                       _callbacks._host_information_request_data);
+            return invocation::host_information_request(message,
+                                                        _callbacks._host_information_request,
+                                                        _callbacks._host_information_request_data);
         default:
             return 0;
     }
