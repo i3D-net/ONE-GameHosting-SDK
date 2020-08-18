@@ -51,7 +51,8 @@ TEST_CASE("opcode current version validation", "[arcus]") {
 TEST_CASE("message handling", "[arcus]") {
     Message m;
     const std::string payload = "{\"timeout\":1000}";
-    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {payload.c_str(), payload.size()})));
+    REQUIRE(
+        !is_error(m.init(Opcode::soft_stop_request, {payload.c_str(), payload.size()})));
     REQUIRE(m.code() == Opcode::soft_stop_request);
     REQUIRE(m.payload().is_empty() == false);
     REQUIRE(is_error(m.init(Opcode::soft_stop_request, {nullptr, 0})));
@@ -264,14 +265,17 @@ struct ClientServerTestObjects {
     unsigned int server_port;
 };
 
-void init_client_server_test(ClientServerTestObjects &objects) {
+void init_client_server_test(ClientServerTestObjects &objects,
+                             size_t message_queue_length) {
     init_socket_system();
 
     listen(objects.server, objects.server_port);
     connect(objects.out_client, objects.server_port);
     accept(objects.server, objects.in_client);
-    objects.server_connection = new Connection(objects.in_client, 2, 2);
-    objects.client_connection = new Connection(objects.out_client, 2, 2);
+    objects.server_connection =
+        new Connection(objects.in_client, message_queue_length, message_queue_length);
+    objects.client_connection =
+        new Connection(objects.out_client, message_queue_length, message_queue_length);
 }
 
 void shutdown_client_server_test(ClientServerTestObjects &objects) {
@@ -283,9 +287,23 @@ void shutdown_client_server_test(ClientServerTestObjects &objects) {
     shutdown_socket_system();
 }
 
+void handshake_client_server_test(ClientServerTestObjects &objects) {
+    objects.server_connection->initiate_handshake();
+    for_sleep(10, 1, [&]() {
+        REQUIRE(!is_error(objects.server_connection->update()));
+        REQUIRE(!is_error(objects.client_connection->update()));
+        if (objects.server_connection->status() == Connection::Status::ready &&
+            objects.client_connection->status() == Connection::Status::ready)
+            return true;
+        return false;
+    });
+    REQUIRE(objects.server_connection->status() == Connection::Status::ready);
+    REQUIRE(objects.client_connection->status() == Connection::Status::ready);
+}
+
 TEST_CASE("handshake early hello", "[arcus]") {
     ClientServerTestObjects objects;
-    init_client_server_test(objects);
+    init_client_server_test(objects, 2);
 
     objects.server_connection->initiate_handshake();
     wait_ready_for_send(objects.out_client);
@@ -308,7 +326,7 @@ TEST_CASE("handshake early hello", "[arcus]") {
 
 TEST_CASE("handshake hello bad response", "[arcus]") {
     ClientServerTestObjects objects;
-    init_client_server_test(objects);
+    init_client_server_test(objects, 2);
 
     // Wait for server to enter sent state.
     objects.server_connection->initiate_handshake();
@@ -362,19 +380,9 @@ TEST_CASE("handshake timeout", "[arcus]") {}
 
 TEST_CASE("message send and receive", "[arcus]") {
     ClientServerTestObjects objects;
-    init_client_server_test(objects);
-
-    objects.server_connection->initiate_handshake();
-    for_sleep(10, 1, [&]() {
-        REQUIRE(!is_error(objects.server_connection->update()));
-        REQUIRE(!is_error(objects.client_connection->update()));
-        if (objects.server_connection->status() == Connection::Status::ready &&
-            objects.client_connection->status() == Connection::Status::ready)
-            return true;
-        return false;
-    });
-    REQUIRE(objects.server_connection->status() == Connection::Status::ready);
-    REQUIRE(objects.client_connection->status() == Connection::Status::ready);
+    constexpr size_t queue_length = 1024;
+    init_client_server_test(objects, queue_length);
+    handshake_client_server_test(objects);
 
     // Ensure no messages waiting anywhere.
     unsigned int count = 0;
@@ -395,11 +403,14 @@ TEST_CASE("message send and receive", "[arcus]") {
         return ONE_ERROR_NONE;
     });
 
-    for_sleep(10, 1, [&]() {
-        REQUIRE(!is_error(objects.server_connection->update()));
-        REQUIRE(!is_error(objects.client_connection->update()));
-        return false;
-    });
+    const auto pump_messages = [&]() {
+        for_sleep(10, 1, [&]() {
+            REQUIRE(!is_error(objects.server_connection->update()));
+            REQUIRE(!is_error(objects.client_connection->update()));
+            return false;
+        });
+    };
+    pump_messages();
 
     // Check it on server.
     REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
@@ -411,6 +422,33 @@ TEST_CASE("message send and receive", "[arcus]") {
         return ONE_ERROR_NONE;
     });
     REQUIRE(!is_error(err));
+
+    // Fill up the outgoing messages, ensure an extra final message drops
+    // because of insufficient space.
+    for (int i = 0; i < queue_length; i++) {
+        err = objects.client_connection->add_outgoing([](Message &message) {
+            message.init(Opcode::soft_stop_request, {nullptr, 0});
+            return ONE_ERROR_NONE;
+        });
+        REQUIRE(!is_error(err));
+    }
+    err = objects.client_connection->add_outgoing([](Message &message) {
+        message.init(Opcode::allocated_request, {nullptr, 0});
+        return ONE_ERROR_NONE;
+    });
+    REQUIRE(err == ONE_ERROR_INSUFFICIENT_SPACE);
+
+    // Ensure server received the initial messages and not the dropped one.
+    pump_messages();
+    REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
+    REQUIRE(count == queue_length);
+    for (int i = 0; i < queue_length; i++) {
+        err = objects.server_connection->remove_incoming([](const Message &message) {
+            REQUIRE(message.code() == Opcode::soft_stop_request);
+            return ONE_ERROR_NONE;
+        });
+        REQUIRE(!is_error(err));
+    }
 
     shutdown_client_server_test(objects);
 }
