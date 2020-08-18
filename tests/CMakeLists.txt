@@ -4,8 +4,10 @@ add_executable(${UNIT_TEST}
     array.cpp
     accumulator.cpp
     agent.cpp
+    arcus.cpp
     codec.cpp
-
+    game.cpp
+    integration.cpp
     main.cpp
     message.cpp
     object.cpp
