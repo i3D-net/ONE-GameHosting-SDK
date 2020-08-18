@@ -55,37 +55,37 @@ typedef OneServer *OneServerPtr;
 /// Prepares a new outgoing message. Must be called to start setting
 /// values on the message. end_outgoing must be called when finished.
 ///
-int one_message_create(OneMessagePtr *message);
+OneError one_message_create(OneMessagePtr *message);
 
 /// Must be called whenever finished with a message.
 void one_message_destroy(OneMessagePtr *message);
 
 /// Must be called to initialize a message from a string.
-int one_message_init(OneMessagePtr message, int code, const char *data, unsigned int size);
+OneError one_message_init(OneMessagePtr message, int code, const char *data, unsigned int size);
 
 /// Getters.
-int one_message_code(OneMessagePtr message, int *code);
-int one_message_val_int(OneMessagePtr message, const char *key, int *val);
-int one_message_val_string(OneMessagePtr message, const char *key, char **val);
-int one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
-int one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
+OneError one_message_code(OneMessagePtr message, int *code);
+OneError one_message_val_int(OneMessagePtr message, const char *key, int *val);
+OneError one_message_val_string(OneMessagePtr message, const char *key, char **val);
+OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
+OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
 
 /// Setters.
-int one_message_set_val_int(OneMessagePtr message, const char *key, int val);
-int one_message_set_val_string(OneMessagePtr message, const char *key, const char *val);
-int one_message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
-int one_message_set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
+OneError one_message_set_val_int(OneMessagePtr message, const char *key, int val);
+OneError one_message_set_val_string(OneMessagePtr message, const char *key, const char *val);
+OneError one_message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
+OneError one_message_set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
 
 ///
 /// OneMessagePrepareApi is used to streamlie working with messages. Providing an easy
 /// way to set the messages content.
 ///
 
-int one_message_prepare_error_response(OneMessagePtr message);
-int one_message_prepare_live_state_response(int player, int max_player, const char *name,
-                                            const char *map, const char *mode, const char *version,
-                                            OneMessagePtr message);
-int one_message_prepare_host_information_request(OneMessagePtr message);
+OneError one_message_prepare_error_response(OneMessagePtr message);
+OneError one_message_prepare_live_state_response(int player, int max_player, const char *name,
+                                                 const char *map, const char *mode,
+                                                 const char *version, OneMessagePtr message);
+OneError one_message_prepare_host_information_request(OneMessagePtr message);
 
 ///
 /// OneArrayApi is used to work with an array to retrieve from or set in the
@@ -110,7 +110,7 @@ int one_message_prepare_host_information_request(OneMessagePtr message);
 //--------------------------------------------------------------------------
 // One Server Life Cycle.
 
-int one_server_create(size_t max_message_in, size_t max_message_out, OneServerPtr *server);
+OneError one_server_create(size_t max_message_in, size_t max_message_out, OneServerPtr *server);
 void one_server_destroy(OneServerPtr *server);
 
 ///
@@ -119,7 +119,7 @@ void one_server_destroy(OneServerPtr *server);
 /// respective incoming callbacks. If the a callback for a message is not set
 /// then the message is ignored.
 ///
-int one_server_update(OneServerPtr server);
+OneError one_server_update(OneServerPtr server);
 
 ///
 /// Returns the status of the listen connection.
@@ -130,12 +130,12 @@ int one_server_status(OneServerPtr const server);
 ///
 /// Listens for messages on the given port.
 ///
-int one_server_listen(OneServerPtr server, unsigned int port, int queueLength);
+OneError one_server_listen(OneServerPtr server, unsigned int port, int queueLength);
 
 ///
 /// Stops listening for messages.
 ///
-int one_server_shutdown(OneServerPtr server);
+OneError one_server_shutdown(OneServerPtr server);
 
 //--------------------------------------------------------------------------
 // Outgoing messages.
@@ -150,7 +150,7 @@ int one_server_shutdown(OneServerPtr server);
 /// Send the Arcus API server live_state opcode message.
 /// Message Empty Content:
 /// {}
-int one_server_send_error_response(OneServerPtr server, OneMessagePtr message);
+OneError one_server_send_error_response(OneServerPtr server, OneMessagePtr message);
 
 ///
 /// Send the Arcus API server live_state opcode message.
@@ -163,13 +163,13 @@ int one_server_send_error_response(OneServerPtr server, OneMessagePtr message);
 ///   server mode : "",
 ///   server version : "",
 /// }
-int one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
+OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
 
 ///
 /// Send the Arcus API server live_state opcode message.
 /// Message Empty Content:
 /// {}
-int one_server_send_host_information_request(OneServerPtr server, OneMessagePtr message);
+OneError one_server_send_host_information_request(OneServerPtr server, OneMessagePtr message);
 
 //--------------------------------------------------------------------------
 // Incoming Message callbacks.
@@ -195,29 +195,29 @@ int one_server_send_host_information_request(OneServerPtr server, OneMessagePtr 
 // The `void *data` is the user provided & will be passed as the first argument
 // of the callback when invoked.
 // The `data` can be nullptr, the callback is responsible to use the data properly.
-int one_server_set_soft_stop_callback(OneServerPtr server,
-                                      void (*callback)(void *data, int timeout), void *data);
+OneError one_server_set_soft_stop_callback(OneServerPtr server,
+                                           void (*callback)(void *data, int timeout), void *data);
 
 // Required: Register the callback to be notified of a allocated_request.
 // The `void *data` is the user provided & will be passed as the first argument
 // of the callback when invoked.
 // The `data` can be nullptr, the callback is responsible to use the data properly.
 // The `void *array` must be of type OneArrayPtr or the callback will error out.
-int one_server_set_allocated_callback(OneServerPtr server,
-                                      void (*callback)(void *data, void *array), void *data);
+OneError one_server_set_allocated_callback(OneServerPtr server,
+                                           void (*callback)(void *data, void *array), void *data);
 
 // Required: Register the callback to be notified of a meta_data_request.
 // The `void *data` is the user provided & will be passed as the first argument
 // of the callback when invoked.
 // The `data` can be nullptr, the callback is responsible to use the data properly.
 // The `void *array` must be of type OneArrayPtr or the callback will error out.
-int one_server_set_meta_data_callback(OneServerPtr server,
-                                      void (*callback)(void *data, void *array), void *data);
+OneError one_server_set_meta_data_callback(OneServerPtr server,
+                                           void (*callback)(void *data, void *array), void *data);
 
 // Required: Register to be notified of when the game must call
 // live_state_request.
-int one_server_set_live_state_request_callback(OneServerPtr server, void (*callback)(void *data),
-                                               void *data);
+OneError one_server_set_live_state_request_callback(OneServerPtr server,
+                                                    void (*callback)(void *data), void *data);
 
 ///
 /// OneAllocatorApi allows for control of all allocations made within the SDK.

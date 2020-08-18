@@ -1,6 +1,8 @@
 #pragma once
 
+#include <one/arcus/array.h>
 #include <one/arcus/message.h>
+#include <one/arcus/error.h>
 
 #include <functional>
 #include <string>
@@ -41,32 +43,32 @@ struct HostInformationRequest {};
 }  // namespace params
 
 namespace validation {
-int error_request(const Message &message, params::ErrorResponse &params);
-int soft_stop_request(const Message &message, params::SoftStopRequest &params);
-int allocated_request(const Message &message, params::AllocatedRequest &params);
-int meta_data_request(const Message &message, params::MetaDataRequest &params);
-int live_state_request(const Message &message, params::LifeStateRequest &params);
-int live_state_response(const Message &message, params::LifeStateResponse &params);
-int host_information_request(const Message &message, params::HostInformationRequest &params);
+Error error_request(const Message &message, params::ErrorResponse &params);
+Error soft_stop_request(const Message &message, params::SoftStopRequest &params);
+Error allocated_request(const Message &message, params::AllocatedRequest &params);
+Error meta_data_request(const Message &message, params::MetaDataRequest &params);
+Error live_state_request(const Message &message, params::LifeStateRequest &params);
+Error live_state_response(const Message &message, params::LifeStateResponse &params);
+Error host_information_request(const Message &message, params::HostInformationRequest &params);
 }  // namespace validation
 
 namespace invocation {
-int error_response(const Message &message, std::function<void(void *)> callback, void *data);
-int soft_stop_request(const Message &message, std::function<void(void *, int)> callback,
-                      void *data);
-int allocated_request(const Message &message, std::function<void(void *, Array *)> callback,
-                      void *data);
-int meta_data_request(const Message &message, std::function<void(void *, Array *)> callback,
-                      void *data);
-int live_state_request(const Message &message, std::function<void(void *)> callback, void *data);
-int live_state_response(
+Error error_response(const Message &message, std::function<void(void *)> callback, void *data);
+Error soft_stop_request(const Message &message, std::function<void(void *, int)> callback,
+                        void *data);
+Error allocated_request(const Message &message, std::function<void(void *, Array *)> callback,
+                        void *data);
+Error meta_data_request(const Message &message, std::function<void(void *, Array *)> callback,
+                        void *data);
+Error live_state_request(const Message &message, std::function<void(void *)> callback, void *data);
+Error live_state_response(
     const Message &message,
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         callback,
     void *data);
-int host_informatio_request(const Message &message, std::function<void(void *)> callback,
-                            void *data);
+Error host_information_request(const Message &message, std::function<void(void *)> callback,
+                               void *data);
 }  // namespace invocation
 
 }  // namespace one

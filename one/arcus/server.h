@@ -1,5 +1,7 @@
 #pragma once
 
+#include <one/arcus/error.h>
+
 #include <functional>
 #include <string>
 
@@ -34,19 +36,19 @@ public:
     Server &operator=(const Server &) = delete;
     ~Server();
 
-    int init(size_t max_message_in, size_t max_message_out);
+    Error init(size_t max_message_in, size_t max_message_out);
 
-    int shutdown();
+    Error shutdown();
 
     enum class Status { listening, handshake, ready, error };
     Status status() const;
 
-    int listen(unsigned int port, int queueLength);
+    Error listen(unsigned int port, int queueLength);
 
     // Process pending received and outgoing messages. Any incoming messages are
     // validated according to the Arcus API version standard, and callbacks, if
     // set, are called. Messages without callbacks set are dropped and ignored.
-    int update();
+    Error update();
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
@@ -57,25 +59,25 @@ public:
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_soft_stop_callback(std::function<void(void *, int)> callback, void *data);
+    Error set_soft_stop_callback(std::function<void(void *, int)> callback, void *data);
 
     // set the callback for when a allocated message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_allocated_callback(std::function<void(void *, Array *)> callback, void *data);
+    Error set_allocated_callback(std::function<void(void *, Array *)> callback, void *data);
 
     // set the callback for when a meta_data message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_meta_data_callback(std::function<void(void *, Array *)> callback, void *data);
+    Error set_meta_data_callback(std::function<void(void *, Array *)> callback, void *data);
 
     // set the callback for when a live_state_request message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_live_state_request_callback(std::function<void(void *)> callback, void *data);
+    Error set_live_state_request_callback(std::function<void(void *)> callback, void *data);
 
     // all other externally-facing opcode callbacks...
 
@@ -87,7 +89,7 @@ public:
     // send error opcode message.
     // Message Empty Content:
     // {}
-    int send_error_response(const Message &message);
+    Error send_error_response(const Message &message);
 
     // send live_state_response opcode message.
     // Message Mandatory Content:
@@ -99,16 +101,16 @@ public:
     //   server mode : "",
     //   server version : "",
     // }
-    int send_live_state_response(const Message &message);
+    Error send_live_state_response(const Message &message);
 
     // send host_information_reqeust.
     // Message Empty Content:
     // {}
-    int send_host_information_request(const Message &message);
+    Error send_host_information_request(const Message &message);
 
 private:
-    int process_incoming_message(const Message &message);
-    int process_outgoing_message(const Message &message);
+    Error process_incoming_message(const Message &message);
+    Error process_outgoing_message(const Message &message);
 
     Socket *_listen_socket;
     Socket *_client_socket;

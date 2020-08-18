@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <array>
 #include <cstring>
+#include <string>
 
 #include <one/arcus/message.h>
 #include <one/arcus/internal/codec.h>
@@ -388,9 +389,9 @@ Error Connection::process_outgoing_messages() {
         auto message = _outgoing_messages.pop();
 
         // Prepare data to send, see if it fits in outgoing stream.
-        auto payload_pair = message->payload().to_json();
+        auto payload_string = message->payload().to_json();
         size_t max_size = _out_stream.capacity() - _out_stream.size();
-        size_t message_size = codec::header_size() + payload_pair.second;
+        size_t message_size = codec::header_size() + payload_string.size();
         // If it doesn't fit, then put the the connection into an error state.
         if (message_size > max_size) {
             _status = Status::error;
