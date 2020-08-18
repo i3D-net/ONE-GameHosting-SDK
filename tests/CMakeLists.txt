@@ -1,9 +1,9 @@
 set(UNIT_TEST tests)
 
 add_executable(${UNIT_TEST}
-    array.cpp
     accumulator.cpp
     agent.cpp
+    array.cpp
     arcus.cpp
     codec.cpp
     game.cpp

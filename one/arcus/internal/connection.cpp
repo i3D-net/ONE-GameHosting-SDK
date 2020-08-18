@@ -37,10 +37,15 @@ Connection::Status Connection::status() const {
     return _status;
 }
 
-Error Connection::push_outgoing(Message *message) {
+Error Connection::add_outgoing(std::function<Error(Message &message)> modify_callback) {
+    assert(modify_callback);
+
     if (_outgoing_messages.size() == _outgoing_messages.capacity())
         return ONE_ERROR_INSUFFICIENT_SPACE;
+
+    auto message = new Message();
     _outgoing_messages.push(message);
+    modify_callback(*message);
     return ONE_ERROR_NONE;
 }
 
@@ -49,12 +54,18 @@ Error Connection::incoming_count(unsigned int &count) const {
     return ONE_ERROR_NONE;
 }
 
-Error Connection::pop_incoming(Message **message) {
+Error Connection::remove_incoming(std::function<Error(const Message &message)> read_callback) {
+    assert(read_callback);
+
     if (_incoming_messages.size() == 0) {
-        *message = nullptr;
         return ONE_ERROR_EMPTY;
     }
-    *message = _incoming_messages.pop();
+
+    const Message *message = _incoming_messages.pop();
+    assert(message != nullptr);
+    read_callback(*message);
+    delete message;
+
     return ONE_ERROR_NONE;
 }
 
