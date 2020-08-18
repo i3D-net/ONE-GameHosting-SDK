@@ -167,27 +167,23 @@ Error Server::update() {
     }
 
     // Read pending incoming messages.
-    Message *message = nullptr;
     while (true) {
         unsigned int count = 0;
         err = _client_connection->incoming_count(count);
         if (is_error(err)) return err;
         if (count == 0) break;
 
-        err = _client_connection->pop_incoming(&message);
+        err = _client_connection->remove_incoming([this](const Message &message) {
+            auto err = process_incoming_message(message);
+            if (is_error(err)) {
+                return err;
+            }
+
+            return ONE_ERROR_NONE;
+        });
         if (err != 0) {
             return err;
         }
-        if (message == nullptr) {
-            return ONE_ERROR_SERVER_MESSAGE_IS_NULLPTR;
-        }
-
-        err = process_incoming_message(*message);
-        if (is_error(err)) {
-            return err;
-        }
-
-        delete message;
     }
 
     return ONE_ERROR_NONE;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <vector>
 
 #include <one/arcus/error.h>
@@ -52,21 +53,21 @@ public:
     };
     Status status() const;
 
-    // Pushes the given Message for sending during the next call to update. The
-    // ownership of the pointer is transferred to the connection and will be
-    // freed after sending. If the outgoing message queue is full, then the
-    // push fails with ONE_ERROR_INSUFFICIENT_SPACE and the queue is not
+    // Adds a Message to the outgoing message queue, and passes the message
+    // back in a modifier function that allows the caller to configure the
+    // queued message. If the outgoing message queue is full, then the
+    // call fails with ONE_ERROR_INSUFFICIENT_SPACE and the queue is not
     // modified.
-    Error push_outgoing(Message *message);
+    Error add_outgoing(std::function<Error(Message &message)> modify_callback);
 
     // The number of incoming messages available for pop.
     Error incoming_count(unsigned int &count) const;
 
-    // Removes and returns one message from the incoming message queue. The
-    // ownership of returned pointer is transferred to the caller and must be
-    // freed by the caller. Returns ONE_ERROR_EMPTY if the incoming_count is
+    // Removes a message from the incoming message queue, but before doing so
+    // passes the message into the given callback for reading.
+    // Returns ONE_ERROR_EMPTY if the incoming_count is
     // zero and there is no message to pop.
-    Error pop_incoming(Message **message);
+    Error remove_incoming(std::function<Error(const Message &message)> read_callback);
 
 private:
     Connection() = delete;

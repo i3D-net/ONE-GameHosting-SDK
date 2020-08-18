@@ -98,8 +98,8 @@ TEST_CASE("message prepare", "[arcus]") {
     REQUIRE(m.payload().is_empty() == true);
 
     m.reset();
-    REQUIRE(messages::prepare_live_state_response(1, 16, "test server", "test map", "test mode",
-                                                  "test version", m) == 0);
+    REQUIRE(messages::prepare_live_state_response(1, 16, "test server", "test map",
+                                                  "test mode", "test version", m) == 0);
     REQUIRE(m.code() == Opcode::live_state_response);
     // FIXME: uncomment when the payload class is properlly implemented.
     // REQUIRE(m.payload().is_empty() == false);
@@ -238,10 +238,10 @@ TEST_CASE("connection", "[arcus]") {
         err = server_connection.update();
         // The update may succeed if the message isn't read during this update,
         // or it should fail with the invalid message code.
-        received_bad_header_error =
-            received_bad_header_error || (err == ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER);
-        const bool is_expected =
-            (err == ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) || (err == ONE_ERROR_NONE);
+        received_bad_header_error = received_bad_header_error ||
+                                    (err == ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER);
+        const bool is_expected = (err == ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) ||
+                                 (err == ONE_ERROR_NONE);
         REQUIRE(is_expected);
         if (server_connection.status() == Connection::Status::error) return true;
         return false;
@@ -314,12 +314,14 @@ TEST_CASE("handshake hello bad response", "[arcus]") {
     objects.server_connection->initiate_handshake();
     for (int i = 0; i < 10; i++) {
         REQUIRE(!is_error(objects.server_connection->update()));
-        if (objects.server_connection->status() == Connection::Status::handshake_hello_sent) {
+        if (objects.server_connection->status() ==
+            Connection::Status::handshake_hello_sent) {
             break;
         }
         sleep(1);
     }
-    REQUIRE(objects.server_connection->status() == Connection::Status::handshake_hello_sent);
+    REQUIRE(objects.server_connection->status() ==
+            Connection::Status::handshake_hello_sent);
 
     // Receive the hello from server.
     codec::Hello hello = {0};
@@ -380,14 +382,19 @@ TEST_CASE("message send and receive", "[arcus]") {
     REQUIRE(count == 0);
     REQUIRE(!is_error(objects.client_connection->incoming_count(count)));
     REQUIRE(count == 0);
-    Message *message;
-    REQUIRE(objects.server_connection->pop_incoming(&message) == ONE_ERROR_EMPTY);
-    REQUIRE(objects.client_connection->pop_incoming(&message) == ONE_ERROR_EMPTY);
+    auto err = objects.server_connection->remove_incoming(
+        [](const Message &) { return ONE_ERROR_NONE; });
+    REQUIRE(err == ONE_ERROR_EMPTY);
+    err = objects.client_connection->remove_incoming(
+        [](const Message &) { return ONE_ERROR_NONE; });
+    REQUIRE(err == ONE_ERROR_EMPTY);
 
     // Send a message from client to server.
-    message = new Message();
-    message->init(Opcode::soft_stop_request, {nullptr, 0});
-    objects.client_connection->push_outgoing(message);
+    err = objects.client_connection->add_outgoing([](Message &message) {
+        message.init(Opcode::soft_stop_request, {nullptr, 0});
+        return ONE_ERROR_NONE;
+    });
+
     for_sleep(10, 1, [&]() {
         REQUIRE(!is_error(objects.server_connection->update()));
         REQUIRE(!is_error(objects.client_connection->update()));
@@ -397,10 +404,13 @@ TEST_CASE("message send and receive", "[arcus]") {
     // Check it on server.
     REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
     REQUIRE(count == 1);
-    // Message pointer was consumed by client connection, can re-use var safely without leak.
-    REQUIRE(!is_error(objects.server_connection->pop_incoming(&message)));
-    REQUIRE(message->code() == Opcode::soft_stop_request);
-    delete message;
+    // Message pointer was consumed by client connection, can re-use var safely without
+    // leak.
+    err = objects.server_connection->remove_incoming([](const Message &message) {
+        REQUIRE(message.code() == Opcode::soft_stop_request);
+        return ONE_ERROR_NONE;
+    });
+    REQUIRE(!is_error(err));
 
     shutdown_client_server_test(objects);
 }
