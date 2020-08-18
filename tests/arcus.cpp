@@ -58,7 +58,7 @@ TEST_CASE("message handling", "[arcus]") {
     m.reset();
     REQUIRE(m.code() == Opcode::invalid);
     REQUIRE(m.payload().is_empty());
-    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {"{}", 0})));
+    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {"{}", 2})));
     REQUIRE(m.code() == Opcode::soft_stop_request);
     REQUIRE(m.payload().is_empty());
     m.reset();
