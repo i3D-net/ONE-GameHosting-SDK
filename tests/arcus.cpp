@@ -1,12 +1,14 @@
 #include <catch.hpp>
 #include <util.h>
 
+#include <one/arcus/array.h>
 #include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/internal/version.h>
 #include <one/arcus/error.h>
 #include <one/arcus/message.h>
+#include <one/arcus/object.h>
 #include <one/arcus/opcode.h>
 
 #include <functional>
@@ -48,16 +50,15 @@ TEST_CASE("opcode current version validation", "[arcus]") {
 
 TEST_CASE("message handling", "[arcus]") {
     Message m;
-    const std::string payload = "{}";
-    REQUIRE(m.init(Opcode::soft_stop_request, {payload.c_str(), payload.size()}) == 0);
+    const std::string payload = "{\"timeout\":1000}";
+    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {payload.c_str(), payload.size()})));
     REQUIRE(m.code() == Opcode::soft_stop_request);
-    // FIXME: uncomment when the payload class is properlly implemented.
-    // REQUIRE(m.payload().is_empty() == false);
-    REQUIRE(m.init(Opcode::soft_stop_request, {nullptr, 0}) == 0);
+    REQUIRE(m.payload().is_empty() == false);
+    REQUIRE(is_error(m.init(Opcode::soft_stop_request, {nullptr, 0})));
     m.reset();
     REQUIRE(m.code() == Opcode::invalid);
     REQUIRE(m.payload().is_empty());
-    REQUIRE(m.init(Opcode::soft_stop_request, {nullptr, 0}) == 0);
+    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {"{}", 0})));
     REQUIRE(m.code() == Opcode::soft_stop_request);
     REQUIRE(m.payload().is_empty());
     m.reset();

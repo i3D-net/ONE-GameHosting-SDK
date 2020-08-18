@@ -1,9 +1,12 @@
 #include <catch.hpp>
 #include <util.h>
+
 #include <one/agent/agent.h>
+#include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/message.h>
+#include <one/arcus/object.h>
 #include <one/arcus/server.h>
 #include <one/game/game.h>
 
