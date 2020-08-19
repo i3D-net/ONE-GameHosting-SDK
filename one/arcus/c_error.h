@@ -106,6 +106,9 @@ constexpr bool is_error(OneError err) {
     return err != ONE_ERROR_NONE;
 }
 
+// Given a OneError, returns a string matching the symbol name, e.g.
+// error_text(ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) will return
+// "ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER".
 const char *error_text(OneError);
 
 #ifdef __cplusplus
