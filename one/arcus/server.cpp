@@ -19,7 +19,8 @@ Server::~Server() {
 }
 
 Error Server::init(size_t max_message_in, size_t max_message_out) {
-    if (_listen_socket != nullptr || _client_socket != nullptr || _client_connection != nullptr) {
+    if (_listen_socket != nullptr || _client_socket != nullptr ||
+        _client_connection != nullptr) {
         return ONE_ERROR_SERVER_ALREADY_INITIALIZED;
     }
 
@@ -155,8 +156,8 @@ Error Server::update() {
 
         _client_connection = connection;
 
-        // The Arcus Server is responsible for initiating the handshake against agents. The agent
-        // waits for an initial hello packet from the Server.
+        // The Arcus Server is responsible for initiating the handshake against agents.
+        // The agent waits for an initial hello packet from the Server.
         _client_connection->initiate_handshake();
         return ONE_ERROR_NONE;
     }
@@ -181,7 +182,7 @@ Error Server::update() {
 
             return ONE_ERROR_NONE;
         });
-        if (err != 0) {
+        if (is_error(err)) {
             return err;
         }
     }
@@ -189,7 +190,8 @@ Error Server::update() {
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback, void *data) {
+Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
+                                     void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -199,7 +201,8 @@ Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback, 
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_allocated_callback(std::function<void(void *, Array *)> callback, void *data) {
+Error Server::set_allocated_callback(std::function<void(void *, Array *)> callback,
+                                     void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -209,7 +212,8 @@ Error Server::set_allocated_callback(std::function<void(void *, Array *)> callba
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callback, void *data) {
+Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callback,
+                                     void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -219,7 +223,8 @@ Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callba
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_live_state_request_callback(std::function<void(void *)> callback, void *data) {
+Error Server::set_live_state_request_callback(std::function<void(void *)> callback,
+                                              void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }

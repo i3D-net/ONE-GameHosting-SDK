@@ -392,10 +392,10 @@ TEST_CASE("message send and receive", "[arcus]") {
     REQUIRE(count == 0);
     auto err = objects.server_connection->remove_incoming(
         [](const Message &) { return ONE_ERROR_NONE; });
-    REQUIRE(err == ONE_ERROR_EMPTY);
+    REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_EMPTY);
     err = objects.client_connection->remove_incoming(
         [](const Message &) { return ONE_ERROR_NONE; });
-    REQUIRE(err == ONE_ERROR_EMPTY);
+    REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_EMPTY);
 
     // Send a message from client to server.
     err = objects.client_connection->add_outgoing([](Message &message) {
@@ -436,7 +436,7 @@ TEST_CASE("message send and receive", "[arcus]") {
         message.init(Opcode::allocated_request, {nullptr, 0});
         return ONE_ERROR_NONE;
     });
-    REQUIRE(err == ONE_ERROR_INSUFFICIENT_SPACE);
+    REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_INSUFFICIENT_SPACE);
 
     // Ensure server received the initial messages and not the dropped one.
     pump_messages();

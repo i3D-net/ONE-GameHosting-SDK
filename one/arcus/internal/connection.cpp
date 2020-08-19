@@ -40,7 +40,7 @@ Error Connection::add_outgoing(std::function<Error(Message &message)> modify_cal
     assert(modify_callback);
 
     if (_outgoing_messages.size() == _outgoing_messages.capacity())
-        return ONE_ERROR_INSUFFICIENT_SPACE;
+        return ONE_ERROR_CONNECTION_QUEUE_INSUFFICIENT_SPACE;
 
     auto message = new Message();
     _outgoing_messages.push(message);
@@ -58,7 +58,7 @@ Error Connection::remove_incoming(
     assert(read_callback);
 
     if (_incoming_messages.size() == 0) {
-        return ONE_ERROR_EMPTY;
+        return ONE_ERROR_CONNECTION_QUEUE_EMPTY;
     }
 
     const Message *message = _incoming_messages.pop();
@@ -136,11 +136,11 @@ Error Connection::try_send_hello() {
     if (is_error(err)) {  // Error.
         return ONE_ERROR_CONNECTION_HELLO_SEND_FAILED;
     }
-    if (sent == 0) return ONE_ERROR_TRY_AGAIN;
+    if (sent == 0) return ONE_ERROR_CONNECTION_TRY_AGAIN;
 
     // Remove from send stream, check if finished.
     stream.trim(sent);
-    if (stream.size() > 0) return ONE_ERROR_TRY_AGAIN;
+    if (stream.size() > 0) return ONE_ERROR_CONNECTION_TRY_AGAIN;
 
     return ONE_ERROR_NONE;
 }
@@ -153,8 +153,8 @@ Error Connection::try_receive_hello() {
     if (is_error(err)) {
         return ONE_ERROR_CONNECTION_HELLO_RECEIVE_FAILED;
     }
-    if (received == 0) {             // No error but nothing received.
-        return ONE_ERROR_TRY_AGAIN;  // Retry next attempt.
+    if (received == 0) {                        // No error but nothing received.
+        return ONE_ERROR_CONNECTION_TRY_AGAIN;  // Retry next attempt.
     }
     if (received > codec::hello_size()) {
         return ONE_ERROR_CONNECTION_HELLO_TOO_BIG;
@@ -165,7 +165,7 @@ Error Connection::try_receive_hello() {
     // if the full hello has not been read yet.
     _in_stream.put(&hello, received);
     if (_in_stream.size() < codec::hello_size()) {
-        return ONE_ERROR_TRY_AGAIN;
+        return ONE_ERROR_CONNECTION_TRY_AGAIN;
     }
 
     // Read and validate the full hello from the receive buffer.
@@ -211,11 +211,11 @@ Error Connection::try_send_hello_message() {
     if (is_error(err)) {
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_SEND_FAILED;
     }
-    if (sent == 0) return ONE_ERROR_TRY_AGAIN;
+    if (sent == 0) return ONE_ERROR_CONNECTION_TRY_AGAIN;
 
     // Remove from send stream, check if finished.
     stream.trim(sent);
-    if (stream.size() > 0) return ONE_ERROR_TRY_AGAIN;
+    if (stream.size() > 0) return ONE_ERROR_CONNECTION_TRY_AGAIN;
 
     return ONE_ERROR_NONE;
 }
@@ -235,7 +235,7 @@ Error Connection::try_receive_message_header(codec::Header &header) {
     // Buffer bytes read.
     _in_stream.put(&header, received);
     if (_in_stream.size() < codec::header_size()) {
-        return ONE_ERROR_TRY_AGAIN;
+        return ONE_ERROR_CONNECTION_TRY_AGAIN;
     }
 
     // Read the full hello from the receive buffer.
@@ -278,7 +278,7 @@ Error Connection::process_handshake() {
         case Status::handshake_not_started:
             // Check if hello received.
             err = try_receive_hello();
-            if (err == ONE_ERROR_TRY_AGAIN) break;
+            if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) break;
             if (is_error(err)) return fail(err);
 
             {
@@ -290,7 +290,7 @@ Error Connection::process_handshake() {
             // Fallthrough.
         case Status::handshake_hello_received:
             err = try_send_hello_message();
-            if (err == ONE_ERROR_TRY_AGAIN) break;
+            if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) break;
             if (is_error(err)) return fail(err);
             // Assume handshaking is complete now. This side is free to send other
             // Messages now. If handshaking fails on the server, then the connection
@@ -305,14 +305,14 @@ Error Connection::process_handshake() {
 
             // Send the hello.
             err = try_send_hello();
-            if (err == ONE_ERROR_TRY_AGAIN) break;
+            if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) break;
             if (is_error(err)) return fail(err);
 
             _status = Status::handshake_hello_sent;
             break;
         case Status::handshake_hello_sent:
             err = try_receive_hello_message();
-            if (err == ONE_ERROR_TRY_AGAIN) break;
+            if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) break;
             if (is_error(err)) return fail(err);
             _status = Status::ready;
             break;
@@ -339,7 +339,7 @@ Error Connection::process_incoming_messages() {
         if (!is_ready) return false;
 
         err = try_receive_message_header(header);
-        if (err == ONE_ERROR_TRY_AGAIN) {
+        if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) {
             err = ONE_ERROR_NONE;
             return false;
         }
@@ -381,7 +381,7 @@ Error Connection::process_outgoing_messages() {
         _out_stream.peek(size, &data);
         size_t sent = 0;
         err = _socket.send(data, size, sent);
-        if (err == ONE_ERROR_TRY_AGAIN) return ONE_ERROR_NONE;
+        if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) return ONE_ERROR_NONE;
         if (is_error(err)) return err;
 
         _out_stream.trim(size);
@@ -421,7 +421,7 @@ Error Connection::process_outgoing_messages() {
         // Todo - JSON payload.
 
         err = send_pending_data();
-        if (err == ONE_ERROR_TRY_AGAIN) return ONE_ERROR_NONE;
+        if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) return ONE_ERROR_NONE;
         if (is_error(err)) {
             _status = Status::error;
             return err;
