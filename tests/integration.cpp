@@ -30,8 +30,9 @@ void live_state_callback(void *, int player, int max_player, const std::string &
                          const std::string &map, const std::string &mode,
                          const std::string &version) {
     std::cout << "send_live_callback:"
-              << " player " << player << " max_player : " << max_player << " name: " << name
-              << " map: " << map << " mode: " << mode << " version: " << version << std::endl;
+              << " player " << player << " max_player : " << max_player
+              << " name: " << name << " map: " << map << " mode: " << mode
+              << " version: " << version << std::endl;
     live_state_callback_has_been_called = true;
 }
 
@@ -75,7 +76,7 @@ void handshake(Agent &agent, Game &game) {
 
 TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     const auto address = "127.0.0.1";
-    const unsigned int port = 9001;
+    const unsigned int port = 19001;
 
     Game game(port, 1, 1, 16, "test", "test", "test", "test");
     REQUIRE(game.init(1024, 1024) == 0);
@@ -88,7 +89,8 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     REQUIRE(agent.status() == static_cast<Error>(Client::Status::handshake));
     REQUIRE(agent.set_error_response_callback(error_callback, nullptr) == 0);
     REQUIRE(agent.set_live_state_response_callback(live_state_callback, nullptr) == 0);
-    REQUIRE(agent.set_host_information_request_callback(host_information_callback, nullptr) == 0);
+    REQUIRE(agent.set_host_information_request_callback(host_information_callback,
+                                                        nullptr) == 0);
 
     handshake(agent, game);
 

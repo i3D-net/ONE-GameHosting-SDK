@@ -7,7 +7,7 @@
 using namespace one;
 
 TEST_CASE("fake game life cycle", "[fake game]") {
-    Game fakeGame(9001, 1, 10, 54, "test game", "test map", "test mode", "test version");
+    Game fakeGame(19001, 1, 10, 54, "test game", "test map", "test mode", "test version");
     REQUIRE(fakeGame.init(1024, 1024) == 0);
     REQUIRE(fakeGame.shutdown() == 0);
 }
