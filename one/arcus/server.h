@@ -65,19 +65,22 @@ public:
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_allocated_callback(std::function<void(void *, Array *)> callback, void *data);
+    Error set_allocated_callback(std::function<void(void *, Array *)> callback,
+                                 void *data);
 
     // set the callback for when a meta_data message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_meta_data_callback(std::function<void(void *, Array *)> callback, void *data);
+    Error set_meta_data_callback(std::function<void(void *, Array *)> callback,
+                                 void *data);
 
     // set the callback for when a live_state_request message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_live_state_request_callback(std::function<void(void *)> callback, void *data);
+    Error set_live_state_request_callback(std::function<void(void *)> callback,
+                                          void *data);
 
     // all other externally-facing opcode callbacks...
 
@@ -109,6 +112,8 @@ public:
     Error send_host_information_request(const Message &message);
 
 private:
+    Error update_listen_socket();
+
     Error process_incoming_message(const Message &message);
     Error process_outgoing_message(const Message &message);
 

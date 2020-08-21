@@ -46,6 +46,13 @@ Error Server::init() {
         return ONE_ERROR_SERVER_SOCKET_ALLOCATION_FAILED;
     }
 
+    _client_connection =
+        new Connection(Connection::max_message_default, Connection::max_message_default);
+    if (_client_connection == nullptr) {
+        shutdown();
+        return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
+    }
+
     return ONE_ERROR_NONE;
 }
 
@@ -114,76 +121,90 @@ Error Server::listen(unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Server::update() {
-    // Send pending outgoing messages and gather incoming messages
-    // for reading.
-
-    if (_client_socket == nullptr) {
-        return ONE_ERROR_SERVER_SOCKET_IS_NULLPTR;
+Error Server::update_listen_socket() {
+    bool is_ready;
+    auto err = _listen_socket->ready_for_read(0.f, is_ready);
+    if (is_error(err)) {
+        return err;
     }
-
-    // Only accept new connection if client is not connected.
-    if (!_client_socket->is_initialized()) {
-        if (_client_connection != nullptr) {
-            return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
-        }
-        bool is_ready;
-        auto err = _listen_socket->ready_for_read(0.f, is_ready);
-        if (is_error(err)) {
-            return err;
-        }
-        if (!is_ready) {
-            return ONE_ERROR_NONE;
-        }
-
-        std::string client_ip;
-        unsigned int client_port;
-        err = _listen_socket->accept(*_client_socket, client_ip, client_port);
-        if (is_error(err)) {
-            return ONE_ERROR_NONE;
-        }
-
-        // If no client was accepted, exit.
-        if (!_client_socket->is_initialized()) {
-            return ONE_ERROR_NONE;
-        }
-
-        // TODO: avoid allocation, use reset & init.
-        auto connection = new Connection(*_client_socket, Connection::max_message_default, Connection::max_message_default);
-        if (connection == nullptr) {
-            return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
-        }
-
-        _client_connection = connection;
-
-        // The Arcus Server is responsible for initiating the handshake against agents.
-        // The agent waits for an initial hello packet from the Server.
-        _client_connection->initiate_handshake();
+    if (!is_ready) {
         return ONE_ERROR_NONE;
     }
 
-    auto err = _client_connection->update();
+    std::string client_ip;
+    unsigned int client_port;
+    Socket incoming_client;
+    err = _listen_socket->accept(incoming_client, client_ip, client_port);
+    if (is_error(err)) {
+        return ONE_ERROR_NONE;
+    }
+
+    // If no client was accepted, exit.
+    if (!incoming_client.is_initialized()) {
+        return ONE_ERROR_NONE;
+    }
+
+    // If a client is already connected, then close the incoming connection.
+    if (_client_socket->is_initialized()) {
+        incoming_client.close();
+        return ONE_ERROR_NONE;
+    }
+
+    *_client_socket = incoming_client;
+    _client_connection->set_socket(_client_socket);
+
+    // The Arcus Server is responsible for initiating the handshake against agents.
+    // The agent waits for an initial hello packet from the Server.
+    _client_connection->initiate_handshake();
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::update() {
+    if (_client_socket == nullptr || _listen_socket == nullptr) {
+        return ONE_ERROR_SERVER_SOCKET_IS_NULLPTR;
+    }
+
+    auto err = update_listen_socket();
     if (is_error(err)) {
         return err;
+    }
+
+    // Done if no client is connected.
+    if (!_client_socket->is_initialized()) {
+        return ONE_ERROR_NONE;
+    }
+
+    // If any errors are encountered while updating the connection, then close
+    // the connection and socket. The client is expected to reconnect.
+    auto close_client = [this](const Error passthrough_err) -> Error {
+        _client_connection->shutdown();
+        _client_socket->close();
+        return passthrough_err;
+    };
+
+    // Updating the connection will send pending outgoing messages and gather incoming
+    // messages for reading.
+    err = _client_connection->update();
+    if (is_error(err)) {
+        return close_client(err);
     }
 
     // Read pending incoming messages.
     while (true) {
         unsigned int count = 0;
         err = _client_connection->incoming_count(count);
-        if (is_error(err)) return err;
+        if (is_error(err)) return close_client(err);
         if (count == 0) break;
 
         err = _client_connection->remove_incoming([this](const Message &message) {
             auto err = process_incoming_message(message);
-            if (is_error(err)) {
-                return err;
-            }
+            if (is_error(err)) return err;
 
             return ONE_ERROR_NONE;
         });
         if (is_error(err)) {
-            return err;
+            return close_client(err);
         }
     }
 
