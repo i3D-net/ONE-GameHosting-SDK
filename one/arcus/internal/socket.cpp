@@ -1,7 +1,9 @@
 #include <one/arcus/internal/socket.h>
 
 #include <assert.h>
+#include <chrono>
 #include <cstring>
+#include <thread>
 
 #ifdef WINDOWS
 typedef int socklen_t;
@@ -65,6 +67,22 @@ Error shutdown_socket_system() {
     return ONE_ERROR_NONE;
 }
 
+constexpr bool is_error_try_again(int err) {
+#ifdef WINDOWS
+    return err == WSATRY_AGAIN || err == WSAEWOULDBLOCK;
+#else
+    return err == EAGAIN;
+#endif
+}
+
+inline int last_error() {
+#ifdef WINDOWS
+    return WSAGetLastError();
+#else
+    return errno;
+#endif
+}
+
 Socket::Socket() : _socket(INVALID_SOCKET) {}
 
 Socket::~Socket() {
@@ -85,11 +103,30 @@ Error Socket::init() {
     if (_socket == INVALID_SOCKET) {
         return ONE_ERROR_SOCKET_CREATE_FAILED;
     }
+
+#ifndef WINDOWS
+    int enable = 1;
+    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+        return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
+
+    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) < 0)
+        return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
+#endif
+
     return ONE_ERROR_NONE;
 }
 
 Error Socket::close() {
     if (_socket == INVALID_SOCKET) return ONE_ERROR_NONE;
+
+    // Read until nothing to read.
+    char data[1024];
+    while (true) {
+        int result = ::recv(_socket, data, 1024, 0);
+        if (result <= 0) {
+            break;
+        }
+    }
 
 #if defined(WINDOWS)
     const int result = ::closesocket(_socket);
@@ -102,6 +139,7 @@ Error Socket::close() {
     _socket = INVALID_SOCKET;
     return ONE_ERROR_NONE;
 }
+
 
 Error Socket::bind(const char *ip, unsigned int port) {
     assert(_socket != INVALID_SOCKET);
@@ -149,15 +187,6 @@ Error Socket::listen(int queueLength) {
 
     int result = set_non_blocking(_socket, true);
     if (result < 0) return ONE_ERROR_SOCKET_LISTEN_NON_BLOCKING_FAILED;
-
-#ifndef WINDOWS
-    int enable = 1;
-    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
-        return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
-
-    if (setsockopt(_socket, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) < 0)
-        return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
-#endif
 
     result = ::listen(_socket, queueLength);
     if (result < 0) return ONE_ERROR_SOCKET_LISTEN_FAILED;
@@ -249,22 +278,6 @@ Error Socket::ready_for_send(float timeout, bool &is_ready) {
     if (result < 0) return ONE_ERROR_SOCKET_SELECT_FAILED;
     if (result > 0) is_ready = true;
     return ONE_ERROR_NONE;
-}
-
-constexpr bool is_error_try_again(int err) {
-#ifdef WINDOWS
-    return err == WSATRY_AGAIN || err == WSAEWOULDBLOCK;
-#else
-    return err == EAGAIN;
-#endif
-}
-
-inline int last_error() {
-#ifdef WINDOWS
-    return WSAGetLastError();
-#else
-    return errno;
-#endif
 }
 
 Error Socket::send(const void *data, size_t length, size_t &length_sent) {

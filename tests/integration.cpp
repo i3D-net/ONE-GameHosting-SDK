@@ -12,6 +12,7 @@
 
 #include <iostream>
 
+using namespace game;
 using namespace one;
 
 bool error_callback_has_been_called = false;
@@ -57,32 +58,23 @@ void soft_stop_callback(void *, int timeout) {
     soft_stop_callback_has_been_called = true;
 }
 
-void handshake(Agent &agent, Game &game) {
+void pump_updates(Agent &agent, Game &game) {
     for_sleep(10, 10, [&]() {
         REQUIRE(game.update() == 0);
-
         REQUIRE(agent.update() == 0);
-
-        if (game.status() == static_cast<int>(Server::Status::ready) &&
-            agent.status() == static_cast<int>(Client::Status::ready))
+        if (agent.status() == static_cast<int>(Client::Status::ready))
             return true;
-
-        return false;
-    });
-    auto ready = game.status() == static_cast<int>(Server::Status::ready) &&
-                 agent.status() == static_cast<int>(Client::Status::ready);
-    REQUIRE(ready);
+            return false;
+   });
+   REQUIRE(agent.status() == static_cast<int>(Client::Status::ready));
 }
 
 TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     const auto address = "127.0.0.1";
-    const unsigned int port = 19001;
+    const unsigned int port = 19002;
 
     Game game(port, 1, 1, 16, "test", "test", "test", "test");
     REQUIRE(game.init(1024, 1024) == 0);
-    REQUIRE(game.set_live_state_request_callback() == 0);
-    REQUIRE(game.set_allocated_request_callback(allocated_callback, nullptr) == 0);
-    REQUIRE(game.status() == static_cast<int>(Server::Status::listening));
 
     Agent agent;
     REQUIRE(agent.connect(address, port, 1024, 1024) == 0);
@@ -92,7 +84,7 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     REQUIRE(agent.set_host_information_request_callback(host_information_callback,
                                                         nullptr) == 0);
 
-    handshake(agent, game);
+    pump_updates(agent, game);
 
     // FIXME: remove one the messages are sent over the socket.
     REQUIRE(game.shutdown() == 0);
@@ -109,13 +101,14 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     }
 
     // error_response
-    {
-        REQUIRE(game.send_error_response() == 0);
-        REQUIRE(agent.update() == 0);
-        sleep(10);
-        REQUIRE(game.update() == 0);
-        REQUIRE(error_callback_has_been_called == true);
-    }
+    // Todo - game.fake_error(), and why is it called a response if it is active?
+    // {
+    //     REQUIRE(game.send_error_response() == 0);
+    //     REQUIRE(agent.update() == 0);
+    //     sleep(10);
+    //     REQUIRE(game.update() == 0);
+    //     REQUIRE(error_callback_has_been_called == true);
+    // }
 
     // live_state_request
     {
@@ -147,13 +140,14 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     }
 
     // host_information_request
-    {
-        REQUIRE(game.send_host_information_request() == 0);
-        REQUIRE(game.update() == 0);
-        sleep(10);
-        REQUIRE(agent.update() == 0);
-        REQUIRE(host_information_callback_has_been_called == true);
-    }
+    // Todo - should this be from agent to game?
+    // {
+    //     REQUIRE(game.send_host_information_request() == 0);
+    //     REQUIRE(game.update() == 0);
+    //     sleep(10);
+    //     REQUIRE(agent.update() == 0);
+    //     REQUIRE(host_information_callback_has_been_called == true);
+    // }
 
     // TODO: add more agent request & custom messages.
 
