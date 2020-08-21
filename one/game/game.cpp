@@ -4,7 +4,7 @@
 
 #include <assert.h>
 
-namespace one {
+namespace game {
 
 Game::Game(unsigned int port, int queueLength, int players, int max_players,
            const std::string &name, const std::string &map, const std::string &mode,
@@ -22,53 +22,26 @@ Game::~Game() {
 }
 
 int Game::init(size_t max_message_in, size_t max_message_out) {
-    return _server.init(max_message_in, max_message_out);
+    _server.init(max_message_in, max_message_out);
+    return  (_server.status() == OneServerWrapper::Status::active) ? 0 : -1;
 }
 
 int Game::shutdown() {
-    return _server.shutdown();
+    _server.shutdown();
+    return  (_server.status() == OneServerWrapper::Status::none) ? 0 : -1;
 }
 
 int Game::update() {
-    return _server.update();
+    OneServerWrapper::GameState game_state = {0};
+    game_state.players = _players;
+    game_state.max_players = _max_players;
+    game_state.name = _name;
+    game_state.map = _map;
+    game_state.mode = _mode;
+    game_state.version = _version;
+    _server.set_game_state(game_state);
+    _server.update();
+    return 0;
 }
 
-int Game::status() const {
-    return _server.status();
-}
-
-int Game::send_error_response() {
-    return _server.send_error_response();
-}
-
-int Game::send_host_information_request() {
-    return _server.send_host_information_request();
-}
-
-int Game::set_live_state_request_callback() {
-    return _server.set_live_state_request_callback(&send_live_state_callback, this);
-}
-
-void Game::send_live_state_callback(void *data) {
-    auto self = reinterpret_cast<Game *>(data);
-    if (self == nullptr) {
-        return;
-    }
-
-    self->_server.send_live_state_response(self->_players, self->_max_players, self->_name,
-                                           self->_map, self->_mode, self->_version);
-}
-
-int Game::set_soft_stop_request_callback(void (*callback)(void *data, int timeout), void *data) {
-    return _server.set_soft_stop_request_callback(callback, data);
-}
-
-int Game::set_allocated_request_callback(void (*callback)(void *, void *), void *data) {
-    return _server.set_allocated_request_callback(callback, data);
-}
-
-int Game::set_meta_data_request_callback(void (*callback)(void *data, void *), void *data) {
-    return _server.set_meta_data_request_callback(callback, data);
-}
-
-}  // namespace one
+}  // namespace game

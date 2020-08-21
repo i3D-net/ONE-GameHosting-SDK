@@ -1,51 +1,65 @@
 #pragma once
 
-#include <one/arcus/c_api.h>
-
+#include <functional>
 #include <string>
 
-namespace one {
+// Forward declarations for One SDK object types.
+struct OneServer;
+struct OneMessage;
+struct OneMessage;
+struct OneMessage;
+
+namespace game {
 
 class OneServerWrapper final {
-
 public:
     OneServerWrapper(unsigned int port, int queueLength);
     OneServerWrapper(const OneServerWrapper &) = delete;
     OneServerWrapper &operator=(const OneServerWrapper &) = delete;
     ~OneServerWrapper();
 
-    int init(size_t max_message_in, size_t max_message_out);
-    int shutdown();
+    enum class Status {
+        none, // Status before init is called or after shutdown is called.
+        active,
+        attempting_to_listen
+    };
 
-    int update();
-    int status() const;
+    void init(size_t max_message_in, size_t max_message_out);
+    void shutdown();
+    Status status() const {return _status;}
 
-    int send_error_response();
-    int send_live_state_response(int player, int max_player, const std::string &name,
-                                 const std::string &map, const std::string &mode,
-                                 const std::string &version);
-    int send_host_information_request();
+    struct GameState {
+        int players;
+        int max_players;
+        std::string name; // Server name.
+        std::string map;
+        std::string mode; // Game mode.
+        std::string version; // Game Server version.
+    };
+    void set_game_state(const GameState &);
+    void update();
 
-    int set_soft_stop_request_callback(void (*callback)(void *data, int timeout), void *data);
-    int set_allocated_request_callback(void (*callback)(void *data, void *), void *data);
-    int set_meta_data_request_callback(void (*callback)(void *data, void *), void *data);
-    int set_live_state_request_callback(void (*callback)(void *data), void *data);
-
-    int prepare_error_response(OneMessagePtr message);
-    int prepare_live_state_response(int player, int max_player, const char *name, const char *map,
-                                    const char *mode, const char *version, OneMessagePtr message);
-    int prepare_host_information_request(OneMessagePtr message);
+    void set_soft_stop_callback(std::function<void(int)>);
 
 private:
-    int listen();
+    // Callbacks potentially called by the arcus server.
+    static void soft_stop(void *userdata, int timeout_seconds);
 
-    OneServerPtr _server;
-    OneMessagePtr _error;
-    OneMessagePtr _live_state;
-    OneMessagePtr _host_information;
+    OneServer *_server;
+    OneMessage *_error;
+    OneMessage *_live_state;
+    OneMessage *_host_information;
+
+    Status _status;
 
     const unsigned int _port;
     const int _queueLength;
+
+    GameState game_state;
+
+    // Callbacks that can be set by game to be notified of events received from
+    // the Arcus Server.
+    std::function<void(int)> _soft_stop_callback;
 };
 
-}  // namespace one
+}  // namespace game
