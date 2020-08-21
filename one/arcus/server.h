@@ -36,14 +36,14 @@ public:
     Server &operator=(const Server &) = delete;
     ~Server();
 
-    Error init(size_t max_message_in, size_t max_message_out);
+    Error init();
 
     Error shutdown();
 
     enum class Status { listening, handshake, ready, error };
     Status status() const;
 
-    Error listen(unsigned int port, int queueLength);
+    Error listen(unsigned int port);
 
     // Process pending received and outgoing messages. Any incoming messages are
     // validated according to the Arcus API version standard, and callbacks, if

@@ -110,7 +110,7 @@ OneError one_message_prepare_host_information_request(OneMessagePtr message);
 //--------------------------------------------------------------------------
 // One Server Life Cycle.
 
-OneError one_server_create(size_t max_message_in, size_t max_message_out, OneServerPtr *server);
+OneError one_server_create(OneServerPtr *server);
 void one_server_destroy(OneServerPtr *server);
 
 ///
@@ -130,7 +130,7 @@ int one_server_status(OneServerPtr const server);
 ///
 /// Listens for messages on the given port.
 ///
-OneError one_server_listen(OneServerPtr server, unsigned int port, int queueLength);
+OneError one_server_listen(OneServerPtr server, unsigned int port);
 
 ///
 /// Stops listening for messages.

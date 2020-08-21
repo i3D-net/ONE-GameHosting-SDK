@@ -4,8 +4,8 @@
 
 namespace one {
 
-int Agent::connect(const char *addr, int port, size_t max_message_in, size_t max_message_out) {
-    int error = _client.init(max_message_in, max_message_out);
+int Agent::connect(const char *addr, int port) {
+    int error = _client.init();
     if (error != 0) {
         return error;
     }

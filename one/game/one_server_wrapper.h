@@ -13,7 +13,7 @@ namespace game {
 
 class OneServerWrapper final {
 public:
-    OneServerWrapper(unsigned int port, int queueLength);
+    OneServerWrapper(unsigned int port);
     OneServerWrapper(const OneServerWrapper &) = delete;
     OneServerWrapper &operator=(const OneServerWrapper &) = delete;
     ~OneServerWrapper();
@@ -24,7 +24,7 @@ public:
         attempting_to_listen
     };
 
-    void init(size_t max_message_in, size_t max_message_out);
+    void init();
     void shutdown();
     Status status() const {return _status;}
 
@@ -49,13 +49,10 @@ private:
     OneMessage *_error;
     OneMessage *_live_state;
     OneMessage *_host_information;
+    const unsigned int _port;
 
     Status _status;
-
-    const unsigned int _port;
-    const int _queueLength;
-
-    GameState game_state;
+    GameState _game_state;
 
     // Callbacks that can be set by game to be notified of events received from
     // the Arcus Server.

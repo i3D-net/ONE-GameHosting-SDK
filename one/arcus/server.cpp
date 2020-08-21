@@ -18,7 +18,7 @@ Server::~Server() {
     shutdown();
 }
 
-Error Server::init(size_t max_message_in, size_t max_message_out) {
+Error Server::init() {
     if (_listen_socket != nullptr || _client_socket != nullptr ||
         _client_connection != nullptr) {
         return ONE_ERROR_SERVER_ALREADY_INITIALIZED;
@@ -92,7 +92,7 @@ Server::Status Server::status() const {
     }
 }
 
-Error Server::listen(unsigned int port, int queueLength) {
+Error Server::listen(unsigned int port) {
     if (_listen_socket == nullptr) {
         return ONE_ERROR_SERVER_SOCKET_IS_NULLPTR;
     }
@@ -106,7 +106,7 @@ Error Server::listen(unsigned int port, int queueLength) {
         return err;
     }
 
-    err = _listen_socket->listen(queueLength);
+    err = _listen_socket->listen(Socket::default_queue_length);
     if (is_error(err)) {
         return err;
     }
@@ -149,7 +149,7 @@ Error Server::update() {
         }
 
         // TODO: avoid allocation, use reset & init.
-        auto connection = new Connection(*_client_socket, 1024, 1024);
+        auto connection = new Connection(*_client_socket, Connection::max_message_default, Connection::max_message_default);
         if (connection == nullptr) {
             return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
         }

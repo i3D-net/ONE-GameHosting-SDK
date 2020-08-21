@@ -9,6 +9,6 @@ using namespace one;
 
 TEST_CASE("Agent standalone life cycle", "[agent]") {
     Agent agent;
-    REQUIRE(agent.connect("127.0.0.1", 19001, 1024, 1024) == -1);
+    REQUIRE(agent.connect("127.0.0.1", 19001) == -1);
     REQUIRE(agent.client().status() == Client::Status::handshake);
 }

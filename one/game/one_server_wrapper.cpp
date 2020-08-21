@@ -6,20 +6,20 @@
 
 namespace game {
 
-OneServerWrapper::OneServerWrapper(unsigned int port, int queueLength)
+OneServerWrapper::OneServerWrapper(unsigned int port)
     : _server(nullptr)
     , _error(nullptr)
     , _live_state(nullptr)
     , _host_information(nullptr)
-    , _status(Status::none)
     , _port(port)
-    , _queueLength(queueLength) {}
+    , _status(Status::none)
+    , _game_state() {}
 
 OneServerWrapper::~OneServerWrapper() {
     shutdown();
 }
 
-void OneServerWrapper::init(size_t max_message_in, size_t max_message_out) {
+void OneServerWrapper::init() {
     if (_server != nullptr) {
         return;
     }
@@ -29,7 +29,7 @@ void OneServerWrapper::init(size_t max_message_in, size_t max_message_out) {
     // the process is hosting multiple game servers. Each game server must have
     // one corresponding arcus server.
 
-    OneError error = one_server_create(max_message_in, max_message_out, &_server);
+    OneError error = one_server_create(&_server);
     if (error != 0) {
         // Todo: log error.
         return;
@@ -65,7 +65,7 @@ void OneServerWrapper::init(size_t max_message_in, size_t max_message_out) {
 
     // Todo - retry listen loop in update if listen fails...
 
-    error = one_server_listen(_server, _port, _queueLength);
+    error = one_server_listen(_server, _port);
     if (error != 0) {
         // Todo: log error.
         return;
@@ -89,7 +89,7 @@ void OneServerWrapper::shutdown() {
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
-    game_state = state;
+    _game_state = state;
 }
 
 void OneServerWrapper::update() {

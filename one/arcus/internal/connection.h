@@ -21,6 +21,9 @@ class RingBuffer;
 // Connection manages Arcus protocol communication between two TCP sockets.
 class Connection final {
 public:
+    // A default that can be used for production.
+    static constexpr size_t max_message_default = 1024;
+
     // Connection must be given an active socket. Socket errors encountered
     // during processing will be returned as errors, and it is the caller's
     // responsibilty to either destroy the Connection, or restore the Socket's

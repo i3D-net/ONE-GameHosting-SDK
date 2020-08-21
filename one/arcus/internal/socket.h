@@ -63,6 +63,10 @@ public:
     // Returns the address of this socket.
     Error address(std::string &ip, unsigned int &port);
 
+    // A decent default for the listen queue length for production. Ensure
+    // the listen socket is serviced by accept to keep the queue free.
+    static constexpr int default_queue_length = 32;
+
     // Listens for incoming connections. Socket must have bind called
     // beforehand.
     Error listen(int queueLength);

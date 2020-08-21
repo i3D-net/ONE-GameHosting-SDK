@@ -16,7 +16,7 @@ public:
     ~Agent() = default;
 
     // Connect to server.
-    int connect(const char *ip, int port, size_t max_message_in, size_t max_message_out);
+    int connect(const char *ip, int port);
 
     // Check status.
     int status();
