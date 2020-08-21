@@ -11,14 +11,14 @@ using namespace game;
 using namespace one;
 
 TEST_CASE("life cycle", "[fake game]") {
-    Game game(19001, 1, 10, 54, "test game", "test map", "test mode", "test version");
-    REQUIRE(game.init(1024, 1024) == 0);
+    Game game(19001, 10, 54, "test game", "test map", "test mode", "test version");
+    REQUIRE(game.init() == 0);
     REQUIRE(game.shutdown() == 0);
 }
 
 TEST_CASE("connection error handling", "[fake game]") {
-    Game game(19001, 1, 10, 54, "test game", "test map", "test mode", "test version");
-    REQUIRE(game.init(1024, 1024) == 0);
+    Game game(19001, 10, 54, "test game", "test map", "test mode", "test version");
+    REQUIRE(game.init() == 0);
 
     // Connect a client socket to fake a scriptable agent.
     Socket client;

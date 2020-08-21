@@ -73,11 +73,11 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19002;
 
-    Game game(port, 1, 1, 16, "test", "test", "test", "test");
-    REQUIRE(game.init(1024, 1024) == 0);
+    Game game(port, 1, 16, "test", "test", "test", "test");
+    REQUIRE(game.init() == 0);
 
     Agent agent;
-    REQUIRE(agent.connect(address, port, 1024, 1024) == 0);
+    REQUIRE(agent.connect(address, port) == 0);
     REQUIRE(agent.status() == static_cast<Error>(Client::Status::handshake));
     REQUIRE(agent.set_error_response_callback(error_callback, nullptr) == 0);
     REQUIRE(agent.set_live_state_response_callback(live_state_callback, nullptr) == 0);

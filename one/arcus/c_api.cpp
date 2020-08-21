@@ -249,7 +249,7 @@ Error message_prepare_host_information_request(OneMessagePtr message) {
     return messages::prepare_host_information_request(*m);
 }
 
-Error server_create(size_t max_message_in, size_t max_message_out, OneServerPtr *server) {
+Error server_create(OneServerPtr *server) {
     if (server == nullptr) {
         return ONE_ERROR_MESSAGE_IS_NULLPTR;
     }
@@ -259,7 +259,7 @@ Error server_create(size_t max_message_in, size_t max_message_out, OneServerPtr 
         return ONE_ERROR_SERVER_ALLOCATION_FAILED;
     }
 
-    auto err = s->init(max_message_in, max_message_out);
+    auto err = s->init();
     if (is_error(err)) {
         delete s;
         return err;
@@ -299,13 +299,13 @@ int server_status(OneServerPtr const server) {
     return static_cast<int>(s->status());
 }
 
-Error server_listen(OneServerPtr server, unsigned int port, int queueLength) {
+Error server_listen(OneServerPtr server, unsigned int port) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_SERVER_IS_NULLPTR;
     }
 
-    return s->listen(port, queueLength);
+    return s->listen(port);
 }
 
 Error server_shutdown(OneServerPtr server) {
@@ -495,8 +495,8 @@ OneError one_message_prepare_host_information_request(OneMessagePtr message) {
     return one::message_prepare_host_information_request(message);
 }
 
-OneError one_server_create(size_t max_message_in, size_t max_message_out, OneServerPtr *server) {
-    return one::server_create(max_message_in, max_message_out, server);
+OneError one_server_create(OneServerPtr *server) {
+    return one::server_create(server);
 }
 
 void one_server_destroy(OneServerPtr *server) {
@@ -511,8 +511,8 @@ int one_server_status(OneServerPtr const server) {
     return one::server_status(server);
 }
 
-OneError one_server_listen(OneServerPtr server, unsigned int port, int queueLength) {
-    return one::server_listen(server, port, queueLength);
+OneError one_server_listen(OneServerPtr server, unsigned int port) {
+    return one::server_listen(server, port);
 }
 
 OneError one_server_shutdown(OneServerPtr server) {

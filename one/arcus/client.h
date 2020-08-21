@@ -33,7 +33,7 @@ public:
     Client &operator=(const Client &) = delete;
     ~Client();
 
-    int init(size_t max_message_in, size_t max_message_out);
+    int init();
     int shutdown();
     int connect(const char *address, unsigned int port);
     int update();

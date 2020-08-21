@@ -14,7 +14,7 @@ Client::~Client() {
     shutdown();
 }
 
-int Client::init(size_t max_message_in, size_t max_message_out) {
+int Client::init() {
     if (_socket != nullptr || _connection != nullptr) {
         return -1;
     }
@@ -36,7 +36,7 @@ int Client::init(size_t max_message_in, size_t max_message_out) {
         return -1;
     }
 
-    _connection = new Connection(*_socket, max_message_in, max_message_out);
+    _connection = new Connection(*_socket, Connection::max_message_default, Connection::max_message_default);
     if (_connection == nullptr) {
         shutdown();
         return -1;
