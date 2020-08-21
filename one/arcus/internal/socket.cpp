@@ -85,6 +85,15 @@ inline int last_error() {
 
 Socket::Socket() : _socket(INVALID_SOCKET) {}
 
+Socket::Socket(const Socket &other) : _socket(other._socket) {
+    other._socket = INVALID_SOCKET;
+}
+
+void Socket::operator=(const Socket &other) {
+    _socket = other._socket;
+    other._socket = INVALID_SOCKET;
+}
+
 Socket::~Socket() {
     close();
 }
@@ -139,7 +148,6 @@ Error Socket::close() {
     _socket = INVALID_SOCKET;
     return ONE_ERROR_NONE;
 }
-
 
 Error Socket::bind(const char *ip, unsigned int port) {
     assert(_socket != INVALID_SOCKET);

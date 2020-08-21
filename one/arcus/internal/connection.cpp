@@ -22,14 +22,30 @@ namespace one {
 constexpr size_t stream_send_buffer_size = 1024 * 128;
 constexpr size_t stream_receive_buffer_size = 1024 * 128;
 
-Connection::Connection(Socket &socket, size_t max_messages_in, size_t max_messages_out)
-    : _status(Status::handshake_not_started)
-    , _socket(socket)
+Connection::Connection(size_t max_messages_in, size_t max_messages_out)
+    : _socket(nullptr)
+    , _status(Status::handshake_not_started)
     , _out_stream(stream_send_buffer_size)
     , _in_stream(stream_receive_buffer_size)
     , _incoming_messages(max_messages_in)
-    , _outgoing_messages(max_messages_out) {
-    assert(socket.is_initialized());
+    , _outgoing_messages(max_messages_out) {}
+
+Connection::Connection(Socket *socket, size_t max_messages_in, size_t max_messages_out)
+    : Connection(max_messages_in, max_messages_out) {
+    _socket = socket;
+}
+
+void Connection::set_socket(Socket *socket) {
+    _socket = socket;
+}
+
+void Connection::shutdown() {
+    _out_stream.clear();
+    _in_stream.clear();
+    _outgoing_messages.clear();
+    _incoming_messages.clear();
+    _status = Status::handshake_not_started;
+    _socket = nullptr;
 }
 
 Connection::Status Connection::status() const {
@@ -77,9 +93,11 @@ void Connection::initiate_handshake() {
 Error Connection::update() {
     if (_status == Status::error) return ONE_ERROR_CONNECTION_UPDATE_AFTER_ERROR;
 
+    assert(_socket && _socket->is_initialized());
+
     // Return if socket has no activity or has an error.
     bool is_ready = false;
-    auto err = _socket.ready_for_send(0.f, is_ready);
+    auto err = _socket->ready_for_send(0.f, is_ready);
     if (is_error(err)) return err;
     if (!is_ready) return ONE_ERROR_NONE;
 
@@ -92,18 +110,12 @@ Error Connection::update() {
     return process_incoming_messages();
 }
 
-void Connection::reset() {
-    _out_stream.clear();
-    _in_stream.clear();
-    _outgoing_messages.clear();
-    _incoming_messages.clear();
-    _status = Status::handshake_not_started;
-}
-
 Error Connection::ensure_nothing_received() {
+    assert(_socket && _socket->is_initialized());
+
     char byte;
     size_t received = 0;
-    auto err = _socket.receive(&byte, 1, received);
+    auto err = _socket->receive(&byte, 1, received);
     if (is_error(err)) {
         return err;
     }
@@ -114,6 +126,8 @@ Error Connection::ensure_nothing_received() {
 }
 
 Error Connection::try_send_hello() {
+    assert(_socket && _socket->is_initialized());
+
     auto &stream = _out_stream;
 
     // Buffer outgoing message if not yet done so. Nearly all the time the
@@ -132,7 +146,7 @@ Error Connection::try_send_hello() {
 
     // Send as much as possible.
     size_t sent = 0;
-    auto err = _socket.send(data, size, sent);
+    auto err = _socket->send(data, size, sent);
     if (is_error(err)) {  // Error.
         return ONE_ERROR_CONNECTION_HELLO_SEND_FAILED;
     }
@@ -146,10 +160,12 @@ Error Connection::try_send_hello() {
 }
 
 Error Connection::try_receive_hello() {
+    assert(_socket && _socket->is_initialized());
+
     // Read a hello packet from socket.
     codec::Hello hello = {0};
     size_t received = 0;
-    auto err = _socket.receive(&hello, codec::hello_size(), received);
+    auto err = _socket->receive(&hello, codec::hello_size(), received);
     if (is_error(err)) {
         return ONE_ERROR_CONNECTION_HELLO_RECEIVE_FAILED;
     }
@@ -189,6 +205,8 @@ const codec::Header &hello_message() {
 }
 
 Error Connection::try_send_hello_message() {
+    assert(_socket && _socket->is_initialized());
+
     auto &stream = _out_stream;
 
     // Buffer outgoing message if not yet done so. Nearly all the time the send
@@ -207,7 +225,7 @@ Error Connection::try_send_hello_message() {
 
     // Send.
     size_t sent = 0;
-    auto err = _socket.send(data, size, sent);
+    auto err = _socket->send(data, size, sent);
     if (is_error(err)) {
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_SEND_FAILED;
     }
@@ -221,8 +239,10 @@ Error Connection::try_send_hello_message() {
 }
 
 Error Connection::try_receive_message_header(codec::Header &header) {
+    assert(_socket && _socket->is_initialized());
+
     size_t received = 0;
-    auto err = _socket.receive(&header, codec::header_size(), received);
+    auto err = _socket->receive(&header, codec::header_size(), received);
     if (is_error(err)) {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_RECEIVE_FAILED;
@@ -265,6 +285,8 @@ Error Connection::try_receive_hello_message() {
 }
 
 Error Connection::process_handshake() {
+    assert(_socket && _socket->is_initialized());
+
     // Check if handshake timed out.
     // return ONE_ERROR_NONE;
 
@@ -283,7 +305,7 @@ Error Connection::process_handshake() {
 
             {
                 bool is_ready = false;
-                err = _socket.ready_for_send(0.f, is_ready);
+                err = _socket->ready_for_send(0.f, is_ready);
                 if (is_error(err)) return err;
                 if (!is_ready) break;
             }
@@ -325,6 +347,8 @@ Error Connection::process_handshake() {
 }
 
 Error Connection::process_incoming_messages() {
+    assert(_socket && _socket->is_initialized());
+
     codec::Header header = {0};
     auto err = ONE_ERROR_NONE;
 
@@ -334,7 +358,7 @@ Error Connection::process_incoming_messages() {
     auto read_header_and_continue = [&]() -> bool {
         // Check if socket is ready to read anything.
         bool is_ready = false;
-        err = _socket.ready_for_read(0.f, is_ready);
+        err = _socket->ready_for_read(0.f, is_ready);
         if (is_error(err)) return false;
         if (!is_ready) return false;
 
@@ -364,6 +388,8 @@ Error Connection::process_incoming_messages() {
 }
 
 Error Connection::process_outgoing_messages() {
+    assert(_socket && _socket->is_initialized());
+
     // Util to attempt to send all pending data in the buffered outgoing data
     // stream.
     auto send_pending_data = [&]() -> Error {
@@ -372,7 +398,7 @@ Error Connection::process_outgoing_messages() {
 
         // Check is socket is connected and ready.
         bool can_send = false;
-        auto err = _socket.ready_for_send(0.f, can_send);
+        auto err = _socket->ready_for_send(0.f, can_send);
         if (is_error(err)) return err;
         if (!can_send) return ONE_ERROR_NONE;
 
@@ -380,7 +406,7 @@ Error Connection::process_outgoing_messages() {
         void *data;
         _out_stream.peek(size, &data);
         size_t sent = 0;
-        err = _socket.send(data, size, sent);
+        err = _socket->send(data, size, sent);
         if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) return ONE_ERROR_NONE;
         if (is_error(err)) return err;
 

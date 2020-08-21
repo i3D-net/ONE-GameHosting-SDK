@@ -62,11 +62,23 @@ void pump_updates(Agent &agent, Game &game) {
     for_sleep(10, 10, [&]() {
         REQUIRE(game.update() == 0);
         REQUIRE(agent.update() == 0);
-        if (agent.status() == static_cast<int>(Client::Status::ready))
-            return true;
-            return false;
-   });
-   REQUIRE(agent.status() == static_cast<int>(Client::Status::ready));
+        if (agent.status() == static_cast<int>(Client::Status::ready)) return true;
+        return false;
+    });
+    REQUIRE(agent.status() == static_cast<int>(Client::Status::ready));
+}
+
+TEST_CASE("Agent connection failure", "[agent]") {
+    const auto address = "127.0.0.1";
+    const unsigned int port = 19001;
+
+    Game game(port, 1, 16, "name", "map", "mode", "version");
+    REQUIRE(game.init() == 0);
+    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::active);
+
+    Agent agent;
+    REQUIRE(agent.connect(address, port) == 0);
+    REQUIRE(agent.status() == static_cast<Error>(Client::Status::handshake));
 }
 
 TEST_CASE("Agent connects to a game & send requests", "[agent]") {

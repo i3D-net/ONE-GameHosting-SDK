@@ -36,7 +36,8 @@ int Client::init() {
         return -1;
     }
 
-    _connection = new Connection(*_socket, Connection::max_message_default, Connection::max_message_default);
+    _connection = new Connection(_socket, Connection::max_message_default,
+                                 Connection::max_message_default);
     if (_connection == nullptr) {
         shutdown();
         return -1;
@@ -203,16 +204,17 @@ int Client::process_incoming_message(const Message &message) {
                 return 0;
             }
 
-            return invocation::live_state_response(message, _callbacks._live_state_response,
+            return invocation::live_state_response(message,
+                                                   _callbacks._live_state_response,
                                                    _callbacks._live_state_response_data);
         case Opcode::host_information_request:
             if (_callbacks._host_information_request == nullptr) {
                 return 0;
             }
 
-            return invocation::host_information_request(message,
-                                                        _callbacks._host_information_request,
-                                                        _callbacks._host_information_request_data);
+            return invocation::host_information_request(
+                message, _callbacks._host_information_request,
+                _callbacks._host_information_request_data);
         default:
             return 0;
     }

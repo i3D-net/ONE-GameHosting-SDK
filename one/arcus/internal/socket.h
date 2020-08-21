@@ -40,6 +40,13 @@ public:
     // Destroys the socket. Closes active connection, if any.
     ~Socket();
 
+    // Note that the system socket ownership is transferred when sockets are
+    // copied or assigned. Be careful when using the socket in data structures,
+    // if the socket is automatically copied during use, behavior may be
+    // undefined.
+    explicit Socket(const Socket &other);
+    void operator=(const Socket &other);
+
     // Initializes as a TCP socket. Must be called before listen or connect.
     Error init();
 
@@ -106,10 +113,8 @@ public:
     Error receive(void *data, size_t length, size_t &length_received);
 
 private:
-    explicit Socket(const Socket &other) = delete;
-    void operator=(const Socket &other) = delete;
-
-    SOCKET _socket;
+    mutable SOCKET _socket;  // Mutable so that the copy constructor and operator can take
+                             // ownership of the system socket.
 };
 
 }  // namespace one

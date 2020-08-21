@@ -11,9 +11,8 @@ class OneServerWrapper;
 
 class Game final {
 public:
-    Game(unsigned int port, int _players, int _max_players,
-         const std::string &name, const std::string &map, const std::string &mode,
-         const std::string &version);
+    Game(unsigned int port, int _players, int _max_players, const std::string &name,
+         const std::string &map, const std::string &mode, const std::string &version);
     Game(const Game &) = delete;
     Game &operator=(const Game &) = delete;
     ~Game();
@@ -22,6 +21,11 @@ public:
     int shutdown();
 
     int update();
+
+    // Exposed for testing purposes.
+    OneServerWrapper &one_server_wrapper() {
+        return _server;
+    }
 
 private:
     OneServerWrapper _server;

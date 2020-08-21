@@ -209,8 +209,8 @@ TEST_CASE("connection", "[arcus]") {
 
     // Arcus connections around the server-side and client-side sockets that
     // are connected to each other.
-    Connection server_connection(in_client, 2, 2);
-    Connection client_connection(out_client, 2, 2);
+    Connection server_connection(&in_client, 2, 2);
+    Connection client_connection(&out_client, 2, 2);
 
     server_connection.initiate_handshake();
     for (auto i = 0; i < 10; ++i) {
@@ -273,17 +273,17 @@ void init_client_server_test(ClientServerTestObjects &objects,
     connect(objects.out_client, objects.server_port);
     accept(objects.server, objects.in_client);
     objects.server_connection =
-        new Connection(objects.in_client, message_queue_length, message_queue_length);
+        new Connection(&objects.in_client, message_queue_length, message_queue_length);
     objects.client_connection =
-        new Connection(objects.out_client, message_queue_length, message_queue_length);
+        new Connection(&objects.out_client, message_queue_length, message_queue_length);
 }
 
 void shutdown_client_server_test(ClientServerTestObjects &objects) {
+    delete objects.server_connection;
+    delete objects.client_connection;
     objects.server.close();
     objects.out_client.close();
     objects.in_client.close();
-    delete objects.server_connection;
-    delete objects.client_connection;
     shutdown_socket_system();
 }
 

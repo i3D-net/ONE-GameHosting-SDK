@@ -28,8 +28,17 @@ public:
     // during processing will be returned as errors, and it is the caller's
     // responsibilty to either destroy the Connection, or restore the Socket's
     // state for communication.
-    Connection(Socket &socket, size_t max_messages_in, size_t max_messages_out);
+    Connection(size_t max_messages_in, size_t max_messages_out);
+    Connection(Socket *socket, size_t max_messages_in, size_t max_messages_out);
     ~Connection() = default;
+
+    // Assign the socket to the Connection. The socket must be set either via
+    // the constructor or set_socket before other functions may be used.
+    void set_socket(Socket *socket);
+
+    // Clears Connection to construction state. Erases all pending incoming
+    // and outgoing data. Unassigned the socket.
+    void shutdown();
 
     // Marks this side of the connection as responsible for initiating the
     // handshaking process. Must be called from one side of the connection
@@ -41,10 +50,6 @@ public:
     // all incoming messages that are available. It attempts to send all
     // queued outgoing messages.
     Error update();
-
-    // Reset the status to match construction time and clear any accumulated
-    // buffers. Retains sockets.
-    void reset();
 
     enum class Status {
         handshake_not_started,
@@ -96,8 +101,8 @@ private:
     Error try_send_hello_message();  // Hello as a Message with opcode.
     Error try_receive_hello_message();
 
+    Socket *_socket;
     Status _status;
-    Socket &_socket;
 
     Accumulator _in_stream;
     Accumulator _out_stream;
