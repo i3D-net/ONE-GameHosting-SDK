@@ -3,9 +3,11 @@
 
 #include <one/arcus/error.h>
 #include <one/arcus/array.h>
+#include <one/arcus/c_api.h>
+#include <one/arcus/internal/rapidjson/document.h>
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
-#include <one/arcus/internal/rapidjson/document.h>
+#include <one/arcus/opcode.h>
 
 #include <string>
 
@@ -157,4 +159,157 @@ TEST_CASE("payload unit tests", "[payload]") {
     REQUIRE(json == result);
 }
 
-TEST_CASE("message unit tests", "[message]") {}
+TEST_CASE("message unit tests", "[message]") {
+    Message m;
+    REQUIRE(m.code() == Opcode::invalid);
+    const std::string json = "{\"timeout\":1000}";
+    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {json.c_str(), json.size()})));
+    REQUIRE(m.code() == Opcode::soft_stop_request);
+    auto p = m.payload();
+    Payload copy = p;
+    REQUIRE(!p.is_empty());
+    int timeout = 0;
+    REQUIRE(!is_error(p.val_int("timeout", timeout)));
+    REQUIRE(timeout == 1000);
+    m.reset();
+    REQUIRE(m.code() == Opcode::invalid);
+    REQUIRE(m.payload().is_empty());
+    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, copy)));
+    REQUIRE(m.code() == Opcode::soft_stop_request);
+    p = m.payload();
+    REQUIRE(!is_error(p.val_int("timeout", timeout)));
+    REQUIRE(timeout == 1000);
+}
+
+TEST_CASE("message prepare", "[message]") {
+    Message m;
+    REQUIRE(messages::prepare_error_response(m) == 0);
+    REQUIRE(m.code() == Opcode::error_response);
+    REQUIRE(m.payload().is_empty() == true);
+
+    m.reset();
+    REQUIRE(messages::prepare_soft_stop_request(1000, m) == 0);
+    REQUIRE(m.code() == Opcode::soft_stop_request);
+    auto p = m.payload();
+    REQUIRE(p.is_empty() == false);
+    int timeout = 0;
+    REQUIRE(!is_error(p.val_int("timeout", timeout)));
+    REQUIRE(timeout == 1000);
+
+    m.reset();
+    Array allocated;
+    REQUIRE(messages::prepare_allocated_request(allocated, m) == 0);
+    REQUIRE(m.code() == Opcode::allocated_request);
+    p = m.payload();
+    REQUIRE(p.is_empty() == false);
+    REQUIRE(p.is_val_array("data"));
+
+    m.reset();
+    Array meta_data;
+    REQUIRE(messages::prepare_meta_data_request(meta_data, m) == 0);
+    REQUIRE(m.code() == Opcode::meta_data_request);
+    p = m.payload();
+    REQUIRE(p.is_empty() == false);
+    REQUIRE(p.is_val_array("data"));
+
+    m.reset();
+    REQUIRE(messages::prepare_live_state_request(m) == 0);
+    REQUIRE(m.code() == Opcode::live_state_request);
+    REQUIRE(m.payload().is_empty() == true);
+
+    m.reset();
+    const int player = 1;
+    const int max_player = 16;
+    const std::string name = "test name";
+    const std::string map = "test map";
+    const std::string mode = "test mode";
+    const std::string version = "test version";
+
+    REQUIRE(messages::prepare_live_state_response(player, max_player, name.c_str(),
+                                                  map.c_str(), mode.c_str(),
+                                                  version.c_str(), m) == 0);
+    REQUIRE(m.code() == Opcode::live_state_response);
+    p = m.payload();
+    REQUIRE(p.is_empty() == false);
+
+    int int_val = 0;
+    REQUIRE(!is_error(p.val_int("player", int_val)));
+    REQUIRE(int_val == player);
+    REQUIRE(!is_error(p.val_int("max_player", int_val)));
+    REQUIRE(int_val == max_player);
+    std::string val;
+    REQUIRE(!is_error(p.val_string("name", val)));
+    REQUIRE(val == name);
+    REQUIRE(!is_error(p.val_string("map", val)));
+    REQUIRE(val == map);
+    REQUIRE(!is_error(p.val_string("mode", val)));
+    REQUIRE(val == mode);
+    REQUIRE(!is_error(p.val_string("version", val)));
+    REQUIRE(val == version);
+}
+
+TEST_CASE("message c_api", "[message]") {
+    OneMessagePtr m = nullptr;
+    REQUIRE(!is_error(one_message_create(&m)));
+    REQUIRE(m != nullptr);
+
+    const std::string json = "{\"timeout\":1000}";
+    const int original_code = static_cast<int>(Opcode::soft_stop_request);
+    REQUIRE(!is_error(one_message_init(m, original_code, json.c_str(), json.size())));
+    int code = 0;
+    REQUIRE(!is_error(one_message_code(m, &code)));
+    REQUIRE(code == original_code);
+    REQUIRE(!is_error(one_message_reset(m)));
+
+    const bool boolean = true;
+    const int integer = 1;
+    const std::string string = "test";
+    const Array array;
+    const Object object;
+
+    REQUIRE(!is_error(one_message_set_val_bool(m, "bool", boolean)));
+    REQUIRE(!is_error(one_message_set_val_int(m, "int", integer)));
+    REQUIRE(!is_error(one_message_set_val_string(m, "string", string.c_str())));
+    REQUIRE(!is_error(one_message_set_val_array(m, "array", (OneArrayPtr)&array)));
+    REQUIRE(!is_error(one_message_set_val_object(m, "object", (OneObjectPtr)&object)));
+
+    bool result = false;
+    REQUIRE(!is_error(one_message_is_val_bool(m, "bool", &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_message_is_val_int(m, "int", &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_message_is_val_string(m, "string", &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_message_is_val_array(m, "array", &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_message_is_val_object(m, "object", &result)));
+    REQUIRE(result == true);
+
+    bool val_boolean = false;
+    int val_integer = 0;
+    std::string val_string = "    ";
+    Array val_array;
+    Object val_object;
+
+    REQUIRE(!is_error(one_message_val_bool(m, "bool", &val_boolean)));
+    REQUIRE(boolean == val_boolean);
+    REQUIRE(!is_error(one_message_val_int(m, "int", &val_integer)));
+    REQUIRE(integer == val_integer);
+    // FIXME.
+    // REQUIRE(!is_error(one_message_val_string(m, "string", val_string)));
+    // REQUIRE(string == val_string);
+    REQUIRE(!is_error(one_message_val_array(m, "array", (OneArrayPtr)&val_array)));
+    REQUIRE(array.get() == val_array.get());
+    REQUIRE(!is_error(one_message_val_object(m, "object", (OneObjectPtr)&val_object)));
+    REQUIRE(object.get() == val_object.get());
+
+    REQUIRE(!is_error(one_message_reset(m)));
+
+    REQUIRE(!is_error(one_message_prepare_error_response(m)));
+    REQUIRE(!is_error(one_message_prepare_live_state_response(1, 16, "name", "map",
+                                                              "mode", "version", m)));
+    REQUIRE(!is_error(one_message_prepare_host_information_request(m)));
+
+    one_message_destroy(&m);
+    REQUIRE(m == nullptr);
+}

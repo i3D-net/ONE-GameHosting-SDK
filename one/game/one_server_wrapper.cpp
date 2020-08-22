@@ -1,5 +1,7 @@
 #include <one/game/one_server_wrapper.h>
 
+#include <one/arcus/c_error.h>
+
 #include <assert.h>
 
 #include <one/arcus/c_api.h>
@@ -111,13 +113,16 @@ void OneServerWrapper::update() {
 //     return one_server_send_error_response(_server, _error);
 // }
 
-// OneError OneServerWrapper::send_live_state_response(int player, int max_player, const std::string &name,
-//                                                const std::string &map, const std::string &mode,
-//                                                const std::string &version) {
+// OneError OneServerWrapper::send_live_state_response(int player, int max_player, const
+// std::string &name,
+//                                                const std::string &map, const
+//                                                std::string &mode, const std::string
+//                                                &version) {
 //     assert(_server != nullptr && _error != nullptr);
 
 //     int error = one_message_prepare_live_state_response(
-//         player, max_player, name.c_str(), map.c_str(), mode.c_str(), version.c_str(), _live_state);
+//         player, max_player, name.c_str(), map.c_str(), mode.c_str(), version.c_str(),
+//         _live_state);
 //     if (error != 0) {
 //         return -1;
 //     }

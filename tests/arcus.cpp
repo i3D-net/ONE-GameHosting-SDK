@@ -67,45 +67,6 @@ TEST_CASE("message handling", "[arcus]") {
     REQUIRE(m.payload().is_empty());
 }
 
-TEST_CASE("message prepare", "[arcus]") {
-    Message m;
-    REQUIRE(messages::prepare_error_response(m) == 0);
-    REQUIRE(m.code() == Opcode::error_response);
-    REQUIRE(m.payload().is_empty() == true);
-
-    m.reset();
-    REQUIRE(messages::prepare_soft_stop_request(1000, m) == 0);
-    REQUIRE(m.code() == Opcode::soft_stop_request);
-    // FIXME: uncomment when the payload class is properlly implemented.
-    // REQUIRE(m.payload().is_empty() == false);
-
-    m.reset();
-    Array allocated;
-    REQUIRE(messages::prepare_allocated_request(allocated, m) == 0);
-    REQUIRE(m.code() == Opcode::allocated_request);
-    // FIXME: uncomment when the payload class is properlly implemented.
-    // REQUIRE(m.payload().is_empty() == false);
-
-    m.reset();
-    Array meta_data;
-    REQUIRE(messages::prepare_meta_data_request(meta_data, m) == 0);
-    REQUIRE(m.code() == Opcode::meta_data_request);
-    // FIXME: uncomment when the payload class is properlly implemented.
-    // REQUIRE(m.payload().is_empty() == false);
-
-    m.reset();
-    REQUIRE(messages::prepare_live_state_request(m) == 0);
-    REQUIRE(m.code() == Opcode::live_state_request);
-    REQUIRE(m.payload().is_empty() == true);
-
-    m.reset();
-    REQUIRE(messages::prepare_live_state_response(1, 16, "test server", "test map",
-                                                  "test mode", "test version", m) == 0);
-    REQUIRE(m.code() == Opcode::live_state_response);
-    // FIXME: uncomment when the payload class is properlly implemented.
-    // REQUIRE(m.payload().is_empty() == false);
-}
-
 //------------------------------------------------------------------------------
 // Socket & Connection tests.
 

@@ -19,22 +19,24 @@ public:
     ~OneServerWrapper();
 
     enum class Status {
-        none, // Status before init is called or after shutdown is called.
+        none,  // Status before init is called or after shutdown is called.
         active,
         attempting_to_listen
     };
 
     void init();
     void shutdown();
-    Status status() const {return _status;}
+    Status status() const {
+        return _status;
+    }
 
     struct GameState {
         int players;
         int max_players;
-        std::string name; // Server name.
+        std::string name;  // Server name.
         std::string map;
-        std::string mode; // Game mode.
-        std::string version; // Game Server version.
+        std::string mode;     // Game mode.
+        std::string version;  // Game Server version.
     };
     void set_game_state(const GameState &);
     void update();

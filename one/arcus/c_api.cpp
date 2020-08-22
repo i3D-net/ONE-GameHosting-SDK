@@ -13,7 +13,7 @@ namespace {
 
 Error message_create(OneMessagePtr *message) {
     if (message == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     auto m = new Message();
@@ -40,16 +40,26 @@ void message_destroy(OneMessagePtr *message) {
 Error message_init(OneMessagePtr message, int code, const char *data, unsigned int size) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     return m->init(static_cast<Opcode>(code), {data, size});
 }
 
+OneError message_reset(OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    m->reset();
+    return ONE_ERROR_NONE;
+}
+
 Error message_code(OneMessagePtr message, int *code) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (code == nullptr) {
@@ -60,10 +70,117 @@ Error message_code(OneMessagePtr message, int *code) {
     return ONE_ERROR_NONE;
 }
 
+OneError message_is_val_bool(OneMessagePtr message, const char *key, bool *result) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    *result = m->payload().is_val_bool(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError message_is_val_int(OneMessagePtr message, const char *key, bool *result) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    *result = m->payload().is_val_int(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError message_is_val_string(OneMessagePtr message, const char *key, bool *result) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    *result = m->payload().is_val_string(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError message_is_val_array(OneMessagePtr message, const char *key, bool *result) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    *result = m->payload().is_val_array(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError message_is_val_object(OneMessagePtr message, const char *key, bool *result) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    *result = m->payload().is_val_object(key);
+    return ONE_ERROR_NONE;
+}
+
+Error message_val_bool(OneMessagePtr message, const char *key, bool *val) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    return m->payload().val_bool(key, *val);
+}
+
 Error message_val_int(OneMessagePtr message, const char *key, int *val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -80,7 +197,7 @@ Error message_val_int(OneMessagePtr message, const char *key, int *val) {
 Error message_val_string(OneMessagePtr message, const char *key, char **val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -105,7 +222,7 @@ Error message_val_string(OneMessagePtr message, const char *key, char **val) {
 Error message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -123,7 +240,7 @@ Error message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val)
 Error message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -138,10 +255,23 @@ Error message_val_object(OneMessagePtr message, const char *key, OneObjectPtr va
     return m->payload().val_object(key, *o);
 }
 
+Error message_set_val_bool(OneMessagePtr message, const char *key, bool val) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    return m->payload().set_val_bool(key, val);
+}
+
 Error message_set_val_int(OneMessagePtr message, const char *key, int val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -154,7 +284,7 @@ Error message_set_val_int(OneMessagePtr message, const char *key, int val) {
 Error message_set_val_string(OneMessagePtr message, const char *key, const char *val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -171,7 +301,7 @@ Error message_set_val_string(OneMessagePtr message, const char *key, const char 
 Error message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -189,7 +319,7 @@ Error message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr 
 Error message_set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (key == nullptr) {
@@ -207,18 +337,18 @@ Error message_set_val_object(OneMessagePtr message, const char *key, OneObjectPt
 Error message_prepare_error_response(OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     return messages::prepare_error_response(*m);
 }
 
 Error message_prepare_live_state_response(int player, int max_player, const char *name,
-                                          const char *map, const char *mode, const char *version,
-                                          OneMessagePtr message) {
+                                          const char *map, const char *mode,
+                                          const char *version, OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     if (name == nullptr) {
@@ -237,13 +367,14 @@ Error message_prepare_live_state_response(int player, int max_player, const char
         return ONE_ERROR_VALIDATION_VERSION_IS_NULLPTR;
     }
 
-    return messages::prepare_live_state_response(player, max_player, name, map, mode, version, *m);
+    return messages::prepare_live_state_response(player, max_player, name, map, mode,
+                                                 version, *m);
 }
 
 Error message_prepare_host_information_request(OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     return messages::prepare_host_information_request(*m);
@@ -251,7 +382,7 @@ Error message_prepare_host_information_request(OneMessagePtr message) {
 
 Error server_create(OneServerPtr *server) {
     if (server == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     auto s = new Server();
@@ -284,25 +415,30 @@ void server_destroy(OneServerPtr *server) {
 Error server_update(OneServerPtr server) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     return s->update();
 }
 
-int server_status(OneServerPtr const server) {
+Error server_status(OneServerPtr const server, int *status) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
-    return static_cast<int>(s->status());
+    if (status == nullptr) {
+        return ONE_ERROR_VALIDATION_STATUS_IS_NULLPTR;
+    }
+
+    *status = static_cast<int>(s->status());
+    return ONE_ERROR_NONE;
 }
 
 Error server_listen(OneServerPtr server, unsigned int port) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     return s->listen(port);
@@ -311,7 +447,7 @@ Error server_listen(OneServerPtr server, unsigned int port) {
 Error server_shutdown(OneServerPtr server) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     return s->shutdown();
@@ -320,12 +456,12 @@ Error server_shutdown(OneServerPtr server) {
 Error server_send_error_response(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     return s->send_error_response(*m);
@@ -334,12 +470,12 @@ Error server_send_error_response(OneServerPtr server, OneMessagePtr message) {
 Error server_send_live_state_response(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     return s->send_live_state_response(*m);
@@ -348,12 +484,12 @@ Error server_send_live_state_response(OneServerPtr server, OneMessagePtr message
 Error server_send_host_information_request(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     auto m = (Message *)message;
     if (m == nullptr) {
-        return ONE_ERROR_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
     return s->send_host_information_request(*m);
@@ -363,7 +499,7 @@ Error server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *
                                     void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     if (callback == nullptr) {
@@ -378,7 +514,7 @@ Error server_set_allocated_callback(OneServerPtr server, void (*callback)(void *
                                     void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     if (callback == nullptr) {
@@ -393,7 +529,7 @@ Error server_set_meta_data_callback(OneServerPtr server, void (*callback)(void *
                                     void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     if (callback == nullptr) {
@@ -404,11 +540,11 @@ Error server_set_meta_data_callback(OneServerPtr server, void (*callback)(void *
     return ONE_ERROR_NONE;
 }
 
-Error server_set_live_state_request_callback(OneServerPtr server, void (*callback)(void *),
-                                             void *data) {
+Error server_set_live_state_request_callback(OneServerPtr server,
+                                             void (*callback)(void *), void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
-        return ONE_ERROR_SERVER_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
     if (callback == nullptr) {
@@ -440,12 +576,37 @@ void one_message_destroy(OneMessagePtr *message) {
     one::message_destroy(message);
 }
 
-OneError one_message_init(OneMessagePtr message, int code, const char *data, unsigned int size) {
+OneError one_message_init(OneMessagePtr message, int code, const char *data,
+                          unsigned int size) {
     return one::message_init(message, code, data, size);
+}
+
+OneError one_message_reset(OneMessagePtr message) {
+    return one::message_reset(message);
 }
 
 OneError one_message_code(OneMessagePtr message, int *code) {
     return one::message_code(message, code);
+}
+
+OneError one_message_is_val_bool(OneMessagePtr message, const char *key, bool *result) {
+    return one::message_is_val_bool(message, key, result);
+}
+OneError one_message_is_val_int(OneMessagePtr message, const char *key, bool *result) {
+    return one::message_is_val_int(message, key, result);
+}
+OneError one_message_is_val_string(OneMessagePtr message, const char *key, bool *result) {
+    return one::message_is_val_string(message, key, result);
+}
+OneError one_message_is_val_array(OneMessagePtr message, const char *key, bool *result) {
+    return one::message_is_val_array(message, key, result);
+}
+OneError one_message_is_val_object(OneMessagePtr message, const char *key, bool *result) {
+    return one::message_is_val_object(message, key, result);
+}
+
+OneError one_message_val_bool(OneMessagePtr message, const char *key, bool *val) {
+    return one::message_val_bool(message, key, val);
 }
 
 OneError one_message_val_int(OneMessagePtr message, const char *key, int *val) {
@@ -460,23 +621,31 @@ OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayP
     return one::message_val_array(message, key, val);
 }
 
-OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
+OneError one_message_val_object(OneMessagePtr message, const char *key,
+                                OneObjectPtr val) {
     return one::message_val_object(message, key, val);
+}
+
+OneError one_message_set_val_bool(OneMessagePtr message, const char *key, bool val) {
+    return one::message_set_val_bool(message, key, val);
 }
 
 OneError one_message_set_val_int(OneMessagePtr message, const char *key, int val) {
     return one::message_set_val_int(message, key, val);
 }
 
-OneError one_message_set_val_string(OneMessagePtr message, const char *key, const char *val) {
+OneError one_message_set_val_string(OneMessagePtr message, const char *key,
+                                    const char *val) {
     return one::message_set_val_string(message, key, val);
 }
 
-OneError one_message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
+OneError one_message_set_val_array(OneMessagePtr message, const char *key,
+                                   OneArrayPtr val) {
     return one::message_set_val_array(message, key, val);
 }
 
-OneError one_message_set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val) {
+OneError one_message_set_val_object(OneMessagePtr message, const char *key,
+                                    OneObjectPtr val) {
     return one::message_set_val_object(message, key, val);
 }
 
@@ -484,11 +653,12 @@ OneError one_message_prepare_error_response(OneMessagePtr message) {
     return one::message_prepare_error_response(message);
 }
 
-OneError one_message_prepare_live_state_response(int player, int max_player, const char *name,
-                                                 const char *map, const char *mode,
-                                                 const char *version, OneMessagePtr message) {
-    return one::message_prepare_live_state_response(player, max_player, name, map, mode, version,
-                                                    message);
+OneError one_message_prepare_live_state_response(int player, int max_player,
+                                                 const char *name, const char *map,
+                                                 const char *mode, const char *version,
+                                                 OneMessagePtr message) {
+    return one::message_prepare_live_state_response(player, max_player, name, map, mode,
+                                                    version, message);
 }
 
 OneError one_message_prepare_host_information_request(OneMessagePtr message) {
@@ -507,8 +677,8 @@ OneError one_server_update(OneServerPtr server) {
     return one::server_update(server);
 }
 
-int one_server_status(OneServerPtr const server) {
-    return one::server_status(server);
+OneError one_server_status(OneServerPtr const server, int *status) {
+    return one::server_status(server, status);
 }
 
 OneError one_server_listen(OneServerPtr server, unsigned int port) {
@@ -527,27 +697,32 @@ OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr 
     return one::server_send_live_state_response(server, message);
 }
 
-OneError one_server_send_host_information_request(OneServerPtr server, OneMessagePtr message) {
+OneError one_server_send_host_information_request(OneServerPtr server,
+                                                  OneMessagePtr message) {
     return one::server_send_host_information_request(server, message);
 }
 
 OneError one_server_set_soft_stop_callback(OneServerPtr server,
-                                           void (*callback)(void *data, int timeout), void *data) {
+                                           void (*callback)(void *data, int timeout),
+                                           void *data) {
     return one::server_set_soft_stop_callback(server, callback, data);
 }
 
 OneError one_server_set_allocated_callback(OneServerPtr server,
-                                           void (*callback)(void *data, void *array), void *data) {
+                                           void (*callback)(void *data, void *array),
+                                           void *data) {
     return one::server_set_allocated_callback(server, callback, data);
 }
 
 OneError one_server_set_meta_data_callback(OneServerPtr server,
-                                           void (*callback)(void *data, void *array), void *data) {
+                                           void (*callback)(void *data, void *array),
+                                           void *data) {
     return one::server_set_meta_data_callback(server, callback, data);
 }
 
 OneError one_server_set_live_state_request_callback(OneServerPtr server,
-                                                    void (*callback)(void *data), void *data) {
+                                                    void (*callback)(void *data),
+                                                    void *data) {
     return one::server_set_live_state_request_callback(server, callback, data);
 }
 

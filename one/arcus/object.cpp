@@ -1,6 +1,7 @@
 #include <one/arcus/object.h>
 
 #include <one/arcus/array.h>
+#include <one/arcus/internal/rapidjson/document.h>
 #include <one/arcus/internal/rapidjson/stringbuffer.h>
 #include <one/arcus/internal/rapidjson/writer.h>
 #include <one/arcus/opcode.h>
@@ -27,6 +28,10 @@ Error Object::set(const rapidjson::Value &object) {
 
     _doc.CopyFrom(object, _doc.GetAllocator());
     return ONE_ERROR_NONE;
+}
+
+void Object::clear() {
+    _doc.SetObject();
 }
 
 bool Object::is_empty() const {
@@ -96,7 +101,7 @@ bool Object::is_val_array(const char *key) const {
         return false;
     }
 
-    return member->value.IsObject();
+    return member->value.IsArray();
 }
 
 bool Object::is_val_object(const char *key) const {
@@ -109,7 +114,7 @@ bool Object::is_val_object(const char *key) const {
         return false;
     }
 
-    return member->value.IsArray();
+    return member->value.IsObject();
 }
 
 Error Object::val_bool(const char *key, bool &val) const {
@@ -217,7 +222,8 @@ Error Object::set_val_bool(const char *key, bool val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
+        _doc.AddMember(rapidjson::StringRef(key), val, _doc.GetAllocator());
+        return ONE_ERROR_NONE;
     }
 
     // Avoid changing the current element type.
@@ -236,7 +242,8 @@ Error Object::set_val_int(const char *key, int val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
+        _doc.AddMember(rapidjson::StringRef(key), val, _doc.GetAllocator());
+        return ONE_ERROR_NONE;
     }
 
     // Avoid changing the current element type.
@@ -255,7 +262,9 @@ Error Object::set_val_string(const char *key, const std::string &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
+        _doc.AddMember(rapidjson::StringRef(key), rapidjson::StringRef(val.c_str()),
+                       _doc.GetAllocator());
+        return ONE_ERROR_NONE;
     }
 
     // Avoid changing the current element type.
@@ -274,7 +283,10 @@ Error Object::set_val_array(const char *key, const Array &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
+        rapidjson::Value value;
+        value.CopyFrom(val.get(), _doc.GetAllocator());
+        _doc.AddMember(rapidjson::StringRef(key), value, _doc.GetAllocator());
+        return ONE_ERROR_NONE;
     }
 
     // Avoid changing the current element type.
@@ -293,7 +305,10 @@ Error Object::set_val_object(const char *key, const Object &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
+        rapidjson::Value value;
+        value.CopyFrom(val.get(), _doc.GetAllocator());
+        _doc.AddMember(rapidjson::StringRef(key), value, _doc.GetAllocator());
+        return ONE_ERROR_NONE;
     }
 
     // Avoid changing the current element type.
