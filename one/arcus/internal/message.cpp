@@ -13,15 +13,15 @@ Error error_request(const Message &message, params::ErrorResponse &) {
     const auto code = message.code();
 
     if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_SUPPORTED;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
     if (code != Opcode::error_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_MATCHING_EXPECTING_ERROR_RESPONSE;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_ERROR_RESPONSE;
     }
 
     if (!message.payload().is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_IS_NOT_EMPTY;
+        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
     }
 
     return ONE_ERROR_NONE;
@@ -31,11 +31,11 @@ Error soft_stop_request(const Message &message, params::SoftStopRequest &params)
     const auto code = message.code();
 
     if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_SUPPORTED;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
     if (code != Opcode::soft_stop_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_MATCHING_EXPECTING_SOFT_STOP_REQUEST;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_SOFT_STOP_REQUEST;
     }
 
     const auto &payload = message.payload();
@@ -51,11 +51,11 @@ Error soft_stop_request(const Message &message, params::SoftStopRequest &params)
 Error allocated_request(const Message &message, params::AllocatedRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_SUPPORTED;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
     if (code != Opcode::allocated_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_MATCHING_EXPECTING_ALLOCATED_REQUEST;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_ALLOCATED_REQUEST;
     }
 
     const auto &payload = message.payload();
@@ -71,11 +71,11 @@ Error allocated_request(const Message &message, params::AllocatedRequest &params
 Error meta_data_request(const Message &message, params::MetaDataRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_SUPPORTED;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
     if (code != Opcode::meta_data_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_MATCHING_EXPECTING_META_DATA_REQUEST;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_META_DATA_REQUEST;
     }
 
     const auto &payload = message.payload();
@@ -91,15 +91,15 @@ Error meta_data_request(const Message &message, params::MetaDataRequest &params)
 Error live_state_request(const Message &message, params::LifeStateRequest &) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_SUPPORTED;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
     if (code != Opcode::live_state_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_MATCHING_EXPECTING_LIVE_STATE_REQUEST;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_LIVE_STATE_REQUEST;
     }
 
     if (!message.payload().is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_IS_NOT_EMPTY;
+        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
     }
 
     return ONE_ERROR_NONE;
@@ -108,11 +108,11 @@ Error live_state_request(const Message &message, params::LifeStateRequest &) {
 Error live_state_response(const Message &message, params::LifeStateResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_SUPPORTED;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
     if (code != Opcode::live_state_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_MATCHING_EXPECTING_LIVE_STATE_RESPONSE;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_LIVE_STATE_RESPONSE;
     }
 
     const auto &payload = message.payload();
@@ -153,15 +153,15 @@ Error live_state_response(const Message &message, params::LifeStateResponse &par
 Error host_information_request(const Message &message, params::HostInformationRequest &) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_SUPPORTED;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
     if (code != Opcode::host_information_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_IS_NOT_MATCHING_EXPECTING_HOST_INFORMATION_REQUEST;
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_HOST_INFORMATION_REQUEST;
     }
 
     if (!message.payload().is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_IS_NOT_EMPTY;
+        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
     }
 
     return ONE_ERROR_NONE;

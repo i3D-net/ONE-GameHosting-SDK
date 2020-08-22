@@ -1,7 +1,12 @@
 #pragma once
 
+#include <chrono>
 #include <functional>
 #include <string>
+
+#include <one/arcus/error.h>
+
+using namespace std::chrono;
 
 namespace one {
 
@@ -33,12 +38,11 @@ public:
     Client &operator=(const Client &) = delete;
     ~Client();
 
-    int init();
+    int init(const char *address, unsigned int port);
     int shutdown();
-    int connect(const char *address, unsigned int port);
     int update();
 
-    enum class Status { handshake, ready, error };
+    enum class Status { uninitialized, connecting, handshake, ready, error };
     Status status();
 
     //-------------------
@@ -76,14 +80,27 @@ public:
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_host_information_request_callback(std::function<void(void *)> callback, void *data);
+    int set_host_information_request_callback(std::function<void(void *)> callback,
+                                              void *data);
 
 private:
     int process_incoming_message(const Message &message);
     int process_outgoing_message(const Message &message);
 
+    bool is_initialized() const {
+        return _socket != nullptr;
+    }
+
+    Error connect();
+
+    std::string _server_address;
+    unsigned int _server_port;
+
     Socket *_socket;
     Connection *_connection;
+    bool _is_connected;
+
+    steady_clock::time_point _last_connection_attempt_time;
 
     callback::ClientCallbacks _callbacks;
 };

@@ -105,7 +105,7 @@ Error Server::listen(unsigned int port) {
     }
 
     if (!_listen_socket->is_initialized()) {
-        return ONE_ERROR_SERVER_SOCKET_IS_NOT_INITIALIZED;
+        return ONE_ERROR_SERVER_SOCKET_NOT_INITIALIZED;
     }
 
     auto err = _listen_socket->bind(port);
@@ -122,6 +122,8 @@ Error Server::listen(unsigned int port) {
 }
 
 Error Server::update_listen_socket() {
+    assert(_listen_socket != nullptr);
+
     bool is_ready;
     auto err = _listen_socket->ready_for_read(0.f, is_ready);
     if (is_error(err)) {
@@ -160,10 +162,16 @@ Error Server::update_listen_socket() {
     return ONE_ERROR_NONE;
 }
 
+bool Server::is_initialized() const {
+    return (_listen_socket != nullptr);
+}
+
 Error Server::update() {
-    if (_client_socket == nullptr || _listen_socket == nullptr) {
-        return ONE_ERROR_SERVER_SOCKET_IS_NULLPTR;
+    if (!is_initialized()) {
+        return ONE_ERROR_SERVER_SOCKET_NOT_INITIALIZED;
     }
+    assert(_client_socket != nullptr);
+    assert(_client_connection != nullptr);
 
     auto err = update_listen_socket();
     if (is_error(err)) {

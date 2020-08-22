@@ -7,10 +7,12 @@ set(HEADER_FILES
     internal/accumulator.h
     internal/codec.h
     internal/connection.h
+    internal/health.h
     internal/message.h
     internal/platform.h
     internal/ring.h
     internal/socket.h
+    internal/time.h
     internal/version.h
     message.h
     opcode.h
@@ -26,8 +28,10 @@ set(SOURCE_FILES
     internal/accumulator.cpp
     internal/codec.cpp
     internal/connection.cpp
+    internal/health.cpp
     internal/message.cpp
     internal/socket.cpp
+    internal/time.cpp
     message.cpp
     object.cpp
     server.cpp

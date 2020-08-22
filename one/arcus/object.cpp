@@ -40,7 +40,7 @@ Error Object::remove_key(const char *key) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     _doc.RemoveMember(member);
@@ -119,7 +119,7 @@ Error Object::val_bool(const char *key, bool &val) const {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     if (!member->value.IsBool()) {
@@ -137,7 +137,7 @@ Error Object::val_int(const char *key, int &val) const {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     if (!member->value.IsInt()) {
@@ -155,7 +155,7 @@ Error Object::val_string(const char *key, std::string &val) const {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     if (!member->value.IsString()) {
@@ -173,7 +173,7 @@ Error Object::val_array(const char *key, Array &val) const {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     if (!member->value.IsArray()) {
@@ -195,7 +195,7 @@ Error Object::val_object(const char *key, Object &val) const {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     if (!member->value.IsObject()) {
@@ -217,7 +217,7 @@ Error Object::set_val_bool(const char *key, bool val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     // Avoid changing the current element type.
@@ -236,7 +236,7 @@ Error Object::set_val_int(const char *key, int val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     // Avoid changing the current element type.
@@ -255,7 +255,7 @@ Error Object::set_val_string(const char *key, const std::string &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     // Avoid changing the current element type.
@@ -274,7 +274,7 @@ Error Object::set_val_array(const char *key, const Array &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     // Avoid changing the current element type.
@@ -293,7 +293,7 @@ Error Object::set_val_object(const char *key, const Object &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        return ONE_ERROR_OBJECT_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
     }
 
     // Avoid changing the current element type.

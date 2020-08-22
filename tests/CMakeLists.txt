@@ -30,6 +30,8 @@ if (RUN_TEST_AFTER_BUILD)
         TARGET ${UNIT_TEST}
         COMMENT "Run tests"
         POST_BUILD
-        COMMAND ${UNIT_TEST}
+        // -d yes is for showing durations of test
+        // the exclude filter avoids running long tests for each build
+        COMMAND ${UNIT_TEST} ~long:*
     )
 endif()

@@ -15,11 +15,9 @@ public:
     Agent() = default;
     ~Agent() = default;
 
-    // Connect to server.
-    int connect(const char *ip, int port);
-
-    // Check status.
-    int status();
+    // Init with a target remote address. The agent attempts to connect during
+    // update.
+    int init(const char *ip, unsigned int port);
 
     // Update: process incomming message & outgoing messages.
     int update();
@@ -47,7 +45,8 @@ public:
         void *data);
 
     // Set error_response callback
-    int set_host_information_request_callback(std::function<void(void *)> callback, void *data);
+    int set_host_information_request_callback(std::function<void(void *)> callback,
+                                              void *data);
 
     Client &client() {
         return _client;

@@ -59,16 +59,16 @@ void soft_stop_callback(void *, int timeout) {
 }
 
 void pump_updates(Agent &agent, Game &game) {
-    for_sleep(10, 10, [&]() {
+    for_sleep(10, 1, [&]() {
         REQUIRE(game.update() == 0);
         REQUIRE(agent.update() == 0);
-        if (agent.status() == static_cast<int>(Client::Status::ready)) return true;
+        if (agent.client().status() == Client::Status::ready) return true;
         return false;
     });
-    REQUIRE(agent.status() == static_cast<int>(Client::Status::ready));
+    REQUIRE(agent.client().status() == Client::Status::ready);
 }
 
-TEST_CASE("Agent connection failure", "[agent]") {
+TEST_CASE("Agent connection failure", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19001;
 
@@ -77,20 +77,22 @@ TEST_CASE("Agent connection failure", "[agent]") {
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::active);
 
     Agent agent;
-    REQUIRE(agent.connect(address, port) == 0);
-    REQUIRE(agent.status() == static_cast<Error>(Client::Status::handshake));
+    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(agent.update() == ONE_ERROR_NONE);
+    REQUIRE(agent.client().status() == Client::Status::handshake);
 }
 
-TEST_CASE("Agent connects to a game & send requests", "[agent]") {
+TEST_CASE("Agent connects to a game & send requests", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19002;
 
-    Game game(port, 1, 16, "test", "test", "test", "test");
+    Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
     REQUIRE(game.init() == 0);
 
     Agent agent;
-    REQUIRE(agent.connect(address, port) == 0);
-    REQUIRE(agent.status() == static_cast<Error>(Client::Status::handshake));
+    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(agent.update() == ONE_ERROR_NONE);
+    REQUIRE(agent.client().status() == Client::Status::handshake);
     REQUIRE(agent.set_error_response_callback(error_callback, nullptr) == 0);
     REQUIRE(agent.set_live_state_response_callback(live_state_callback, nullptr) == 0);
     REQUIRE(agent.set_host_information_request_callback(host_information_callback,
@@ -164,4 +166,25 @@ TEST_CASE("Agent connects to a game & send requests", "[agent]") {
     // TODO: add more agent request & custom messages.
 
     REQUIRE(game.shutdown() == 0);
+}
+
+TEST_CASE("long:Reconnection", "[integration]") {
+    const auto address = "127.0.0.1";
+    const unsigned int port = 19002;
+
+    Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
+    REQUIRE(game.init() == 0);
+
+    Agent agent;
+    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(agent.update() == ONE_ERROR_NONE);
+    REQUIRE(agent.client().status() == Client::Status::handshake);
+
+    pump_updates(agent, game);
+
+    REQUIRE(agent.client().status() == Client::Status::ready);
+
+    // Shut down the game and restart it, the client should reconnect automatically.
+    REQUIRE(game.shutdown() == 0);
+    REQUIRE(game.init() == 0);
 }
