@@ -112,6 +112,7 @@ public:
     Error send_host_information_request(const Message &message);
 
 private:
+    bool is_initialized() const;
     Error update_listen_socket();
 
     Error process_incoming_message(const Message &message);

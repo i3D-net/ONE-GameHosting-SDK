@@ -37,7 +37,7 @@ public:
     void set_socket(Socket *socket);
 
     // Clears Connection to construction state. Erases all pending incoming
-    // and outgoing data. Unassigned the socket.
+    // and outgoing data. Unassigns the socket.
     void shutdown();
 
     // Marks this side of the connection as responsible for initiating the

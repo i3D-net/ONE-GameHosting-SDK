@@ -9,6 +9,7 @@ using namespace one;
 
 TEST_CASE("Agent standalone life cycle", "[agent]") {
     Agent agent;
-    REQUIRE(agent.connect("127.0.0.1", 19001) == -1);
-    REQUIRE(agent.client().status() == Client::Status::handshake);
+    REQUIRE(agent.init("127.0.0.1", 19001) == 0);
+    REQUIRE(agent.update() == ONE_ERROR_SOCKET_CONNECT_FAILED);
+    REQUIRE(agent.client().status() == Client::Status::connecting);
 }

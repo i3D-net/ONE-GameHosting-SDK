@@ -8,13 +8,23 @@
 
 namespace one {
 
-Client::Client() : _socket(nullptr), _connection(nullptr), _callbacks({0}) {}
+constexpr size_t connection_retry_delay_seconds = 5;
+
+Client::Client()
+    : _socket(nullptr)
+    , _connection(nullptr)
+    , _is_connected(false)
+    , _last_connection_attempt_time(steady_clock::duration::zero())
+    , _callbacks({0}) {}
 
 Client::~Client() {
     shutdown();
 }
 
-int Client::init() {
+int Client::init(const char *address, unsigned int port) {
+    _server_address = address;
+    _server_port = port;
+
     if (_socket != nullptr || _connection != nullptr) {
         return -1;
     }
@@ -47,6 +57,8 @@ int Client::init() {
 }
 
 int Client::shutdown() {
+    _is_connected = false;
+
     if (_socket != nullptr) {
         delete _socket;
         _socket = nullptr;
@@ -62,39 +74,66 @@ int Client::shutdown() {
     return 0;
 }
 
-int Client::connect(const char *address, unsigned int port) {
-    if (_socket == nullptr || _connection == nullptr) {
-        return -1;
+Error Client::connect() {
+    if (!is_initialized()) {
+        return ONE_ERROR_CLIENT_NOT_INITIALIZED;
     }
+    assert(_socket != nullptr);
+    assert(_connection != nullptr);
 
     if (!_socket->is_initialized()) {
-        return -1;
+        return ONE_ERROR_CLIENT_NOT_INITIALIZED;
     }
 
-    int error = _socket->connect(address, port);
+    Error error = _socket->connect(_server_address.c_str(), _server_port);
     if (error != 0) {
-        return -1;
+        return error;
     }
+    _is_connected = true;
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 int Client::update() {
-    if (_connection == nullptr) {
-        return -1;
+    if (!is_initialized()) {
+        return ONE_ERROR_CLIENT_NOT_INITIALIZED;
+    }
+    assert(_connection != nullptr);
+
+    // If not connected, attempt to connect at an interval.
+    if (!_is_connected) {
+        const auto now = steady_clock::now();
+        const size_t delta =
+            duration_cast<seconds>(now - _last_connection_attempt_time).count();
+        if (delta > connection_retry_delay_seconds) {
+            _last_connection_attempt_time = now;
+            auto error = connect();
+            // If connection fails, then nothing else to update. Return the error.
+            if (is_error(error)) {
+                return error;
+            }
+        }
     }
 
     auto error = _connection->update();
+    // In the case of any error, reset the socket for reconnection attempt.
     if (is_error(error)) {
+        _connection->shutdown();
+        _socket->close();
+        _socket->init();
+        _connection->set_socket(_socket);
         return error;
     }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 Client::Status Client::status() {
-    if (_connection == nullptr) {
-        return Status::error;
+    if (!is_initialized()) {
+        return Status::uninitialized;
+    }
+    if (!_is_connected) {
+        return Status::connecting;
     }
 
     const auto status = _connection->status();

@@ -115,7 +115,7 @@ Error Payload::val_bool(const char *key, bool &val) const {
 
     const auto &value = _doc.FindMember(key);
     if (value == _doc.MemberEnd()) {
-        return ONE_ERROR_PAYLOAD_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_PAYLOAD_KEY_NOT_FOUND;
     }
 
     if (!value->value.IsBool()) {
@@ -133,7 +133,7 @@ Error Payload::val_int(const char *key, int &val) const {
 
     const auto &value = _doc.FindMember(key);
     if (value == _doc.MemberEnd()) {
-        return ONE_ERROR_PAYLOAD_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_PAYLOAD_KEY_NOT_FOUND;
     }
 
     if (!value->value.IsInt()) {
@@ -150,7 +150,7 @@ Error Payload::val_string(const char *key, std::string &val) const {
 
     const auto &value = _doc.FindMember(key);
     if (value == _doc.MemberEnd()) {
-        return ONE_ERROR_PAYLOAD_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_PAYLOAD_KEY_NOT_FOUND;
     }
 
     if (!value->value.IsString()) {
@@ -168,7 +168,7 @@ Error Payload::val_array(const char *key, Array &val) const {
 
     const auto &value = _doc.FindMember(key);
     if (value == _doc.MemberEnd()) {
-        return ONE_ERROR_PAYLOAD_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_PAYLOAD_KEY_NOT_FOUND;
     }
 
     if (!value->value.IsArray()) {
@@ -186,7 +186,7 @@ Error Payload::val_object(const char *key, Object &val) const {
 
     const auto &value = _doc.FindMember(key);
     if (value == _doc.MemberEnd()) {
-        return ONE_ERROR_PAYLOAD_KEY_IS_NOT_FOUND;
+        return ONE_ERROR_PAYLOAD_KEY_NOT_FOUND;
     }
 
     if (!value->value.IsObject()) {

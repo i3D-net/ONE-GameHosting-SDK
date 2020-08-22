@@ -4,22 +4,13 @@
 
 namespace one {
 
-int Agent::connect(const char *addr, int port) {
-    int error = _client.init();
-    if (error != 0) {
-        return error;
-    }
-
-    error = _client.connect(addr, port);
+int Agent::init(const char *addr, unsigned int port) {
+    int error = _client.init(addr, port);
     if (error != 0) {
         return error;
     }
 
     return 0;
-}
-
-int Agent::status() {
-    return static_cast<int>(_client.status());
 }
 
 int Agent::update() {
@@ -89,7 +80,8 @@ int Agent::set_live_state_response_callback(
     return 0;
 }
 
-int Agent::set_host_information_request_callback(std::function<void(void *)> callback, void *data) {
+int Agent::set_host_information_request_callback(std::function<void(void *)> callback,
+                                                 void *data) {
     if (callback == nullptr) {
         return -1;
     }
