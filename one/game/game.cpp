@@ -6,9 +6,8 @@
 
 namespace game {
 
-Game::Game(unsigned int port, int players, int max_players,
-           const std::string &name, const std::string &map, const std::string &mode,
-           const std::string &version)
+Game::Game(unsigned int port, int players, int max_players, const std::string &name,
+           const std::string &map, const std::string &mode, const std::string &version)
     : _server(port)
     , _players(players)
     , _max_players(max_players)
@@ -23,12 +22,12 @@ Game::~Game() {
 
 int Game::init() {
     _server.init();
-    return  (_server.status() == OneServerWrapper::Status::active) ? 0 : -1;
+    return (_server.status() == OneServerWrapper::Status::active) ? 0 : -1;
 }
 
 int Game::shutdown() {
     _server.shutdown();
-    return  (_server.status() == OneServerWrapper::Status::none) ? 0 : -1;
+    return (_server.status() == OneServerWrapper::Status::none) ? 0 : -1;
 }
 
 int Game::update() {

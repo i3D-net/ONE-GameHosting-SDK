@@ -61,20 +61,36 @@ OneError one_message_create(OneMessagePtr *message);
 void one_message_destroy(OneMessagePtr *message);
 
 /// Must be called to initialize a message from a string.
-OneError one_message_init(OneMessagePtr message, int code, const char *data, unsigned int size);
+OneError one_message_init(OneMessagePtr message, int code, const char *data,
+                          unsigned int size);
+
+/// Must be called to reset a message.
+OneError one_message_reset(OneMessagePtr message);
 
 /// Getters.
 OneError one_message_code(OneMessagePtr message, int *code);
+
+OneError one_message_is_val_bool(OneMessagePtr message, const char *key, bool *result);
+OneError one_message_is_val_int(OneMessagePtr message, const char *key, bool *result);
+OneError one_message_is_val_string(OneMessagePtr message, const char *key, bool *result);
+OneError one_message_is_val_array(OneMessagePtr message, const char *key, bool *result);
+OneError one_message_is_val_object(OneMessagePtr message, const char *key, bool *result);
+
+OneError one_message_val_bool(OneMessagePtr message, const char *key, bool *val);
 OneError one_message_val_int(OneMessagePtr message, const char *key, int *val);
 OneError one_message_val_string(OneMessagePtr message, const char *key, char **val);
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
 OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
 
 /// Setters.
+OneError one_message_set_val_bool(OneMessagePtr message, const char *key, bool val);
 OneError one_message_set_val_int(OneMessagePtr message, const char *key, int val);
-OneError one_message_set_val_string(OneMessagePtr message, const char *key, const char *val);
-OneError one_message_set_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
-OneError one_message_set_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
+OneError one_message_set_val_string(OneMessagePtr message, const char *key,
+                                    const char *val);
+OneError one_message_set_val_array(OneMessagePtr message, const char *key,
+                                   OneArrayPtr val);
+OneError one_message_set_val_object(OneMessagePtr message, const char *key,
+                                    OneObjectPtr val);
 
 ///
 /// OneMessagePrepareApi is used to streamlie working with messages. Providing an easy
@@ -82,9 +98,10 @@ OneError one_message_set_val_object(OneMessagePtr message, const char *key, OneO
 ///
 
 OneError one_message_prepare_error_response(OneMessagePtr message);
-OneError one_message_prepare_live_state_response(int player, int max_player, const char *name,
-                                                 const char *map, const char *mode,
-                                                 const char *version, OneMessagePtr message);
+OneError one_message_prepare_live_state_response(int player, int max_player,
+                                                 const char *name, const char *map,
+                                                 const char *mode, const char *version,
+                                                 OneMessagePtr message);
 OneError one_message_prepare_host_information_request(OneMessagePtr message);
 
 ///
@@ -125,7 +142,7 @@ OneError one_server_update(OneServerPtr server);
 /// Returns the status of the listen connection.
 /// \sa listen.
 ///
-int one_server_status(OneServerPtr const server);
+OneError one_server_status(OneServerPtr const server, int *status);
 
 ///
 /// Listens for messages on the given port.
@@ -169,7 +186,8 @@ OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr 
 /// Send the Arcus API server live_state opcode message.
 /// Message Empty Content:
 /// {}
-OneError one_server_send_host_information_request(OneServerPtr server, OneMessagePtr message);
+OneError one_server_send_host_information_request(OneServerPtr server,
+                                                  OneMessagePtr message);
 
 //--------------------------------------------------------------------------
 // Incoming Message callbacks.
@@ -196,7 +214,8 @@ OneError one_server_send_host_information_request(OneServerPtr server, OneMessag
 // of the callback when invoked.
 // The `data` can be nullptr, the callback is responsible to use the data properly.
 OneError one_server_set_soft_stop_callback(OneServerPtr server,
-                                           void (*callback)(void *data, int timeout), void *data);
+                                           void (*callback)(void *data, int timeout),
+                                           void *data);
 
 // Required: Register the callback to be notified of a allocated_request.
 // The `void *data` is the user provided & will be passed as the first argument
@@ -204,7 +223,8 @@ OneError one_server_set_soft_stop_callback(OneServerPtr server,
 // The `data` can be nullptr, the callback is responsible to use the data properly.
 // The `void *array` must be of type OneArrayPtr or the callback will error out.
 OneError one_server_set_allocated_callback(OneServerPtr server,
-                                           void (*callback)(void *data, void *array), void *data);
+                                           void (*callback)(void *data, void *array),
+                                           void *data);
 
 // Required: Register the callback to be notified of a meta_data_request.
 // The `void *data` is the user provided & will be passed as the first argument
@@ -212,12 +232,14 @@ OneError one_server_set_allocated_callback(OneServerPtr server,
 // The `data` can be nullptr, the callback is responsible to use the data properly.
 // The `void *array` must be of type OneArrayPtr or the callback will error out.
 OneError one_server_set_meta_data_callback(OneServerPtr server,
-                                           void (*callback)(void *data, void *array), void *data);
+                                           void (*callback)(void *data, void *array),
+                                           void *data);
 
 // Required: Register to be notified of when the game must call
 // live_state_request.
 OneError one_server_set_live_state_request_callback(OneServerPtr server,
-                                                    void (*callback)(void *data), void *data);
+                                                    void (*callback)(void *data),
+                                                    void *data);
 
 ///
 /// OneAllocatorApi allows for control of all allocations made within the SDK.
