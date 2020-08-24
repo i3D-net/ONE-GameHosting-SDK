@@ -153,6 +153,24 @@ Error Object::val_int(const char *key, int &val) const {
     return ONE_ERROR_NONE;
 }
 
+Error Object::val_string_size(const char *key, size_t &size) const {
+    if (key == nullptr) {
+        return ONE_ERROR_OBJECT_KEY_IS_NULLPTR;
+    }
+
+    const auto &member = _doc.FindMember(key);
+    if (member == _doc.MemberEnd()) {
+        return ONE_ERROR_OBJECT_KEY_NOT_FOUND;
+    }
+
+    if (!member->value.IsString()) {
+        return ONE_ERROR_OBJECT_WRONG_TYPE_IS_EXPECTING_STRING;
+    }
+
+    size = member->value.GetStringLength();
+    return ONE_ERROR_NONE;
+}
+
 Error Object::val_string(const char *key, std::string &val) const {
     if (key == nullptr) {
         return ONE_ERROR_OBJECT_KEY_IS_NULLPTR;
@@ -262,7 +280,8 @@ Error Object::set_val_string(const char *key, const std::string &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        _doc.AddMember(rapidjson::StringRef(key), rapidjson::StringRef(val.c_str()),
+        rapidjson::Value value(rapidjson::StringRef(val.c_str()), _doc.GetAllocator());
+        _doc.AddMember(rapidjson::StringRef(key), value,
                        _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }

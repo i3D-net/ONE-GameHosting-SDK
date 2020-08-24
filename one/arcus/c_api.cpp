@@ -1,12 +1,15 @@
 #include <one/arcus/c_api.h>
 
+#include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/message.h>
+#include <one/arcus/object.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/server.h>
 
 #include <utility>
 #include <string>
+#include <cstring>
 
 namespace one {
 namespace {
@@ -41,6 +44,10 @@ Error message_init(OneMessagePtr message, int code, const char *data, unsigned i
     auto m = (Message *)message;
     if (m == nullptr) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (data == nullptr) {
+        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
     }
 
     return m->init(static_cast<Opcode>(code), {data, size});
@@ -194,7 +201,32 @@ Error message_val_int(OneMessagePtr message, const char *key, int *val) {
     return m->payload().val_int(key, *val);
 }
 
-Error message_val_string(OneMessagePtr message, const char *key, char **val) {
+Error message_val_string_size(OneMessagePtr message, const char *key, size_t *size) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (size == nullptr) {
+        return ONE_ERROR_VALIDATION_SIZE_IS_NULLPTR;
+    }
+
+    std::string value;
+    Error err = m->payload().val_string(key, value);
+    if (is_error(err)) {
+        return err;
+    }
+
+    *size = value.size() + 1;
+    return ONE_ERROR_NONE;
+}
+
+Error message_val_string(OneMessagePtr message, const char *key, char **val,
+                         size_t val_size) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
@@ -214,8 +246,11 @@ Error message_val_string(OneMessagePtr message, const char *key, char **val) {
         return err;
     }
 
-    // Todo: the string copy.
+    if (val_size < value.size() + 1) {
+        return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
+    }
 
+    std::strncpy(*val, value.c_str(), value.size() + 1);
     return ONE_ERROR_NONE;
 }
 
@@ -332,6 +367,790 @@ Error message_set_val_object(OneMessagePtr message, const char *key, OneObjectPt
     }
 
     return m->payload().set_val_object(key, *o);
+}
+
+OneError array_create(OneArrayPtr *array) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = new Array();
+    if (a == nullptr) {
+        return ONE_ERROR_ARRAY_ALLOCATION_FAILED;
+    }
+
+    *array = (OneArrayPtr)a;
+    return ONE_ERROR_NONE;
+}
+
+void array_destroy(OneArrayPtr *array) {
+    if (array == nullptr) {
+        return;
+    }
+
+    auto a = (Array *)(*array);
+    if (a != nullptr) {
+        delete a;
+        *array = nullptr;
+    }
+}
+
+OneError array_copy(OneArrayPtr source, OneArrayPtr destination) {
+    if (source == nullptr) {
+        return ONE_ERROR_VALIDATION_SOURCE_IS_NULLPTR;
+    }
+
+    if (destination == nullptr) {
+        return ONE_ERROR_VALIDATION_DESTINATION_IS_NULLPTR;
+    }
+
+    auto s = (Array *)source;
+    auto d = (Array *)destination;
+    *d = *s;
+    return ONE_ERROR_NONE;
+}
+
+OneError array_clear(OneArrayPtr array) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    a->clear();
+    return ONE_ERROR_NONE;
+}
+
+OneError array_reserve(OneArrayPtr array, size_t size) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    a->reserve(size);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_is_empty(OneArrayPtr array, bool *empty) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (empty == nullptr) {
+        return ONE_ERROR_VALIDATION_EMPTY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    *empty = a->is_empty();
+    return ONE_ERROR_NONE;
+}
+
+OneError array_size(OneArrayPtr array, size_t *size) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (size == nullptr) {
+        return ONE_ERROR_VALIDATION_SIZE_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    *size = a->size();
+    return ONE_ERROR_NONE;
+}
+
+OneError array_capacity(OneArrayPtr array, size_t *capacity) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (capacity == nullptr) {
+        return ONE_ERROR_VALIDATION_CAPACITY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    *capacity = a->capacity();
+    return ONE_ERROR_NONE;
+}
+
+OneError array_push_back_bool(OneArrayPtr array, bool val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    a->push_back_bool(val);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_push_back_int(OneArrayPtr array, int val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    a->push_back_int(val);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_push_back_string(OneArrayPtr array, const char *val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    a->push_back_string(std::string(val));
+    return ONE_ERROR_NONE;
+}
+
+OneError array_push_back_array(OneArrayPtr array, OneArrayPtr val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    auto v = (Array *)val;
+    a->push_back_array(*v);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_push_back_object(OneArrayPtr array, OneObjectPtr val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    auto v = (Object *)val;
+    a->push_back_object(*v);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_pop_back(OneArrayPtr array) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)array;
+    a->pop_back();
+    return ONE_ERROR_NONE;
+}
+
+OneError array_is_val_bool(OneArrayPtr array, unsigned int pos, bool *result) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    *result = a->is_val_bool(pos);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_is_val_int(OneArrayPtr array, unsigned int pos, bool *result) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    *result = a->is_val_int(pos);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_is_val_string(OneArrayPtr array, unsigned int pos, bool *result) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    *result = a->is_val_string(pos);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_is_val_array(OneArrayPtr array, unsigned int pos, bool *result) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    *result = a->is_val_array(pos);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_is_val_object(OneArrayPtr array, unsigned int pos, bool *result) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    *result = a->is_val_object(pos);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_val_bool(OneArrayPtr array, unsigned int pos, bool *val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    return a->val_bool(pos, *val);
+}
+
+OneError array_val_int(OneArrayPtr array, unsigned int pos, int *val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    return a->val_int(pos, *val);
+}
+
+OneError array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (size == nullptr) {
+        return ONE_ERROR_VALIDATION_SIZE_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    auto err = a->val_string_size(pos, *size);
+    if (is_error(err)) {
+        return err;
+    }
+
+    ++(*size);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_val_string(OneArrayPtr array, unsigned int pos, char **val, size_t size) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+
+    size_t val_size = 0;
+    auto err = a->val_string_size(pos, val_size);
+    if (is_error(err)) {
+        return err;
+    }
+
+    if (size < val_size + 1) {
+        return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
+    }
+
+    std::string s;
+    err = a->val_string(pos, s);
+    if (is_error(err)) {
+        return err;
+    }
+
+    std::strncpy(*val, s.c_str(), s.size() + 1);
+    return ONE_ERROR_NONE;
+}
+
+OneError array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    auto v = (Array *)(val);
+    return a->val_array(pos, *v);
+}
+
+OneError array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    auto v = (Object *)(val);
+    return a->val_object(pos, *v);
+}
+
+OneError array_set_val_bool(OneArrayPtr array, unsigned int pos, bool val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    return a->set_val_bool(pos, val);
+}
+
+OneError array_set_val_int(OneArrayPtr array, unsigned int pos, int val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    return a->set_val_int(pos, val);
+}
+
+OneError array_set_val_string(OneArrayPtr array, unsigned int pos, const char *val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    return a->set_val_string(pos, val);
+}
+
+OneError array_set_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    auto v = (Array *)(val);
+    return a->set_val_array(pos, *v);
+}
+
+OneError array_set_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val) {
+    if (array == nullptr) {
+        return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto a = (Array *)(array);
+    auto v = (Object *)(val);
+    return a->set_val_object(pos, *v);
+}
+
+OneError object_create(OneObjectPtr *object) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    auto o = new Object();
+    if (o == nullptr) {
+        return ONE_ERROR_OBJECT_ALLOCATION_FAILED;
+    }
+
+    *object = (OneObjectPtr)o;
+    return ONE_ERROR_NONE;
+}
+
+void object_destroy(OneObjectPtr *object) {
+    if (object == nullptr) {
+        return;
+    }
+
+    auto o = (Object *)(*object);
+    if (o != nullptr) {
+        delete o;
+        *object = nullptr;
+    }
+}
+
+OneError object_copy(OneObjectPtr source, OneObjectPtr destination) {
+    if (source == nullptr) {
+        return ONE_ERROR_VALIDATION_SOURCE_IS_NULLPTR;
+    }
+
+    if (destination == nullptr) {
+        return ONE_ERROR_VALIDATION_DESTINATION_IS_NULLPTR;
+    }
+
+    auto s = (Object *)source;
+    auto d = (Object *)destination;
+    *d = *s;
+    return ONE_ERROR_NONE;
+}
+
+OneError object_clear(OneObjectPtr object) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    o->clear();
+    return ONE_ERROR_NONE;
+}
+
+OneError object_is_empty(OneObjectPtr object, bool *empty) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (empty == nullptr) {
+        return ONE_ERROR_VALIDATION_EMPTY_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    *empty = o->is_empty();
+    return ONE_ERROR_NONE;
+}
+
+OneError object_remove_key(OneObjectPtr object, const char *key) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    return o->remove_key(key);
+}
+
+OneError object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    *result = o->is_val_bool(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError object_is_val_int(OneObjectPtr object, const char *key, bool *result) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    *result = o->is_val_int(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError object_is_val_string(OneObjectPtr object, const char *key, bool *result) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    *result = o->is_val_string(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError object_is_val_array(OneObjectPtr object, const char *key, bool *result) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    *result = o->is_val_array(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError object_is_val_object(OneObjectPtr object, const char *key, bool *result) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (result == nullptr) {
+        return ONE_ERROR_VALIDATION_RESULT_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    *result = o->is_val_object(key);
+    return ONE_ERROR_NONE;
+}
+
+OneError object_val_bool(OneObjectPtr object, const char *key, bool *val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    return o->val_bool(key, *val);
+}
+
+OneError object_val_int(OneObjectPtr object, const char *key, int *val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    return o->val_int(key, *val);
+}
+
+OneError object_val_string_size(OneObjectPtr object, const char *key, size_t *size) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (size == nullptr) {
+        return ONE_ERROR_VALIDATION_SIZE_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    auto err = o->val_string_size(key, *size);
+    if (is_error(err)) {
+        return err;
+    }
+
+    ++(*size);
+    return ONE_ERROR_NONE;
+}
+
+OneError object_val_string(OneObjectPtr object, const char *key, char **val,
+                           size_t size) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    size_t val_size = 0;
+    auto err = o->val_string_size(key, val_size);
+    if (is_error(err)) {
+        return err;
+    }
+
+    if (size < val_size + 1) {
+        return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
+    }
+
+    std::string s;
+    err = o->val_string(key, s);
+    if (is_error(err)) {
+        return err;
+    }
+
+    std::strncpy(*val, s.c_str(), s.size() + 1);
+    return ONE_ERROR_NONE;
+}
+
+OneError object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    auto v = (Array *)val;
+    return o->val_array(key, *v);
+}
+
+OneError object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    auto v = (Object *)val;
+    return o->val_object(key, *v);
+}
+
+OneError object_set_val_bool(OneObjectPtr object, const char *key, bool val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    return o->set_val_bool(key, val);
+}
+
+OneError object_set_val_int(OneObjectPtr object, const char *key, int val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    return o->set_val_int(key, val);
+}
+
+OneError object_set_val_string(OneObjectPtr object, const char *key, const char *val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    return o->set_val_string(key, std::string(val));
+}
+
+OneError object_set_val_array(OneObjectPtr object, const char *key, OneArrayPtr val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    auto v = (Array *)val;
+    return o->set_val_array(key, *v);
+}
+
+OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPtr val) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    if (key == nullptr) {
+        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
+    }
+
+    if (val == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    auto o = (Object *)object;
+    auto v = (Object *)val;
+    return o->set_val_object(key, *v);
 }
 
 Error message_prepare_error_response(OneMessagePtr message) {
@@ -613,8 +1432,14 @@ OneError one_message_val_int(OneMessagePtr message, const char *key, int *val) {
     return one::message_val_int(message, key, val);
 }
 
-OneError one_message_val_string(OneMessagePtr message, const char *key, char **val) {
-    return one::message_val_string(message, key, val);
+OneError one_message_val_string_size(OneMessagePtr message, const char *key,
+                                     size_t *size) {
+    return one::message_val_string_size(message, key, size);
+}
+
+OneError one_message_val_string(OneMessagePtr message, const char *key, char **val,
+                                size_t val_size) {
+    return one::message_val_string(message, key, val, val_size);
 }
 
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
@@ -647,6 +1472,218 @@ OneError one_message_set_val_array(OneMessagePtr message, const char *key,
 OneError one_message_set_val_object(OneMessagePtr message, const char *key,
                                     OneObjectPtr val) {
     return one::message_set_val_object(message, key, val);
+}
+
+OneError one_array_create(OneArrayPtr *array) {
+    return one::array_create(array);
+}
+
+void one_array_destroy(OneArrayPtr *array) {
+    return one::array_destroy(array);
+}
+
+OneError one_array_copy(OneArrayPtr source, OneArrayPtr destination) {
+    return one::array_copy(source, destination);
+}
+
+OneError one_array_clear(OneArrayPtr array) {
+    return one::array_clear(array);
+}
+
+OneError one_array_reserve(OneArrayPtr array, size_t size) {
+    return one::array_reserve(array, size);
+}
+
+OneError one_array_is_empty(OneArrayPtr array, bool *empty) {
+    return one::array_is_empty(array, empty);
+}
+
+OneError one_array_size(OneArrayPtr array, size_t *size) {
+    return one::array_size(array, size);
+}
+
+OneError one_array_capacity(OneArrayPtr array, size_t *capacity) {
+    return one::array_capacity(array, capacity);
+}
+
+OneError one_array_push_back_bool(OneArrayPtr array, bool val) {
+    return one::array_push_back_bool(array, val);
+}
+
+OneError one_array_push_back_int(OneArrayPtr array, int val) {
+    return one::array_push_back_int(array, val);
+}
+
+OneError one_array_push_back_string(OneArrayPtr array, const char *val) {
+    return one::array_push_back_string(array, val);
+}
+
+OneError one_array_push_back_array(OneArrayPtr array, OneArrayPtr val) {
+    return one::array_push_back_array(array, val);
+}
+
+OneError one_array_push_back_object(OneArrayPtr array, OneObjectPtr val) {
+    return one::array_push_back_object(array, val);
+}
+
+OneError one_array_pop_back(OneArrayPtr array) {
+    return one::array_pop_back(array);
+}
+
+OneError one_array_is_val_bool(OneArrayPtr array, unsigned int pos, bool *result) {
+    return one::array_is_val_bool(array, pos, result);
+}
+
+OneError one_array_is_val_int(OneArrayPtr array, unsigned int pos, bool *result) {
+    return one::array_is_val_int(array, pos, result);
+}
+
+OneError one_array_is_val_string(OneArrayPtr array, unsigned int pos, bool *result) {
+    return one::array_is_val_string(array, pos, result);
+}
+
+OneError one_array_is_val_array(OneArrayPtr array, unsigned int pos, bool *result) {
+    return one::array_is_val_array(array, pos, result);
+}
+
+OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *result) {
+    return one::array_is_val_object(array, pos, result);
+}
+
+OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val) {
+    return one::array_val_bool(array, pos, val);
+}
+
+OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val) {
+    return one::array_val_int(array, pos, val);
+}
+
+OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size) {
+    return one::array_val_string_size(array, pos, size);
+}
+
+OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char **val,
+                              size_t val_size) {
+    return one::array_val_string(array, pos, val, val_size);
+}
+
+OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val) {
+    return one::array_val_array(array, pos, val);
+}
+
+OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val) {
+    return one::array_val_object(array, pos, val);
+}
+
+OneError one_array_set_val_bool(OneArrayPtr array, unsigned int pos, bool val) {
+    return one::array_set_val_bool(array, pos, val);
+}
+
+OneError one_array_set_val_int(OneArrayPtr array, unsigned int pos, int val) {
+    return one::array_set_val_int(array, pos, val);
+}
+
+OneError one_array_set_val_string(OneArrayPtr array, unsigned int pos, const char *val) {
+    return one::array_set_val_string(array, pos, val);
+}
+
+OneError one_array_set_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val) {
+    return one::array_set_val_array(array, pos, val);
+}
+
+OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val) {
+    return one::array_set_val_object(array, pos, val);
+}
+
+OneError one_object_create(OneObjectPtr *object) {
+    return one::object_create(object);
+}
+
+void one_object_destroy(OneObjectPtr *object) {
+    one::object_destroy(object);
+}
+
+OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination) {
+    return one::object_copy(source, destination);
+}
+
+OneError one_object_clear(OneObjectPtr object) {
+    return one::object_clear(object);
+}
+
+OneError one_object_is_empty(OneObjectPtr object, bool *empty) {
+    return one::object_is_empty(object, empty);
+}
+
+OneError one_object_remove_key(OneObjectPtr object, const char *key) {
+    return one::object_remove_key(object, key);
+}
+
+OneError one_object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {
+    return one::object_is_val_bool(object, key, result);
+}
+
+OneError one_object_is_val_int(OneObjectPtr object, const char *key, bool *result) {
+    return one::object_is_val_int(object, key, result);
+}
+
+OneError one_object_is_val_string(OneObjectPtr object, const char *key, bool *result) {
+    return one::object_is_val_string(object, key, result);
+}
+
+OneError one_object_is_val_array(OneObjectPtr object, const char *key, bool *result) {
+    return one::object_is_val_array(object, key, result);
+}
+
+OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *result) {
+    return one::object_is_val_object(object, key, result);
+}
+
+OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val) {
+    return one::object_val_bool(object, key, val);
+}
+
+OneError one_object_val_int(OneObjectPtr object, const char *key, int *val) {
+    return one::object_val_int(object, key, val);
+}
+
+OneError one_object_val_string_size(OneObjectPtr object, const char *key, size_t *size) {
+    return one::object_val_string_size(object, key, size);
+}
+
+OneError one_object_val_string(OneObjectPtr object, const char *key, char **val,
+                               size_t size) {
+    return one::object_val_string(object, key, val, size);
+}
+
+OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val) {
+    return one::object_val_array(object, key, val);
+}
+
+OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val) {
+    return one::object_val_object(object, key, val);
+}
+
+OneError one_object_set_val_bool(OneObjectPtr object, const char *key, bool val) {
+    return one::object_set_val_bool(object, key, val);
+}
+
+OneError one_object_set_val_int(OneObjectPtr object, const char *key, int val) {
+    return one::object_set_val_int(object, key, val);
+}
+
+OneError one_object_set_val_string(OneObjectPtr object, const char *key,
+                                   const char *val) {
+    return one::object_set_val_string(object, key, val);
+}
+
+OneError one_object_set_val_array(OneObjectPtr object, const char *key, OneArrayPtr val) {
+    return one::object_set_val_array(object, key, val);
+}
+
+OneError one_object_set_val_object(OneObjectPtr object, const char *key,
+                                   OneObjectPtr val) {
+    return one::object_set_val_object(object, key, val);
 }
 
 OneError one_message_prepare_error_response(OneMessagePtr message) {

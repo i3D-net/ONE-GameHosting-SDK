@@ -267,13 +267,97 @@ TEST_CASE("message c_api", "[message]") {
     const Array array;
     const Object object;
 
+    // Check nullptr.
+    REQUIRE(is_error(one_message_create(nullptr)));
+
+    unsigned int size = 0;
+    const char *data = "{}";
+    REQUIRE(is_error(one_message_init(nullptr, code, data, size)));
+    REQUIRE(is_error(one_message_init(m, code, nullptr, size)));
+
+    REQUIRE(is_error(one_message_reset(nullptr)));
+    REQUIRE(is_error(one_message_code(nullptr, &code)));
+    REQUIRE(is_error(one_message_code(m, nullptr)));
+
+    const char key[] = {'a'};
+    bool result = false;
+
+    bool val_boolean = false;
+    int val_integer = 0;
+    Array val_array;
+    Object val_object;
+
+    REQUIRE(is_error(one_message_is_val_bool(nullptr, key, &result)));
+    REQUIRE(is_error(one_message_is_val_bool(m, nullptr, &result)));
+    REQUIRE(is_error(one_message_is_val_bool(m, key, nullptr)));
+    REQUIRE(is_error(one_message_is_val_int(nullptr, key, &result)));
+    REQUIRE(is_error(one_message_is_val_int(m, nullptr, &result)));
+    REQUIRE(is_error(one_message_is_val_int(m, key, nullptr)));
+    REQUIRE(is_error(one_message_is_val_string(nullptr, key, &result)));
+    REQUIRE(is_error(one_message_is_val_string(m, nullptr, &result)));
+    REQUIRE(is_error(one_message_is_val_string(m, key, nullptr)));
+    REQUIRE(is_error(one_message_is_val_array(nullptr, key, &result)));
+    REQUIRE(is_error(one_message_is_val_array(m, nullptr, &result)));
+    REQUIRE(is_error(one_message_is_val_array(m, key, nullptr)));
+    REQUIRE(is_error(one_message_is_val_object(nullptr, key, &result)));
+    REQUIRE(is_error(one_message_is_val_object(m, nullptr, &result)));
+    REQUIRE(is_error(one_message_is_val_object(m, key, nullptr)));
+
+    REQUIRE(is_error(one_message_val_bool(nullptr, key, &val_boolean)));
+    REQUIRE(is_error(one_message_val_bool(m, nullptr, &val_boolean)));
+    REQUIRE(is_error(one_message_val_bool(m, key, nullptr)));
+    REQUIRE(is_error(one_message_val_int(nullptr, key, &val_integer)));
+    REQUIRE(is_error(one_message_val_int(m, nullptr, &val_integer)));
+    REQUIRE(is_error(one_message_val_int(m, key, nullptr)));
+    char *val[0];
+    REQUIRE(is_error(one_message_val_string(nullptr, key, val, size)));
+    REQUIRE(is_error(one_message_val_string(m, nullptr, val, size)));
+    REQUIRE(is_error(one_message_val_string(m, key, nullptr, size)));
+    OneArrayPtr a_ptr = (OneArray *)&array;
+    REQUIRE(is_error(one_message_val_array(nullptr, key, a_ptr)));
+    REQUIRE(is_error(one_message_val_array(m, nullptr, a_ptr)));
+    REQUIRE(is_error(one_message_val_array(m, key, nullptr)));
+    OneObjectPtr o_ptr = (OneObject *)&object;
+    REQUIRE(is_error(one_message_val_object(nullptr, key, o_ptr)));
+    REQUIRE(is_error(one_message_val_object(m, nullptr, o_ptr)));
+    REQUIRE(is_error(one_message_val_object(m, key, nullptr)));
+
+    REQUIRE(is_error(one_message_set_val_bool(nullptr, key, val_boolean)));
+    REQUIRE(is_error(one_message_set_val_bool(m, nullptr, val_boolean)));
+    REQUIRE(is_error(one_message_set_val_int(nullptr, key, val_integer)));
+    REQUIRE(is_error(one_message_set_val_int(m, nullptr, val_integer)));
+    REQUIRE(is_error(one_message_set_val_string(nullptr, key, string.c_str())));
+    REQUIRE(is_error(one_message_set_val_string(m, nullptr, string.c_str())));
+    REQUIRE(is_error(one_message_set_val_string(m, key, nullptr)));
+    REQUIRE(is_error(one_message_set_val_array(nullptr, key, a_ptr)));
+    REQUIRE(is_error(one_message_set_val_array(m, nullptr, a_ptr)));
+    REQUIRE(is_error(one_message_set_val_array(m, key, nullptr)));
+    REQUIRE(is_error(one_message_set_val_object(nullptr, key, o_ptr)));
+    REQUIRE(is_error(one_message_set_val_object(m, nullptr, o_ptr)));
+    REQUIRE(is_error(one_message_set_val_object(m, key, nullptr)));
+
+    REQUIRE(is_error(one_message_prepare_error_response(nullptr)));
+    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, nullptr, "map",
+                                                             "mode", "version", m)));
+    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", nullptr,
+                                                             "mode", "version", m)));
+    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", "map",
+                                                             nullptr, "version", m)));
+    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", "map", "mode",
+                                                             nullptr, m)));
+    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", "map", "mode",
+                                                             "version", nullptr)));
+    REQUIRE(is_error(one_message_prepare_host_information_request(nullptr)));
+
+    // Check Setters.
     REQUIRE(!is_error(one_message_set_val_bool(m, "bool", boolean)));
     REQUIRE(!is_error(one_message_set_val_int(m, "int", integer)));
     REQUIRE(!is_error(one_message_set_val_string(m, "string", string.c_str())));
     REQUIRE(!is_error(one_message_set_val_array(m, "array", (OneArrayPtr)&array)));
     REQUIRE(!is_error(one_message_set_val_object(m, "object", (OneObjectPtr)&object)));
 
-    bool result = false;
+    // Check Getters.
+    result = false;
     REQUIRE(!is_error(one_message_is_val_bool(m, "bool", &result)));
     REQUIRE(result == true);
     REQUIRE(!is_error(one_message_is_val_int(m, "int", &result)));
@@ -285,19 +369,19 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(!is_error(one_message_is_val_object(m, "object", &result)));
     REQUIRE(result == true);
 
-    bool val_boolean = false;
-    int val_integer = 0;
-    std::string val_string = "    ";
-    Array val_array;
-    Object val_object;
-
     REQUIRE(!is_error(one_message_val_bool(m, "bool", &val_boolean)));
     REQUIRE(boolean == val_boolean);
     REQUIRE(!is_error(one_message_val_int(m, "int", &val_integer)));
     REQUIRE(integer == val_integer);
-    // FIXME.
-    // REQUIRE(!is_error(one_message_val_string(m, "string", val_string)));
-    // REQUIRE(string == val_string);
+    size_t val_size = 0;
+    REQUIRE(!is_error(one_message_val_string_size(m, "string", &val_size)));
+    REQUIRE(val_size == string.size() + 1);
+    char *val_string = new char[string.size() + 1];
+    REQUIRE(val_string != nullptr);
+    REQUIRE(
+        !is_error(one_message_val_string(m, "string", &val_string, string.size() + 1)));
+    REQUIRE(string == std::string(val_string));
+    delete[] val_string;
     REQUIRE(!is_error(one_message_val_array(m, "array", (OneArrayPtr)&val_array)));
     REQUIRE(array.get() == val_array.get());
     REQUIRE(!is_error(one_message_val_object(m, "object", (OneObjectPtr)&val_object)));
@@ -312,4 +396,5 @@ TEST_CASE("message c_api", "[message]") {
 
     one_message_destroy(&m);
     REQUIRE(m == nullptr);
+    one_message_destroy(nullptr);
 }

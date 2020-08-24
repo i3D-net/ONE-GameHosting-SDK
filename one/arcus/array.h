@@ -49,6 +49,7 @@ public:
     // Getters.
     Error val_bool(unsigned int pos, bool &val) const;
     Error val_int(unsigned int pos, int &val) const;
+    Error val_string_size(unsigned int pos, size_t &size) const;
     Error val_string(unsigned int pos, std::string &val) const;
     Error val_array(unsigned int pos, Array &val) const;
     Error val_object(unsigned int pos, Object &val) const;
