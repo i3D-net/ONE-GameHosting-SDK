@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <util.h>
 
+#include <one/arcus/c_api.h>
 #include <one/arcus/error.h>
 #include <one/arcus/array.h>
 #include <one/arcus/object.h>
@@ -95,11 +96,14 @@ TEST_CASE("array unit tests", "[array]") {
     std::string val_string = "tete";
     Array val_array(b);
     Object val_object;
+    size_t val_size = 0;
 
     REQUIRE(!is_error(a.val_bool(0, val_boolean)));
     REQUIRE(val_boolean == boolean);
     REQUIRE(!is_error(a.val_int(1, val_integer)));
     REQUIRE(val_integer == integer);
+    REQUIRE(!is_error(a.val_string_size(2, val_size)));
+    REQUIRE(val_size == string.size());
     REQUIRE(!is_error(a.val_string(2, val_string)));
     REQUIRE(val_string == string);
     REQUIRE(!is_error(a.val_array(3, val_array)));
@@ -139,7 +143,10 @@ TEST_CASE("array unit tests", "[array]") {
     REQUIRE(is_error(a.val_bool(1000, val_boolean)));
     REQUIRE(is_error(a.val_int(5, val_integer)));
     REQUIRE(is_error(a.val_int(1000, val_integer)));
+    REQUIRE(is_error(a.val_string(5, val_string)));
     REQUIRE(is_error(a.val_string(1000, val_string)));
+    REQUIRE(is_error(a.val_string_size(5, val_size)));
+    REQUIRE(is_error(a.val_string_size(1000, val_size)));
     REQUIRE(is_error(a.val_array(5, val_array)));
     REQUIRE(is_error(a.val_array(1000, val_array)));
     REQUIRE(is_error(a.val_object(5, val_object)));
@@ -167,6 +174,7 @@ TEST_CASE("array unit tests", "[array]") {
     REQUIRE(is_error(a.val_bool(0, val_boolean)));
     REQUIRE(is_error(a.val_int(0, val_integer)));
     REQUIRE(is_error(a.val_string(0, val_string)));
+    REQUIRE(is_error(a.val_string_size(0, val_size)));
     REQUIRE(is_error(a.val_array(0, val_array)));
     REQUIRE(is_error(a.val_object(0, val_object)));
 
@@ -175,4 +183,134 @@ TEST_CASE("array unit tests", "[array]") {
     REQUIRE(is_error(a.set_val_string(0, "")));
     REQUIRE(is_error(a.set_val_array(0, array)));
     REQUIRE(is_error(a.set_val_object(0, object)));
+}
+
+TEST_CASE("array c_api", "[array]") {
+    OneArrayPtr a = nullptr;
+    REQUIRE(!is_error(one_array_create(&a)));
+    REQUIRE(a != nullptr);
+
+    size_t size = 0;
+    bool val_bool = false;
+    int val_int = 0;
+    std::string val_string = "";
+    Array array;
+    Object object;
+    Array val_array;
+    Object val_object;
+
+    // Checking nullptr.
+    REQUIRE(is_error(one_array_create(nullptr)));
+    REQUIRE(is_error(one_array_copy(nullptr, a)));
+    REQUIRE(is_error(one_array_copy(a, nullptr)));
+    REQUIRE(is_error(one_array_clear(nullptr)));
+    REQUIRE(is_error(one_array_reserve(nullptr, size)));
+    REQUIRE(is_error(one_array_is_empty(nullptr, &val_bool)));
+    REQUIRE(is_error(one_array_is_empty(a, nullptr)));
+    REQUIRE(is_error(one_array_size(nullptr, &size)));
+    REQUIRE(is_error(one_array_capacity(nullptr, &size)));
+    REQUIRE(is_error(one_array_capacity(a, nullptr)));
+
+    REQUIRE(is_error(one_array_push_back_bool(nullptr, val_bool)));
+    REQUIRE(is_error(one_array_push_back_int(nullptr, val_int)));
+    REQUIRE(is_error(one_array_push_back_string(nullptr, val_string.c_str())));
+    REQUIRE(is_error(one_array_push_back_string(a, nullptr)));
+    OneArrayPtr a_ptr = (OneArray *)&val_array;
+    REQUIRE(is_error(one_array_push_back_array(nullptr, a_ptr)));
+    REQUIRE(is_error(one_array_push_back_array(a, nullptr)));
+    OneObjectPtr o_ptr = (OneObject *)&val_array;
+    REQUIRE(is_error(one_array_push_back_object(nullptr, o_ptr)));
+    REQUIRE(is_error(one_array_push_back_object(a, nullptr)));
+
+    REQUIRE(is_error(one_array_pop_back(nullptr)));
+
+    int pos = 0;
+    bool result = false;
+
+    REQUIRE(is_error(one_array_is_val_bool(nullptr, pos, &result)));
+    REQUIRE(is_error(one_array_is_val_bool(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_is_val_int(nullptr, pos, &result)));
+    REQUIRE(is_error(one_array_is_val_int(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_is_val_string(nullptr, pos, &result)));
+    REQUIRE(is_error(one_array_is_val_string(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_is_val_array(nullptr, pos, &result)));
+    REQUIRE(is_error(one_array_is_val_array(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_is_val_object(nullptr, pos, &result)));
+    REQUIRE(is_error(one_array_is_val_object(a, pos, nullptr)));
+
+    REQUIRE(is_error(one_array_val_bool(nullptr, pos, &val_bool)));
+    REQUIRE(is_error(one_array_val_bool(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_val_int(nullptr, pos, &val_int)));
+    REQUIRE(is_error(one_array_val_int(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_val_string_size(nullptr, pos, &size)));
+    REQUIRE(is_error(one_array_val_string_size(a, pos, nullptr)));
+    char *val[0];
+    REQUIRE(is_error(one_array_val_string(nullptr, pos, val, size)));
+    REQUIRE(is_error(one_array_val_string(a, pos, nullptr, size)));
+    REQUIRE(is_error(one_array_val_array(nullptr, pos, a_ptr)));
+    REQUIRE(is_error(one_array_val_array(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_val_object(nullptr, pos, o_ptr)));
+    REQUIRE(is_error(one_array_val_object(a, pos, nullptr)));
+
+    REQUIRE(is_error(one_array_set_val_bool(nullptr, pos, val_bool)));
+    REQUIRE(is_error(one_array_set_val_int(nullptr, pos, val_int)));
+    REQUIRE(is_error(one_array_set_val_string(nullptr, pos, val_string.c_str())));
+    REQUIRE(is_error(one_array_set_val_string(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_set_val_array(nullptr, pos, a_ptr)));
+    REQUIRE(is_error(one_array_set_val_array(a, pos, nullptr)));
+    REQUIRE(is_error(one_array_set_val_object(nullptr, pos, o_ptr)));
+    REQUIRE(is_error(one_array_set_val_object(a, pos, nullptr)));
+
+    REQUIRE(!is_error(one_array_clear(a)));
+    REQUIRE(!is_error(one_array_reserve(a, 5)));
+    size = 0;
+    REQUIRE(!is_error(one_array_size(a, &size)));
+    REQUIRE(size == 0);
+    size_t capacity = 0;
+    REQUIRE(!is_error(one_array_capacity(a, &capacity)));
+    REQUIRE(capacity == 5);
+
+    const std::string string_value = "string";
+    REQUIRE(!is_error(one_array_push_back_bool(a, true)));
+    REQUIRE(!is_error(one_array_push_back_int(a, 1)));
+    REQUIRE(!is_error(one_array_push_back_string(a, string_value.c_str())));
+    REQUIRE(!is_error(one_array_push_back_array(a, (OneArray *)&array)));
+    REQUIRE(!is_error(one_array_push_back_object(a, (OneObject *)&object)));
+
+    result = false;
+    REQUIRE(!is_error(one_array_is_val_bool(a, 0, &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_array_is_val_int(a, 1, &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_array_is_val_string(a, 2, &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_array_is_val_array(a, 3, &result)));
+    REQUIRE(result == true);
+    REQUIRE(!is_error(one_array_is_val_object(a, 4, &result)));
+    REQUIRE(result == true);
+
+    REQUIRE(!is_error(one_array_val_bool(a, 0, &val_bool)));
+    REQUIRE(val_bool == true);
+    REQUIRE(!is_error(one_array_val_int(a, 1, &val_int)));
+    REQUIRE(val_int == 1);
+    REQUIRE(!is_error(one_array_val_string_size(a, 2, &size)));
+    REQUIRE(size == string_value.size() + 1);
+    char *val_string_bis[string_value.size() + 1];
+    REQUIRE(
+        !is_error(one_array_val_string(a, 2, val_string_bis, string_value.size() + 1)));
+    REQUIRE(std::string(val_string_bis[0]) == string_value);
+    REQUIRE(!is_error(one_array_val_array(a, 3, (OneArray *)&val_array)));
+    REQUIRE(val_array.get() == array.get());
+    REQUIRE(!is_error(one_array_val_object(a, 4, (OneObject *)&val_object)));
+    REQUIRE(val_object.get() == object.get());
+
+    REQUIRE(!is_error(one_array_set_val_bool(a, 0, false)));
+    REQUIRE(!is_error(one_array_set_val_int(a, 1, 2)));
+    REQUIRE(!is_error(one_array_set_val_string(a, 2, "toto")));
+    REQUIRE(!is_error(one_array_set_val_array(a, 3, (OneArray *)&val_array)));
+    REQUIRE(!is_error(one_array_set_val_object(a, 4, (OneObject *)&val_object)));
+
+    one_array_destroy(&a);
+    REQUIRE(a == nullptr);
+    one_array_destroy(nullptr);
 }

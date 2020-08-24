@@ -78,7 +78,10 @@ OneError one_message_is_val_object(OneMessagePtr message, const char *key, bool 
 
 OneError one_message_val_bool(OneMessagePtr message, const char *key, bool *val);
 OneError one_message_val_int(OneMessagePtr message, const char *key, int *val);
-OneError one_message_val_string(OneMessagePtr message, const char *key, char **val);
+OneError one_message_val_string_size(OneMessagePtr message, const char *key,
+                                     size_t *size);
+OneError one_message_val_string(OneMessagePtr message, const char *key, char **val,
+                                size_t val_size);
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
 OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
 
@@ -91,6 +94,85 @@ OneError one_message_set_val_array(OneMessagePtr message, const char *key,
                                    OneArrayPtr val);
 OneError one_message_set_val_object(OneMessagePtr message, const char *key,
                                     OneObjectPtr val);
+
+///
+/// OneArrayApi is used to work with arrays use in the messages.
+///
+
+OneError one_array_create(OneArrayPtr *array);
+
+/// Must be called whenever finished with an array.
+void one_array_destroy(OneArrayPtr *array);
+
+OneError one_array_copy(OneArrayPtr source, OneArrayPtr destination);
+OneError one_array_clear(OneArrayPtr array);
+OneError one_array_reserve(OneArrayPtr array, size_t size);
+OneError one_array_is_empty(OneArrayPtr array, bool *empty);
+OneError one_array_size(OneArrayPtr array, size_t *size);
+OneError one_array_capacity(OneArrayPtr array, size_t *capacity);
+
+OneError one_array_push_back_bool(OneArrayPtr array, bool val);
+OneError one_array_push_back_int(OneArrayPtr array, int val);
+OneError one_array_push_back_string(OneArrayPtr array, const char *val);
+OneError one_array_push_back_array(OneArrayPtr array, OneArrayPtr val);
+OneError one_array_push_back_object(OneArrayPtr array, OneObjectPtr val);
+
+OneError one_array_pop_back(OneArrayPtr array);
+
+OneError one_array_is_val_bool(OneArrayPtr array, unsigned int pos, bool *result);
+OneError one_array_is_val_int(OneArrayPtr array, unsigned int pos, bool *result);
+OneError one_array_is_val_string(OneArrayPtr array, unsigned int pos, bool *result);
+OneError one_array_is_val_array(OneArrayPtr array, unsigned int pos, bool *result);
+OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *result);
+
+OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val);
+OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val);
+OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size);
+OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char **val,
+                              size_t val_size);
+OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
+OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
+
+OneError one_array_set_val_bool(OneArrayPtr array, unsigned int pos, bool val);
+OneError one_array_set_val_int(OneArrayPtr array, unsigned int pos, int val);
+OneError one_array_set_val_string(OneArrayPtr array, unsigned int pos, const char *val);
+OneError one_array_set_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
+OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
+
+///
+/// OneObjectApi is used to work with arrays use in the messages.
+///
+
+OneError one_object_create(OneObjectPtr *object);
+
+/// Must be called whenever finished with an array.
+void one_object_destroy(OneObjectPtr *object);
+
+OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination);
+OneError one_object_clear(OneObjectPtr object);
+OneError one_object_is_empty(OneObjectPtr object, bool *empty);
+OneError one_object_remove_key(OneObjectPtr object, const char *key);
+
+OneError one_object_is_val_bool(OneObjectPtr object, const char *key, bool *result);
+OneError one_object_is_val_int(OneObjectPtr object, const char *key, bool *result);
+OneError one_object_is_val_string(OneObjectPtr object, const char *key, bool *result);
+OneError one_object_is_val_array(OneObjectPtr object, const char *key, bool *result);
+OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *result);
+
+OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
+OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
+OneError one_object_val_string_size(OneObjectPtr object, const char *key, size_t *size);
+OneError one_object_val_string(OneObjectPtr object, const char *key, char **val,
+                               size_t size);
+OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
+OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val);
+
+OneError one_object_set_val_bool(OneObjectPtr object, const char *key, bool val);
+OneError one_object_set_val_int(OneObjectPtr object, const char *key, int val);
+OneError one_object_set_val_string(OneObjectPtr object, const char *key, const char *val);
+OneError one_object_set_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
+OneError one_object_set_val_object(OneObjectPtr object, const char *key,
+                                   OneObjectPtr val);
 
 ///
 /// OneMessagePrepareApi is used to streamlie working with messages. Providing an easy

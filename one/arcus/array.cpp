@@ -55,15 +55,18 @@ void Array::push_back_int(int val) {
 }
 
 void Array::push_back_string(const std::string &val) {
-    _doc.PushBack(rapidjson::Value(val.c_str(), _doc.GetAllocator()).Move(), _doc.GetAllocator());
+    _doc.PushBack(rapidjson::Value(val.c_str(), _doc.GetAllocator()).Move(),
+                  _doc.GetAllocator());
 }
 
 void Array::push_back_array(const Array &val) {
-    _doc.PushBack(rapidjson::Value(val.get(), _doc.GetAllocator()).Move(), _doc.GetAllocator());
+    _doc.PushBack(rapidjson::Value(val.get(), _doc.GetAllocator()).Move(),
+                  _doc.GetAllocator());
 }
 
 void Array::push_back_object(const Object &val) {
-    _doc.PushBack(rapidjson::Value(val.get(), _doc.GetAllocator()).Move(), _doc.GetAllocator());
+    _doc.PushBack(rapidjson::Value(val.get(), _doc.GetAllocator()).Move(),
+                  _doc.GetAllocator());
 }
 
 void Array::pop_back() {
@@ -135,6 +138,20 @@ Error Array::val_int(unsigned int pos, int &val) const {
     }
 
     val = elem.GetInt();
+    return ONE_ERROR_NONE;
+}
+
+Error Array::val_string_size(unsigned int pos, size_t &size) const {
+    if (_doc.Size() <= pos) {
+        return ONE_ERROR_ARRAY_POSITION_OUT_OF_BOUNDS;
+    }
+
+    const auto &elem = _doc[pos];
+    if (!elem.IsString()) {
+        return ONE_ERROR_ARRAY_WRONG_TYPE_IS_EXPECTING_STRING;
+    }
+
+    size = elem.GetStringLength();
     return ONE_ERROR_NONE;
 }
 

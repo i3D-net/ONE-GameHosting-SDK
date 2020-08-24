@@ -39,6 +39,7 @@ public:
     // Getters.
     Error val_bool(const char *key, bool &val) const;
     Error val_int(const char *key, int &val) const;
+    Error val_string_size(const char *key, size_t &size) const;
     Error val_string(const char *key, std::string &val) const;
     Error val_array(const char *key, Array &val) const;
     Error val_object(const char *key, Object &val) const;
