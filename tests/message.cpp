@@ -309,9 +309,9 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(is_error(one_message_val_int(nullptr, key, &val_integer)));
     REQUIRE(is_error(one_message_val_int(m, nullptr, &val_integer)));
     REQUIRE(is_error(one_message_val_int(m, key, nullptr)));
-    char *val[0];
-    REQUIRE(is_error(one_message_val_string(nullptr, key, val, size)));
-    REQUIRE(is_error(one_message_val_string(m, nullptr, val, size)));
+    char *val;
+    REQUIRE(is_error(one_message_val_string(nullptr, key, &val, size)));
+    REQUIRE(is_error(one_message_val_string(m, nullptr, &val, size)));
     REQUIRE(is_error(one_message_val_string(m, key, nullptr, size)));
     OneArrayPtr a_ptr = (OneArray *)&array;
     REQUIRE(is_error(one_message_val_array(nullptr, key, a_ptr)));

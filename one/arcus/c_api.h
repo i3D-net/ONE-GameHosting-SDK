@@ -128,7 +128,7 @@ OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *resu
 OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val);
 OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val);
 OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size);
-OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char **val,
+OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
                               size_t val_size);
 OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
 OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
@@ -162,7 +162,7 @@ OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *re
 OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
 OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
 OneError one_object_val_string_size(OneObjectPtr object, const char *key, size_t *size);
-OneError one_object_val_string(OneObjectPtr object, const char *key, char **val,
+OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
                                size_t size);
 OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
 OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val);

@@ -244,8 +244,9 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(is_error(one_array_val_int(a, pos, nullptr)));
     REQUIRE(is_error(one_array_val_string_size(nullptr, pos, &size)));
     REQUIRE(is_error(one_array_val_string_size(a, pos, nullptr)));
-    char *val[0];
-    REQUIRE(is_error(one_array_val_string(nullptr, pos, val, size)));
+    std::string val;
+    val.reserve(size);
+    REQUIRE(is_error(one_array_val_string(nullptr, pos, &val[0], size)));
     REQUIRE(is_error(one_array_val_string(a, pos, nullptr, size)));
     REQUIRE(is_error(one_array_val_array(nullptr, pos, a_ptr)));
     REQUIRE(is_error(one_array_val_array(a, pos, nullptr)));
@@ -271,6 +272,7 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(capacity == 5);
 
     const std::string string_value = "string";
+    const size_t string_value_size = string_value.size() + 1;
     REQUIRE(!is_error(one_array_push_back_bool(a, true)));
     REQUIRE(!is_error(one_array_push_back_int(a, 1)));
     REQUIRE(!is_error(one_array_push_back_string(a, string_value.c_str())));
@@ -294,11 +296,12 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(!is_error(one_array_val_int(a, 1, &val_int)));
     REQUIRE(val_int == 1);
     REQUIRE(!is_error(one_array_val_string_size(a, 2, &size)));
-    REQUIRE(size == string_value.size() + 1);
-    char *val_string_bis[string_value.size() + 1];
+    REQUIRE(size == string_value_size);
+    std::string val_string_bis;
+    val_string_bis.resize(string_value.size());
     REQUIRE(
-        !is_error(one_array_val_string(a, 2, val_string_bis, string_value.size() + 1)));
-    REQUIRE(std::string(val_string_bis[0]) == string_value);
+        !is_error(one_array_val_string(a, 2, &val_string_bis[0], string_value.size() + 1)));
+    REQUIRE(val_string_bis == string_value);
     REQUIRE(!is_error(one_array_val_array(a, 3, (OneArray *)&val_array)));
     REQUIRE(val_array.get() == array.get());
     REQUIRE(!is_error(one_array_val_object(a, 4, (OneObject *)&val_object)));
