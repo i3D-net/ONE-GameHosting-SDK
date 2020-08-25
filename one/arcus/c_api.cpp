@@ -660,7 +660,7 @@ OneError array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size
     return ONE_ERROR_NONE;
 }
 
-OneError array_val_string(OneArrayPtr array, unsigned int pos, char **val, size_t size) {
+OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val, size_t size) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -681,13 +681,13 @@ OneError array_val_string(OneArrayPtr array, unsigned int pos, char **val, size_
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
-    std::string s;
+    std::string s(val);
     err = a->val_string(pos, s);
     if (is_error(err)) {
         return err;
     }
 
-    std::strncpy(*val, s.c_str(), s.size() + 1);
+    std::strncpy(val, s.c_str(), s.size() + 1);
     return ONE_ERROR_NONE;
 }
 
@@ -1003,7 +1003,7 @@ OneError object_val_string_size(OneObjectPtr object, const char *key, size_t *si
     return ONE_ERROR_NONE;
 }
 
-OneError object_val_string(OneObjectPtr object, const char *key, char **val,
+OneError object_val_string(OneObjectPtr object, const char *key, char *val,
                            size_t size) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
@@ -1034,7 +1034,7 @@ OneError object_val_string(OneObjectPtr object, const char *key, char **val,
         return err;
     }
 
-    std::strncpy(*val, s.c_str(), s.size() + 1);
+    std::strncpy(val, s.c_str(), s.size() + 1);
     return ONE_ERROR_NONE;
 }
 
@@ -1562,7 +1562,7 @@ OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *
     return one::array_val_string_size(array, pos, size);
 }
 
-OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char **val,
+OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
                               size_t val_size) {
     return one::array_val_string(array, pos, val, val_size);
 }
@@ -1651,7 +1651,7 @@ OneError one_object_val_string_size(OneObjectPtr object, const char *key, size_t
     return one::object_val_string_size(object, key, size);
 }
 
-OneError one_object_val_string(OneObjectPtr object, const char *key, char **val,
+OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
                                size_t size) {
     return one::object_val_string(object, key, val, size);
 }
