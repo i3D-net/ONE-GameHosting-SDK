@@ -221,11 +221,11 @@ Error message_val_string_size(OneMessagePtr message, const char *key, size_t *si
         return err;
     }
 
-    *size = value.size() + 1;
+    *size = value.size();
     return ONE_ERROR_NONE;
 }
 
-Error message_val_string(OneMessagePtr message, const char *key, char **val,
+Error message_val_string(OneMessagePtr message, const char *key, char *val,
                          size_t val_size) {
     auto m = (Message *)message;
     if (m == nullptr) {
@@ -246,11 +246,11 @@ Error message_val_string(OneMessagePtr message, const char *key, char **val,
         return err;
     }
 
-    if (val_size < value.size() + 1) {
+    if (val_size < value.size()) {
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
-    std::strncpy(*val, value.c_str(), value.size() + 1);
+    std::strncpy(val, value.c_str(), value.size());
     return ONE_ERROR_NONE;
 }
 
@@ -656,7 +656,6 @@ OneError array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size
         return err;
     }
 
-    ++(*size);
     return ONE_ERROR_NONE;
 }
 
@@ -677,7 +676,7 @@ OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val, size_t
         return err;
     }
 
-    if (size < val_size + 1) {
+    if (size < val_size) {
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
@@ -687,7 +686,7 @@ OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val, size_t
         return err;
     }
 
-    std::strncpy(val, s.c_str(), s.size() + 1);
+    std::strncpy(val, s.c_str(), s.size());
     return ONE_ERROR_NONE;
 }
 
@@ -999,12 +998,10 @@ OneError object_val_string_size(OneObjectPtr object, const char *key, size_t *si
         return err;
     }
 
-    ++(*size);
     return ONE_ERROR_NONE;
 }
 
-OneError object_val_string(OneObjectPtr object, const char *key, char *val,
-                           size_t size) {
+OneError object_val_string(OneObjectPtr object, const char *key, char *val, size_t size) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
     }
@@ -1024,7 +1021,7 @@ OneError object_val_string(OneObjectPtr object, const char *key, char *val,
         return err;
     }
 
-    if (size < val_size + 1) {
+    if (size < val_size) {
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
@@ -1034,7 +1031,7 @@ OneError object_val_string(OneObjectPtr object, const char *key, char *val,
         return err;
     }
 
-    std::strncpy(val, s.c_str(), s.size() + 1);
+    std::strncpy(val, s.c_str(), s.size());
     return ONE_ERROR_NONE;
 }
 
@@ -1437,7 +1434,7 @@ OneError one_message_val_string_size(OneMessagePtr message, const char *key,
     return one::message_val_string_size(message, key, size);
 }
 
-OneError one_message_val_string(OneMessagePtr message, const char *key, char **val,
+OneError one_message_val_string(OneMessagePtr message, const char *key, char *val,
                                 size_t val_size) {
     return one::message_val_string(message, key, val, val_size);
 }

@@ -78,9 +78,13 @@ OneError one_message_is_val_object(OneMessagePtr message, const char *key, bool 
 
 OneError one_message_val_bool(OneMessagePtr message, const char *key, bool *val);
 OneError one_message_val_int(OneMessagePtr message, const char *key, int *val);
+
+// The size is the number of characters in the string, excluding any trailing '\0'.
 OneError one_message_val_string_size(OneMessagePtr message, const char *key,
                                      size_t *size);
-OneError one_message_val_string(OneMessagePtr message, const char *key, char **val,
+// The content of the value is copied into val & val_size must be the size available in
+// val. There are no '\0' appended at the end.
+OneError one_message_val_string(OneMessagePtr message, const char *key, char *val,
                                 size_t val_size);
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
 OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
@@ -127,7 +131,11 @@ OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *resu
 
 OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val);
 OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val);
+
+// The size is the number of characters in the string, excluding any trailing '\0'.
 OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size);
+// The content of the value is copied into val & val_size must be the size available in
+// val. There are no '\0' appended at the end.
 OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
                               size_t val_size);
 OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
@@ -161,7 +169,10 @@ OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *re
 
 OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
 OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
+// The size is the number of characters in the string, excluding any trailing '\0'.
 OneError one_object_val_string_size(OneObjectPtr object, const char *key, size_t *size);
+// The content of the value is copied into val & val_size must be the size available in
+// val. There are no '\0' appended at the end.
 OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
                                size_t size);
 OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);

@@ -238,10 +238,10 @@ TEST_CASE("object c_api", "[object]") {
     REQUIRE(is_error(one_object_val_string_size(nullptr, key, &size)));
     REQUIRE(is_error(one_object_val_string_size(o, nullptr, &size)));
     REQUIRE(is_error(one_object_val_string_size(o, key, nullptr)));
-    std::string val;
-    val.reserve(size);
-    REQUIRE(is_error(one_object_val_string(nullptr, key, &val[0], size)));
-    REQUIRE(is_error(one_object_val_string(o, nullptr, &val[0], size)));
+    const size_t val_size = 100;
+    char val[val_size];
+    REQUIRE(is_error(one_object_val_string(nullptr, key, val, val_size)));
+    REQUIRE(is_error(one_object_val_string(o, nullptr, val, val_size)));
     REQUIRE(is_error(one_object_val_string(o, key, nullptr, size)));
     REQUIRE(is_error(one_object_val_array(nullptr, key, a_ptr)));
     REQUIRE(is_error(one_object_val_array(o, nullptr, a_ptr)));
@@ -265,7 +265,7 @@ TEST_CASE("object c_api", "[object]") {
     REQUIRE(is_error(one_object_set_val_object(o, key, nullptr)));
 
     const std::string string_value = "toto";
-    const size_t string_value_size = string_value.size() + 1;
+    const size_t string_value_size = string_value.size();
 
     REQUIRE(!is_error(one_object_set_val_bool(o, "bool", false)));
     REQUIRE(!is_error(one_object_set_val_int(o, "int", 2)));
@@ -291,11 +291,17 @@ TEST_CASE("object c_api", "[object]") {
     REQUIRE(val_int == 2);
     REQUIRE(!is_error(one_object_val_string_size(o, "string", &size)));
     REQUIRE(size == string_value_size);
-    std::string val_string_bis;
-    val_string_bis.resize(string_value.size()); // Do not include + 1 for null terminator. This is implicit.
+    const size_t val_string_bis_size = 100;
+    char val_string_bis[val_string_bis_size];
+    REQUIRE(is_error(
+        one_object_val_string(o, "string", val_string_bis, string_value_size - 1)));
+    REQUIRE(
+        !is_error(one_object_val_string(o, "string", val_string_bis, string_value_size)));
     REQUIRE(!is_error(
-        one_object_val_string(o, "string", &val_string_bis[0], string_value.size() + 1)));
-    REQUIRE(val_string_bis == string_value);
+        one_object_val_string(o, "string", val_string_bis, val_string_bis_size)));
+    REQUIRE(!is_error(
+        one_object_val_string(o, "string", val_string_bis, val_string_bis_size)));
+    REQUIRE(std::string(val_string_bis, string_value_size) == string_value);
     REQUIRE(!is_error(one_object_val_array(o, "array", (OneArray *)&val_array)));
     REQUIRE(val_array.get() == array.get());
     REQUIRE(!is_error(one_object_val_object(o, "object", (OneObject *)&val_object)));
