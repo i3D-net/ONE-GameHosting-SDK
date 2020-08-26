@@ -114,14 +114,18 @@ TEST_CASE("payload", "[codec]") {
 }
 
 TEST_CASE("message", "[codec]") {
+    codec::Header header = {0};
+    Message message;
+    Message new_message;
+    size_t data_length = 0;
+    std::array<char, codec::header_size() + codec::payload_max_size()> data;
+
     {  // error request
-        Message message;
+
         REQUIRE(!is_error(messages::prepare_error_response(message)));
-        std::array<char, codec::header_size() + codec::payload_max_size()> data;
-        size_t data_length = 0;
+        data_length = 0;
         REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
-        codec::Header header = {0};
-        Message new_message;
+        header = {0};
         REQUIRE(!is_error(
             codec::data_to_message(data.data(), data_length, header, new_message)));
         REQUIRE((Opcode)header.opcode == Opcode::error_response);
@@ -131,13 +135,10 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // soft stop request
-        Message message;
         REQUIRE(!is_error(messages::prepare_soft_stop_request(1000, message)));
-        std::array<char, codec::header_size() + codec::payload_max_size()> data;
-        size_t data_length = 0;
+        data_length = 0;
         REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
-        codec::Header header = {0};
-        Message new_message;
+        header = {0};
         REQUIRE(!is_error(
             codec::data_to_message(data.data(), data_length, header, new_message)));
         REQUIRE((Opcode)header.opcode == Opcode::soft_stop_request);
@@ -150,15 +151,12 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // allocated request
-        Message message;
         Array array;
         array.push_back_int(1000);
         REQUIRE(!is_error(messages::prepare_allocated_request(array, message)));
-        std::array<char, codec::header_size() + codec::payload_max_size()> data;
-        size_t data_length = 0;
+        data_length = 0;
         REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
-        codec::Header header = {0};
-        Message new_message;
+        header = {0};
         REQUIRE(!is_error(
             codec::data_to_message(data.data(), data_length, header, new_message)));
         REQUIRE((Opcode)header.opcode == Opcode::allocated_request);
@@ -171,15 +169,12 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // meta data request
-        Message message;
         Array array;
         array.push_back_int(1000);
         REQUIRE(!is_error(messages::prepare_meta_data_request(array, message)));
-        std::array<char, codec::header_size() + codec::payload_max_size()> data;
-        size_t data_length = 0;
+        data_length = 0;
         REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
-        codec::Header header = {0};
-        Message new_message;
+        header = {0};
         REQUIRE(!is_error(
             codec::data_to_message(data.data(), data_length, header, new_message)));
         REQUIRE((Opcode)header.opcode == Opcode::meta_data_request);
@@ -192,13 +187,10 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // live state request
-        Message message;
         REQUIRE(!is_error(messages::prepare_live_state_request(message)));
-        std::array<char, codec::header_size() + codec::payload_max_size()> data;
-        size_t data_length = 0;
+        data_length = 0;
         REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
-        codec::Header header = {0};
-        Message new_message;
+        header = {0};
         REQUIRE(!is_error(
             codec::data_to_message(data.data(), data_length, header, new_message)));
         REQUIRE((Opcode)header.opcode == Opcode::live_state_request);
@@ -208,14 +200,11 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // live state response
-        Message message;
         REQUIRE(!is_error(messages::prepare_live_state_response(
             1, 16, "name test", "map test", "mode test", "version test", message)));
-        std::array<char, codec::header_size() + codec::payload_max_size()> data;
-        size_t data_length = 0;
+        data_length = 0;
         REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
-        codec::Header header = {0};
-        Message new_message;
+        header = {0};
         REQUIRE(!is_error(
             codec::data_to_message(data.data(), data_length, header, new_message)));
         REQUIRE((Opcode)header.opcode == Opcode::live_state_response);
@@ -243,13 +232,10 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // host information request
-        Message message;
         REQUIRE(!is_error(messages::prepare_host_information_request(message)));
-        std::array<char, codec::header_size() + codec::payload_max_size()> data;
-        size_t data_length = 0;
+        data_length = 0;
         REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
-        codec::Header header = {0};
-        Message new_message;
+        header = {0};
         REQUIRE(!is_error(
             codec::data_to_message(data.data(), data_length, header, new_message)));
         REQUIRE((Opcode)header.opcode == Opcode::host_information_request);
