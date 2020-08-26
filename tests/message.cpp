@@ -309,9 +309,9 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(is_error(one_message_val_int(nullptr, key, &val_integer)));
     REQUIRE(is_error(one_message_val_int(m, nullptr, &val_integer)));
     REQUIRE(is_error(one_message_val_int(m, key, nullptr)));
-    char *val;
-    REQUIRE(is_error(one_message_val_string(nullptr, key, &val, size)));
-    REQUIRE(is_error(one_message_val_string(m, nullptr, &val, size)));
+    char val[1];
+    REQUIRE(is_error(one_message_val_string(nullptr, key, val, size)));
+    REQUIRE(is_error(one_message_val_string(m, nullptr, val, size)));
     REQUIRE(is_error(one_message_val_string(m, key, nullptr, size)));
     OneArrayPtr a_ptr = (OneArray *)&array;
     REQUIRE(is_error(one_message_val_array(nullptr, key, a_ptr)));
@@ -375,13 +375,13 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(integer == val_integer);
     size_t val_size = 0;
     REQUIRE(!is_error(one_message_val_string_size(m, "string", &val_size)));
-    REQUIRE(val_size == string.size() + 1);
-    char *val_string = new char[string.size() + 1];
-    REQUIRE(val_string != nullptr);
-    REQUIRE(
-        !is_error(one_message_val_string(m, "string", &val_string, string.size() + 1)));
-    REQUIRE(string == std::string(val_string));
-    delete[] val_string;
+    REQUIRE(val_size == string.size());
+    const size_t val_string_size = 100;
+    char val_string[val_string_size];
+    REQUIRE(is_error(one_message_val_string(m, "string", val_string, val_size - 1)));
+    REQUIRE(!is_error(one_message_val_string(m, "string", val_string, val_size)));
+    REQUIRE(!is_error(one_message_val_string(m, "string", val_string, val_string_size)));
+    REQUIRE(string == std::string(val_string, string.size()));
     REQUIRE(!is_error(one_message_val_array(m, "array", (OneArrayPtr)&val_array)));
     REQUIRE(array.get() == val_array.get());
     REQUIRE(!is_error(one_message_val_object(m, "object", (OneObjectPtr)&val_object)));

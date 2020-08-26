@@ -272,7 +272,7 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(capacity == 5);
 
     const std::string string_value = "string";
-    const size_t string_value_size = string_value.size() + 1;
+    const size_t string_value_size = string_value.size();
     REQUIRE(!is_error(one_array_push_back_bool(a, true)));
     REQUIRE(!is_error(one_array_push_back_int(a, 1)));
     REQUIRE(!is_error(one_array_push_back_string(a, string_value.c_str())));
@@ -297,11 +297,12 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(val_int == 1);
     REQUIRE(!is_error(one_array_val_string_size(a, 2, &size)));
     REQUIRE(size == string_value_size);
-    std::string val_string_bis;
-    val_string_bis.resize(string_value.size());
-    REQUIRE(
-        !is_error(one_array_val_string(a, 2, &val_string_bis[0], string_value.size() + 1)));
-    REQUIRE(val_string_bis == string_value);
+    const size_t val_string_bis_size = 100;
+    char val_string_bis[val_string_bis_size];
+    REQUIRE(is_error(one_array_val_string(a, 2, val_string_bis, string_value_size - 1)));
+    REQUIRE(!is_error(one_array_val_string(a, 2, val_string_bis, string_value_size)));
+    REQUIRE(!is_error(one_array_val_string(a, 2, val_string_bis, val_string_bis_size)));
+    REQUIRE(std::string(val_string_bis, string_value_size) == string_value);
     REQUIRE(!is_error(one_array_val_array(a, 3, (OneArray *)&val_array)));
     REQUIRE(val_array.get() == array.get());
     REQUIRE(!is_error(one_array_val_object(a, 4, (OneObject *)&val_object)));
