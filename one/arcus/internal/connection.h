@@ -18,6 +18,20 @@ class Message;
 template <typename T>
 class RingBuffer;
 
+namespace connection {
+
+// Stream buffers sizes used to pump pending data from/to the connection's
+// socket.
+constexpr size_t stream_send_buffer_size() {
+    return 1024 * 128;
+}
+
+constexpr size_t stream_receive_buffer_size() {
+    return 1024 * 128;
+}
+
+}  // namespace connection
+
 // Connection manages Arcus protocol communication between two TCP sockets.
 class Connection final {
 public:

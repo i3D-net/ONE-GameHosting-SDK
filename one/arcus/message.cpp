@@ -206,7 +206,8 @@ Error Payload::set_val_bool(const char *key, bool val) {
 
     // Adding key if it does not exists already.
     if (value == _doc.MemberEnd()) {
-        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), val, _doc.GetAllocator());
+        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), val,
+                       _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }
 
@@ -228,7 +229,8 @@ Error Payload::set_val_int(const char *key, int val) {
 
     // Adding key if it does not exists already.
     if (value == _doc.MemberEnd()) {
-        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), val, _doc.GetAllocator());
+        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), val,
+                       _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }
 
@@ -417,8 +419,9 @@ Error prepare_live_state_request(Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_live_state_response(int player, int max_player, const char *name, const char *map,
-                                  const char *mode, const char *version, Message &message) {
+Error prepare_live_state_response(int player, int max_player, const char *name,
+                                  const char *map, const char *mode, const char *version,
+                                  Message &message) {
     Payload payload;
     auto err = payload.set_val_int("player", player);
     if (is_error(err)) {

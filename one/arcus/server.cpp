@@ -329,7 +329,7 @@ Error Server::process_outgoing_message(const Message &message) {
     Error err = ONE_ERROR_NONE;
     switch (message.code()) {
         case Opcode::live_state_response: {
-            params::LifeStateResponse params;
+            params::LiveStateResponse params;
             err = validation::live_state_response(message, params);
             if (is_error(err)) {
                 return err;
