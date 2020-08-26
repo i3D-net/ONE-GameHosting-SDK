@@ -72,6 +72,9 @@ cmake -s . -B ./build
 cmake --build ./build --config Release --target ALL_BUILD
 ```
 
+Note that cmake is configured to ignore certain long-running tests in the build
+and test process. These are tests that begin with the "long:" prefix.
+
 #### Linux
 
 ```bash
