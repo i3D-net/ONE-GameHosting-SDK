@@ -9,7 +9,7 @@ namespace one {
 
 namespace validation {
 
-Error error_request(const Message &message, params::ErrorResponse &) {
+Error error_response(const Message &message, params::ErrorResponse &) {
     const auto code = message.code();
 
     if (!is_opcode_supported(code)) {
@@ -88,7 +88,7 @@ Error meta_data_request(const Message &message, params::MetaDataRequest &params)
     return ONE_ERROR_NONE;
 }
 
-Error live_state_request(const Message &message, params::LifeStateRequest &) {
+Error live_state_request(const Message &message, params::LiveStateRequest &) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -105,7 +105,7 @@ Error live_state_request(const Message &message, params::LifeStateRequest &) {
     return ONE_ERROR_NONE;
 }
 
-Error live_state_response(const Message &message, params::LifeStateResponse &params) {
+Error live_state_response(const Message &message, params::LiveStateResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -171,13 +171,14 @@ Error host_information_request(const Message &message, params::HostInformationRe
 
 namespace invocation {
 
-Error error_response(const Message &message, std::function<void(void *)> callback, void *data) {
+Error error_response(const Message &message, std::function<void(void *)> callback,
+                     void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
 
     params::ErrorResponse params;
-    const auto err = validation::error_request(message, params);
+    const auto err = validation::error_response(message, params);
     if (is_error(err)) {
         return err;
     }
@@ -202,8 +203,8 @@ Error soft_stop_request(const Message &message, std::function<void(void *, int)>
     return ONE_ERROR_NONE;
 }
 
-Error allocated_request(const Message &message, std::function<void(void *, Array *)> callback,
-                        void *data) {
+Error allocated_request(const Message &message,
+                        std::function<void(void *, Array *)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -218,8 +219,8 @@ Error allocated_request(const Message &message, std::function<void(void *, Array
     return ONE_ERROR_NONE;
 }
 
-Error meta_data_request(const Message &message, std::function<void(void *, Array *)> callback,
-                        void *data) {
+Error meta_data_request(const Message &message,
+                        std::function<void(void *, Array *)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -234,12 +235,13 @@ Error meta_data_request(const Message &message, std::function<void(void *, Array
     return ONE_ERROR_NONE;
 }
 
-Error live_state_request(const Message &message, std::function<void(void *)> callback, void *data) {
+Error live_state_request(const Message &message, std::function<void(void *)> callback,
+                         void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
 
-    params::LifeStateRequest params;
+    params::LiveStateRequest params;
     const auto err = validation::live_state_request(message, params);
     if (is_error(err)) {
         return err;
@@ -259,19 +261,19 @@ Error live_state_response(
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
 
-    params::LifeStateResponse params;
+    params::LiveStateResponse params;
     const auto err = validation::live_state_response(message, params);
     if (is_error(err)) {
         return err;
     }
 
-    callback(data, params._players, params._max_players, params._name, params._map, params._mode,
-             params._version);
+    callback(data, params._players, params._max_players, params._name, params._map,
+             params._mode, params._version);
     return ONE_ERROR_NONE;
 }
 
-Error host_information_request(const Message &message, std::function<void(void *)> callback,
-                               void *data) {
+Error host_information_request(const Message &message,
+                               std::function<void(void *)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }

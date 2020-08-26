@@ -263,7 +263,7 @@ int Client::process_outgoing_message(const Message &message) {
     int error = 0;
     switch (message.code()) {
         case Opcode::live_state_request: {
-            params::LifeStateRequest params;
+            params::LiveStateRequest params;
             error = validation::live_state_request(message, params);
             if (error != 0) {
                 return -1;

@@ -17,16 +17,11 @@
 
 namespace one {
 
-// Stream buffers sizes used to pump pending data from/to the connection's
-// socket.
-constexpr size_t stream_send_buffer_size = 1024 * 128;
-constexpr size_t stream_receive_buffer_size = 1024 * 128;
-
 Connection::Connection(size_t max_messages_in, size_t max_messages_out)
     : _socket(nullptr)
     , _status(Status::handshake_not_started)
-    , _out_stream(stream_send_buffer_size)
-    , _in_stream(stream_receive_buffer_size)
+    , _in_stream(connection::stream_receive_buffer_size())
+    , _out_stream(connection::stream_send_buffer_size())
     , _incoming_messages(max_messages_in)
     , _outgoing_messages(max_messages_out) {}
 

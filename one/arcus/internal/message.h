@@ -25,9 +25,9 @@ struct MetaDataRequest {
     Array _data;
 };
 
-struct LifeStateRequest {};
+struct LiveStateRequest {};
 
-struct LifeStateResponse {
+struct LiveStateResponse {
     int _players;
     int _max_players;
     std::string _name;
@@ -43,32 +43,35 @@ struct HostInformationRequest {};
 }  // namespace params
 
 namespace validation {
-Error error_request(const Message &message, params::ErrorResponse &params);
+Error error_response(const Message &message, params::ErrorResponse &params);
 Error soft_stop_request(const Message &message, params::SoftStopRequest &params);
 Error allocated_request(const Message &message, params::AllocatedRequest &params);
 Error meta_data_request(const Message &message, params::MetaDataRequest &params);
-Error live_state_request(const Message &message, params::LifeStateRequest &params);
-Error live_state_response(const Message &message, params::LifeStateResponse &params);
-Error host_information_request(const Message &message, params::HostInformationRequest &params);
+Error live_state_request(const Message &message, params::LiveStateRequest &params);
+Error live_state_response(const Message &message, params::LiveStateResponse &params);
+Error host_information_request(const Message &message,
+                               params::HostInformationRequest &params);
 }  // namespace validation
 
 namespace invocation {
-Error error_response(const Message &message, std::function<void(void *)> callback, void *data);
+Error error_response(const Message &message, std::function<void(void *)> callback,
+                     void *data);
 Error soft_stop_request(const Message &message, std::function<void(void *, int)> callback,
                         void *data);
-Error allocated_request(const Message &message, std::function<void(void *, Array *)> callback,
-                        void *data);
-Error meta_data_request(const Message &message, std::function<void(void *, Array *)> callback,
-                        void *data);
-Error live_state_request(const Message &message, std::function<void(void *)> callback, void *data);
+Error allocated_request(const Message &message,
+                        std::function<void(void *, Array *)> callback, void *data);
+Error meta_data_request(const Message &message,
+                        std::function<void(void *, Array *)> callback, void *data);
+Error live_state_request(const Message &message, std::function<void(void *)> callback,
+                         void *data);
 Error live_state_response(
     const Message &message,
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         callback,
     void *data);
-Error host_information_request(const Message &message, std::function<void(void *)> callback,
-                               void *data);
+Error host_information_request(const Message &message,
+                               std::function<void(void *)> callback, void *data);
 }  // namespace invocation
 
 }  // namespace one

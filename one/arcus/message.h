@@ -25,6 +25,10 @@ public:
     Error from_json(std::pair<const char *, size_t> data);
     std::string to_json() const;
 
+    const rapidjson::Value &get() const {
+        return _doc;
+    }
+
     bool is_empty() const;
     void clear();
 
@@ -81,8 +85,9 @@ Error prepare_soft_stop_request(int timeout, Message &message);
 Error prepare_allocated_request(Array &array, Message &message);
 Error prepare_meta_data_request(Array &array, Message &message);
 Error prepare_live_state_request(Message &message);
-Error prepare_live_state_response(int player, int max_player, const char *name, const char *map,
-                                  const char *mode, const char *version, Message &message);
+Error prepare_live_state_response(int player, int max_player, const char *name,
+                                  const char *map, const char *mode, const char *version,
+                                  Message &message);
 Error prepare_host_information_request(Message &message);
 }  // namespace messages
 
