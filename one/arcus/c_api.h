@@ -23,6 +23,16 @@ extern "C" {
 
 // See c_error.h file for error values.
 
+// Server status values.
+typedef enum OneServerStatus {
+    ONE_SERVER_STATUS_UNINITIALIZED = 0,
+    ONE_SERVER_STATUS_INITIALIZED,
+    ONE_SERVER_STATUS_WAITING_FOR_CLIENT,
+    ONE_SERVER_STATUS_HANDSHAKE,
+    ONE_SERVER_STATUS_READY,
+    ONE_SERVER_STATUS_ERROR
+} OneServerStatus;
+
 //------------------------------------------------------------------------------
 // Opaque types returned by Apis.
 

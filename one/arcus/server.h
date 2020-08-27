@@ -40,7 +40,14 @@ public:
 
     Error shutdown();
 
-    enum class Status { listening, handshake, ready, error };
+    enum class Status {
+        uninitialized = 0,
+        initialized,
+        waiting_for_client,
+        handshake,
+        ready,
+        error
+    };
     Status status() const;
 
     Error listen(unsigned int port);
@@ -121,6 +128,8 @@ private:
     Socket *_listen_socket;
     Socket *_client_socket;
     Connection *_client_connection;
+
+    bool _is_waiting_for_client;
 
     callback::ServerCallbacks _callbacks;
 };

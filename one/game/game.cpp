@@ -22,12 +22,12 @@ Game::~Game() {
 
 int Game::init() {
     _server.init();
-    return (_server.status() == OneServerWrapper::Status::active) ? 0 : -1;
+    return (_server.status() == OneServerWrapper::Status::waiting_for_client) ? 0 : -1;
 }
 
 int Game::shutdown() {
     _server.shutdown();
-    return (_server.status() == OneServerWrapper::Status::none) ? 0 : -1;
+    return 0;
 }
 
 int Game::update() {

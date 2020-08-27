@@ -12,6 +12,7 @@ Server::Server()
     : _listen_socket(nullptr)
     , _client_socket(nullptr)
     , _client_connection(nullptr)
+    , _is_waiting_for_client(false)
     , _callbacks({0}) {}
 
 Server::~Server() {
@@ -78,12 +79,13 @@ Error Server::shutdown() {
 }
 
 Server::Status Server::status() const {
-    if (!_client_socket->is_initialized()) {
-        return Status::listening;
-    }
+    if (!is_initialized()) return Status::uninitialized;
 
-    if (_client_connection == nullptr) {
-        return Status::error;
+    if (_is_waiting_for_client) return Status::waiting_for_client;
+
+    if (_listen_socket->is_initialized() && !_is_waiting_for_client &&
+        !_client_socket->is_initialized()) {
+        return Status::initialized;
     }
 
     const auto status = _client_connection->status();
@@ -117,6 +119,8 @@ Error Server::listen(unsigned int port) {
     if (is_error(err)) {
         return err;
     }
+
+    _is_waiting_for_client = true;
 
     return ONE_ERROR_NONE;
 }
@@ -152,6 +156,10 @@ Error Server::update_listen_socket() {
         return ONE_ERROR_NONE;
     }
 
+    // Client accepted, add it.
+
+    _is_waiting_for_client = false;
+
     *_client_socket = incoming_client;
     _client_connection->set_socket(_client_socket);
 
@@ -175,6 +183,7 @@ Error Server::update() {
 
     auto err = update_listen_socket();
     if (is_error(err)) {
+        // Todo: put listening in update loop and close/recover here...
         return err;
     }
 
@@ -188,6 +197,7 @@ Error Server::update() {
     auto close_client = [this](const Error passthrough_err) -> Error {
         _client_connection->shutdown();
         _client_socket->close();
+        _is_waiting_for_client = true;
         return passthrough_err;
     };
 
