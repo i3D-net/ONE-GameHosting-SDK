@@ -102,11 +102,9 @@ private:
     // for sending.
     Error process_outgoing_messages();
 
-    Error accumulate_receive(const void *, size_t);
-    Error accumulate_send(const void *, size_t);
-
     // Message helpers.
-    Error try_receive_message_header(codec::Header &header);
+    Error try_read_data_into_in_stream();
+    Error try_read_message_from_in_stream(codec::Header &header, Message &message);
 
     // Handshake helpers.
     Error ensure_nothing_received();

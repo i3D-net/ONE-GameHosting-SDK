@@ -118,16 +118,21 @@ TEST_CASE("message", "[codec]") {
     Message message;
     Message new_message;
     size_t data_length = 0;
+    size_t data_read = 0;
     std::array<char, codec::header_size() + codec::payload_max_size()> data;
+    uint32_t packet_id = 0;
 
     {  // error request
 
         REQUIRE(!is_error(messages::prepare_error_response(message)));
         data_length = 0;
-        REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
+        data_read = 0;
         header = {0};
-        REQUIRE(!is_error(
-            codec::data_to_message(data.data(), data_length, header, new_message)));
+        REQUIRE(
+            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
+        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
+                                                 header, new_message)));
+        REQUIRE(data_length == data_read);
         REQUIRE((Opcode)header.opcode == Opcode::error_response);
         REQUIRE(message.code() == Opcode::error_response);
         REQUIRE(new_message.code() == message.code());
@@ -137,10 +142,13 @@ TEST_CASE("message", "[codec]") {
     {  // soft stop request
         REQUIRE(!is_error(messages::prepare_soft_stop_request(1000, message)));
         data_length = 0;
-        REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
+        data_read = 0;
         header = {0};
-        REQUIRE(!is_error(
-            codec::data_to_message(data.data(), data_length, header, new_message)));
+        REQUIRE(
+            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
+        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
+                                                 header, new_message)));
+        REQUIRE(data_length == data_read);
         REQUIRE((Opcode)header.opcode == Opcode::soft_stop_request);
         REQUIRE(message.code() == Opcode::soft_stop_request);
         REQUIRE(new_message.code() == message.code());
@@ -155,10 +163,13 @@ TEST_CASE("message", "[codec]") {
         array.push_back_int(1000);
         REQUIRE(!is_error(messages::prepare_allocated_request(array, message)));
         data_length = 0;
-        REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
+        data_read = 0;
         header = {0};
-        REQUIRE(!is_error(
-            codec::data_to_message(data.data(), data_length, header, new_message)));
+        REQUIRE(
+            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
+        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
+                                                 header, new_message)));
+        REQUIRE(data_length == data_read);
         REQUIRE((Opcode)header.opcode == Opcode::allocated_request);
         REQUIRE(message.code() == Opcode::allocated_request);
         REQUIRE(new_message.code() == message.code());
@@ -173,10 +184,13 @@ TEST_CASE("message", "[codec]") {
         array.push_back_int(1000);
         REQUIRE(!is_error(messages::prepare_meta_data_request(array, message)));
         data_length = 0;
-        REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
+        data_read = 0;
         header = {0};
-        REQUIRE(!is_error(
-            codec::data_to_message(data.data(), data_length, header, new_message)));
+        REQUIRE(
+            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
+        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
+                                                 header, new_message)));
+        REQUIRE(data_length == data_read);
         REQUIRE((Opcode)header.opcode == Opcode::meta_data_request);
         REQUIRE(message.code() == Opcode::meta_data_request);
         REQUIRE(new_message.code() == message.code());
@@ -189,10 +203,13 @@ TEST_CASE("message", "[codec]") {
     {  // live state request
         REQUIRE(!is_error(messages::prepare_live_state_request(message)));
         data_length = 0;
-        REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
+        data_read = 0;
         header = {0};
-        REQUIRE(!is_error(
-            codec::data_to_message(data.data(), data_length, header, new_message)));
+        REQUIRE(
+            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
+        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
+                                                 header, new_message)));
+        REQUIRE(data_length == data_read);
         REQUIRE((Opcode)header.opcode == Opcode::live_state_request);
         REQUIRE(message.code() == Opcode::live_state_request);
         REQUIRE(new_message.code() == message.code());
@@ -203,10 +220,13 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(!is_error(messages::prepare_live_state_response(
             1, 16, "name test", "map test", "mode test", "version test", message)));
         data_length = 0;
-        REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
+        data_read = 0;
         header = {0};
-        REQUIRE(!is_error(
-            codec::data_to_message(data.data(), data_length, header, new_message)));
+        REQUIRE(
+            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
+        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
+                                                 header, new_message)));
+        REQUIRE(data_length == data_read);
         REQUIRE((Opcode)header.opcode == Opcode::live_state_response);
         REQUIRE(message.code() == Opcode::live_state_response);
         REQUIRE(new_message.code() == message.code());
@@ -234,10 +254,13 @@ TEST_CASE("message", "[codec]") {
     {  // host information request
         REQUIRE(!is_error(messages::prepare_host_information_request(message)));
         data_length = 0;
-        REQUIRE(!is_error(codec::message_to_data(message, data_length, data)));
+        data_read = 0;
         header = {0};
-        REQUIRE(!is_error(
-            codec::data_to_message(data.data(), data_length, header, new_message)));
+        REQUIRE(
+            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
+        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
+                                                 header, new_message)));
+        REQUIRE(data_length == data_read);
         REQUIRE((Opcode)header.opcode == Opcode::host_information_request);
         REQUIRE(message.code() == Opcode::host_information_request);
         REQUIRE(new_message.code() == message.code());

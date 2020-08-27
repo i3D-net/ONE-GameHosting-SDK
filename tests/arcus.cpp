@@ -200,10 +200,10 @@ TEST_CASE("connection", "[arcus]") {
         err = server_connection.update();
         // The update may succeed if the message isn't read during this update,
         // or it should fail with the invalid message code.
-        received_bad_header_error = received_bad_header_error ||
-                                    (err == ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER);
-        const bool is_expected = (err == ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) ||
-                                 (err == ONE_ERROR_NONE);
+        received_bad_header_error =
+            received_bad_header_error || (err == ONE_ERROR_CODEC_INVALID_HEADER);
+        const bool is_expected =
+            (err == ONE_ERROR_CODEC_INVALID_HEADER) || (err == ONE_ERROR_NONE);
         REQUIRE(is_expected);
         if (server_connection.status() == Connection::Status::error) return true;
         return false;
@@ -360,7 +360,7 @@ TEST_CASE("message send and receive", "[arcus]") {
 
     // Send a message from client to server.
     err = objects.client_connection->add_outgoing([](Message &message) {
-        message.init(Opcode::soft_stop_request, {nullptr, 0});
+        messages::prepare_soft_stop_request(1000, message);
         return ONE_ERROR_NONE;
     });
 
@@ -380,21 +380,24 @@ TEST_CASE("message send and receive", "[arcus]") {
     // leak.
     err = objects.server_connection->remove_incoming([](const Message &message) {
         REQUIRE(message.code() == Opcode::soft_stop_request);
+        int timeout = 0;
+        REQUIRE(!is_error(message.payload().val_int("timeout", timeout)));
+        REQUIRE(timeout == 1000);
         return ONE_ERROR_NONE;
     });
     REQUIRE(!is_error(err));
 
-    // Fill up the outgoing messages, ensure an extra final message drops
-    // because of insufficient space.
-    for (int i = 0; i < queue_length; i++) {
+    // Fill up the outgoing messages.
+    for (unsigned int i = 0; i < queue_length; ++i) {
         err = objects.client_connection->add_outgoing([](Message &message) {
-            message.init(Opcode::soft_stop_request, {nullptr, 0});
+            messages::prepare_soft_stop_request(1000, message);
             return ONE_ERROR_NONE;
         });
         REQUIRE(!is_error(err));
     }
+    // Add one more message, which should not fit in the outgoing message queue.
     err = objects.client_connection->add_outgoing([](Message &message) {
-        message.init(Opcode::allocated_request, {nullptr, 0});
+        messages::prepare_live_state_request(message);
         return ONE_ERROR_NONE;
     });
     REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_INSUFFICIENT_SPACE);
@@ -403,9 +406,12 @@ TEST_CASE("message send and receive", "[arcus]") {
     pump_messages();
     REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
     REQUIRE(count == queue_length);
-    for (int i = 0; i < queue_length; i++) {
+    for (unsigned int i = 0; i < queue_length; ++i) {
         err = objects.server_connection->remove_incoming([](const Message &message) {
             REQUIRE(message.code() == Opcode::soft_stop_request);
+            int timeout = 0;
+            REQUIRE(!is_error(message.payload().val_int("timeout", timeout)));
+            REQUIRE(timeout == 1000);
             return ONE_ERROR_NONE;
         });
         REQUIRE(!is_error(err));

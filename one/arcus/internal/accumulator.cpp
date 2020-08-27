@@ -19,6 +19,9 @@ void Accumulator::put(const void *data, size_t length) {
     if (_buffer == nullptr) {
         return;
     }
+    if (length == 0) {
+        return;
+    }
     assert(_size + length <= _capacity);
     memcpy(_buffer + _size, data, length);
     _size += length;
@@ -35,6 +38,9 @@ void Accumulator::peek(size_t length, void **data) {
 
 void Accumulator::trim(size_t length) {
     if (_buffer == nullptr) {
+        return;
+    }
+    if (length == 0) {
         return;
     }
     assert(length <= _size);

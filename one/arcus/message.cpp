@@ -317,6 +317,17 @@ Error Payload::set_val_object(const char *key, const Object &val) {
 
 Message::Message() : _code(Opcode::invalid) {}
 
+Message::Message(const Message &other) {
+    _code = other.code();
+    _payload = other.payload();
+}
+
+Message &Message::operator=(const Message &other) {
+    _code = other.code();
+    _payload = other.payload();
+    return *this;
+}
+
 Error Message::init(Opcode code, std::pair<const char *, size_t> data) {
     _code = code;
     auto err = _payload.from_json(data);

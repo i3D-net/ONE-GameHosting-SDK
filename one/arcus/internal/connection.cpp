@@ -1,14 +1,14 @@
 #include <one/arcus/internal/connection.h>
 
-#include <assert.h>
-#include <array>
-#include <cstring>
-#include <string>
-
 #include <one/arcus/message.h>
 #include <one/arcus/internal/codec.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/internal/socket.h>
+
+#include <assert.h>
+#include <array>
+#include <cstring>
+#include <string>
 
 #ifdef WINDOWS
 #else
@@ -233,49 +233,68 @@ Error Connection::try_send_hello_message() {
     return ONE_ERROR_NONE;
 }
 
-Error Connection::try_receive_message_header(codec::Header &header) {
+Error Connection::try_read_data_into_in_stream() {
     assert(_socket && _socket->is_initialized());
 
+    constexpr size_t max_read_size = codec::header_size() + codec::payload_max_size();
+    static std::array<char, max_read_size> buffer;
+    const size_t available_size = _in_stream.capacity() - _in_stream.size();
+    const size_t read_size =
+        (max_read_size > available_size) ? available_size : max_read_size;
+
     size_t received = 0;
-    auto err = _socket->receive(&header, codec::header_size(), received);
+    auto err = _socket->receive(buffer.data(), read_size, received);
     if (is_error(err)) {
         _status = Status::error;
-        return ONE_ERROR_CONNECTION_HELLO_MESSAGE_RECEIVE_FAILED;
+        return ONE_ERROR_CONNECTION_MESSAGE_RECEIVE_FAILED;
     }
-    if (received > codec::header_size()) {
+    if (received > _in_stream.capacity() - _in_stream.size()) {
         _status = Status::error;
-        return ONE_ERROR_CONNECTION_HELLO_MESSAGE_HEADER_TOO_BIG;
+        return ONE_ERROR_CONNECTION_READ_TOO_BIG_FOR_STREAM;
     }
 
     // Buffer bytes read.
-    _in_stream.put(&header, received);
+    _in_stream.put(buffer.data(), received);
     if (_in_stream.size() < codec::header_size()) {
         return ONE_ERROR_CONNECTION_TRY_AGAIN;
     }
 
-    // Read the full hello from the receive buffer.
-    codec::Header *data = nullptr;
-    _in_stream.get(codec::header_size(), reinterpret_cast<void **>(&data));
-    assert(data != nullptr);
-    memcpy(&header, data, codec::header_size());
+    return ONE_ERROR_NONE;
+}
 
-    if (!codec::validate_header(*data))
-        return ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER;
+Error Connection::try_read_message_from_in_stream(codec::Header &header,
+                                                  Message &message) {
+    const size_t in_stream_size = _in_stream.size();
+    if (in_stream_size < codec::header_size())
+        return ONE_ERROR_CONNECTION_TRY_AGAIN;  // Nothing to read.
+
+    // Get a pointer to the entire input stream.
+    void *data = nullptr;
+    _in_stream.peek(in_stream_size, &data);
+    assert(data != nullptr);
+
+    // Attempt to read a message from it.
+    size_t size_read = 0;
+    auto err = codec::data_to_message(data, in_stream_size, size_read, header, message);
+    if (is_error(err)) return err;
+    _in_stream.trim(size_read);
 
     return ONE_ERROR_NONE;
 }
 
 Error Connection::try_receive_hello_message() {
-    codec::Header header = {0};
-    auto err = try_receive_message_header(header);
-    if (is_error(err)) {
-        return err;
-    }
+    auto err = try_read_data_into_in_stream();
+    if (is_error(err)) return err;
 
-    if (std::memcmp(&header, &hello_message(), codec::header_size()) != 0) {
-        _status = Status::error;
+    codec::Header header = {0};
+    Message message;
+    err = try_read_message_from_in_stream(header, message);
+    if (is_error(err)) return err;
+
+    if (std::memcmp(&header, &hello_message(), codec::header_size()) != 0)
         return ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID;
-    }
+    if (!message.payload().is_empty())
+        return ONE_ERROR_CONNECTION_HELLO_MESSAGE_REPLY_INVALID;
     return ONE_ERROR_NONE;
 }
 
@@ -345,19 +364,13 @@ Error Connection::process_incoming_messages() {
     assert(_socket && _socket->is_initialized());
 
     codec::Header header = {0};
+    Message message;
     auto err = ONE_ERROR_NONE;
 
-    // Attempts to read into the above message Header from the socket and
-    // returns true if successful. Sets the above error if an error is
-    // encountered.
-    auto read_header_and_continue = [&]() -> bool {
-        // Check if socket is ready to read anything.
-        bool is_ready = false;
-        err = _socket->ready_for_read(0.f, is_ready);
-        if (is_error(err)) return false;
-        if (!is_ready) return false;
-
-        err = try_receive_message_header(header);
+    // Attempts to get data to process from the socket. Sets the above error if an error
+    // is encountered.
+    auto get_data_and_continue = [&]() -> bool {
+        err = try_read_data_into_in_stream();
         if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) {
             err = ONE_ERROR_NONE;
             return false;
@@ -367,14 +380,30 @@ Error Connection::process_incoming_messages() {
         return true;
     };
 
-    while (read_header_and_continue()) {
-        // Convert to Message.
-        auto message = new Message;
-        // Todo - json body, if any.
-        message->init(static_cast<Opcode>(header.opcode), {nullptr, 0});
+    // Attempts to read message from the incoming data stream and returns
+    // true if successful. Sets the above error if an error is encountered.
+    auto read_message_and_continue = [&]() -> bool {
+        err = try_read_message_from_in_stream(header, message);
+        if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) {
+            err = ONE_ERROR_NONE;
+            return false;
+        }
+        if (is_error(err)) return false;
 
-        // Store in incoming queue for consumption.
-        _incoming_messages.push(message);
+        return true;
+    };
+
+    while (get_data_and_continue()) {
+        while (read_message_and_continue()) {
+            auto m = new Message(message);
+            if (m == nullptr) {
+                return ONE_ERROR_MESSAGE_ALLOCATION_FAILED;
+            }
+
+            // Store in incoming queue for consumption.
+            _incoming_messages.push(m);
+        }
+        if (is_error(err)) break;
     }
 
     if (is_error(err)) _status = Status::error;
@@ -421,25 +450,26 @@ Error Connection::process_outgoing_messages() {
         // Convert to data payload and add to outgoing buffer.
         auto message = _outgoing_messages.pop();
 
-        // Prepare data to send, see if it fits in outgoing stream.
-        auto payload_string = message->payload().to_json();
-        size_t max_size = _out_stream.capacity() - _out_stream.size();
-        size_t message_size = codec::header_size() + payload_string.size();
+        size_t message_size = 0;
+        static uint32_t packet_id = 1;
+        static std::array<char, codec::header_size() + codec::payload_max_size()>
+            out_message_buffer;
+        err =
+            codec::message_to_data(packet_id, *message, message_size, out_message_buffer);
+        if (is_error(err)) return err;
+
+        const size_t max_size = _out_stream.capacity() - _out_stream.size();
+
         // If it doesn't fit, then put the the connection into an error state.
         if (message_size > max_size) {
             _status = Status::error;
             return ONE_ERROR_CONNECTION_OUT_MESSAGE_TOO_BIG_FOR_STREAM;
         }
 
-        static codec::Header header = {0};
-        static uint32_t packet_id = 1;
-        header.opcode = static_cast<char>(message->code());
-        header.packet_id = packet_id++;
-        static std::array<char, codec::header_size()> header_bytes;
-        codec::header_to_data(header, header_bytes);
-        _out_stream.put(header_bytes.data(), header_bytes.size());
+        _out_stream.put(out_message_buffer.data(), message_size);
 
-        // Todo - JSON payload.
+        // Incrementing packet_id only after the message has been queued.
+        ++packet_id;
 
         err = send_pending_data();
         if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) return ONE_ERROR_NONE;
