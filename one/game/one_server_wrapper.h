@@ -19,16 +19,18 @@ public:
     ~OneServerWrapper();
 
     enum class Status {
-        none,  // Status before init is called or after shutdown is called.
-        active,
-        attempting_to_listen
+        uninitialized = 0,
+        initialized,
+        waiting_for_client,
+        handshake,
+        ready,
+        error,
+        unknown
     };
 
     void init();
     void shutdown();
-    Status status() const {
-        return _status;
-    }
+    Status status() const;
 
     struct GameState {
         int players;
@@ -53,7 +55,6 @@ private:
     OneMessage *_host_information;
     const unsigned int _port;
 
-    Status _status;
     GameState _game_state;
 
     // Callbacks that can be set by game to be notified of events received from

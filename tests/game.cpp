@@ -25,10 +25,16 @@ TEST_CASE("connection error handling", "[fake game]") {
     client.init();
     REQUIRE(!is_error(client.connect("127.0.0.1", 19001)));
 
-    for_sleep(5, 1, [&]() {
-        REQUIRE(game.update() == 0);
-        return false;
-    });
+    // Update game so that connection starts and handhsake is sent.
+    auto pump_game = [&]() {
+        for_sleep(5, 1, [&]() {
+            REQUIRE(game.update() == 0);
+            return false;
+        });
+    };
+    pump_game();
+
+    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::handshake);
 
     // Receive hello from server.
     codec::Hello hello = {0};
@@ -37,6 +43,25 @@ TEST_CASE("connection error handling", "[fake game]") {
     REQUIRE(!is_error(result));
     REQUIRE(received == codec::hello_size());
     REQUIRE(codec::validate_hello(hello));
+
+    // Send wrong opcode back.
+    static codec::Header hello_header = {0};
+    hello_header.opcode = static_cast<char>(Opcode::soft_stop_request);
+    size_t sent = 0;
+    result = client.send(&hello_header, codec::header_size(), sent);
+    REQUIRE(!is_error(result));
+    REQUIRE(sent == codec::header_size());
+
+    // Update the game, at some point it should error while trying to process
+    // the handshake.
+    for_sleep(5, 1, [&]() {
+        REQUIRE(game.update() == 0);
+        return false;
+    });
+
+    pump_game();
+    REQUIRE(game.one_server_wrapper().status() ==
+            OneServerWrapper::Status::waiting_for_client);
 
     REQUIRE(game.shutdown() == 0);
 }

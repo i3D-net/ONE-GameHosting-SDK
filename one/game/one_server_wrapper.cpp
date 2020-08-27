@@ -14,7 +14,6 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _live_state(nullptr)
     , _host_information(nullptr)
     , _port(port)
-    , _status(Status::none)
     , _game_state() {}
 
 OneServerWrapper::~OneServerWrapper() {
@@ -72,8 +71,6 @@ void OneServerWrapper::init() {
         // Todo: log error.
         return;
     }
-
-    _status = Status::active;
 }
 
 void OneServerWrapper::shutdown() {
@@ -86,8 +83,6 @@ void OneServerWrapper::shutdown() {
     one_message_destroy(&_error);
     one_message_destroy(&_live_state);
     one_message_destroy(&_host_information);
-
-    _status = Status::none;
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
@@ -99,6 +94,31 @@ void OneServerWrapper::update() {
     OneError error = one_server_update(_server);
     if (is_error(error)) {
         // Todo: log.
+    }
+}
+
+OneServerWrapper::Status OneServerWrapper::status() const {
+    int status = 0;
+    OneError err = one_server_status(_server, &status);
+    if (is_error(err)) {
+        // Todo: log.
+        return Status::unknown;
+    }
+    switch (status) {
+        case ONE_SERVER_STATUS_UNINITIALIZED:
+            return Status::uninitialized;
+        case ONE_SERVER_STATUS_INITIALIZED:
+            return Status::initialized;
+        case ONE_SERVER_STATUS_WAITING_FOR_CLIENT:
+            return Status::waiting_for_client;
+        case ONE_SERVER_STATUS_HANDSHAKE:
+            return Status::handshake;
+        case ONE_SERVER_STATUS_READY:
+            return Status::ready;
+        case ONE_SERVER_STATUS_ERROR:
+            return Status::error;
+        default:
+            return Status::unknown;
     }
 }
 

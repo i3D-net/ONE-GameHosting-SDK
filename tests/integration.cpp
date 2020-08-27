@@ -74,7 +74,8 @@ TEST_CASE("Agent connection failure", "[integration]") {
 
     Game game(port, 1, 16, "name", "map", "mode", "version");
     REQUIRE(game.init() == 0);
-    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::active);
+    REQUIRE(game.one_server_wrapper().status() ==
+            OneServerWrapper::Status::waiting_for_client);
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);
