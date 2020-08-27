@@ -30,30 +30,29 @@ bool validate_header(const Header &header) {
     return is_valid;
 }
 
-Error data_to_message(const void *data, size_t length, Header &header, Message &message) {
+Error data_to_message(const void *data, const size_t data_size, size_t &read_data_size,
+                      Header &header, Message &message) {
     // handle byte order to a specific order for wire
 
-    if (length < header_size()) {
-        return ONE_ERROR_CODEC_DATA_LENGTH_TOO_SMALL;
-    }
-
-    if (header_size() + payload_max_size() < length) {
-        return ONE_ERROR_CODEC_DATA_LENGTH_TOO_BIG;
+    if (data_size < header_size()) {
+        return ONE_ERROR_CODEC_DATA_LENGTH_TOO_SMALL_FOR_HEADER;
     }
 
     header = {0};
     auto err = data_to_header(data, header_size(), header);
     if (is_error(err)) return err;
 
-    const size_t expected_length = header_size() + header.length;
-
-    if (header_size() + payload_max_size() < header.length) {
+    if (payload_max_size() < header.length) {
         return ONE_ERROR_CODEC_EXPECTED_DATA_LENGTH_TOO_BIG;
     }
 
-    if (length != expected_length) {
-        return ONE_ERROR_CODEC_DATA_LENGTH_NOT_MATCHING_EXPECTED_LENGTH;
+    const size_t total_message_size = header_size() + header.length;
+
+    if (data_size < total_message_size) {
+        return ONE_ERROR_CODEC_DATA_LENGTH_TOO_SMALL_FOR_PAYLOAD;
     }
+
+    read_data_size = total_message_size;
 
     Payload payload;
 
@@ -74,18 +73,19 @@ Error data_to_message(const void *data, size_t length, Header &header, Message &
     return ONE_ERROR_NONE;
 }
 
-Error message_to_data(const Message &message, size_t &data_length,
+Error message_to_data(const uint32_t packet_id, const Message &message,
+                      size_t &data_length,
                       std::array<char, header_size() + payload_max_size()> &data) {
     // Todo: handle byte order to a specific order for wire
-
-    Header header{0};
-    header.opcode = static_cast<char>(message.code());
 
     std::array<char, payload_max_size()> payload_data;
     size_t payload_length = 0;
     auto err = payload_to_data(message.payload(), payload_length, payload_data);
     if (is_error(err)) return err;
 
+    Header header = {0};
+    header.opcode = static_cast<char>(message.code());
+    header.packet_id = packet_id;
     header.length = payload_length;
 
     std::array<char, header_size()> header_data;

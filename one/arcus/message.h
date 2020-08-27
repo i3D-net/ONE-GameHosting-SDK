@@ -61,8 +61,8 @@ private:
 class Message final {
 public:
     Message();
-    Message(const Message &) = delete;
-    Message &operator=(const Message &) = delete;
+    Message(const Message &other);
+    Message &operator=(const Message &other);
     ~Message() = default;
 
     Error init(Opcode code, std::pair<const char *, size_t> data);

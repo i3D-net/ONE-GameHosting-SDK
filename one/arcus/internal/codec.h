@@ -29,8 +29,7 @@ constexpr size_t hello_size() {
     return sizeof(Hello);
 }
 
-// Returns true if the given Hello matches what is expected by
-// this version of the SDK.
+// Returns true if the given Hello version is compatible with this version of the SDK.
 bool validate_hello(const Hello &hello);
 
 // Returns the valid, expected Hello values.
@@ -66,12 +65,16 @@ static_assert(sizeof(header_size() + payload_max_size()) <= 1024 * 128,
 // this version of the SDK.
 bool validate_header(const Header &header);
 
-// Convert byte data to a Message. Length must be at most header_size() +
-// payload_max_size() and at least header_size().
-Error data_to_message(const void *data, size_t length, Header &header, Message &message);
+// Convert the first message from data from at most data_size bytes. The read_data_size
+// will contain the number of byte read and be equal to: codec::header_size() +
+// header.length. The read_data_size is at least codec::header_size() and at most
+// codec::header_size() + codec::payload_max_size().
+Error data_to_message(const void *data, const size_t data_size, size_t &read_data_size,
+                      Header &header, Message &message);
 
 // Convert a Message to byte data.
-Error message_to_data(const Message &message, size_t &data_length,
+Error message_to_data(const uint32_t packet_id, const Message &message,
+                      size_t &data_length,
                       std::array<char, header_size() + payload_max_size()> &data);
 
 // Convert byte data to a Header. Length must be header_size().
