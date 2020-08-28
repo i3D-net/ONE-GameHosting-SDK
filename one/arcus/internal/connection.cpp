@@ -23,7 +23,10 @@ Connection::Connection(size_t max_messages_in, size_t max_messages_out)
     , _in_stream(connection::stream_receive_buffer_size())
     , _out_stream(connection::stream_send_buffer_size())
     , _incoming_messages(max_messages_in)
-    , _outgoing_messages(max_messages_out) {}
+    , _outgoing_messages(max_messages_out)
+    , _handshake_timer(handshake_timeout_seconds) {
+    _handshake_timer.sync_now();
+}
 
 Connection::Connection(Socket *socket, size_t max_messages_in, size_t max_messages_out)
     : Connection(max_messages_in, max_messages_out) {
@@ -32,6 +35,7 @@ Connection::Connection(Socket *socket, size_t max_messages_in, size_t max_messag
 
 void Connection::set_socket(Socket *socket) {
     _socket = socket;
+    _handshake_timer.sync_now();
 }
 
 void Connection::shutdown() {
@@ -301,8 +305,10 @@ Error Connection::try_receive_hello_message() {
 Error Connection::process_handshake() {
     assert(_socket && _socket->is_initialized());
 
-    // Check if handshake timed out.
-    // return ONE_ERROR_NONE;
+    if (_handshake_timer.update()) {
+        _status = Status::error;
+        return ONE_ERROR_CONNECTION_HANDSHAKE_TIMEOUT;
+    }
 
     Error err;
     auto fail = [this](Error err) {

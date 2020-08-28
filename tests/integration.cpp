@@ -62,13 +62,17 @@ void pump_updates(Agent &agent, Game &game) {
     for_sleep(10, 1, [&]() {
         REQUIRE(game.update() == 0);
         REQUIRE(agent.update() == 0);
-        if (agent.client().status() == Client::Status::ready) return true;
+        if (agent.client().status() == Client::Status::ready &&
+            game.one_server_wrapper().status() == OneServerWrapper::Status::ready)
+            return true;
         return false;
     });
+    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
     REQUIRE(agent.client().status() == Client::Status::ready);
 }
 
-TEST_CASE("Agent connection failure", "[integration]") {
+// Todo: disabled. This test doesn't appear to test connection failure or add value.
+TEST_CASE("Agent connection failure", "[.][integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19001;
 
@@ -79,6 +83,8 @@ TEST_CASE("Agent connection failure", "[integration]") {
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);
+
+    REQUIRE(game.update() == ONE_ERROR_NONE);
     REQUIRE(agent.update() == ONE_ERROR_NONE);
     REQUIRE(agent.client().status() == Client::Status::handshake);
 }
@@ -89,6 +95,8 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
 
     Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
     REQUIRE(game.init() == 0);
+    REQUIRE(game.one_server_wrapper().status() ==
+            OneServerWrapper::Status::waiting_for_client);
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);
@@ -169,23 +177,61 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
     REQUIRE(game.shutdown() == 0);
 }
 
-TEST_CASE("long:Reconnection", "[integration]") {
+TEST_CASE("long:Handshake timeout", "[integration]") {
     const auto address = "127.0.0.1";
-    const unsigned int port = 19002;
+    const unsigned int port = 19003;
 
     Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
     REQUIRE(game.init() == 0);
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);
+    // Update agent and game one time to initiate the connection.
     REQUIRE(agent.update() == ONE_ERROR_NONE);
-    REQUIRE(agent.client().status() == Client::Status::handshake);
+    REQUIRE(game.update() == ONE_ERROR_NONE);
+    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::handshake);
 
-    pump_updates(agent, game);
-
-    REQUIRE(agent.client().status() == Client::Status::ready);
+    // Update the game only, so that the agent doesn't progress the handshake,
+    // until the handshake timeout expires.
+    int ms = Connection::handshake_timeout_seconds * 1000;
+    for_sleep(5, ms / 4, [&]() {
+        REQUIRE(game.update() == 0);
+        if (game.one_server_wrapper().status() ==
+            OneServerWrapper::Status::waiting_for_client)
+            return true;
+        return false;
+    });
+    REQUIRE(game.one_server_wrapper().status() ==
+            OneServerWrapper::Status::waiting_for_client);
 
     // Shut down the game and restart it, the client should reconnect automatically.
     REQUIRE(game.shutdown() == 0);
+}
+
+TEST_CASE("long:Reconnection", "[integration]") {
+    const auto address = "127.0.0.1";
+    const unsigned int port = 19003;
+
+    Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
     REQUIRE(game.init() == 0);
+
+    Agent agent;
+    REQUIRE(agent.init(address, port) == 0);
+
+    pump_updates(agent, game);
+
+    // Shut down the game and restart it, the client should reconnect automatically.
+    REQUIRE(game.shutdown() == 0);
+
+    // Todo: the client must be pumped for long enough to send a health check
+    // and realize the server has gone away.
+
+    REQUIRE(game.init() == 0);
+    REQUIRE(game.one_server_wrapper().status() ==
+            OneServerWrapper::Status::waiting_for_client);
+
+    pump_updates(agent, game);
+
+    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
+    REQUIRE(agent.client().status() == Client::Status::ready);
 }

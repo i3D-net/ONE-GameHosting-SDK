@@ -40,6 +40,8 @@ public:
 
     Error shutdown();
 
+    // Note these MUST be kept in sync with the values in c_api.cpp, or
+    // otherwise ensured to translate properly to the c-api values.
     enum class Status {
         uninitialized = 0,
         initialized,
