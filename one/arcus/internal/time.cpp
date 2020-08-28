@@ -7,7 +7,7 @@ IntervalTimer::IntervalTimer(unsigned int seconds)
 
 bool IntervalTimer::update() {
     const auto now = steady_clock::now();
-    if (duration_cast<seconds>(now - _last_trigger_time).count() > _interval) {
+    if (duration_cast<seconds>(now - _last_trigger_time).count() >= _interval) {
         _last_trigger_time = now;
         return true;
     }

@@ -7,6 +7,7 @@
 #include <one/arcus/internal/accumulator.h>
 #include <one/arcus/internal/platform.h>
 #include <one/arcus/internal/ring.h>
+#include <one/arcus/internal/time.h>
 
 namespace one {
 
@@ -37,17 +38,20 @@ class Connection final {
 public:
     // A default that can be used for production.
     static constexpr size_t max_message_default = 1024;
+    static constexpr int handshake_timeout_seconds = 1;
 
     // Connection must be given an active socket. Socket errors encountered
     // during processing will be returned as errors, and it is the caller's
     // responsibilty to either destroy the Connection, or restore the Socket's
     // state for communication.
+    // Creating the conneciton starts the handshake timeout.
     Connection(size_t max_messages_in, size_t max_messages_out);
     Connection(Socket *socket, size_t max_messages_in, size_t max_messages_out);
     ~Connection() = default;
 
     // Assign the socket to the Connection. The socket must be set either via
     // the constructor or set_socket before other functions may be used.
+    // Assigning the socket also resets the handshake timeout.
     void set_socket(Socket *socket);
 
     // Clears Connection to construction state. Erases all pending incoming
@@ -121,6 +125,10 @@ private:
 
     Ring<Message *> _incoming_messages;
     Ring<Message *> _outgoing_messages;
+
+    IntervalTimer _handshake_timer;
+    // Todo:
+    // HealthChecker _health_checker;
 };
 
 }  // namespace one
