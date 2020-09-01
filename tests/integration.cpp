@@ -208,7 +208,8 @@ TEST_CASE("long:Handshake timeout", "[integration]") {
     REQUIRE(game.shutdown() == 0);
 }
 
-TEST_CASE("long:Reconnection", "[integration]") {
+// Disabled - wip needs health check.
+TEST_CASE("long:Reconnection", "[.][integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19003;
 
