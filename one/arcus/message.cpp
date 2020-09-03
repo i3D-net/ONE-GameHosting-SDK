@@ -332,6 +332,7 @@ Error Message::init(Opcode code, std::pair<const char *, size_t> data) {
     _code = code;
     auto err = _payload.from_json(data);
     if (is_error(err)) {
+        _code = Opcode::invalid;
         return err;
     }
 

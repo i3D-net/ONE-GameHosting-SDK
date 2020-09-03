@@ -419,3 +419,54 @@ TEST_CASE("message send and receive", "[arcus]") {
 
     shutdown_client_server_test(objects);
 }
+
+TEST_CASE("message send bad json", "[arcus]") {
+    ClientServerTestObjects objects;
+    constexpr size_t queue_length = 1024;
+    init_client_server_test(objects, queue_length);
+    handshake_client_server_test(objects);
+
+    // Ensure no messages waiting anywhere.
+    unsigned int count = 0;
+    REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
+    REQUIRE(count == 0);
+    REQUIRE(!is_error(objects.client_connection->incoming_count(count)));
+    REQUIRE(count == 0);
+    auto err = objects.server_connection->remove_incoming(
+        [](const Message &) { return ONE_ERROR_NONE; });
+    REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_EMPTY);
+    err = objects.client_connection->remove_incoming(
+        [](const Message &) { return ONE_ERROR_NONE; });
+    REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_EMPTY);
+
+    // Send a message from client to server.
+    err = objects.client_connection->add_outgoing([](Message &message) {
+        const std::string invalid_json = "{\"invalid_json\":true";
+        auto error = message.init(Opcode::meta_data_request,
+                                  {invalid_json.c_str(), invalid_json.size()});
+        REQUIRE(error == ONE_ERROR_PAYLOAD_PARSE_FAILED);
+        return ONE_ERROR_NONE;
+    });
+
+    const auto pump_messages = [&]() {
+        for_sleep(10, 1, [&]() {
+            REQUIRE(!is_error(objects.server_connection->update()));
+            auto error = objects.client_connection->update();
+
+            if (is_error(error)) {
+                REQUIRE(error == ONE_ERROR_CODEC_INVALID_HEADER);
+                return true;
+            }
+
+            return false;
+        });
+    };
+
+    pump_messages();
+
+    // Check it on server.
+    REQUIRE(!is_error(objects.server_connection->incoming_count(count)));
+    REQUIRE(count == 0);
+
+    shutdown_client_server_test(objects);
+}
