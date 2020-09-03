@@ -7,11 +7,13 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 set(HEADER_FILES
     game.h
+    log.h
     one_server_wrapper.h
 )
 
 set(SOURCE_FILES
     game.cpp
+    log.cpp
     one_server_wrapper.cpp
 )
 

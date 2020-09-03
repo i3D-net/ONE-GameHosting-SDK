@@ -1,10 +1,11 @@
 #include <one/game/one_server_wrapper.h>
 
+#include <one/arcus/c_api.h>
 #include <one/arcus/c_error.h>
 
-#include <assert.h>
+#include <one/game/log.h>
 
-#include <one/arcus/c_api.h>
+#include <assert.h>
 
 namespace game {
 
@@ -21,7 +22,9 @@ OneServerWrapper::~OneServerWrapper() {
 }
 
 void OneServerWrapper::init() {
-    if (_server != nullptr) {
+    if (_server != nullptr || _error != nullptr || _live_state != nullptr ||
+        _host_information != nullptr) {
+        L_ERROR("already init");
         return;
     }
 
@@ -30,47 +33,53 @@ void OneServerWrapper::init() {
     // the process is hosting multiple game servers. Each game server must have
     // one corresponding arcus server.
 
-    OneError error = one_server_create(&_server);
-    if (error != 0) {
-        // Todo: log error.
+    OneError err = one_server_create(&_server);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
         return;
     }
 
     // Create cached messages that can be sent as responses.
 
-    error = one_message_create(&_error);
-    if (error != 0) {
-        // Todo: log error.
+    err = one_message_create(&_error);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
         return;
     }
 
-    error = one_message_create(&_live_state);
-    if (error != 0) {
-        // Todo: log error.
+    err = one_message_create(&_live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
         return;
     }
 
-    error = one_message_create(&_host_information);
-    if (error != 0) {
-        // Todo: log error.
+    err = one_message_create(&_host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
         return;
     }
 
     //---------------
     // Set callbacks.
 
-    error = one_server_set_soft_stop_callback(_server, soft_stop, this);
+    err = one_server_set_soft_stop_callback(_server, soft_stop, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
 
     //------------------
     // Start the server.
 
     // Todo - retry listen loop in update if listen fails...
 
-    error = one_server_listen(_server, _port);
-    if (error != 0) {
-        // Todo: log error.
+    err = one_server_listen(_server, _port);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
         return;
     }
+
+    L_INFO("init done");
 }
 
 void OneServerWrapper::shutdown() {
@@ -91,9 +100,9 @@ void OneServerWrapper::set_game_state(const GameState &state) {
 
 void OneServerWrapper::update() {
     assert(_server != nullptr);
-    OneError error = one_server_update(_server);
-    if (is_error(error)) {
-        // Todo: log.
+    OneError err = one_server_update(_server);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
     }
 }
 
@@ -101,7 +110,7 @@ OneServerWrapper::Status OneServerWrapper::status() const {
     int status = 0;
     OneError err = one_server_status(_server, &status);
     if (is_error(err)) {
-        // Todo: log.
+        L_ERROR(error_text(err));
         return Status::unknown;
     }
     switch (status) {
@@ -133,16 +142,16 @@ OneServerWrapper::Status OneServerWrapper::status() const {
 //     return one_server_send_error_response(_server, _error);
 // }
 
-// OneError OneServerWrapper::send_live_state_response(int player, int max_player, const
-// std::string &name,
+// OneError OneServerWrapper::send_live_state_response(int player, int max_player,
+// const std::string &name,
 //                                                const std::string &map, const
 //                                                std::string &mode, const std::string
 //                                                &version) {
 //     assert(_server != nullptr && _error != nullptr);
 
 //     int error = one_message_prepare_live_state_response(
-//         player, max_player, name.c_str(), map.c_str(), mode.c_str(), version.c_str(),
-//         _live_state);
+//         player, max_player, name.c_str(), map.c_str(), mode.c_str(),
+//         version.c_str(), _live_state);
 //     if (error != 0) {
 //         return -1;
 //     }
@@ -169,7 +178,7 @@ void OneServerWrapper::set_soft_stop_callback(std::function<void(int)> callback)
 // after a match end).
 void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
     if (userdata == nullptr) {
-        // Todo: log.
+        L_ERROR("userdata is nullptr");
         return;
     }
     auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);

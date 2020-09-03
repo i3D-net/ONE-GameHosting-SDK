@@ -125,7 +125,8 @@ typedef enum OneError {
     ONE_ERROR_VALIDATION_SIZE_IS_NULLPTR,
     ONE_ERROR_VALIDATION_VAL_IS_NULLPTR,
     ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL,
-    ONE_ERROR_VALIDATION_VERSION_IS_NULLPTR
+    ONE_ERROR_VALIDATION_VERSION_IS_NULLPTR,
+    ONE_ERROR_COUNT  // For testing purpose. Must remain in the last position.
 } OneError;
 
 constexpr bool is_error(OneError err) {
