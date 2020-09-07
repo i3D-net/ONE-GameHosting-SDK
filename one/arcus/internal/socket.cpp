@@ -19,35 +19,6 @@ typedef int socklen_t;
 
 namespace one {
 
-struct Endianness {
-    enum Arch { Big, Little };
-
-    static Arch which() {
-        union _ {
-            int asInt;
-            char asChar[sizeof(int)];
-        } u;
-
-        u.asInt = 1;
-        return (u.asChar[sizeof(int) - 1] == 1) ? Big : Little;
-    }
-};
-
-namespace endianness {
-
-enum Type { big, little };
-
-Type which() {
-    union {
-        uint32_t i;
-        char c[4];
-    } big_int = {0x01020304};
-
-    return (big_int.c[0] == 1 ? big : little);
-}
-
-}  // namespace endianness
-
 Error init_socket_system() {
 #ifdef WINDOWS
     WSADATA wsaData;

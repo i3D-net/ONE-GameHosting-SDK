@@ -7,6 +7,7 @@ set(HEADER_FILES
     internal/accumulator.h
     internal/codec.h
     internal/connection.h
+    internal/endian.h
     internal/health.h
     internal/message.h
     internal/platform.h
@@ -28,6 +29,7 @@ set(SOURCE_FILES
     internal/accumulator.cpp
     internal/codec.cpp
     internal/connection.cpp
+    internal/endian.cpp
     internal/health.cpp
     internal/message.cpp
     internal/socket.cpp
