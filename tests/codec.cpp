@@ -5,6 +5,7 @@
 #include <one/arcus/error.h>
 #include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/connection.h>
+#include <one/arcus/internal/endian.h>
 #include <one/arcus/internal/message.h>
 #include <one/arcus/message.h>
 #include <one/arcus/opcode.h>

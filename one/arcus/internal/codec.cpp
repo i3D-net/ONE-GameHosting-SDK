@@ -1,5 +1,6 @@
 #include <one/arcus/internal/codec.h>
 
+#include <one/arcus/internal/endian.h>
 #include <one/arcus/internal/message.h>
 #include <one/arcus/message.h>
 
@@ -32,8 +33,6 @@ bool validate_header(const Header &header) {
 
 Error data_to_message(const void *data, const size_t data_size, size_t &read_data_size,
                       Header &header, Message &message) {
-    // handle byte order to a specific order for wire
-
     if (data_size < header_size()) {
         return ONE_ERROR_CODEC_DATA_LENGTH_TOO_SMALL_FOR_HEADER;
     }
@@ -115,6 +114,13 @@ Error data_to_header(const void *data, size_t length, Header &header) {
 
     std::memcpy(&header, data, length);
 
+    // Endian handling. Network byte order for the Header itself is
+    // non-standard: little.
+    if (endian::which() == endian::Arch::big) {
+        header.length = endian::swap_uint32(header.length);
+        header.packet_id = endian::swap_uint32(header.packet_id);
+    }
+
     if (!validate_header(header)) {
         return ONE_ERROR_CODEC_INVALID_HEADER;
     }
@@ -123,10 +129,16 @@ Error data_to_header(const void *data, size_t length, Header &header) {
 }
 
 Error header_to_data(const Header &header, std::array<char, header_size()> &data) {
-    // Todo: handle byte order to a specific order for wire
-
     if (!validate_header(header)) {
         return ONE_ERROR_CODEC_INVALID_HEADER;
+    }
+
+    // Endian handling. Network byte order for the Header itself is
+    // non-standard: little.
+    Header swapped_header(header);
+    if (endian::which() == endian::Arch::big) {
+        swapped_header.length = endian::swap_uint32(header.length);
+        swapped_header.packet_id = endian::swap_uint32(header.packet_id);
     }
 
     std::memcpy(data.data(), &header, header_size());

@@ -6,6 +6,7 @@ add_executable(${UNIT_TEST}
     array.cpp
     arcus.cpp
     codec.cpp
+    endian.cpp
     error.cpp
     game.cpp
     integration.cpp
