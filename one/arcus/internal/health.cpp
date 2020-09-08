@@ -1,20 +1,29 @@
 #include <one/arcus/internal/health.h>
-
-#include <one/arcus/internal/socket.h>
+#include <one/arcus/message.h>
+#include <one/arcus/opcode.h>
 
 namespace one {
 
 HealthChecker::HealthChecker(size_t send_interval_seconds,
                              size_t receive_interval_seconds)
-    : _send_timer(send_interval_seconds), _receive_timer(receive_interval_seconds) {}
+    : _send_timer(send_interval_seconds), _receive_timer(receive_interval_seconds) {
+    // Sync the timer fresh so it doesn't fire immediately.
+    _receive_timer.sync_now();
+    _send_timer.sync_now();
+}
 
-Error HealthChecker::process_send(Socket &socket) {
+Error HealthChecker::process_send(
+    std::function<Error(std::function<Error(Message &)>)> sender) {
     const bool should_send = _send_timer.update();
     if (!should_send) return ONE_ERROR_NONE;
 
-    // send a health message.
+    _send_timer.sync_now();
 
-    return ONE_ERROR_NONE;
+    auto err = sender([](Message &message) {
+        message.init(Opcode::health, Payload());
+        return ONE_ERROR_NONE;
+    });
+    return err;
 }
 
 void HealthChecker::reset_receive_timer() {

@@ -10,7 +10,7 @@ class Message;
 class Array;
 
 /// Agent can connect to a Server and simulate production deployment behavior.
-class Agent {
+class Agent final {
 public:
     Agent() = default;
     ~Agent() = default;

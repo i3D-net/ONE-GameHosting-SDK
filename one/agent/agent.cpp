@@ -14,12 +14,7 @@ int Agent::init(const char *addr, unsigned int port) {
 }
 
 int Agent::update() {
-    int error = _client.update();
-    if (error != 0) {
-        return error;
-    }
-
-    return 0;
+    return _client.update();
 }
 
 int Agent::send_soft_stop_request(int timeout) {

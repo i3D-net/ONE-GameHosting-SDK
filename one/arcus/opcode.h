@@ -9,7 +9,7 @@ enum class Opcode {
     invalid = 0,
     allocated_request,
     error_response,
-    health,
+    health,  // Used internally by the connection.
     hello,
     host_information_request,
     live_state_request,
@@ -20,10 +20,10 @@ enum class Opcode {
 
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcode code) {
-    return code == Opcode::hello || code == Opcode::error_response ||
-           code == Opcode::soft_stop_request || code == Opcode::allocated_request ||
-           code == Opcode::meta_data_request || code == Opcode::live_state_request ||
-           code == Opcode::live_state_response ||
+    return code == Opcode::health || code == Opcode::hello ||
+           code == Opcode::error_response || code == Opcode::soft_stop_request ||
+           code == Opcode::allocated_request || code == Opcode::meta_data_request ||
+           code == Opcode::live_state_request || code == Opcode::live_state_response ||
            code == Opcode::host_information_request;
 }
 

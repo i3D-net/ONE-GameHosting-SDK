@@ -46,8 +46,9 @@ int Client::init(const char *address, unsigned int port) {
         return -1;
     }
 
-    _connection = new Connection(_socket, Connection::max_message_default,
-                                 Connection::max_message_default);
+    _connection =
+        new Connection(Connection::max_message_default, Connection::max_message_default);
+    _connection->init(*_socket);
     if (_connection == nullptr) {
         shutdown();
         return -1;
@@ -120,8 +121,9 @@ int Client::update() {
     if (is_error(error)) {
         _connection->shutdown();
         _socket->close();
+        _is_connected = false;
         _socket->init();
-        _connection->set_socket(_socket);
+        _connection->init(*_socket);
         return error;
     }
 

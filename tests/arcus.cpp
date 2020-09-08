@@ -170,13 +170,15 @@ TEST_CASE("connection", "[arcus]") {
 
     // Arcus connections around the server-side and client-side sockets that
     // are connected to each other.
-    Connection server_connection(&in_client, 2, 2);
-    Connection client_connection(&out_client, 2, 2);
+    Connection server_connection(2, 2);
+    server_connection.init(in_client);
+    Connection client_connection(2, 2);
+    client_connection.init(out_client);
 
     server_connection.initiate_handshake();
     for (auto i = 0; i < 10; ++i) {
-        REQUIRE(!is_error(server_connection.update()));
-        REQUIRE(!is_error(client_connection.update()));
+        REQUIRE(server_connection.update() == ONE_ERROR_NONE);
+        REQUIRE(client_connection.update() == ONE_ERROR_NONE);
         sleep(10);
         if (server_connection.status() == Connection::Status::ready &&
             client_connection.status() == Connection::Status::ready)
@@ -234,9 +236,11 @@ void init_client_server_test(ClientServerTestObjects &objects,
     connect(objects.out_client, objects.server_port);
     accept(objects.server, objects.in_client);
     objects.server_connection =
-        new Connection(&objects.in_client, message_queue_length, message_queue_length);
+        new Connection(message_queue_length, message_queue_length);
+    objects.server_connection->init(objects.in_client);
     objects.client_connection =
-        new Connection(&objects.out_client, message_queue_length, message_queue_length);
+        new Connection(message_queue_length, message_queue_length);
+    objects.client_connection->init(objects.out_client);
 }
 
 void shutdown_client_server_test(ClientServerTestObjects &objects) {

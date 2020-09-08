@@ -5,6 +5,7 @@
 
 #include <one/arcus/error.h>
 #include <one/arcus/internal/accumulator.h>
+#include <one/arcus/internal/health.h>
 #include <one/arcus/internal/platform.h>
 #include <one/arcus/internal/ring.h>
 #include <one/arcus/internal/time.h>
@@ -46,13 +47,11 @@ public:
     // state for communication.
     // Creating the conneciton starts the handshake timeout.
     Connection(size_t max_messages_in, size_t max_messages_out);
-    Connection(Socket *socket, size_t max_messages_in, size_t max_messages_out);
     ~Connection() = default;
 
-    // Assign the socket to the Connection. The socket must be set either via
-    // the constructor or set_socket before other functions may be used.
-    // Assigning the socket also resets the handshake timeout.
-    void set_socket(Socket *socket);
+    // Init the connection with the given socket. Must be called after
+    // constructing, or after shutdown if re-using.
+    void init(Socket &socket);
 
     // Clears Connection to construction state. Erases all pending incoming
     // and outgoing data. Unassigns the socket.
@@ -93,6 +92,8 @@ public:
     // passes the message into the given callback for reading.
     // Returns ONE_ERROR_EMPTY if the incoming_count is
     // zero and there is no message to pop.
+    // Note that some messages are internally consumed and do not show up in
+    // the incoming count or here.
     Error remove_incoming(std::function<Error(const Message &message)> read_callback);
 
 private:
@@ -105,6 +106,8 @@ private:
     // Sends all outgoing messages in the queue as long as the socket is ready
     // for sending.
     Error process_outgoing_messages();
+
+    Error process_health();
 
     // Message helpers.
     Error try_read_data_into_in_stream();
@@ -127,8 +130,7 @@ private:
     Ring<Message *> _outgoing_messages;
 
     IntervalTimer _handshake_timer;
-    // Todo:
-    // HealthChecker _health_checker;
+    HealthChecker _health_checker;
 };
 
 }  // namespace one
