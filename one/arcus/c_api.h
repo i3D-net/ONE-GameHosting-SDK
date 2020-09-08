@@ -273,7 +273,7 @@ OneError one_server_shutdown(OneServerPtr server);
 OneError one_server_send_error_response(OneServerPtr server, OneMessagePtr message);
 
 ///
-/// Send the Arcus API server live_state opcode message.
+/// Send the Arcus API server live_state_response opcode message.
 /// Message Mandatory Content:
 /// {
 ///   players : 0,
@@ -286,7 +286,7 @@ OneError one_server_send_error_response(OneServerPtr server, OneMessagePtr messa
 OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
 
 ///
-/// Send the Arcus API server live_state opcode message.
+/// Send the Arcus API server host_information_request opcode message.
 /// Message Empty Content:
 /// {}
 OneError one_server_send_host_information_request(OneServerPtr server,
