@@ -1,14 +1,10 @@
 # i3D.net Game Hosting SDK
 
-Version: Technical Preview - Public API (Implementation not included)
-
 Providing game servers the ability to communicate with the i3D.net One Platform.
 
-## v1.0 Plan
+## v1.0 Beta
 
 ### Goals
-
-The first release, v1.0, will focus on the following:
 
 1. C/C++ v11 library.
 2. Easy-to-use C API interface for maximum language compatibility.
@@ -19,20 +15,19 @@ The first release, v1.0, will focus on the following:
 
 ### Not Included
 
-The below are not currently part of v1.0 goals, however they are on our radar. Please notify us of change requests!
+The below are not provided, however they are on our radar. Please notify us of change requests!
 
 1. Building of static and shared binaries.
 2. Specific Unity or Unreal engine support beyond usage of C API to create own custom integration.
-3. Build testing on CentOS or other Linux distros.
+3. Testing on CentOS or other Linux distros beyond Ubuntu 18.04.
 
 ## Overview
 
 The SDK is made up of code to be integrated into the Game Server and other components to aid in testing, development and integration of the Server components.
 
-1. [Server](one/server/readme.md) is the main interface integrated into a Game Server to communicate with One. See the C API [source file](one/server/c_api.h) for the main interfaces that the game server integration must use.
-2. [Arcus](one/arcus/readme.md) is used by the [Server](one/server/readme.md) but also by the test and integration components.
-3. [Game](one/game/readme.md) is a fake Game used in testing, development and as a guide and reference for integration of the [Server](one/server/readme.md) into a Game Server.
-4. [Agent](one/agent/readme.md) is a fake One Agent Client used for testing and development. It simulates the behavior of a One Agent connecting to a real Deployment on the One platform.
+1. [Arcus](one/arcus/readme.md) provides a C/C++ implementation of the One platform's Arcus protocol and messaging API. Game Servers must integrate this component, using the [C API](one/server/c_api.h).
+2. [Game](one/game/readme.md) is a fake Game used in testing, development and as a guide and reference for integration of the [Arcus C API](one/arcus/readme.md) into a Game Server.
+3. [Agent](one/agent/readme.md) is a fake One Agent Client used for testing and development. It simulates the behavior of a One Agent connecting to a real Deployment on the One platform.
 
 The [tests](one/tests/readme.md) and [docs](one/docs/readme.md) serve their respective purposes.
 
@@ -51,8 +46,8 @@ Reference the prebuilt docs on the i3d.net website, or follow the build instruct
         2. `sudo apt-get install doxygen graphviz`
 2. CMake. See `CMakeLists.txt` in the root for tested versions.
 3. C++ toolchain. Currently tested environments:
-    - Windows 10 Pro w/ VS2017
-    - Ubuntu 18.04
+    - Windows 10 Pro 64bit w/ VS2017 build tools
+    - Ubuntu 18.04 w/ gcc
 
 ## Build
 
@@ -65,6 +60,8 @@ cmake -s . -B ./build
 ```
 
 ### Build and run tests
+
+By default, the tests will run as part of the build process. Set `RUN_TEST_AFTER_BUILD` to false to disable this behavior.
 
 #### Windows
 
@@ -83,11 +80,9 @@ cmake --build ./build --config Release --target all
 
 The doxygen documentation is built automatically if cmake is able to find the doxygen installed on your system.
 
-By default, the tests will run as part of the build process. Set `RUN_TEST_AFTER_BUILD` to false to disable this behavior.
-
 ## Clean build
 
-In order to make a clean build & delete the `build` folder & recreate it empty. It'll purge any previous `cmake` cache & previous build artefacts.
+In order to make a clean build, delete the `build` folder. This removes all purge previous `cmake` configuration and build artifacts.
 
 ## IDE Support
 
@@ -95,13 +90,14 @@ In order to make a clean build & delete the `build` folder & recreate it empty. 
 
 #### Extensions
 
-Install the plugins:
-    1. C/C++ from Microsoft
-    2. C++ Intellisense from austin
-    3. CMake from twxs
-    4. CMake Tools from Microsoft
-    5. Clang-format from xaver
-    6. C++ TestMate
+1. C/C++ from Microsoft
+2. C++ Intellisense from austin
+3. CMake from twxs
+4. CMake Tools from Microsoft
+    > In order to use CMake directly with `vscode`, see the [cmake tools]> (https://vector-of-bool.github.io/docs/vscode-cmake-tools/getting_started.html#cmake-tools-quick-start) online documentation.
+
+5. Clang-format from xaver
+6. C++ TestMate (Optional, for in-IDE test support)
 
 #### Settings example
 
@@ -115,7 +111,3 @@ The default `.vscode/settings.json` config is below will help to bootstrap quick
     "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools",
 }
 ```
-
-#### CMake integration
-
-In order to use CMake directly with `vscode`, see the [cmake tools](https://vector-of-bool.github.io/docs/vscode-cmake-tools/getting_started.html#cmake-tools-quick-start) online documentation.
