@@ -6,6 +6,7 @@
 #include <one/game/log.h>
 
 #include <assert.h>
+#include <cstring>
 
 namespace game {
 
@@ -14,8 +15,14 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _error(nullptr)
     , _live_state(nullptr)
     , _host_information(nullptr)
+    , _allocated(nullptr)
+    , _meta_data(nullptr)
     , _port(port)
-    , _game_state() {}
+    , host_information_request_sent(false)
+    , _game_state()
+    , _soft_stop_callback(nullptr)
+    , _allocated_callback(nullptr)
+    , _meta_data_callback(nullptr) {}
 
 OneServerWrapper::~OneServerWrapper() {
     shutdown();
@@ -59,10 +66,49 @@ void OneServerWrapper::init() {
         return;
     }
 
+    err = one_array_create(&_allocated);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_array_create(&_meta_data);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
     //---------------
     // Set callbacks.
 
+    // The default behavior of the platform will always hard stop your application, Its
+    // required to configure a soft stop method for your application before this packet
+    // will be send to your application.
     err = one_server_set_soft_stop_callback(_server, soft_stop, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_set_allocated_callback(_server, allocated, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_set_meta_data_callback(_server, meta_data, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_set_live_state_request_callback(_server, live_state_request, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_set_live_state_request_callback(_server, live_state_request, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return;
@@ -92,6 +138,8 @@ void OneServerWrapper::shutdown() {
     one_message_destroy(&_error);
     one_message_destroy(&_live_state);
     one_message_destroy(&_host_information);
+    one_array_destroy(&_allocated);
+    one_array_destroy(&_meta_data);
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
@@ -100,6 +148,14 @@ void OneServerWrapper::set_game_state(const GameState &state) {
 
 void OneServerWrapper::update() {
     assert(_server != nullptr);
+
+    // Add a host_information_request in the message outbound queue.
+    if (!host_information_request_sent) {
+        if (send_host_information_request()) {
+            host_information_request_sent = true;
+        }
+    }
+
     OneError err = one_server_update(_server);
     if (is_error(err)) {
         L_ERROR(error_text(err));
@@ -131,47 +187,52 @@ OneServerWrapper::Status OneServerWrapper::status() const {
     }
 }
 
-// OneError OneServerWrapper::send_error_response() {
-//     assert(_server != nullptr && _error != nullptr);
-
-//     int error = one_message_prepare_error_response(_error);
-//     if (error != 0) {
-//         return -1;
-//     }
-
-//     return one_server_send_error_response(_server, _error);
-// }
-
-// OneError OneServerWrapper::send_live_state_response(int player, int max_player,
-// const std::string &name,
-//                                                const std::string &map, const
-//                                                std::string &mode, const std::string
-//                                                &version) {
-//     assert(_server != nullptr && _error != nullptr);
-
-//     int error = one_message_prepare_live_state_response(
-//         player, max_player, name.c_str(), map.c_str(), mode.c_str(),
-//         version.c_str(), _live_state);
-//     if (error != 0) {
-//         return -1;
-//     }
-
-//     return one_server_send_live_state_response(_server, _live_state);
-// }
-
-// OneError OneServerWrapper::send_host_information_request() {
-//     assert(_server != nullptr && _error != nullptr);
-
-//     int error = one_message_prepare_host_information_request(_host_information);
-//     if (error != 0) {
-//         return -1;
-//     }
-
-//     return one_server_send_host_information_request(_server, _error);
-// }
-
 void OneServerWrapper::set_soft_stop_callback(std::function<void(int)> callback) {
     _soft_stop_callback = callback;
+}
+
+void OneServerWrapper::set_allocated_callback(
+    std::function<void(AllocatedData)> callback) {
+    _allocated_callback = callback;
+}
+
+void OneServerWrapper::set_meta_data_callback(
+    std::function<void(MetaDataData)> callback) {
+    _meta_data_callback = callback;
+}
+
+void OneServerWrapper::send_error_response() {
+    assert(_server != nullptr && _error != nullptr);
+
+    OneError err = one_message_prepare_error_response(_host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_send_error_response(_server, _host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+}
+
+bool OneServerWrapper::send_host_information_request() {
+    assert(_server != nullptr && _host_information != nullptr);
+
+    OneError err = one_message_prepare_host_information_request(_host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_host_information_request(_server, _host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
 }
 
 // Tell the server to shutdown at the next appropriate time for its users (e.g.,
@@ -181,10 +242,323 @@ void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
         L_ERROR("userdata is nullptr");
         return;
     }
+
     auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    if (wrapper->_soft_stop_callback) {
-        wrapper->_soft_stop_callback(timeout_seconds);
+    if (wrapper->_soft_stop_callback == nullptr) {
+        L_INFO("soft stop callback is nullptr");
+        return;
     }
+
+    wrapper->_soft_stop_callback(timeout_seconds);
+}
+
+void OneServerWrapper::allocated(void *userdata, void *allocated) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (allocated == nullptr) {
+        L_ERROR("allocated is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr && wrapper->_allocated != nullptr);
+
+    if (wrapper->_allocated_callback == nullptr) {
+        L_INFO("allocated callback is nullptr");
+        return;
+    }
+
+    auto array = reinterpret_cast<OneArrayPtr>(allocated);
+
+    AllocatedData allocated_payload = {0};
+    if (!extract_allocated_payload(array, allocated_payload)) {
+        L_ERROR("failed to extract allocated payload");
+        return;
+    }
+
+    wrapper->_allocated_callback(allocated_payload);
+}
+
+void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (meta_data == nullptr) {
+        L_ERROR("meta_data is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr && wrapper->_meta_data != nullptr);
+
+    if (wrapper->_meta_data_callback == nullptr) {
+        L_INFO("meta data callback is nullptr");
+        return;
+    }
+
+    auto array = reinterpret_cast<OneArrayPtr>(meta_data);
+    MetaDataData meta_data_payload = {0};
+    if (!extract_meta_data_payload(array, meta_data_payload)) {
+        L_ERROR("failed to extract meta data payload");
+        return;
+    }
+
+    wrapper->_meta_data_callback(meta_data_payload);
+}
+
+void OneServerWrapper::live_state_request(void *userdata) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr && wrapper->_live_state != nullptr);
+
+    const auto &state = wrapper->_game_state;
+    OneError err = one_message_prepare_live_state_response(
+        state.players, state.max_players, state.name.c_str(), state.map.c_str(),
+        state.mode.c_str(), state.version.c_str(), wrapper->_live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_send_live_state_response(wrapper->_server, wrapper->_live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+}
+
+bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
+                                                 AllocatedData &allocated_data) {
+    if (array == nullptr) {
+        L_ERROR("array is nullptr");
+        return false;
+    }
+
+    bool is_map_set = false;
+    bool is_max_player_set = false;
+
+    size_t size = 0;
+    auto err = one_array_size(array, &size);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    OneObjectPtr pair = nullptr;
+    err = one_object_create(&pair);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    for (unsigned int pos = 0; pos < size; ++pos) {
+        err = one_array_val_object(array, pos, pair);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            return false;
+        }
+
+        size_t key_size = 0;
+        err = one_object_val_string_size(pair, "key", &key_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            return false;
+        }
+
+        char *key = new char[key_size];
+        if (key == nullptr) {
+            L_ERROR("key is nullptr");
+            one_object_destroy(&pair);
+            return false;
+        }
+
+        err = one_object_val_string(pair, "key", key, key_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            delete[] key;
+            return false;
+        }
+
+        size_t value_size = 0;
+        err = one_object_val_string_size(pair, "value", &value_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            delete[] key;
+            return false;
+        }
+
+        char *value = new char[value_size];
+        if (value == nullptr) {
+            L_ERROR("value is nullptr");
+            one_object_destroy(&pair);
+            delete[] key;
+            return false;
+        }
+
+        err = one_object_val_string(pair, "value", value, value_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            delete[] key;
+            delete[] value;
+            return false;
+        }
+
+        if (std::strncmp(key, "map", key_size) == 0) {
+            allocated_data.map = std::string(value);
+            is_map_set = true;
+        } else if (std::strncmp(key, "maxPlayer", key_size) == 0) {
+            allocated_data.max_players = std::string(value);
+            is_max_player_set = true;
+        }
+
+        delete[] key;
+        delete[] value;
+    }
+
+    one_object_destroy(&pair);
+
+    if (!is_map_set) {
+        L_ERROR("map is missing from payload");
+        return false;
+    }
+
+    if (!is_max_player_set) {
+        L_ERROR("max_player is missing from payload");
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::extract_meta_data_payload(OneArrayPtr array,
+                                                 MetaDataData &meta_data) {
+    if (array == nullptr) {
+        L_ERROR("array is nullptr");
+        return false;
+    }
+
+    bool is_map_set = false;
+    bool is_mode_set = false;
+    bool is_type_set = false;
+
+    size_t size = 0;
+    auto err = one_array_size(array, &size);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    OneObjectPtr pair = nullptr;
+    err = one_object_create(&pair);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    for (unsigned int pos = 0; pos < size; ++pos) {
+        err = one_array_val_object(array, pos, pair);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            return false;
+        }
+
+        size_t key_size = 0;
+        err = one_object_val_string_size(pair, "key", &key_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            return false;
+        }
+
+        char *key = new char[key_size];
+        if (key == nullptr) {
+            L_ERROR("key is nullptr");
+            one_object_destroy(&pair);
+            return false;
+        }
+
+        err = one_object_val_string(pair, "key", key, key_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            delete[] key;
+            return false;
+        }
+
+        size_t value_size = 0;
+        err = one_object_val_string_size(pair, "value", &value_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            delete[] key;
+            return false;
+        }
+
+        char *value = new char[value_size];
+        if (value == nullptr) {
+            L_ERROR("value is nullptr");
+            one_object_destroy(&pair);
+            delete[] key;
+            return false;
+        }
+
+        err = one_object_val_string(pair, "value", value, value_size);
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+            one_object_destroy(&pair);
+            delete[] key;
+            delete[] value;
+            return false;
+        }
+
+        if (std::strncmp(key, "map", key_size) == 0) {
+            meta_data.map = std::string(value);
+            is_map_set = true;
+        } else if (std::strncmp(key, "mode", key_size) == 0) {
+            meta_data.mode = std::string(value);
+            is_mode_set = true;
+        } else if (std::strncmp(key, "type", key_size) == 0) {
+            meta_data.type = std::string(value);
+            is_type_set = true;
+        }
+
+        delete[] key;
+        delete[] value;
+    }
+
+    one_object_destroy(&pair);
+
+    if (!is_map_set) {
+        L_ERROR("map is missing from payload");
+        return false;
+    }
+
+    if (!is_mode_set) {
+        L_ERROR("mode is missing from payload");
+        return false;
+    }
+
+    if (!is_type_set) {
+        L_ERROR("type is missing from payload");
+        return false;
+    }
+
+    return true;
 }
 
 }  // namespace game
