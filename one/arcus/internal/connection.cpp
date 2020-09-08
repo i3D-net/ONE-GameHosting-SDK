@@ -24,18 +24,16 @@ Connection::Connection(size_t max_messages_in, size_t max_messages_out)
     , _out_stream(connection::stream_send_buffer_size())
     , _incoming_messages(max_messages_in)
     , _outgoing_messages(max_messages_out)
-    , _handshake_timer(handshake_timeout_seconds) {
+    , _handshake_timer(handshake_timeout_seconds)
+    , _health_checker(HealthChecker::health_check_send_interval_seconds,
+                      HealthChecker::health_check_receive_interval_seconds) {
     _handshake_timer.sync_now();
 }
 
-Connection::Connection(Socket *socket, size_t max_messages_in, size_t max_messages_out)
-    : Connection(max_messages_in, max_messages_out) {
-    _socket = socket;
-}
-
-void Connection::set_socket(Socket *socket) {
-    _socket = socket;
+void Connection::init(Socket &socket) {
+    _socket = &socket;
     _handshake_timer.sync_now();
+    _health_checker.reset_receive_timer();
 }
 
 void Connection::shutdown() {
@@ -89,10 +87,31 @@ void Connection::initiate_handshake() {
     _status = Status::handshake_hello_scheduled;
 }
 
+Error Connection::process_health() {
+    if (_health_checker.process_receive()) {
+        _status = Status::error;
+        return ONE_ERROR_CONNECTION_HEALTH_TIMEOUT;
+    }
+    auto sender = [this](std::function<Error(Message &)> cb) { return add_outgoing(cb); };
+    auto err = _health_checker.process_send(sender);
+    if (is_error(err)) {
+        _status = Status::error;
+        return err;
+    }
+    return ONE_ERROR_NONE;
+}
+
 Error Connection::update() {
     if (_status == Status::error) return ONE_ERROR_CONNECTION_UPDATE_AFTER_ERROR;
 
     assert(_socket && _socket->is_initialized());
+
+    if (_status == Status::ready) {
+        auto err = process_health();
+        if (is_error(err)) {
+            return err;
+        }
+    }
 
     // Return if socket has no activity or has an error.
     bool is_ready = false;
@@ -396,11 +415,21 @@ Error Connection::process_incoming_messages() {
         }
         if (is_error(err)) return false;
 
+        // At this point data has been received from the remote end so update
+        // health timer.
+        _health_checker.reset_receive_timer();
+
         return true;
     };
 
     while (get_data_and_continue()) {
         while (read_message_and_continue()) {
+            // Skip health messages, they are consumed internally and do not
+            // make it to the queue for public consumption.
+            if (message.code() == Opcode::health) {
+                continue;
+            }
+
             auto m = new Message(message);
             if (m == nullptr) {
                 return ONE_ERROR_MESSAGE_ALLOCATION_FAILED;

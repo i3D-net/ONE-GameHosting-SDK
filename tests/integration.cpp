@@ -5,6 +5,7 @@
 #include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/internal/connection.h>
+#include <one/arcus/internal/health.h>
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
 #include <one/arcus/server.h>
@@ -208,8 +209,7 @@ TEST_CASE("long:Handshake timeout", "[integration]") {
     REQUIRE(game.shutdown() == 0);
 }
 
-// Disabled - wip needs health check.
-TEST_CASE("long:Reconnection", "[.][integration]") {
+TEST_CASE("long:Reconnection", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19003;
 
@@ -224,15 +224,20 @@ TEST_CASE("long:Reconnection", "[.][integration]") {
     // Shut down the game and restart it, the client should reconnect automatically.
     REQUIRE(game.shutdown() == 0);
 
-    // Todo: the client must be pumped for long enough to send a health check
-    // and realize the server has gone away.
+    // Sleep for long enough such that the next update should result in the agent
+    // realizing that the game server is no longer there and the agent should
+    // enter a state of reconnecting to the server.
+    sleep(HealthChecker::health_check_receive_interval_seconds * 1000);
+    REQUIRE(agent.update() == ONE_ERROR_CONNECTION_HEALTH_TIMEOUT);
+    REQUIRE(agent.client().status() == Client::Status::connecting);
 
+    // Restart the server and it should be waiting for client.
     REQUIRE(game.init() == 0);
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
+    // Update both and the agent should reconnect.
     pump_updates(agent, game);
-
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
     REQUIRE(agent.client().status() == Client::Status::ready);
 }

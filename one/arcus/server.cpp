@@ -161,7 +161,7 @@ Error Server::update_listen_socket() {
     _is_waiting_for_client = false;
 
     *_client_socket = incoming_client;
-    _client_connection->set_socket(_client_socket);
+    _client_connection->init(*_client_socket);
 
     // The Arcus Server is responsible for initiating the handshake against agents.
     // The agent waits for an initial hello packet from the Server.

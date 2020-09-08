@@ -1,15 +1,19 @@
+#pragma once
+
+#include <functional>
+
 #include <one/arcus/error.h>
 #include <one/arcus/internal/time.h>
 
 namespace one {
 
-class Socket;
+class Message;
 
 // Health features:
 // - sending of a health opcode message at an interval
 // - tracking of a timer for use whenever any message is received, to alert
 // when no message has been received for a period of time
-class HealthChecker {
+class HealthChecker final {
 public:
     // Optional defaults.
     static constexpr size_t health_check_send_interval_seconds = 5;
@@ -17,8 +21,8 @@ public:
 
     HealthChecker(size_t send_interval_seconds, size_t receive_interval_seconds);
 
-    // Updates internal timer and sends a health message on the socket if needed.
-    Error process_send(Socket &socket);
+    // Updates internal timer and sends a adds a health message if needed.
+    Error process_send(std::function<Error(std::function<Error(Message &message)>)>);
 
     // Should be called whenever data is received from the client.
     void reset_receive_timer();
