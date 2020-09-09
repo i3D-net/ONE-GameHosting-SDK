@@ -21,9 +21,9 @@ namespace codec {
 struct Hello {
     char id[4];
     char version;
-    char dummy[3];
+    char dummy;
 };
-static_assert(sizeof(Hello) == 8, "hello struct alignment");
+static_assert(sizeof(Hello) == 6, "hello struct alignment");
 
 constexpr size_t hello_size() {
     return sizeof(Hello);

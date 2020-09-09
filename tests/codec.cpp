@@ -34,7 +34,7 @@ TEST_CASE("hello", "[codec]") {
     }
     {
         auto hello = codec::valid_hello();
-        hello.dummy[0] = (char)0x1;
+        hello.dummy = (char)0x1;
         REQUIRE(!validate_hello(hello));
     }
     {
