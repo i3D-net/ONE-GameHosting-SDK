@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 
     L_INFO("game is initialized.");
     L_INFO("----------------------");
-    L_INFO("Running update loop.");
+    L_INFO("running update loop.");
 
     while (true) {
         sleep(50);
