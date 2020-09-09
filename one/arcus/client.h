@@ -1,10 +1,10 @@
 #pragma once
 
+#include <one/arcus/error.h>
+
 #include <chrono>
 #include <functional>
 #include <string>
-
-#include <one/arcus/error.h>
 
 using namespace std::chrono;
 
@@ -38,9 +38,9 @@ public:
     Client &operator=(const Client &) = delete;
     ~Client();
 
-    int init(const char *address, unsigned int port);
-    int shutdown();
-    int update();
+    Error init(const char *address, unsigned int port);
+    void shutdown();
+    Error update();
 
     enum class Status { uninitialized, connecting, handshake, ready, error };
     Status status();
@@ -50,10 +50,10 @@ public:
 
     // Todo: update functions to match complete list from One API v2.
 
-    int send_soft_stop_request(int timeout);
-    int send_allocated_request(Array *data);
-    int send_meta_data_request(Array *data);
-    int send_live_state_request();
+    Error send_soft_stop_request(int timeout);
+    Error send_allocated_request(Array *data);
+    Error send_meta_data_request(Array *data);
+    Error send_live_state_request();
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
@@ -64,13 +64,13 @@ public:
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_error_callback(std::function<void(void *)> callback, void *data);
+    Error set_error_callback(std::function<void(void *)> callback, void *data);
 
     // set the callback for when a live_state_response message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_live_state_callback(
+    Error set_live_state_callback(
         std::function<void(void *, int, int, const std::string &, const std::string &,
                            const std::string &, const std::string &)>
             callback,
@@ -80,12 +80,12 @@ public:
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    int set_host_information_request_callback(std::function<void(void *)> callback,
-                                              void *data);
+    Error set_host_information_request_callback(std::function<void(void *)> callback,
+                                                void *data);
 
 private:
-    int process_incoming_message(const Message &message);
-    int process_outgoing_message(const Message &message);
+    Error process_incoming_message(const Message &message);
+    Error process_outgoing_message(const Message &message);
 
     bool is_initialized() const {
         return _socket != nullptr;

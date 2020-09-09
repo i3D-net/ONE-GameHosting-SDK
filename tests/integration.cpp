@@ -61,7 +61,7 @@ void soft_stop_callback(void *, int timeout) {
 
 void pump_updates(Agent &agent, Game &game) {
     for_sleep(10, 1, [&]() {
-        REQUIRE(game.update() == 0);
+        REQUIRE(game.update());
         REQUIRE(agent.update() == 0);
         if (agent.client().status() == Client::Status::ready &&
             game.one_server_wrapper().status() == OneServerWrapper::Status::ready)
@@ -77,15 +77,15 @@ TEST_CASE("Agent connection failure", "[.][integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19001;
 
-    Game game(port, 1, 16, "name", "map", "mode", "version");
-    REQUIRE(game.init() == 0);
+    Game game(port);
+    REQUIRE(game.init(1, 16, "name", "map", "mode", "version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);
 
-    REQUIRE(game.update() == ONE_ERROR_NONE);
+    REQUIRE(game.update());
     REQUIRE(agent.update() == ONE_ERROR_NONE);
     REQUIRE(agent.client().status() == Client::Status::handshake);
 }
@@ -94,8 +94,8 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19002;
 
-    Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
-    REQUIRE(game.init() == 0);
+    Game game(port);
+    REQUIRE(game.init(1, 16, "name", "map", "mode", "version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -111,14 +111,14 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
     pump_updates(agent, game);
 
     // FIXME: remove one the messages are sent over the socket.
-    REQUIRE(game.shutdown() == 0);
+    game.shutdown();
     return;
 
     {
         REQUIRE(agent.send_soft_stop_request(1000) == 0);
         for_sleep(5, 1, [&]() {
             REQUIRE(agent.update() == 0);
-            REQUIRE(game.update() == 0);
+            REQUIRE(game.update());
             return soft_stop_callback_has_been_called;
         });
         REQUIRE(soft_stop_callback_has_been_called == true);
@@ -130,7 +130,7 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
     //     REQUIRE(game.send_error_response() == 0);
     //     REQUIRE(agent.update() == 0);
     //     sleep(10);
-    //     REQUIRE(game.update() == 0);
+    //     REQUIRE(game.update());
     //     REQUIRE(error_callback_has_been_called == true);
     // }
 
@@ -139,7 +139,7 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
         REQUIRE(agent.send_live_state_request() == 0);
         REQUIRE(agent.update() == 0);
         sleep(10);
-        REQUIRE(game.update() == 0);
+        REQUIRE(game.update());
         REQUIRE(live_state_callback_has_been_called == true);
     }
 
@@ -149,7 +149,7 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
         REQUIRE(agent.send_allocated_request(&array) == 0);
         REQUIRE(agent.update() == 0);
         sleep(10);
-        REQUIRE(game.update() == 0);
+        REQUIRE(game.update());
         REQUIRE(allocated_callback_has_been_called == true);
     }
 
@@ -159,7 +159,7 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
         REQUIRE(agent.send_meta_data_request(&array) == 0);
         REQUIRE(agent.update() == 0);
         sleep(10);
-        REQUIRE(game.update() == 0);
+        REQUIRE(game.update());
         REQUIRE(meta_data_callback_has_been_called == true);
     }
 
@@ -169,21 +169,21 @@ TEST_CASE("Agent connects to a game & send requests", "[integration]") {
     //     REQUIRE(game.send_host_information_request() == 0);
     //     REQUIRE(game.update() == 0);
     //     sleep(10);
-    //     REQUIRE(agent.update() == 0);
+    //     REQUIRE(agent.update());
     //     REQUIRE(host_information_callback_has_been_called == true);
     // }
 
     // TODO: add more agent request & custom messages.
 
-    REQUIRE(game.shutdown() == 0);
+    game.shutdown();
 }
 
 TEST_CASE("long:Handshake timeout", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19003;
 
-    Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
-    REQUIRE(game.init() == 0);
+    Game game(port);
+    REQUIRE(game.init(1, 16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);
@@ -206,15 +206,15 @@ TEST_CASE("long:Handshake timeout", "[integration]") {
             OneServerWrapper::Status::waiting_for_client);
 
     // Shut down the game and restart it, the client should reconnect automatically.
-    REQUIRE(game.shutdown() == 0);
+    game.shutdown();
 }
 
 TEST_CASE("long:Reconnection", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19003;
 
-    Game game(port, 1, 16, "test game", "test map", "test mode", "test version");
-    REQUIRE(game.init() == 0);
+    Game game(port);
+    REQUIRE(game.init(1, 16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);
@@ -222,7 +222,7 @@ TEST_CASE("long:Reconnection", "[integration]") {
     pump_updates(agent, game);
 
     // Shut down the game and restart it, the client should reconnect automatically.
-    REQUIRE(game.shutdown() == 0);
+    game.shutdown();
 
     // Sleep for long enough such that the next update should result in the agent
     // realizing that the game server is no longer there and the agent should
@@ -232,7 +232,7 @@ TEST_CASE("long:Reconnection", "[integration]") {
     REQUIRE(agent.client().status() == Client::Status::connecting);
 
     // Restart the server and it should be waiting for client.
-    REQUIRE(game.init() == 0);
+    REQUIRE(game.init(1, 16, "test game", "test map", "test mode", "test version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 

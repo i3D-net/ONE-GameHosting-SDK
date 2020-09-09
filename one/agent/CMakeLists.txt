@@ -1,6 +1,8 @@
 add_executable(agent main.cpp)
 target_compile_features(agent PRIVATE cxx_std_11)
 
+target_link_libraries(agent PRIVATE one_agent one_game one_arcus)
+
 include_directories(${PROJECT_SOURCE_DIR})
 
 set(HEADER_FILES

@@ -11,16 +11,17 @@ class OneServerWrapper;
 
 class Game final {
 public:
-    Game(unsigned int port, int _players, int _max_players, const std::string &name,
-         const std::string &map, const std::string &mode, const std::string &version);
+    Game(unsigned int port);
     Game(const Game &) = delete;
     Game &operator=(const Game &) = delete;
     ~Game();
 
-    int init();
-    int shutdown();
+    bool init(int players, int max_players, const std::string &name,
+              const std::string &map, const std::string &mode,
+              const std::string &version);
+    void shutdown();
 
-    int update();
+    bool update();
 
     // Exposed for testing purposes.
     OneServerWrapper &one_server_wrapper() {
@@ -28,14 +29,11 @@ public:
     }
 
 private:
-    OneServerWrapper _server;
+    static void soft_stop_callback(int timeout);
+    static void allocated_callback(OneServerWrapper::AllocatedData data);
+    static void meta_data_callback(OneServerWrapper::MetaDataData data);
 
-    int _players;
-    int _max_players;
-    std::string _name;
-    std::string _map;
-    std::string _mode;
-    std::string _version;
+    OneServerWrapper _server;
 };
 
 }  // namespace game

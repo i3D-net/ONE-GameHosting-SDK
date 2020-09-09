@@ -21,29 +21,33 @@ Client::~Client() {
     shutdown();
 }
 
-int Client::init(const char *address, unsigned int port) {
+Error Client::init(const char *address, unsigned int port) {
     _server_address = address;
     _server_port = port;
 
-    if (_socket != nullptr || _connection != nullptr) {
-        return -1;
+    if (_socket != nullptr) {
+        return ONE_ERROR_VALIDATION_SOCKET_IS_NULLPTR;
     }
 
-    int error = init_socket_system();
-    if (error != 0) {
-        return -1;
+    if (_connection != nullptr) {
+        return ONE_ERROR_VALIDATION_CONNECTION_IS_NULLPTR;
+    }
+
+    auto err = init_socket_system();
+    if (is_error(err)) {
+        return err;
     }
 
     _socket = new Socket();
     if (_socket == nullptr) {
         shutdown();
-        return -1;
+        return ONE_ERROR_VALIDATION_SOCKET_IS_NULLPTR;
     }
 
-    error = _socket->init();
-    if (error != 0) {
+    err = _socket->init();
+    if (is_error(err)) {
         shutdown();
-        return -1;
+        return err;
     }
 
     _connection =
@@ -51,13 +55,13 @@ int Client::init(const char *address, unsigned int port) {
     _connection->init(*_socket);
     if (_connection == nullptr) {
         shutdown();
-        return -1;
+        return ONE_ERROR_VALIDATION_CONNECTION_IS_NULLPTR;
     }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::shutdown() {
+void Client::shutdown() {
     _is_connected = false;
 
     if (_socket != nullptr) {
@@ -72,7 +76,6 @@ int Client::shutdown() {
 
     shutdown_socket_system();
     _callbacks = {0};
-    return 0;
 }
 
 Error Client::connect() {
@@ -86,16 +89,16 @@ Error Client::connect() {
         return ONE_ERROR_CLIENT_NOT_INITIALIZED;
     }
 
-    Error error = _socket->connect(_server_address.c_str(), _server_port);
-    if (error != 0) {
-        return error;
+    auto err = _socket->connect(_server_address.c_str(), _server_port);
+    if (is_error(err)) {
+        return err;
     }
-    _is_connected = true;
 
+    _is_connected = true;
     return ONE_ERROR_NONE;
 }
 
-int Client::update() {
+Error Client::update() {
     if (!is_initialized()) {
         return ONE_ERROR_CLIENT_NOT_INITIALIZED;
     }
@@ -116,15 +119,15 @@ int Client::update() {
         }
     }
 
-    auto error = _connection->update();
+    auto err = _connection->update();
     // In the case of any error, reset the socket for reconnection attempt.
-    if (is_error(error)) {
+    if (is_error(err)) {
         _connection->shutdown();
         _socket->close();
         _is_connected = false;
         _socket->init();
         _connection->init(*_socket);
-        return error;
+        return err;
     }
 
     return ONE_ERROR_NONE;
@@ -151,98 +154,98 @@ Client::Status Client::status() {
     }
 }
 
-int Client::send_soft_stop_request(int timeout) {
+Error Client::send_soft_stop_request(int timeout) {
     Message message;
     messages::prepare_soft_stop_request(timeout, message);
-    int error = process_outgoing_message(message);
-    if (error != 0) {
-        return -1;
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
     }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::send_allocated_request(Array *data) {
+Error Client::send_allocated_request(Array *data) {
     if (data == nullptr) {
-        return -1;
+        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
     }
 
     Message message;
     messages::prepare_allocated_request(*data, message);
-    int error = process_outgoing_message(message);
-    if (error != 0) {
-        return -1;
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
     }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::send_meta_data_request(Array *data) {
+Error Client::send_meta_data_request(Array *data) {
     if (data == nullptr) {
-        return -1;
+        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
     }
 
     Message message;
     messages::prepare_meta_data_request(*data, message);
-    int error = process_outgoing_message(message);
-    if (error != 0) {
-        return -1;
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
     }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::send_live_state_request() {
+Error Client::send_live_state_request() {
     Message message;
     messages::prepare_live_state_request(message);
-    int error = process_outgoing_message(message);
-    if (error != 0) {
-        return -1;
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
     }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::set_error_callback(std::function<void(void *)> callback, void *data) {
+Error Client::set_error_callback(std::function<void(void *)> callback, void *data) {
     if (callback == nullptr) {
-        return -1;
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
     _callbacks._error_response = callback;
     _callbacks._error_response_data = data;
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::set_live_state_callback(
+Error Client::set_live_state_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         callback,
     void *data) {
     if (callback == nullptr) {
-        return -1;
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
     _callbacks._live_state_response = callback;
     _callbacks._live_state_response_data = data;
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::set_host_information_request_callback(std::function<void(void *)> callback,
-                                                  void *data) {
+Error Client::set_host_information_request_callback(std::function<void(void *)> callback,
+                                                    void *data) {
     if (callback == nullptr) {
-        return -1;
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
     _callbacks._host_information_request = callback;
     _callbacks._host_information_request_data = data;
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
-int Client::process_incoming_message(const Message &message) {
+Error Client::process_incoming_message(const Message &message) {
     switch (message.code()) {
         case Opcode::live_state_response:
             if (_callbacks._live_state_response == nullptr) {
-                return 0;
+                return ONE_ERROR_NONE;
             }
 
             return invocation::live_state_response(message,
@@ -250,35 +253,35 @@ int Client::process_incoming_message(const Message &message) {
                                                    _callbacks._live_state_response_data);
         case Opcode::host_information_request:
             if (_callbacks._host_information_request == nullptr) {
-                return 0;
+                return ONE_ERROR_NONE;
             }
 
             return invocation::host_information_request(
                 message, _callbacks._host_information_request,
                 _callbacks._host_information_request_data);
         default:
-            return 0;
+            return ONE_ERROR_NONE;
     }
 }
 
-int Client::process_outgoing_message(const Message &message) {
-    int error = 0;
+Error Client::process_outgoing_message(const Message &message) {
+    Error err = ONE_ERROR_NONE;
     switch (message.code()) {
         case Opcode::live_state_request: {
             params::LiveStateRequest params;
-            error = validation::live_state_request(message, params);
-            if (error != 0) {
-                return -1;
+            err = validation::live_state_request(message, params);
+            if (is_error(err)) {
+                return err;
             }
 
             break;
         }
         default:
-            return 0;
+            return ONE_ERROR_NONE;
     }
 
     if (_connection == nullptr) {
-        return -1;
+        return ONE_ERROR_VALIDATION_CONNECTION_IS_NULLPTR;
     }
 
     // Todo: message pointer here, passing ownership of memory from client to
@@ -288,7 +291,7 @@ int Client::process_outgoing_message(const Message &message) {
     //     return -1;
     // }
 
-    return 0;
+    return ONE_ERROR_NONE;
 }
 
 }  // namespace one
