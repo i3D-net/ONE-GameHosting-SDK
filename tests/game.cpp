@@ -11,14 +11,14 @@ using namespace game;
 using namespace one;
 
 TEST_CASE("life cycle", "[fake game]") {
-    Game game(19001, 10, 54, "test game", "test map", "test mode", "test version");
-    REQUIRE(game.init() == 0);
-    REQUIRE(game.shutdown() == 0);
+    Game game(19001);
+    REQUIRE(game.init(10, 54, "test game", "test map", "test mode", "test version"));
+    game.shutdown();
 }
 
 TEST_CASE("connection error handling", "[fake game]") {
-    Game game(19001, 10, 54, "test game", "test map", "test mode", "test version");
-    REQUIRE(game.init() == 0);
+    Game game(19001);
+    REQUIRE(game.init(10, 54, "test game", "test map", "test mode", "test version"));
 
     // Connect a client socket to fake a scriptable agent.
     Socket client;
@@ -28,7 +28,7 @@ TEST_CASE("connection error handling", "[fake game]") {
     // Update game so that connection starts and handhsake is sent.
     auto pump_game = [&]() {
         for_sleep(5, 1, [&]() {
-            REQUIRE(game.update() == 0);
+            REQUIRE(game.update());
             return false;
         });
     };
@@ -55,7 +55,7 @@ TEST_CASE("connection error handling", "[fake game]") {
     // Update the game, at some point it should error while trying to process
     // the handshake.
     for_sleep(5, 1, [&]() {
-        REQUIRE(game.update() == 0);
+        game.update();
         return false;
     });
 
@@ -63,5 +63,5 @@ TEST_CASE("connection error handling", "[fake game]") {
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
-    REQUIRE(game.shutdown() == 0);
+    game.shutdown();
 }

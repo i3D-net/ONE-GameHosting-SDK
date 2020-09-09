@@ -32,7 +32,7 @@ public:
         unknown
     };
 
-    void init();
+    bool init();
     void shutdown();
     Status status() const;
 
@@ -45,7 +45,7 @@ public:
         std::string version;  // Game version.
     };
     void set_game_state(const GameState &);
-    void update();
+    bool update();
 
     void set_soft_stop_callback(std::function<void(int)> callback);
 

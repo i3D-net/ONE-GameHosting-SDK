@@ -1,16 +1,52 @@
-#include <iostream>
-#include <one/arcus/internal/version.h>
+#include <one/game/game.h>
+#include <one/game/log.h>
 
-#include <one/arcus/c_api.h>
+#include <chrono>
+#include <thread>
 
-int main() {
-    std::cout << "Game -> project name: " << ONE_NAME << " version: " << ONE_VERSION << std::endl;
-    OneServerPtr server{nullptr};
-    int error = one_server_create(&server);
-    if (error != 0) {
-        return error;
+using namespace std::chrono;
+using namespace game;
+
+void sleep(int ms) {
+    std::this_thread::sleep_for(milliseconds(ms));
+}
+
+int main(int argc, char **argv) {
+    const int default_port = 19001;
+    int port = default_port;
+
+    if (argc == 2) {
+        port = strtol(argv[1], nullptr, 10);
+
+        if (port <= 0) {
+            L_ERROR("invalid port provided");
+            return 1;
+        }
     }
 
-    one_server_destroy(&server);
+    Game game(port);
+
+    if (!game.init(0, 16, "test game", "test map", "test mode", "test version")) {
+        L_ERROR("failed to init game");
+        return 1;
+    }
+
+    L_INFO("game is initialized.");
+    L_INFO("----------------------");
+    L_INFO("Running update loop.");
+
+    while (true) {
+        sleep(50);
+
+        if (!game.update()) {
+            L_ERROR("failed to update game");
+            return 2;
+        }
+    }
+
+    L_INFO("----------------------");
+    game.shutdown();
+    L_INFO("game has been shutdown");
+
     return 0;
 }

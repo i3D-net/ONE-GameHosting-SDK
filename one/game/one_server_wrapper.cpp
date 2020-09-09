@@ -28,11 +28,11 @@ OneServerWrapper::~OneServerWrapper() {
     shutdown();
 }
 
-void OneServerWrapper::init() {
+bool OneServerWrapper::init() {
     if (_server != nullptr || _error != nullptr || _live_state != nullptr ||
         _host_information != nullptr) {
         L_ERROR("already init");
-        return;
+        return false;
     }
 
     // Create the one server. This example has a game server with a
@@ -43,7 +43,7 @@ void OneServerWrapper::init() {
     OneError err = one_server_create(&_server);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     // Create cached messages that can be sent as responses.
@@ -51,31 +51,31 @@ void OneServerWrapper::init() {
     err = one_message_create(&_error);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_message_create(&_live_state);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_message_create(&_host_information);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_array_create(&_allocated);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_array_create(&_meta_data);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     //---------------
@@ -87,31 +87,31 @@ void OneServerWrapper::init() {
     err = one_server_set_soft_stop_callback(_server, soft_stop, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_server_set_allocated_callback(_server, allocated, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_server_set_meta_data_callback(_server, meta_data, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_server_set_live_state_request_callback(_server, live_state_request, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     err = one_server_set_live_state_request_callback(_server, live_state_request, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     //------------------
@@ -122,10 +122,11 @@ void OneServerWrapper::init() {
     err = one_server_listen(_server, _port);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
     L_INFO("init done");
+    return true;
 }
 
 void OneServerWrapper::shutdown() {
@@ -146,7 +147,7 @@ void OneServerWrapper::set_game_state(const GameState &state) {
     _game_state = state;
 }
 
-void OneServerWrapper::update() {
+bool OneServerWrapper::update() {
     assert(_server != nullptr);
 
     // Add a host_information_request in the message outbound queue.
@@ -159,7 +160,10 @@ void OneServerWrapper::update() {
     OneError err = one_server_update(_server);
     if (is_error(err)) {
         L_ERROR(error_text(err));
+        return false;
     }
+
+    return true;
 }
 
 OneServerWrapper::Status OneServerWrapper::status() const {
@@ -249,6 +253,7 @@ void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
         return;
     }
 
+    L_INFO("invoking soft stop callback");
     wrapper->_soft_stop_callback(timeout_seconds);
 }
 
@@ -279,6 +284,7 @@ void OneServerWrapper::allocated(void *userdata, void *allocated) {
         return;
     }
 
+    L_INFO("invoking allocated callback");
     wrapper->_allocated_callback(allocated_payload);
 }
 
@@ -308,6 +314,7 @@ void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
         return;
     }
 
+    L_INFO("invoking meta data callback");
     wrapper->_meta_data_callback(meta_data_payload);
 }
 
@@ -320,6 +327,7 @@ void OneServerWrapper::live_state_request(void *userdata) {
     auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
     assert(wrapper->_server != nullptr && wrapper->_live_state != nullptr);
 
+    L_INFO("invoking live state request callback");
     const auto &state = wrapper->_game_state;
     OneError err = one_message_prepare_live_state_response(
         state.players, state.max_players, state.name.c_str(), state.map.c_str(),
