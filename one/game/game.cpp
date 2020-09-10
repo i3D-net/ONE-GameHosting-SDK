@@ -41,8 +41,8 @@ void Game::shutdown() {
     _server.shutdown();
 }
 
-bool Game::update() {
-    return _server.update();
+void Game::update() {
+    _server.update();
 }
 
 void Game::soft_stop_callback(int timeout) {

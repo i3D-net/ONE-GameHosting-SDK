@@ -45,7 +45,7 @@ public:
         std::string version;  // Game version.
     };
     void set_game_state(const GameState &);
-    bool update();
+    void update();
 
     void set_soft_stop_callback(std::function<void(int)> callback);
 
