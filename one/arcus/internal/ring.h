@@ -2,13 +2,15 @@
 
 #include <assert.h>
 
+namespace i3d {
 namespace one {
 
 // FIFO ring buffer with a fixed capacity.
 template <typename T>
 class Ring final {
 public:
-    Ring(size_t capacity) : _buffer(nullptr), _capacity(capacity), _last(0), _next(0), _size(0) {
+    Ring(size_t capacity)
+        : _buffer(nullptr), _capacity(capacity), _last(0), _next(0), _size(0) {
         assert(capacity > 0);
         _buffer = new T[capacity];
     }
@@ -64,3 +66,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

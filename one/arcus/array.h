@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+namespace i3d {
 namespace one {
 
 class Object;
@@ -66,3 +67,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

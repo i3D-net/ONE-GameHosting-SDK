@@ -7,6 +7,7 @@
 #include <functional>
 #include <string>
 
+namespace i3d {
 namespace one {
 
 namespace params {
@@ -75,3 +76,4 @@ Error host_information_request(const Message &message,
 }  // namespace invocation
 
 }  // namespace one
+}  // namespace i3d

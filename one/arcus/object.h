@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+namespace i3d {
 namespace one {
 
 class Array;
@@ -56,3 +57,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

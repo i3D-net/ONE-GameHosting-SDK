@@ -7,6 +7,7 @@
 #include <cstring>
 #include <algorithm>
 
+namespace i3d {
 namespace one {
 namespace codec {
 
@@ -185,3 +186,4 @@ Error payload_to_data(const Payload &payload, size_t &payload_length,
 
 }  // namespace codec
 }  // namespace one
+}  // namespace i3d

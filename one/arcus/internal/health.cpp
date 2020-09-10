@@ -2,6 +2,7 @@
 #include <one/arcus/message.h>
 #include <one/arcus/opcode.h>
 
+namespace i3d {
 namespace one {
 
 HealthChecker::HealthChecker(size_t send_interval_seconds,
@@ -35,3 +36,4 @@ bool HealthChecker::process_receive() {
 }
 
 }  // namespace one
+}  // namespace i3d

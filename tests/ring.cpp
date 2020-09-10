@@ -2,7 +2,7 @@
 
 #include <one/arcus/internal/ring.h>
 
-using namespace one;
+using namespace i3d::one;
 
 TEST_CASE("ring", "[arcus]") {
     const size_t capacity = 2;

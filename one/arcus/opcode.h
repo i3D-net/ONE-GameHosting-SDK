@@ -2,6 +2,7 @@
 
 #include <one/arcus/internal/version.h>
 
+namespace i3d {
 namespace one {
 
 // Todo - set final opcode values.
@@ -37,3 +38,4 @@ inline bool is_opcode_supported(Opcode code) {
 }
 
 }  // namespace one
+}  // namespace i3d

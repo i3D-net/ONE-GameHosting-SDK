@@ -15,6 +15,7 @@
     #include <errno.h>
 #endif
 
+namespace i3d {
 namespace one {
 
 Connection::Connection(size_t max_messages_in, size_t max_messages_out)
@@ -518,3 +519,4 @@ Error Connection::process_outgoing_messages() {
 }
 
 }  // namespace one
+}  // namespace i3d

@@ -5,6 +5,7 @@
 
 #include <functional>
 
+namespace i3d {
 namespace one {
 
 class Message;
@@ -58,3 +59,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

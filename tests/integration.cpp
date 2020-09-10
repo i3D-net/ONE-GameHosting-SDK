@@ -17,7 +17,7 @@
 
 using namespace std::chrono;
 using namespace game;
-using namespace one;
+using namespace i3d::one;
 
 bool error_callback_has_been_called = false;
 bool live_state_callback_has_been_called = false;

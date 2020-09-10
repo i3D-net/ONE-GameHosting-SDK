@@ -6,6 +6,7 @@
 #include <one/arcus/opcode.h>
 #include <one/arcus/object.h>
 
+namespace i3d {
 namespace one {
 
 Payload::Payload() : _doc(rapidjson::kObjectType) {}
@@ -488,3 +489,4 @@ Error prepare_host_information_request(Message &message) {
 // namespace messages
 
 }  // namespace one
+}  // namespace i3d

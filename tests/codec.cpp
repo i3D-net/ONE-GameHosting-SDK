@@ -13,7 +13,7 @@
 #include <array>
 #include <string>
 
-using namespace one;
+using namespace i3d::one;
 
 TEST_CASE("max size matching the connection socket buffer", "[codec]") {
     REQUIRE(codec::header_size() + codec::payload_max_size() <=

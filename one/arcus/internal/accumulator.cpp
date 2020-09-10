@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <cstring>
 
+namespace i3d {
 namespace one {
 
 Accumulator::Accumulator(size_t capacity) : _capacity(capacity), _size(0) {
@@ -54,3 +55,4 @@ void Accumulator::get(size_t length, void **data) {
 }
 
 }  // namespace one
+}  // namespace i3d

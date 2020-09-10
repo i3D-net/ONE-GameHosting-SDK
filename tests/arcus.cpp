@@ -15,7 +15,7 @@
 #include <string>
 #include <utility>
 
-using namespace one;
+using namespace i3d::one;
 
 TEST_CASE("current arcus version", "[arcus]") {
     REQUIRE(arcus_protocol::current_version() == ArcusVersion::V2);

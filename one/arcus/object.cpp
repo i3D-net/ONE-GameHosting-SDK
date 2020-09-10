@@ -8,6 +8,7 @@
 
 #include <cstring>
 
+namespace i3d {
 namespace one {
 
 Object::Object() : _doc(rapidjson::kObjectType) {}
@@ -281,8 +282,7 @@ Error Object::set_val_string(const char *key, const std::string &val) {
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
         rapidjson::Value value(rapidjson::StringRef(val.c_str()), _doc.GetAllocator());
-        _doc.AddMember(rapidjson::StringRef(key), value,
-                       _doc.GetAllocator());
+        _doc.AddMember(rapidjson::StringRef(key), value, _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }
 
@@ -340,3 +340,4 @@ Error Object::set_val_object(const char *key, const Object &val) {
 }
 
 }  // namespace one
+}  // namespace i3d

@@ -8,6 +8,7 @@
 
 using namespace std::chrono;
 
+namespace i3d {
 namespace one {
 
 class Array;
@@ -106,3 +107,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

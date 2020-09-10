@@ -2,6 +2,7 @@
 
 #include <functional>
 
+namespace i3d {
 namespace one {
 
 void sleep(int ms);
@@ -18,3 +19,4 @@ void for_sleep(int count, int ms_per_loop, std::function<bool()> cb);
 bool wait_with_cancel(int wait_ms, std::function<bool()> cb);
 
 }  // namespace one
+}  // namespace i3d

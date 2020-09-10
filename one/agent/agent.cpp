@@ -2,6 +2,7 @@
 
 #include <one/arcus/message.h>
 
+namespace i3d {
 namespace one {
 
 Error Agent::init(const char *addr, unsigned int port) {
@@ -92,3 +93,4 @@ Error Agent::set_host_information_request_callback(std::function<void(void *)> c
 }
 
 }  // namespace one
+}  // namespace i3d

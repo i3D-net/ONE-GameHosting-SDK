@@ -4,6 +4,7 @@
 
 using namespace std::chrono;
 
+namespace i3d {
 namespace one {
 
 // IntervalTimer is used to easily track if an interval in seconds has expired.
@@ -27,3 +28,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

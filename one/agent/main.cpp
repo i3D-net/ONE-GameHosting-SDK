@@ -5,7 +5,7 @@
 #include <thread>
 
 using namespace std::chrono;
-using namespace one;
+using namespace i3d::one;
 
 void sleep(int ms) {
     std::this_thread::sleep_for(milliseconds(ms));

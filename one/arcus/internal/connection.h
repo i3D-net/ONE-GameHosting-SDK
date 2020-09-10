@@ -10,6 +10,7 @@
 #include <one/arcus/internal/ring.h>
 #include <one/arcus/internal/time.h>
 
+namespace i3d {
 namespace one {
 
 namespace codec {
@@ -134,3 +135,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d
