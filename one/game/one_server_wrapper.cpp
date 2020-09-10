@@ -147,7 +147,7 @@ void OneServerWrapper::set_game_state(const GameState &state) {
     _game_state = state;
 }
 
-bool OneServerWrapper::update() {
+void OneServerWrapper::update() {
     assert(_server != nullptr);
 
     // Add a host_information_request in the message outbound queue.
@@ -160,10 +160,7 @@ bool OneServerWrapper::update() {
     OneError err = one_server_update(_server);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return false;
     }
-
-    return true;
 }
 
 OneServerWrapper::Status OneServerWrapper::status() const {

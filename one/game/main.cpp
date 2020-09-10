@@ -37,11 +37,7 @@ int main(int argc, char **argv) {
 
     while (true) {
         sleep(50);
-
-        if (!game.update()) {
-            L_ERROR("failed to update game");
-            return 2;
-        }
+        game.update();
     }
 
     L_INFO("----------------------");

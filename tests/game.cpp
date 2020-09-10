@@ -28,7 +28,7 @@ TEST_CASE("connection error handling", "[fake game]") {
     // Update game so that connection starts and handhsake is sent.
     auto pump_game = [&]() {
         for_sleep(5, 1, [&]() {
-            REQUIRE(game.update());
+            game.update();
             return false;
         });
     };

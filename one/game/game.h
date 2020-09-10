@@ -21,7 +21,7 @@ public:
               const std::string &version);
     void shutdown();
 
-    bool update();
+    void update();
 
     // Exposed for testing purposes.
     OneServerWrapper &one_server_wrapper() {
