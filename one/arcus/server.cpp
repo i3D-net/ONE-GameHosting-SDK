@@ -6,6 +6,7 @@
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/message.h>
 
+namespace i3d {
 namespace one {
 
 Server::Server()
@@ -374,3 +375,4 @@ Error Server::process_outgoing_message(const Message &message) {
 }
 
 }  // namespace one
+}  // namespace i3d

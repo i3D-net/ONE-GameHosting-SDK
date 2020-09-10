@@ -3,6 +3,7 @@
 #include <thread>
 using namespace std::chrono;
 
+namespace i3d {
 namespace one {
 
 void sleep(int ms) {
@@ -33,3 +34,4 @@ bool wait_with_cancel(int wait_ms, std::function<bool()> cb) {
 }
 
 }  // namespace one
+}  // namespace i3d

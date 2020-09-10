@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 
+namespace i3d {
 namespace one {
 
 // Accumulator is fixed-size buffer for accumulating byte data.
@@ -47,3 +48,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

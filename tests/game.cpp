@@ -8,7 +8,7 @@
 #include <one/game/game.h>
 
 using namespace game;
-using namespace one;
+using namespace i3d::one;
 
 TEST_CASE("life cycle", "[fake game]") {
     Game game(19001);

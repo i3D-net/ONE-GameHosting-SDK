@@ -17,6 +17,7 @@ typedef int socklen_t;
 
 #include <one/arcus/internal/platform.h>
 
+namespace i3d {
 namespace one {
 
 Error init_socket_system() {
@@ -298,3 +299,4 @@ Error Socket::receive(void *data, size_t length, size_t &length_received) {
 }
 
 }  // namespace one
+}  // namespace i3d

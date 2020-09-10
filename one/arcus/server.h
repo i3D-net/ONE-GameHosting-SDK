@@ -5,6 +5,7 @@
 #include <functional>
 #include <string>
 
+namespace i3d {
 namespace one {
 
 class Array;
@@ -137,3 +138,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

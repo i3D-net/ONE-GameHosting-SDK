@@ -4,7 +4,7 @@
 #include <string.h>
 #include <cstring>
 
-using namespace one;
+using namespace i3d::one;
 
 TEST_CASE("accumulator", "[arcus]") {
     constexpr auto capacity = 8;

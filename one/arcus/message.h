@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+namespace i3d {
 namespace one {
 
 class Array;
@@ -92,3 +93,4 @@ Error prepare_host_information_request(Message &message);
 }  // namespace messages
 
 }  // namespace one
+}  // namespace i3d

@@ -11,6 +11,7 @@
 #include <string>
 #include <cstring>
 
+namespace i3d {
 namespace one {
 namespace {
 
@@ -1381,6 +1382,9 @@ void allocator_set_free(void(callback)(void *)) {
 
 }  // Unnamed namespace.
 }  // namespace one
+}  // namespace i3d
+
+namespace one = i3d::one;
 
 extern "C" {
 

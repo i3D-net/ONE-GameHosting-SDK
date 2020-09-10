@@ -9,7 +9,7 @@
 
 #include <string>
 
-using namespace one;
+using namespace i3d::one;
 
 TEST_CASE("array unit tests", "[array]") {
     Array a;

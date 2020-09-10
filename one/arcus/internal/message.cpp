@@ -5,6 +5,7 @@
 
 #include <functional>
 
+namespace i3d {
 namespace one {
 
 namespace validation {
@@ -291,3 +292,4 @@ Error host_information_request(const Message &message,
 }  // namespace invocation
 
 }  // namespace one
+}  // namespace i3d

@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <array>
 
+namespace i3d {
 namespace one {
 
 class Message;
@@ -92,3 +93,4 @@ Error payload_to_data(const Payload &payload, size_t &payload_length,
 
 }  // namespace codec
 }  // namespace one
+}  // namespace i3d

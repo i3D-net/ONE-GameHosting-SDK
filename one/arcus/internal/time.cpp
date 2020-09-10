@@ -1,5 +1,6 @@
 #include <one/arcus/internal/time.h>
 
+namespace i3d {
 namespace one {
 
 IntervalTimer::IntervalTimer(unsigned int seconds)
@@ -19,3 +20,4 @@ void IntervalTimer::sync_now() {
 }
 
 }  // namespace one
+}  // namespace i3d

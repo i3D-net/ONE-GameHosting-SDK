@@ -2,10 +2,13 @@
 
 #define ONE_NAME "@PROJECT_NAME@"
 #define ONE_VERSION "@PROJECT_VERSION@"
+// clang-format off
 #define ONE_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
 #define ONE_VERSION_MINOR @PROJECT_VERSION_MINOR@
 #define ONE_VERSION_PATCH @PROJECT_VERSION_PATCH@
+// clang-format on
 
+namespace i3d {
 namespace one {
 
 // References
@@ -13,9 +16,9 @@ namespace one {
 //
 // Zero overhead backward compatibility
 // 18 Jul 2020
-// The Animation Compression Library finally supports backward compatibility (going forward once 2.0
-// comes out). I’m really happy with how it turned out so I thought I would write a bit about how
-// the ACL decompression is designed.
+// The Animation Compression Library finally supports backward compatibility (going
+// forward once 2.0 comes out). I’m really happy with how it turned out so I thought I
+// would write a bit about how the ACL decompression is designed.
 //
 // The API
 // At runtime, decompressing animation data could not be easier:
@@ -29,23 +32,24 @@ namespace one {
 //
 // custom_writer writer(output_data);
 // context.decompress_tracks(writer);
-// A small context object is created and bound to our compressed data. Its construction is cheap
-// enough that it can be done on the stack on demand. It can then subsequently be used (and re-used)
-// to seek and decompress.
+// A small context object is created and bound to our compressed data. Its construction is
+// cheap enough that it can be done on the stack on demand. It can then subsequently be
+// used (and re-used) to seek and decompress.
 //
-// A key design goal is to have as little overhead as possible: pay only for what you use. This is
-// achieved through templating in two ways:
+// A key design goal is to have as little overhead as possible: pay only for what you use.
+// This is achieved through templating in two ways:
 //
-// The custom_decompression_settings argument on the context object controls what features are
-// enabled or disabled. The custom_writer wraps whatever container you might be using in your game
-// engine to represent the animation data. This is to make sure no extra copying is required. The
-// decompression settings are where the magic happens.
+// The custom_decompression_settings argument on the context object controls what features
+// are enabled or disabled. The custom_writer wraps whatever container you might be using
+// in your game engine to represent the animation data. This is to make sure no extra
+// copying is required. The decompression settings are where the magic happens.
 //
 // Compile time user control
-// There are many game engines out there each handling animation in their own specific way. In order
-// to be able to integrate as seamlessly as possible, ACL exposes a small struct that can be
-// overriden to control its behavior. By leveraging constexpr and templating, features that aren’t
-// used or needed can be removed entirely at compile time to ensure zero cost at runtime.
+// There are many game engines out there each handling animation in their own specific
+// way. In order to be able to integrate as seamlessly as possible, ACL exposes a small
+// struct that can be overriden to control its behavior. By leveraging constexpr and
+// templating, features that aren’t used or needed can be removed entirely at compile time
+// to ensure zero cost at runtime.
 //
 // Here is how it looks:
 //
@@ -105,23 +109,24 @@ namespace one {
 //
 //   // Other stuff ...
 // };
-// A new struct is created to inherit from the desired decompression settings and specific functions
-// are defined to hide the base implementations, thus replacing them.
+// A new struct is created to inherit from the desired decompression settings and specific
+// functions are defined to hide the base implementations, thus replacing them.
 //
-// By templating the decompression_context with the settings structure, it can be used to determine
-// everything needed at compile time:
+// By templating the decompression_context with the settings structure, it can be used to
+// determine everything needed at compile time:
 //
-// Which memory representation is needed depending on whether we are decompressing scalar or
-// transform tracks. Which algorithm version to support and optimize for. Which features to strip
-// when they aren’t needed. This is much nicer than the common C way to use #define macros. By using
-// a template argument, multiple setting objects can easily be created (with type safety) and used
-// within the same application or file.
+// Which memory representation is needed depending on whether we are decompressing scalar
+// or transform tracks. Which algorithm version to support and optimize for. Which
+// features to strip when they aren’t needed. This is much nicer than the common C way to
+// use #define macros. By using a template argument, multiple setting objects can easily
+// be created (with type safety) and used within the same application or file.
 //
 // Backward compatibility
-// By using the decompression_settings, we can specify which version we optimize for. If no specific
-// version is provided (the default behavior), we will branch and handle all supported versions.
-// However, if a specific version is provided, we can strip the code for all other versions removing
-// any runtime overhead. This is clean and simple thanks to templates.
+// By using the decompression_settings, we can specify which version we optimize for. If
+// no specific version is provided (the default behavior), we will branch and handle all
+// supported versions. However, if a specific version is provided, we can strip the code
+// for all other versions removing any runtime overhead. This is clean and simple thanks
+// to templates.
 //
 // template<compressed_tracks_version16 version>
 // struct decompression_version_selector {};
@@ -134,7 +139,8 @@ namespace one {
 //   { return version == compressed_tracks_version16::v02_00_00; }
 //
 //   template<class decompression_settings_type, class context_type>
-//   ACL_FORCE_INLINE static bool initialize(context_type& context, const compressed_tracks& tracks)
+//   ACL_FORCE_INLINE static bool initialize(context_type& context, const
+//   compressed_tracks& tracks)
 //   {
 //     return acl_impl::initialize_v0<decompression_settings_type>(context, tracks);
 //   }
@@ -155,9 +161,9 @@ namespace one {
 //   template<class decompression_settings_type, class context_type>
 //   static bool initialize(context_type& context, const compressed_tracks& tracks)
 //   {
-//     // TODO: Note that the `any` decompression can be optimized further to avoid a complex switch
-//     on every call. const compressed_tracks_version16 version = tracks.get_version(); switch
-//     (version)
+//     // TODO: Note that the `any` decompression can be optimized further to avoid a
+//     complex switch on every call. const compressed_tracks_version16 version =
+//     tracks.get_version(); switch (version)
 //     {
 //     case compressed_tracks_version16::v02_00_00:
 //       return
@@ -171,37 +177,39 @@ namespace one {
 //
 //   // Other stuff ...
 // };
-// This is ideal for many game engines. For example Unreal Engine 4 always compresses locally and
-// caches the result in its Derived Data Cache. This means that the compressed format is always the
-// latest one used by the plugin. As such, UE4 only needs to support a single version and it can do
-// so without any overhead.
+// This is ideal for many game engines. For example Unreal Engine 4 always compresses
+// locally and caches the result in its Derived Data Cache. This means that the compressed
+// format is always the latest one used by the plugin. As such, UE4 only needs to support
+// a single version and it can do so without any overhead.
 //
-// Other game engines might choose to support the latest two versions, emiting a warning to
-// recompress old animations while still being able to support them with very little overhead: a
-// single branch to pick which context to use.
+// Other game engines might choose to support the latest two versions, emiting a warning
+// to recompress old animations while still being able to support them with very little
+// overhead: a single branch to pick which context to use.
 //
 // More general applications might opt to support every version (e.g. a glTF viewer).
 //
-// Note that backward compatibility will only be supported for official releases as the develop
-// branch is constantly subject to change.
+// Note that backward compatibility will only be supported for official releases as the
+// develop branch is constantly subject to change.
 //
 // Conclusion
-// This C++ customization pattern is clean and simple to use and it allows a compact API with a rich
-// feature set. It was present in a slightly different form ever since ACL 0.1 and the more I use
-// it, the more I love it.
+// This C++ customization pattern is clean and simple to use and it allows a compact API
+// with a rich feature set. It was present in a slightly different form ever since ACL 0.1
+// and the more I use it, the more I love it.
 //
-// In fact, in my opinion the Animation Compression Library and Realtime Math contain some of the
-// best code (quality wise) that I’ve ever written in my career. Free from time or budget
-// constraints, I can carefully craft each facet to the best of my ability.
+// In fact, in my opinion the Animation Compression Library and Realtime Math contain some
+// of the best code (quality wise) that I’ve ever written in my career. Free from time or
+// budget constraints, I can carefully craft each facet to the best of my ability.
 //
-// ACL 2.0 continues to progress nicely. It is still missing a few features but it is already an
-// amazing step up from 1.3.
+// ACL 2.0 continues to progress nicely. It is still missing a few features but it is
+// already an amazing step up from 1.3.
 
 enum class ArcusVersion { V2 };
 
 struct arcus_protocol {
     static constexpr ArcusVersion current_version() {
+        // clang-format off
         return ArcusVersion::@PROJECT_ARCUS_PROTOCOL_VERSION@;
+        // clang-format on
     }
 };
 
@@ -216,3 +224,4 @@ struct arcus_selector<ArcusVersion::V2> {
 };
 
 }  // namespace one
+}  // namespace i3d

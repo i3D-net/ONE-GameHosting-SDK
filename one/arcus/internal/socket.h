@@ -13,6 +13,7 @@ const int INVALID_SOCKET = -1;
 
 #include <one/arcus/error.h>
 
+namespace i3d {
 namespace one {
 
 // Must be called before using Socket. Safe to call multiple times. Calls to
@@ -118,3 +119,4 @@ private:
 };
 
 }  // namespace one
+}  // namespace i3d

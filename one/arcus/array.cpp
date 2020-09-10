@@ -3,6 +3,7 @@
 #include <one/arcus/internal/rapidjson/writer.h>
 #include <one/arcus/object.h>
 
+namespace i3d {
 namespace one {
 
 Array::Array() : _doc(rapidjson::kArrayType) {}
@@ -278,3 +279,4 @@ Error Array::set_val_object(unsigned int pos, const Object &val) {
 }
 
 }  // namespace one
+}  // namespace i3d

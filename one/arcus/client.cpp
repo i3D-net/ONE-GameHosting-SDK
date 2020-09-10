@@ -6,6 +6,7 @@
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/message.h>
 
+namespace i3d {
 namespace one {
 
 constexpr size_t connection_retry_delay_seconds = 5;
@@ -295,3 +296,4 @@ Error Client::process_outgoing_message(const Message &message) {
 }
 
 }  // namespace one
+}  // namespace i3d

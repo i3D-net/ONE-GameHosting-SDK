@@ -5,7 +5,7 @@
 #include <one/arcus/client.h>
 #include <one/arcus/error.h>
 
-using namespace one;
+using namespace i3d::one;
 
 TEST_CASE("Agent standalone life cycle", "[agent]") {
     Agent agent;
