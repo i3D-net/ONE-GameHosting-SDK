@@ -44,6 +44,8 @@ public:
     Error update();
 
     enum class Status { uninitialized, connecting, handshake, ready, error };
+    static std::string status_to_string(Status status);
+
     Status status();
 
     //-------------------

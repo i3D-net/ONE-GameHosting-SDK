@@ -22,6 +22,9 @@ public:
     OneServerWrapper &operator=(const OneServerWrapper &) = delete;
     ~OneServerWrapper();
 
+    bool init();
+    void shutdown();
+
     enum class Status {
         uninitialized = 0,
         initialized,
@@ -31,9 +34,8 @@ public:
         error,
         unknown
     };
+    static std::string status_to_string(Status status);
 
-    bool init();
-    void shutdown();
     Status status() const;
 
     struct GameState {
