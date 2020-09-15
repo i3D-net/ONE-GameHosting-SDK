@@ -37,6 +37,13 @@ int main(int argc, char **argv) {
     L_INFO("-----------------------");
     L_INFO("running update loop.");
 
+    auto log_status = [](Client::Status status) {
+        std::string status_str = Client::status_to_string(status);
+        L_INFO("status: " + status_str);
+    };
+    auto status = agent.client().status();
+    log_status(status);
+
     while (true) {
         sleep(50);
 
@@ -44,6 +51,12 @@ int main(int argc, char **argv) {
         if (is_error(err)) {
             L_INFO(error_text(err));
             continue;
+        }
+
+        auto old_status = status;
+        status = agent.client().status();
+        if (status != old_status) {
+            log_status(status);
         }
     }
 

@@ -134,6 +134,22 @@ Error Client::update() {
     return ONE_ERROR_NONE;
 }
 
+std::string Client::status_to_string(Status status) {
+    switch (status) {
+        case Status::uninitialized:
+            return "uninitialized";
+        case Status::connecting:
+            return "connecting";
+        case Status::handshake:
+            return "handshake";
+        case Status::ready:
+            return "ready";
+        case Status::error:
+            return "error";
+    }
+    return "unknown";
+}
+
 Client::Status Client::status() {
     if (!is_initialized()) {
         return Status::uninitialized;

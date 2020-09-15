@@ -52,6 +52,7 @@ public:
         error
     };
     Status status() const;
+    static std::string status_to_string(Status status);
 
     Error listen(unsigned int port);
 

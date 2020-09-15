@@ -1,4 +1,5 @@
 #include <one/game/game.h>
+
 #include <one/game/log.h>
 
 #include <chrono>
@@ -35,9 +36,22 @@ int main(int argc, char **argv) {
     L_INFO("----------------------");
     L_INFO("running update loop.");
 
+    auto log_status = [](OneServerWrapper::Status status) {
+        std::string status_str = OneServerWrapper::status_to_string(status);
+        L_INFO("status: " + status_str);
+    };
+    auto status = game.one_server_wrapper().status();
+    log_status(status);
+
     while (true) {
         sleep(50);
         game.update();
+
+        auto old_status = status;
+        status = game.one_server_wrapper().status();
+        if (status != old_status) {
+            log_status(status);
+        }
     }
 
     L_INFO("----------------------");

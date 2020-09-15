@@ -163,6 +163,24 @@ void OneServerWrapper::update() {
     }
 }
 
+std::string OneServerWrapper::status_to_string(Status status) {
+    switch (status) {
+        case Status::uninitialized:
+            return "uninitialized";
+        case Status::initialized:
+            return "initialized";
+        case Status::waiting_for_client:
+            return "waiting_for_client";
+        case Status::handshake:
+            return "handshake";
+        case Status::ready:
+            return "ready";
+        case Status::error:
+            return "error";
+    }
+    return "unknown";
+}
+
 OneServerWrapper::Status OneServerWrapper::status() const {
     int status = 0;
     OneError err = one_server_status(_server, &status);
