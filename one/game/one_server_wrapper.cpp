@@ -220,145 +220,6 @@ void OneServerWrapper::set_meta_data_callback(
     _meta_data_callback = callback;
 }
 
-void OneServerWrapper::send_error_response() {
-    assert(_server != nullptr && _error != nullptr);
-
-    OneError err = one_message_prepare_error_response(_host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-
-    err = one_server_send_error_response(_server, _host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-}
-
-bool OneServerWrapper::send_host_information_request() {
-    assert(_server != nullptr && _host_information != nullptr);
-
-    OneError err = one_message_prepare_host_information_request(_host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_send_host_information_request(_server, _host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    return true;
-}
-
-// Tell the server to shutdown at the next appropriate time for its users (e.g.,
-// after a match end).
-void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    if (wrapper->_soft_stop_callback == nullptr) {
-        L_INFO("soft stop callback is nullptr");
-        return;
-    }
-
-    L_INFO("invoking soft stop callback");
-    wrapper->_soft_stop_callback(timeout_seconds);
-}
-
-void OneServerWrapper::allocated(void *userdata, void *allocated) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    if (allocated == nullptr) {
-        L_ERROR("allocated is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr && wrapper->_allocated != nullptr);
-
-    if (wrapper->_allocated_callback == nullptr) {
-        L_INFO("allocated callback is nullptr");
-        return;
-    }
-
-    auto array = reinterpret_cast<OneArrayPtr>(allocated);
-
-    AllocatedData allocated_payload = {0};
-    if (!extract_allocated_payload(array, allocated_payload)) {
-        L_ERROR("failed to extract allocated payload");
-        return;
-    }
-
-    L_INFO("invoking allocated callback");
-    wrapper->_allocated_callback(allocated_payload);
-}
-
-void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    if (meta_data == nullptr) {
-        L_ERROR("meta_data is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr && wrapper->_meta_data != nullptr);
-
-    if (wrapper->_meta_data_callback == nullptr) {
-        L_INFO("meta data callback is nullptr");
-        return;
-    }
-
-    auto array = reinterpret_cast<OneArrayPtr>(meta_data);
-    MetaDataData meta_data_payload = {0};
-    if (!extract_meta_data_payload(array, meta_data_payload)) {
-        L_ERROR("failed to extract meta data payload");
-        return;
-    }
-
-    L_INFO("invoking meta data callback");
-    wrapper->_meta_data_callback(meta_data_payload);
-}
-
-void OneServerWrapper::live_state_request(void *userdata) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr && wrapper->_live_state != nullptr);
-
-    L_INFO("invoking live state request callback");
-    const auto &state = wrapper->_game_state;
-    OneError err = one_message_prepare_live_state_response(
-        state.players, state.max_players, state.name.c_str(), state.map.c_str(),
-        state.mode.c_str(), state.version.c_str(), wrapper->_live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-
-    err = one_server_send_live_state_response(wrapper->_server, wrapper->_live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-}
-
 bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
                                                  AllocatedData &allocated_data) {
     if (array == nullptr) {
@@ -582,6 +443,155 @@ bool OneServerWrapper::extract_meta_data_payload(OneArrayPtr array,
     }
 
     return true;
+}
+
+void OneServerWrapper::send_error_response() {
+    assert(_server != nullptr && _error != nullptr);
+
+    OneError err = one_message_prepare_error_response(_host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_send_error_response(_server, _host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+}
+
+bool OneServerWrapper::send_host_information_request() {
+    assert(_server != nullptr && _host_information != nullptr);
+
+    OneError err = one_message_prepare_host_information_request(_host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_host_information_request(_server, _host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+// Tell the server to shutdown at the next appropriate time for its users (e.g.,
+// after a match end).
+void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    if (wrapper->_soft_stop_callback == nullptr) {
+        L_INFO("soft stop callback is nullptr");
+        return;
+    }
+
+    L_INFO("invoking soft stop callback");
+    wrapper->_soft_stop_callback(timeout_seconds);
+}
+
+void OneServerWrapper::allocated(void *userdata, void *allocated) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (allocated == nullptr) {
+        L_ERROR("allocated is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr && wrapper->_allocated != nullptr);
+
+    if (wrapper->_allocated_callback == nullptr) {
+        L_INFO("allocated callback is nullptr");
+        return;
+    }
+
+    auto array = reinterpret_cast<OneArrayPtr>(allocated);
+
+    AllocatedData allocated_payload = {0};
+    if (!extract_allocated_payload(array, allocated_payload)) {
+        L_ERROR("failed to extract allocated payload");
+        return;
+    }
+
+    L_INFO("invoking allocated callback");
+    wrapper->_allocated_callback(allocated_payload);
+}
+
+void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (meta_data == nullptr) {
+        L_ERROR("meta_data is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr && wrapper->_meta_data != nullptr);
+
+    if (wrapper->_meta_data_callback == nullptr) {
+        L_INFO("meta data callback is nullptr");
+        return;
+    }
+
+    auto array = reinterpret_cast<OneArrayPtr>(meta_data);
+    MetaDataData meta_data_payload = {0};
+    if (!extract_meta_data_payload(array, meta_data_payload)) {
+        L_ERROR("failed to extract meta data payload");
+        return;
+    }
+
+    L_INFO("invoking meta data callback");
+    wrapper->_meta_data_callback(meta_data_payload);
+}
+
+void OneServerWrapper::live_state_request(void *userdata) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr && wrapper->_live_state != nullptr);
+
+    L_INFO("invoking live state request callback");
+    const auto &state = wrapper->_game_state;
+    OneError err = one_message_prepare_live_state_response(
+        state.players, state.max_players, state.name.c_str(), state.map.c_str(),
+        state.mode.c_str(), state.version.c_str(), wrapper->_live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_send_live_state_response(wrapper->_server, wrapper->_live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+}
+
+bool TestOneServerWrapper::extract_allocated_payload(
+    OneArrayPtr array, OneServerWrapper::AllocatedData &allocated_data) {
+    return OneServerWrapper::extract_allocated_payload(array, allocated_data);
+}
+
+bool TestOneServerWrapper::extract_meta_data_payload(
+    OneArrayPtr array, OneServerWrapper::MetaDataData &meta_data) {
+    return OneServerWrapper::extract_meta_data_payload(array, meta_data);
 }
 
 }  // namespace game

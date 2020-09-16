@@ -1,10 +1,12 @@
 #include <catch.hpp>
 #include <util.h>
 
+#include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/internal/connection.h>
+#include <one/arcus/object.h>
 #include <one/game/game.h>
 
 using namespace game;
@@ -64,4 +66,74 @@ TEST_CASE("connection error handling", "[fake game]") {
             OneServerWrapper::Status::waiting_for_client);
 
     game.shutdown();
+}
+
+TEST_CASE("ancillary message payload parsing", "[fake game]") {
+    {  // Allocated payload.
+        Object map;
+        auto err = map.set_val_string("key", "map");
+        REQUIRE(!is_error(err));
+        err = map.set_val_string("value", "islands_large");
+        REQUIRE(!is_error(err));
+
+        Object max_player;
+        err = max_player.set_val_string("key", "maxPlayer");
+        REQUIRE(!is_error(err));
+        err = max_player.set_val_string("value", "16");
+        REQUIRE(!is_error(err));
+
+        Array data;
+
+        OneArrayPtr ptr = (OneArray *)&data;
+        OneServerWrapper::AllocatedData allocated;
+        REQUIRE(!TestOneServerWrapper::extract_allocated_payload(ptr, allocated));
+
+        data.push_back_object(map);
+        REQUIRE(!TestOneServerWrapper::extract_allocated_payload(ptr, allocated));
+
+        data.push_back_object(max_player);
+        REQUIRE(TestOneServerWrapper::extract_allocated_payload(ptr, allocated));
+        REQUIRE(!is_error(err));
+        REQUIRE(allocated.map == "islands_large");
+        REQUIRE(allocated.max_players == "16");
+    }
+
+    {  // MetaData payload.
+        Object map;
+        auto err = map.set_val_string("key", "map");
+        REQUIRE(!is_error(err));
+        err = map.set_val_string("value", "islands_large");
+        REQUIRE(!is_error(err));
+
+        Object mode;
+        err = mode.set_val_string("key", "mode");
+        REQUIRE(!is_error(err));
+        err = mode.set_val_string("value", "BR");
+        REQUIRE(!is_error(err));
+
+        Object type;
+        err = type.set_val_string("key", "type");
+        REQUIRE(!is_error(err));
+        err = type.set_val_string("value", "squads");
+        REQUIRE(!is_error(err));
+
+        Array data;
+
+        OneArrayPtr ptr = (OneArray *)&data;
+        OneServerWrapper::MetaDataData meta_data;
+        REQUIRE(!TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
+
+        data.push_back_object(map);
+        REQUIRE(!TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
+
+        data.push_back_object(mode);
+        REQUIRE(!TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
+
+        data.push_back_object(type);
+        REQUIRE(TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
+        REQUIRE(!is_error(err));
+        REQUIRE(meta_data.map == "islands_large");
+        REQUIRE(meta_data.mode == "BR");
+        REQUIRE(meta_data.type == "squads");
+    }
 }

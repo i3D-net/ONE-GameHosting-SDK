@@ -15,6 +15,8 @@ typedef OneArray *OneArrayPtr;
 
 namespace game {
 
+class TestOneServerWrapper;
+
 class OneServerWrapper final {
 public:
     OneServerWrapper(unsigned int port);
@@ -73,6 +75,11 @@ public:
     void set_meta_data_callback(std::function<void(MetaDataData)> callback);
 
 private:
+    // ancillary function to show how to parse the message payloads.
+    static bool extract_allocated_payload(OneArrayPtr array,
+                                          AllocatedData &allocated_data);
+    static bool extract_meta_data_payload(OneArrayPtr array, MetaDataData &meta_data);
+
     // Sends error response to the agent.
     // Todo: figure out the proper expected error_response usage.
     void send_error_response();
@@ -86,11 +93,6 @@ private:
 
     // Callback that sends out live_state response message by the server.
     static void live_state_request(void *userdata);
-
-    // ancillary function to show how to parse the message payloads.
-    static bool extract_allocated_payload(OneArrayPtr array,
-                                          AllocatedData &allocated_data);
-    static bool extract_meta_data_payload(OneArrayPtr array, MetaDataData &meta_data);
 
     OneServerPtr _server;
     OneMessagePtr _error;
@@ -108,6 +110,20 @@ private:
     std::function<void(int)> _soft_stop_callback;
     std::function<void(AllocatedData)> _allocated_callback;
     std::function<void(MetaDataData)> _meta_data_callback;
+
+    friend TestOneServerWrapper;
+};
+
+class TestOneServerWrapper final {
+public:
+    static bool extract_allocated_payload(
+        OneArrayPtr array, OneServerWrapper::AllocatedData &allocated_data);
+    static bool extract_meta_data_payload(OneArrayPtr array,
+                                          OneServerWrapper::MetaDataData &meta_data);
+
+private:
+    TestOneServerWrapper() = delete;
+    ~TestOneServerWrapper() = delete;
 };
 
 }  // namespace game
