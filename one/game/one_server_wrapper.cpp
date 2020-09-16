@@ -12,25 +12,34 @@ namespace game {
 
 OneServerWrapper::OneServerWrapper(unsigned int port)
     : _server(nullptr)
-    , _error(nullptr)
     , _live_state(nullptr)
+    , _player_joined(nullptr)
+    , _player_left(nullptr)
     , _host_information(nullptr)
-    , _allocated(nullptr)
-    , _meta_data(nullptr)
+    , _application_instance_information(nullptr)
+    , _application_instance_get_status(nullptr)
+    , _application_instance_set_status(nullptr)
     , _port(port)
     , host_information_request_sent(false)
-    , _game_state()
+    , application_instance_information_request_sent(false)
+    , _game_state({0})
+    , _last_update_game_state({0})
     , _soft_stop_callback(nullptr)
     , _allocated_callback(nullptr)
-    , _meta_data_callback(nullptr) {}
+    , _meta_data_callback(nullptr)
+    , _host_information_callback(nullptr)
+    , _application_instance_information_callback(nullptr) {}
 
 OneServerWrapper::~OneServerWrapper() {
     shutdown();
 }
 
 bool OneServerWrapper::init() {
-    if (_server != nullptr || _error != nullptr || _live_state != nullptr ||
-        _host_information != nullptr) {
+    if (_server != nullptr || _live_state != nullptr || _player_joined != nullptr ||
+        _player_left != nullptr || _host_information != nullptr ||
+        _application_instance_information != nullptr ||
+        _application_instance_get_status != nullptr ||
+        _application_instance_set_status != nullptr) {
         L_ERROR("already init");
         return false;
     }
@@ -48,13 +57,19 @@ bool OneServerWrapper::init() {
 
     // Create cached messages that can be sent as responses.
 
-    err = one_message_create(&_error);
+    err = one_message_create(&_live_state);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    err = one_message_create(&_live_state);
+    err = one_message_create(&_player_joined);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_message_create(&_player_left);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -66,13 +81,19 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    err = one_array_create(&_allocated);
+    err = one_message_create(&_application_instance_information);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    err = one_array_create(&_meta_data);
+    err = one_message_create(&_application_instance_get_status);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_message_create(&_application_instance_set_status);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -114,6 +135,34 @@ bool OneServerWrapper::init() {
         return false;
     }
 
+    err = one_server_set_host_information_response_callback(_server, host_information,
+                                                            this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_set_application_instance_information_response_callback(
+        _server, application_instance_information, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_set_application_instance_get_status_response_callback(
+        _server, application_instance_get_status, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_set_application_instance_set_status_response_callback(
+        _server, application_instance_set_status, this);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
     //------------------
     // Start the server.
 
@@ -130,17 +179,20 @@ bool OneServerWrapper::init() {
 }
 
 void OneServerWrapper::shutdown() {
-    if (_server == nullptr && _error == nullptr && _live_state == nullptr &&
-        _host_information == nullptr) {
+    if (_server == nullptr && _player_joined == nullptr && _player_left == nullptr &&
+        _live_state == nullptr && _host_information == nullptr &&
+        _application_instance_information == nullptr) {
         return;
     }
 
     one_server_destroy(&_server);
-    one_message_destroy(&_error);
+    one_message_destroy(&_player_joined);
+    one_message_destroy(&_player_left);
     one_message_destroy(&_live_state);
     one_message_destroy(&_host_information);
-    one_array_destroy(&_allocated);
-    one_array_destroy(&_meta_data);
+    one_message_destroy(&_application_instance_information);
+    one_message_destroy(&_application_instance_get_status);
+    one_message_destroy(&_application_instance_set_status);
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
@@ -150,17 +202,37 @@ void OneServerWrapper::set_game_state(const GameState &state) {
 void OneServerWrapper::update() {
     assert(_server != nullptr);
 
-    // Add a host_information_request in the message outbound queue.
     if (!host_information_request_sent) {
         if (send_host_information_request()) {
             host_information_request_sent = true;
         }
     }
 
+    if (!application_instance_information_request_sent) {
+        if (send_application_instance_information_request()) {
+            application_instance_information_request_sent = true;
+        }
+    }
+
+    if (_last_update_game_state.players != _game_state.players) {
+        if (_last_update_game_state.players < _game_state.players) {
+            if (!send_player_joined_event(_game_state.players)) {
+                L_ERROR("failed to send player joined event response");
+            }
+        } else {
+            if (!send_player_left(_game_state.players)) {
+                L_ERROR("failed to send player left response");
+            }
+        }
+    }
+
     OneError err = one_server_update(_server);
     if (is_error(err)) {
         L_ERROR(error_text(err));
+        return;
     }
+
+    _last_update_game_state = _game_state;
 }
 
 std::string OneServerWrapper::status_to_string(Status status) {
@@ -218,6 +290,347 @@ void OneServerWrapper::set_allocated_callback(
 void OneServerWrapper::set_meta_data_callback(
     std::function<void(MetaDataData)> callback) {
     _meta_data_callback = callback;
+}
+
+void OneServerWrapper::set_host_information_callback(
+    std::function<void(HostInformationData)> callback) {
+    _host_information_callback = callback;
+}
+
+void OneServerWrapper::set_application_instance_information_callback(
+    std::function<void(ApplicationInstanceInformationData)> callback) {
+    _application_instance_information_callback = callback;
+}
+
+void OneServerWrapper::set_application_instance_get_status_callback(
+    std::function<void(ApplicationInstanceGetStatusData)> callback) {
+    _application_instance_get_status_callback = callback;
+}
+
+void OneServerWrapper::set_application_instance_set_status_callback(
+    std::function<void(ApplicationInstanceSetStatusData)> callback) {
+    _application_instance_set_status_callback = callback;
+}
+
+bool OneServerWrapper::send_application_instance_get_status() {
+    assert(_server != nullptr && _application_instance_get_status != nullptr);
+
+    OneError err = one_message_prepare_application_instance_get_status_request(
+        _application_instance_get_status);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_application_instance_get_status_request(
+        _server, _application_instance_get_status);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::send_application_instance_set_status(int status) {
+    assert(_server != nullptr && _application_instance_set_status != nullptr);
+
+    OneError err = one_message_prepare_application_instance_set_status_request(
+        status, _application_instance_set_status);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_application_instance_set_status_request(
+        _server, _application_instance_set_status);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::send_player_joined_event(int num_players) {
+    assert(_server != nullptr && _player_joined != nullptr);
+
+    OneError err =
+        one_message_prepare_player_joined_event_response(num_players, _player_joined);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_player_joined_event_response(_server, _player_joined);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::send_player_left(int num_players) {
+    assert(_server != nullptr && _player_left != nullptr);
+
+    OneError err = one_message_prepare_player_left_response(num_players, _player_left);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_player_left_response(_server, _player_left);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::send_host_information_request() {
+    assert(_server != nullptr && _host_information != nullptr);
+
+    OneError err = one_message_prepare_host_information_request(_host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_host_information_request(_server, _host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::send_application_instance_information_request() {
+    assert(_server != nullptr && _application_instance_information != nullptr);
+
+    OneError err = one_message_prepare_application_instance_information_request(
+        _application_instance_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_application_instance_information_request(
+        _server, _application_instance_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+// Tell the server to shutdown at the next appropriate time for its users (e.g.,
+// after a match end).
+void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    if (wrapper->_soft_stop_callback == nullptr) {
+        L_INFO("soft stop callback is nullptr");
+        return;
+    }
+
+    L_INFO("invoking soft stop callback");
+    wrapper->_soft_stop_callback(timeout_seconds);
+}
+
+void OneServerWrapper::allocated(void *userdata, void *allocated) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (allocated == nullptr) {
+        L_ERROR("allocated is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr);
+
+    if (wrapper->_allocated_callback == nullptr) {
+        L_INFO("allocated callback is nullptr");
+        return;
+    }
+
+    auto array = reinterpret_cast<OneArrayPtr>(allocated);
+
+    AllocatedData allocated_payload = {0};
+    if (!extract_allocated_payload(array, allocated_payload)) {
+        L_ERROR("failed to extract allocated payload");
+        return;
+    }
+
+    L_INFO("invoking allocated callback");
+    wrapper->_allocated_callback(allocated_payload);
+}
+
+void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (meta_data == nullptr) {
+        L_ERROR("meta_data is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr);
+
+    if (wrapper->_meta_data_callback == nullptr) {
+        L_INFO("meta data callback is nullptr");
+        return;
+    }
+
+    auto array = reinterpret_cast<OneArrayPtr>(meta_data);
+    MetaDataData meta_data_payload = {0};
+    if (!extract_meta_data_payload(array, meta_data_payload)) {
+        L_ERROR("failed to extract meta data payload");
+        return;
+    }
+
+    L_INFO("invoking meta data callback");
+    wrapper->_meta_data_callback(meta_data_payload);
+}
+
+void OneServerWrapper::host_information(void *userdata, void *information) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (information == nullptr) {
+        L_ERROR("information is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr);
+
+    if (wrapper->_host_information_callback == nullptr) {
+        L_INFO("host information callback is nullptr");
+        return;
+    }
+
+    auto object = reinterpret_cast<OneObjectPtr>(meta_data);
+    HostInformationData information_payload = {0};
+    if (!extract_host_information_payload(object, information_payload)) {
+        L_ERROR("failed to extract host information payload");
+        return;
+    }
+
+    L_INFO("invoking host information callback");
+    wrapper->_host_information_callback(information_payload);
+}
+
+void OneServerWrapper::application_instance_information(void *userdata,
+                                                        void *information) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (information == nullptr) {
+        L_ERROR("information is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr);
+
+    if (wrapper->_application_instance_information_callback == nullptr) {
+        L_INFO("host information callback is nullptr");
+        return;
+    }
+
+    auto object = reinterpret_cast<OneObjectPtr>(meta_data);
+    ApplicationInstanceInformationData information_payload = {0};
+    if (!extract_application_instance_information_payload(object, information_payload)) {
+        L_ERROR("failed to extract host information payload");
+        return;
+    }
+
+    L_INFO("invoking host information callback");
+    wrapper->_application_instance_information_callback(information_payload);
+}
+
+void OneServerWrapper::application_instance_get_status(void *userdata, int status) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr);
+
+    if (wrapper->_application_instance_information_callback == nullptr) {
+        L_INFO("host information callback is nullptr");
+        return;
+    }
+
+    L_INFO("invoking host information callback");
+    ApplicationInstanceGetStatusData data;
+    data.status = status;
+    wrapper->_application_instance_get_status_callback(data);
+}
+
+void OneServerWrapper::application_instance_set_status(void *userdata, int code) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr);
+
+    if (wrapper->_application_instance_information_callback == nullptr) {
+        L_INFO("host information callback is nullptr");
+        return;
+    }
+
+    L_INFO("invoking host information callback");
+    ApplicationInstanceSetStatusData data;
+    data.code = code;
+    wrapper->_application_instance_set_status_callback(data);
+}
+
+void OneServerWrapper::live_state_request(void *userdata) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr && wrapper->_live_state != nullptr);
+
+    L_INFO("invoking live state request callback");
+    const auto &state = wrapper->_game_state;
+    OneError err = one_message_prepare_live_state_response(
+        state.players, state.max_players, state.name.c_str(), state.map.c_str(),
+        state.mode.c_str(), state.version.c_str(), wrapper->_live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_send_live_state_response(wrapper->_server, wrapper->_live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
 }
 
 bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
@@ -445,143 +858,97 @@ bool OneServerWrapper::extract_meta_data_payload(OneArrayPtr array,
     return true;
 }
 
-void OneServerWrapper::send_error_response() {
-    assert(_server != nullptr && _error != nullptr);
-
-    OneError err = one_message_prepare_error_response(_host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
+bool OneServerWrapper::extract_host_information_payload(
+    OneObjectPtr object, OneServerWrapper::HostInformationData &information) {
+    if (object == nullptr) {
+        L_ERROR("object is nullptr.");
+        return false;
     }
 
-    err = one_server_send_error_response(_server, _host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-}
-
-bool OneServerWrapper::send_host_information_request() {
-    assert(_server != nullptr && _host_information != nullptr);
-
-    OneError err = one_message_prepare_host_information_request(_host_information);
+    auto err = one_object_val_int(object, "id", &information.id);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    err = one_server_send_host_information_request(_server, _host_information);
+    err = one_object_val_int(object, "serverId", &information.server_id);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
+
+    size_t size = 0;
+    err = one_object_val_string_size(object, "serverName", &size);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    char *temp = new char[size];
+    if (temp == nullptr) {
+        L_ERROR("temp is nullptr");
+        return false;
+    }
+
+    err = one_object_val_string(object, "serverName", temp, size);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    information.server_name = temp;
+    delete[] temp;
+
+    // ... add more field parsing as needed.
 
     return true;
 }
 
-// Tell the server to shutdown at the next appropriate time for its users (e.g.,
-// after a match end).
-void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
+bool OneServerWrapper::extract_application_instance_information_payload(
+    OneObjectPtr object,
+    OneServerWrapper::ApplicationInstanceInformationData &information) {
+    if (object == nullptr) {
+        L_ERROR("object is nullptr.");
+        return false;
     }
 
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    if (wrapper->_soft_stop_callback == nullptr) {
-        L_INFO("soft stop callback is nullptr");
-        return;
-    }
-
-    L_INFO("invoking soft stop callback");
-    wrapper->_soft_stop_callback(timeout_seconds);
-}
-
-void OneServerWrapper::allocated(void *userdata, void *allocated) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    if (allocated == nullptr) {
-        L_ERROR("allocated is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr && wrapper->_allocated != nullptr);
-
-    if (wrapper->_allocated_callback == nullptr) {
-        L_INFO("allocated callback is nullptr");
-        return;
-    }
-
-    auto array = reinterpret_cast<OneArrayPtr>(allocated);
-
-    AllocatedData allocated_payload = {0};
-    if (!extract_allocated_payload(array, allocated_payload)) {
-        L_ERROR("failed to extract allocated payload");
-        return;
-    }
-
-    L_INFO("invoking allocated callback");
-    wrapper->_allocated_callback(allocated_payload);
-}
-
-void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    if (meta_data == nullptr) {
-        L_ERROR("meta_data is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr && wrapper->_meta_data != nullptr);
-
-    if (wrapper->_meta_data_callback == nullptr) {
-        L_INFO("meta data callback is nullptr");
-        return;
-    }
-
-    auto array = reinterpret_cast<OneArrayPtr>(meta_data);
-    MetaDataData meta_data_payload = {0};
-    if (!extract_meta_data_payload(array, meta_data_payload)) {
-        L_ERROR("failed to extract meta data payload");
-        return;
-    }
-
-    L_INFO("invoking meta data callback");
-    wrapper->_meta_data_callback(meta_data_payload);
-}
-
-void OneServerWrapper::live_state_request(void *userdata) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr && wrapper->_live_state != nullptr);
-
-    L_INFO("invoking live state request callback");
-    const auto &state = wrapper->_game_state;
-    OneError err = one_message_prepare_live_state_response(
-        state.players, state.max_players, state.name.c_str(), state.map.c_str(),
-        state.mode.c_str(), state.version.c_str(), wrapper->_live_state);
+    size_t size = 0;
+    auto err = one_object_val_string_size(object, "fleetId", &size);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
 
-    err = one_server_send_live_state_response(wrapper->_server, wrapper->_live_state);
+    char *temp = new char[size];
+    if (temp == nullptr) {
+        L_ERROR("temp is nullptr");
+        return false;
+    }
+
+    err = one_object_val_string(object, "fleetId", temp, size);
     if (is_error(err)) {
         L_ERROR(error_text(err));
-        return;
+        return false;
     }
+
+    information.fleet_id = temp;
+    delete[] temp;
+
+    err = one_object_val_int(object, "hostId", &information.host_id);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_object_val_int(object, "isVirtual", &information.is_virtual);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    // ... add more field parsing as needed.
+
+    return true;
 }
 
 bool TestOneServerWrapper::extract_allocated_payload(

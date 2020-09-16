@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <util.h>
 
+#include <one/agent/agent.h>
 #include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/internal/codec.h>
@@ -8,9 +9,35 @@
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/object.h>
 #include <one/game/game.h>
+#include <one/game/log.h>
 
 using namespace game;
 using namespace i3d::one;
+
+bool soft_stop_callback_has_been_called = false;
+bool allocated_callback_has_been_called = false;
+bool meta_data_callback_has_been_called = false;
+
+void soft_stop_callback(int timeout) {
+    L_INFO("soft stop payload:");
+    L_INFO("timeout:" + std::to_string(timeout));
+    soft_stop_callback_has_been_called = true;
+}
+
+void allocated_callback(OneServerWrapper::AllocatedData data) {
+    L_INFO("allocated payload:");
+    L_INFO("max_players:" + data.max_players);
+    L_INFO("map:" + data.map);
+    allocated_callback_has_been_called = true;
+}
+
+void meta_data_callback(OneServerWrapper::MetaDataData data) {
+    L_INFO("allocated payload:");
+    L_INFO("map:" + data.map);
+    L_INFO("mode:" + data.mode);
+    L_INFO("type:" + data.type);
+    allocated_callback_has_been_called = true;
+}
 
 TEST_CASE("life cycle", "[fake game]") {
     Game game(19001);
@@ -136,4 +163,95 @@ TEST_CASE("ancillary message payload parsing", "[fake game]") {
         REQUIRE(meta_data.mode == "BR");
         REQUIRE(meta_data.type == "squads");
     }
+}
+
+TEST_CASE("Agent connects to a game & send requests", "[integration]") {
+    const auto address = "127.0.0.1";
+    const unsigned int port = 19002;
+
+    Game game(port);
+    REQUIRE(game.init(1, 16, "name", "map", "mode", "version"));
+    REQUIRE(game.one_server_wrapper().status() ==
+            OneServerWrapper::Status::waiting_for_client);
+
+    Agent agent;
+    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(agent.update() == ONE_ERROR_NONE);
+    REQUIRE(agent.client().status() == Client::Status::handshake);
+
+    pump_updates(10, 1, agent, game);
+    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
+    REQUIRE(agent.client().status() == Client::Status::ready);
+
+    auto &wrapper = game.one_server_wrapper();
+    wrapper.set_soft_stop_callback(soft_stop_callback);
+    wrapper.set_allocated_callback(allocated_callback);
+    wrapper.set_meta_data_callback(meta_data_callback);
+
+    {
+        REQUIRE(agent.send_soft_stop_request(1000) == 0);
+        agent.update();
+        game.update();
+        REQUIRE(soft_stop_callback_has_been_called == true);
+    }
+
+    return;
+
+    // allocated_request
+    {
+        Object map;
+        auto err = map.set_val_string("key", "map");
+        REQUIRE(!is_error(err));
+        err = map.set_val_string("value", "islands_large");
+        REQUIRE(!is_error(err));
+
+        Object max_player;
+        err = max_player.set_val_string("key", "maxPlayer");
+        REQUIRE(!is_error(err));
+        err = max_player.set_val_string("value", "16");
+        REQUIRE(!is_error(err));
+
+        Array data;
+        data.push_back_object(map);
+        data.push_back_object(max_player);
+
+        REQUIRE(agent.send_allocated_request(&data) == 0);
+        agent.update();
+        game.update();
+        REQUIRE(allocated_callback_has_been_called == true);
+    }
+
+    // meta_data_request
+    {
+        Object map;
+        auto err = map.set_val_string("key", "map");
+        REQUIRE(!is_error(err));
+        err = map.set_val_string("value", "islands_large");
+        REQUIRE(!is_error(err));
+
+        Object mode;
+        err = mode.set_val_string("key", "mode");
+        REQUIRE(!is_error(err));
+        err = mode.set_val_string("value", "BR");
+        REQUIRE(!is_error(err));
+
+        Object type;
+        err = type.set_val_string("key", "type");
+        REQUIRE(!is_error(err));
+        err = type.set_val_string("value", "squads");
+        REQUIRE(!is_error(err));
+
+        Array data;
+        data.push_back_object(map);
+        data.push_back_object(mode);
+        data.push_back_object(type);
+
+        Array array;
+        REQUIRE(agent.send_meta_data_request(&data) == 0);
+        agent.update();
+        game.update();
+        REQUIRE(meta_data_callback_has_been_called == true);
+    }
+
+    game.shutdown();
 }

@@ -1,6 +1,10 @@
 #include <util.h>
+
+#include <one/game/one_server_wrapper.h>
+
 #include <chrono>
 #include <thread>
+
 using namespace std::chrono;
 
 namespace i3d {
@@ -31,6 +35,17 @@ bool wait_with_cancel(int wait_ms, std::function<bool()> cb) {
         }
     }
     return true;
+}
+
+void pump_updates(int count, int ms_per_loop, Agent &agent, game::Game &game) {
+    for_sleep(count, ms_per_loop, [&]() {
+        game.update();
+        agent.update();
+        if (agent.client().status() == Client::Status::ready &&
+            game.one_server_wrapper().status() == game::OneServerWrapper::Status::ready)
+            return true;
+        return false;
+    });
 }
 
 }  // namespace one

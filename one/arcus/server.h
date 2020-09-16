@@ -11,6 +11,7 @@ namespace one {
 class Array;
 class Connection;
 class Message;
+class Object;
 class Socket;
 
 namespace callback {
@@ -24,6 +25,14 @@ struct ServerCallbacks {
     void *_meta_data_request_data;
     std::function<void(void *)> _live_state_request;
     void *_live_state_request_data;
+    std::function<void(void *, Object *)> _host_information_response;
+    void *_host_information_response_data;
+    std::function<void(void *, Object *)> _application_instance_information_response;
+    void *_application_instance_information_response_data;
+    std::function<void(void *, int)> _application_instance_get_status_response;
+    void *_application_instance_get_status_response_data;
+    std::function<void(void *, int)> _application_instance_set_status_response;
+    void *_application_instance_set_status_response_data;
 };
 
 }  // namespace callback
@@ -93,34 +102,84 @@ public:
     Error set_live_state_request_callback(std::function<void(void *)> callback,
                                           void *data);
 
-    // all other externally-facing opcode callbacks...
+    // set the callback for when a host_information_response message in received.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    Error set_host_information_response_callback(
+        std::function<void(void *, Object *)> callback, void *data);
+
+    // set the callback for when a application_instance_information_response message in
+    // received. The `void *data` is the user provided & will be passed as the first
+    // argument of the callback when invoked. The `data` can be nullptr, the callback is
+    // responsible to use the data properly.
+    Error set_application_instance_information_response_callback(
+        std::function<void(void *, Object *)> callback, void *data);
+
+    // set the callback for when a application_instance_get_status_response message in
+    // received. The `void *data` is the user provided & will be passed as the first
+    // argument of the callback when invoked. The `data` can be nullptr, the callback is
+    // responsible to use the data properly.
+    Error set_application_instance_get_status_response_callback(
+        std::function<void(void *, int)> callback, void *data);
+
+    // set the callback for when a application_instance_set_status_response message in
+    // received. The `void *data` is the user provided & will be passed as the first
+    // argument of the callback when invoked. The `data` can be nullptr, the callback is
+    // responsible to use the data properly.
+    Error set_application_instance_set_status_response_callback(
+        std::function<void(void *, int)> callback, void *data);
 
     //------------------------------------------------------------------------------
     // Outgoing.
 
-    // Todo: update functions to match complete list from One API v2.
-
-    // send error opcode message.
-    // Message Empty Content:
-    // {}
-    Error send_error_response(const Message &message);
-
     // send live_state_response opcode message.
     // Message Mandatory Content:
     // {
-    //   players : 0,
-    //   max players : 0,
-    //   server name : "",
-    //   server map : "",
-    //   server mode : "",
-    //   server version : "",
+    //   "players" : 0,
+    //   "maxPlayers" : 0,
+    //   "name" : "",
+    //   "map" : "",
+    //   "mode" : "",
+    //   "version" : ""
     // }
     Error send_live_state_response(const Message &message);
 
-    // send host_information_reqeust.
+    // send player_joined_event_response.
+    // Message Mandatory Content:
+    // {
+    //   "numPlayers" : 0
+    // }
+    Error send_player_joined_event_response(const Message &message);
+
+    // send player_left_response.
+    // Message Mandatory Content:
+    // {
+    //   "numPlayers" : 0
+    // }
+    Error send_player_left_response(const Message &message);
+
+    // send host_information_request.
     // Message Empty Content:
     // {}
     Error send_host_information_request(const Message &message);
+
+    // send application_instance_information_request.
+    // Message Empty Content:
+    // {}
+    Error send_application_instance_information_request(const Message &message);
+
+    // send application_instance_get_status_request.
+    // Message Empty Content:
+    // {}
+    Error send_application_instance_get_status_request(const Message &message);
+
+    // send application_instance_set_status_request.
+    // Message Empty Content:
+    // {
+    //   "status": 0
+    // }
+    Error send_application_instance_set_status_request(const Message &message);
 
 private:
     bool is_initialized() const;

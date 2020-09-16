@@ -291,6 +291,20 @@ Error message_val_object(OneMessagePtr message, const char *key, OneObjectPtr va
     return m->payload().val_object(key, *o);
 }
 
+Error message_val_root_object(OneMessagePtr message, OneObjectPtr val) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    auto o = (Object *)val;
+    if (o == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    return m->payload().val_root_object(*o);
+}
+
 Error message_set_val_bool(OneMessagePtr message, const char *key, bool val) {
     auto m = (Message *)message;
     if (m == nullptr) {
@@ -368,6 +382,20 @@ Error message_set_val_object(OneMessagePtr message, const char *key, OneObjectPt
     }
 
     return m->payload().set_val_object(key, *o);
+}
+
+Error message_set_val_root_object(OneMessagePtr message, OneObjectPtr val) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    auto o = (Object *)val;
+    if (o == nullptr) {
+        return ONE_ERROR_VALIDATION_VAL_IS_NULLPTR;
+    }
+
+    return m->payload().set_val_root_object(*o);
 }
 
 OneError array_create(OneArrayPtr *array) {
@@ -1151,15 +1179,6 @@ OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPt
     return o->set_val_object(key, *v);
 }
 
-Error message_prepare_error_response(OneMessagePtr message) {
-    auto m = (Message *)message;
-    if (m == nullptr) {
-        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
-    }
-
-    return messages::prepare_error_response(*m);
-}
-
 Error message_prepare_live_state_response(int player, int max_player, const char *name,
                                           const char *map, const char *mode,
                                           const char *version, OneMessagePtr message) {
@@ -1188,6 +1207,25 @@ Error message_prepare_live_state_response(int player, int max_player, const char
                                                  version, *m);
 }
 
+Error message_prepare_player_joined_event_response(int num_players,
+                                                   OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return messages::prepare_player_joined_event_response(num_players, *m);
+}
+
+Error message_prepare_player_left_response(int num_players, OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return messages::prepare_player_left_response(num_players, *m);
+}
+
 Error message_prepare_host_information_request(OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
@@ -1195,6 +1233,34 @@ Error message_prepare_host_information_request(OneMessagePtr message) {
     }
 
     return messages::prepare_host_information_request(*m);
+}
+
+Error message_prepare_application_instance_information_request(OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return messages::prepare_application_instance_information_request(*m);
+}
+
+Error message_prepare_application_instance_get_status_request(OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return messages::prepare_application_instance_get_status_request(*m);
+}
+
+Error message_prepare_application_instance_set_status_request(int status,
+                                                              OneMessagePtr message) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return messages::prepare_application_instance_set_status_request(status, *m);
 }
 
 Error server_create(OneServerPtr *server) {
@@ -1270,20 +1336,6 @@ Error server_shutdown(OneServerPtr server) {
     return s->shutdown();
 }
 
-Error server_send_error_response(OneServerPtr server, OneMessagePtr message) {
-    auto s = (Server *)server;
-    if (s == nullptr) {
-        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
-    }
-
-    auto m = (Message *)message;
-    if (m == nullptr) {
-        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
-    }
-
-    return s->send_error_response(*m);
-}
-
 Error server_send_live_state_response(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
@@ -1298,6 +1350,35 @@ Error server_send_live_state_response(OneServerPtr server, OneMessagePtr message
     return s->send_live_state_response(*m);
 }
 
+Error server_send_player_joined_event_response(OneServerPtr server,
+                                               OneMessagePtr message) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return s->send_player_joined_event_response(*m);
+}
+
+Error server_send_player_left_response(OneServerPtr server, OneMessagePtr message) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return s->send_player_left_response(*m);
+}
+
 Error server_send_host_information_request(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
@@ -1310,6 +1391,51 @@ Error server_send_host_information_request(OneServerPtr server, OneMessagePtr me
     }
 
     return s->send_host_information_request(*m);
+}
+
+Error server_send_application_instance_information_request(OneServerPtr server,
+                                                           OneMessagePtr message) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return s->send_application_instance_information_request(*m);
+}
+
+Error server_send_application_instance_get_status_request(OneServerPtr server,
+                                                          OneMessagePtr message) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return s->send_application_instance_get_status_request(*m);
+}
+
+Error server_send_application_instance_set_status_request(OneServerPtr server,
+                                                          OneMessagePtr message) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return s->send_application_instance_set_status_request(*m);
 }
 
 Error server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *, int),
@@ -1369,6 +1495,67 @@ Error server_set_live_state_request_callback(OneServerPtr server,
     }
 
     s->set_live_state_request_callback(callback, data);
+    return ONE_ERROR_NONE;
+}
+
+Error server_set_host_information_response_callback(OneServerPtr server,
+                                                    void (*callback)(void *, void *),
+                                                    void *data) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    s->set_host_information_response_callback(callback, data);
+    return ONE_ERROR_NONE;
+}
+
+Error server_set_application_instance_information_response_callback(
+    OneServerPtr server, void (*callback)(void *, void *), void *data) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    s->set_application_instance_information_response_callback(callback, data);
+    return ONE_ERROR_NONE;
+}
+
+Error server_set_application_instance_get_status_response_callback(
+    OneServerPtr server, void (*callback)(void *, int), void *data) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    s->set_application_instance_get_status_response_callback(callback, data);
+    return ONE_ERROR_NONE;
+}
+
+Error server_set_application_instance_set_status_response_callback(
+    OneServerPtr server, void (*callback)(void *, int), void *data) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    s->set_application_instance_set_status_response_callback(callback, data);
     return ONE_ERROR_NONE;
 }
 
@@ -1452,6 +1639,10 @@ OneError one_message_val_object(OneMessagePtr message, const char *key,
     return one::message_val_object(message, key, val);
 }
 
+OneError one_message_val_root_object(OneMessagePtr message, OneObjectPtr val) {
+    return one::message_val_root_object(message, val);
+}
+
 OneError one_message_set_val_bool(OneMessagePtr message, const char *key, bool val) {
     return one::message_set_val_bool(message, key, val);
 }
@@ -1473,6 +1664,10 @@ OneError one_message_set_val_array(OneMessagePtr message, const char *key,
 OneError one_message_set_val_object(OneMessagePtr message, const char *key,
                                     OneObjectPtr val) {
     return one::message_set_val_object(message, key, val);
+}
+
+OneError one_message_set_val_root_object(OneMessagePtr message, OneObjectPtr val) {
+    return one::message_set_val_root_object(message, val);
 }
 
 OneError one_array_create(OneArrayPtr *array) {
@@ -1687,10 +1882,6 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
     return one::object_set_val_object(object, key, val);
 }
 
-OneError one_message_prepare_error_response(OneMessagePtr message) {
-    return one::message_prepare_error_response(message);
-}
-
 OneError one_message_prepare_live_state_response(int player, int max_player,
                                                  const char *name, const char *map,
                                                  const char *mode, const char *version,
@@ -1699,8 +1890,33 @@ OneError one_message_prepare_live_state_response(int player, int max_player,
                                                     version, message);
 }
 
+OneError one_message_prepare_player_joined_event_response(int num_players,
+                                                          OneMessagePtr message) {
+    return one::message_prepare_player_joined_event_response(num_players, message);
+}
+
+OneError one_message_prepare_player_left_response(int num_players,
+                                                  OneMessagePtr message) {
+    return one::message_prepare_player_left_response(num_players, message);
+}
+
 OneError one_message_prepare_host_information_request(OneMessagePtr message) {
     return one::message_prepare_host_information_request(message);
+}
+
+OneError one_message_prepare_application_instance_information_request(
+    OneMessagePtr message) {
+    return one::message_prepare_application_instance_information_request(message);
+}
+
+OneError one_message_prepare_application_instance_get_status_request(
+    OneMessagePtr message) {
+    return one::message_prepare_application_instance_get_status_request(message);
+}
+
+OneError one_message_prepare_application_instance_set_status_request(
+    int status, OneMessagePtr message) {
+    return one::message_prepare_application_instance_set_status_request(status, message);
 }
 
 OneError one_server_create(OneServerPtr *server) {
@@ -1727,17 +1943,38 @@ OneError one_server_shutdown(OneServerPtr server) {
     return one::server_shutdown(server);
 }
 
-OneError one_server_send_error_response(OneServerPtr server, OneMessagePtr message) {
-    return one::server_send_error_response(server, message);
-}
-
 OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message) {
     return one::server_send_live_state_response(server, message);
+}
+
+OneError one_server_send_player_joined_event_response(OneServerPtr server,
+                                                      OneMessagePtr message) {
+    return one::server_send_player_joined_event_response(server, message);
+}
+
+OneError one_server_send_player_left_response(OneServerPtr server,
+                                              OneMessagePtr message) {
+    return one::server_send_player_left_response(server, message);
 }
 
 OneError one_server_send_host_information_request(OneServerPtr server,
                                                   OneMessagePtr message) {
     return one::server_send_host_information_request(server, message);
+}
+
+OneError one_server_send_application_instance_information_request(OneServerPtr server,
+                                                                  OneMessagePtr message) {
+    return one::server_send_application_instance_information_request(server, message);
+}
+
+OneError one_server_send_application_instance_get_status_request(OneServerPtr server,
+                                                                 OneMessagePtr message) {
+    return one::server_send_application_instance_get_status_request(server, message);
+}
+
+OneError one_server_send_application_instance_set_status_request(OneServerPtr server,
+                                                                 OneMessagePtr message) {
+    return one::server_send_application_instance_set_status_request(server, message);
 }
 
 OneError one_server_set_soft_stop_callback(OneServerPtr server,
@@ -1762,6 +1999,29 @@ OneError one_server_set_live_state_request_callback(OneServerPtr server,
                                                     void (*callback)(void *data),
                                                     void *data) {
     return one::server_set_live_state_request_callback(server, callback, data);
+}
+
+OneError one_server_set_host_information_response_callback(
+    OneServerPtr server, void (*callback)(void *, void *), void *data) {
+    return one::server_set_host_information_response_callback(server, callback, data);
+}
+
+OneError one_server_set_application_instance_information_response_callback(
+    OneServerPtr server, void (*callback)(void *, void *), void *data) {
+    return one::server_set_application_instance_information_response_callback(
+        server, callback, data);
+}
+
+OneError one_server_set_application_instance_get_status_response_callback(
+    OneServerPtr server, void (*callback)(void *, int), void *data) {
+    return one::server_set_application_instance_get_status_response_callback(
+        server, callback, data);
+}
+
+OneError one_server_set_application_instance_set_status_response_callback(
+    OneServerPtr server, void (*callback)(void *, int), void *data) {
+    return one::server_set_application_instance_set_status_response_callback(
+        server, callback, data);
 }
 
 void one_allocator_set_alloc(void *(callback)(unsigned int size)) {

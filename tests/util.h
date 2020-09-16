@@ -1,5 +1,8 @@
 #pragma once
 
+#include <one/agent/agent.h>
+#include <one/game/game.h>
+
 #include <functional>
 
 namespace i3d {
@@ -17,6 +20,9 @@ void for_sleep(int count, int ms_per_loop, std::function<bool()> cb);
 // return true when called.
 // TODO: this function doesn't seem to be working? Debug and fix or remove.
 bool wait_with_cancel(int wait_ms, std::function<bool()> cb);
+
+// Loops for given number of times, calling the Agent & game update functions.
+void pump_updates(int count, int ms_per_loop, Agent &agent, game::Game &game);
 
 }  // namespace one
 }  // namespace i3d

@@ -427,7 +427,7 @@ Error Connection::process_incoming_messages() {
         while (read_message_and_continue()) {
             // Skip health messages, they are consumed internally and do not
             // make it to the queue for public consumption.
-            if (message.code() == Opcode::health) {
+            if (message.code() == Opcode::ping) {
                 continue;
             }
 

@@ -292,12 +292,47 @@ Error Server::set_live_state_request_callback(std::function<void(void *)> callba
     return ONE_ERROR_NONE;
 }
 
-Error Server::send_error_response(const Message &message) {
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
+Error Server::set_host_information_response_callback(
+    std::function<void(void *, Object *)> callback, void *data) {
+    if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
 
+    _callbacks._host_information_response = callback;
+    _callbacks._host_information_response_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_application_instance_information_response_callback(
+    std::function<void(void *, Object *)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._application_instance_information_response = callback;
+    _callbacks._application_instance_information_response_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_application_instance_get_status_response_callback(
+    std::function<void(void *, int)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._application_instance_get_status_response = callback;
+    _callbacks._application_instance_get_status_response_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_application_instance_set_status_response_callback(
+    std::function<void(void *, int)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._application_instance_set_status_response = callback;
+    _callbacks._application_instance_set_status_response_data = data;
     return ONE_ERROR_NONE;
 }
 
@@ -310,7 +345,52 @@ Error Server::send_live_state_response(const Message &message) {
     return ONE_ERROR_NONE;
 }
 
+Error Server::send_player_joined_event_response(const Message &message) {
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::send_player_left_response(const Message &message) {
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
 Error Server::send_host_information_request(const Message &message) {
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::send_application_instance_information_request(const Message &message) {
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::send_application_instance_get_status_request(const Message &message) {
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::send_application_instance_set_status_request(const Message &message) {
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -349,6 +429,38 @@ Error Server::process_incoming_message(const Message &message) {
 
             return invocation::live_state_request(message, _callbacks._live_state_request,
                                                   _callbacks._live_state_request_data);
+        case Opcode::host_information_response:
+            if (_callbacks._host_information_response == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::host_information_response(
+                message, _callbacks._host_information_response,
+                _callbacks._host_information_response_data);
+        case Opcode::application_instance_information_response:
+            if (_callbacks._application_instance_information_response == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::application_instance_information_response(
+                message, _callbacks._application_instance_information_response,
+                _callbacks._application_instance_information_response_data);
+        case Opcode::application_instance_get_status_response:
+            if (_callbacks._application_instance_get_status_response == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::application_instance_get_status_response(
+                message, _callbacks._application_instance_get_status_response,
+                _callbacks._application_instance_get_status_response_data);
+        case Opcode::application_instance_set_status_response:
+            if (_callbacks._application_instance_get_status_response == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::application_instance_set_status_response(
+                message, _callbacks._application_instance_set_status_response,
+                _callbacks._application_instance_set_status_response_data);
         default:
             return ONE_ERROR_NONE;
     }
@@ -366,9 +478,54 @@ Error Server::process_outgoing_message(const Message &message) {
 
             break;
         }
+        case Opcode::player_joined_event_response: {
+            params::PlayerJoinedEventResponse params;
+            err = validation::player_joined_event_response(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::player_left_response: {
+            params::PlayerLeftResponse params;
+            err = validation::player_left_response(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
         case Opcode::host_information_request: {
             params::HostInformationRequest params;
             err = validation::host_information_request(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::application_instance_information_request: {
+            params::ApplicationInstanceInformationRequest params;
+            err = validation::application_instance_information_request(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::application_instance_get_status_request: {
+            params::ApplicationInstanceGetStatusRequest params;
+            err = validation::application_instance_get_status_request(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::application_instance_set_status_request: {
+            params::ApplicationInstanceSetStatusRequest params;
+            err = validation::application_instance_set_status_request(message, params);
             if (is_error(err)) {
                 return err;
             }
@@ -383,11 +540,13 @@ Error Server::process_outgoing_message(const Message &message) {
         return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
     }
 
-    // Todo - pointer here, passing ownership to connection.
-    // error = _client_connection->push_outgoing(message);
-    // if (is_error(error)) {
-    //     return -1;
-    // }
+    err = _client_connection->add_outgoing([&](Message &m) {
+        m = message;
+        return ONE_ERROR_NONE;
+    });
+    if (is_error(err)) {
+        return err;
+    }
 
     return ONE_ERROR_NONE;
 }

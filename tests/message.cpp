@@ -157,6 +157,15 @@ TEST_CASE("payload unit tests", "[payload]") {
     REQUIRE(!is_error(p.from_json({json.c_str(), json.size()})));
     const std::string result = p.to_json();
     REQUIRE(json == result);
+
+    p.clear();
+    REQUIRE(!p.set_val_root_object(o));
+    int int_copy = 0;
+    REQUIRE(!is_error(p.val_int("int", int_copy)));
+    REQUIRE(int_copy == 1);
+    Object o_copy;
+    REQUIRE(!p.val_root_object(o_copy));
+    REQUIRE(o.get() == o_copy.get());
 }
 
 TEST_CASE("message unit tests", "[message]") {
@@ -183,11 +192,6 @@ TEST_CASE("message unit tests", "[message]") {
 
 TEST_CASE("message prepare", "[message]") {
     Message m;
-    REQUIRE(messages::prepare_error_response(m) == 0);
-    REQUIRE(m.code() == Opcode::error_response);
-    REQUIRE(m.payload().is_empty() == true);
-
-    m.reset();
     REQUIRE(messages::prepare_soft_stop_request(1000, m) == 0);
     REQUIRE(m.code() == Opcode::soft_stop_request);
     auto p = m.payload();
@@ -336,7 +340,6 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(is_error(one_message_set_val_object(m, nullptr, o_ptr)));
     REQUIRE(is_error(one_message_set_val_object(m, key, nullptr)));
 
-    REQUIRE(is_error(one_message_prepare_error_response(nullptr)));
     REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, nullptr, "map",
                                                              "mode", "version", m)));
     REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", nullptr,
@@ -389,7 +392,6 @@ TEST_CASE("message c_api", "[message]") {
 
     REQUIRE(!is_error(one_message_reset(m)));
 
-    REQUIRE(!is_error(one_message_prepare_error_response(m)));
     REQUIRE(!is_error(one_message_prepare_live_state_response(1, 16, "name", "map",
                                                               "mode", "version", m)));
     REQUIRE(!is_error(one_message_prepare_host_information_request(m)));

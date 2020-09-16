@@ -1,4 +1,4 @@
-#include <one/arcus/internal/message.h>
+﻿#include <one/arcus/internal/message.h>
 
 #include <one/arcus/opcode.h>
 #include <one/arcus/message.h>
@@ -9,24 +9,6 @@ namespace i3d {
 namespace one {
 
 namespace validation {
-
-Error error_response(const Message &message, params::ErrorResponse &) {
-    const auto code = message.code();
-
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::error_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_ERROR_RESPONSE;
-    }
-
-    if (!message.payload().is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
-    }
-
-    return ONE_ERROR_NONE;
-}
 
 Error soft_stop_request(const Message &message, params::SoftStopRequest &params) {
     const auto code = message.code();
@@ -40,7 +22,6 @@ Error soft_stop_request(const Message &message, params::SoftStopRequest &params)
     }
 
     const auto &payload = message.payload();
-
     const auto err = payload.val_int("timeout", params._timeout);
     if (is_error(err)) {
         return err;
@@ -60,7 +41,6 @@ Error allocated_request(const Message &message, params::AllocatedRequest &params
     }
 
     const auto &payload = message.payload();
-
     auto err = payload.val_array("data", params._data);
     if (is_error(err)) {
         return err;
@@ -80,7 +60,6 @@ Error meta_data_request(const Message &message, params::MetaDataRequest &params)
     }
 
     const auto &payload = message.payload();
-
     auto err = payload.val_array("data", params._data);
     if (is_error(err)) {
         return err;
@@ -99,7 +78,8 @@ Error live_state_request(const Message &message, params::LiveStateRequest &) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_LIVE_STATE_REQUEST;
     }
 
-    if (!message.payload().is_empty()) {
+    const auto &payload = message.payload();
+    if (!payload.is_empty()) {
         return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
     }
 
@@ -117,7 +97,6 @@ Error live_state_response(const Message &message, params::LiveStateResponse &par
     }
 
     const auto &payload = message.payload();
-
     auto err = payload.val_int("players", params._players);
     if (is_error(err)) {
         return err;
@@ -151,6 +130,47 @@ Error live_state_response(const Message &message, params::LiveStateResponse &par
     return ONE_ERROR_NONE;
 }
 
+Error player_joined_event_response(const Message &message,
+                                   params::PlayerJoinedEventResponse &params) {
+    const auto code = message.code();
+
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::player_joined_event_response) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_PLAYER_JOINED_EVENT_RESPONSE;
+    }
+
+    const auto &payload = message.payload();
+    const auto err = payload.val_int("numPlayers", params._num_players);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error player_left_response(const Message &message, params::PlayerLeftResponse &params) {
+    const auto code = message.code();
+
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::player_left_response) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_PLAYER_LEFT_RESPONSE;
+    }
+
+    const auto &payload = message.payload();
+    const auto err = payload.val_int("numPlayers", params._num_players);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
 Error host_information_request(const Message &message, params::HostInformationRequest &) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
@@ -161,8 +181,147 @@ Error host_information_request(const Message &message, params::HostInformationRe
         return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_HOST_INFORMATION_REQUEST;
     }
 
-    if (!message.payload().is_empty()) {
+    const auto &payload = message.payload();
+    if (!payload.is_empty()) {
         return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error host_information_response(const Message &message,
+                                params::HostInformationResponse &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::host_information_response) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_HOST_INFORMATION_RESPONSE;
+    }
+
+    const auto &payload = message.payload();
+    auto err = payload.val_root_object(params._host_information);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_information_request(
+    const Message &message, params::ApplicationInstanceInformationRequest &) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::application_instance_information_request) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_INFORMATION_REQUEST;
+    }
+
+    const auto &payload = message.payload();
+    if (!payload.is_empty()) {
+        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_information_response(
+    const Message &message, params::ApplicationInstanceInformationResponse &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::application_instance_information_response) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_INFORMATION_RESPONSE;
+    }
+
+    const auto &payload = message.payload();
+    auto err = payload.val_root_object(params._application_instance_information);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_get_status_request(
+    const Message &message, params::ApplicationInstanceGetStatusRequest &) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::application_instance_get_status_request) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_GET_STATUS_REQUEST;
+    }
+
+    const auto &payload = message.payload();
+    if (!payload.is_empty()) {
+        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_get_status_response(
+    const Message &message, params::ApplicationInstanceGetStatusResponse &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::application_instance_get_status_response) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_GET_STATUS_RESPONSE;
+    }
+
+    const auto &payload = message.payload();
+    const auto err = payload.val_int("status", params._status);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_set_status_request(
+    const Message &message, params::ApplicationInstanceSetStatusRequest &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::application_instance_set_status_request) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_SET_STATUS_REQUEST;
+    }
+
+    const auto &payload = message.payload();
+    const auto err = payload.val_int("status", params._status);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_set_status_response(
+    const Message &message, params::ApplicationInstanceSetStatusResponse &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::application_instance_set_status_response) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_SET_STATUS_RESPONSE;
+    }
+
+    const auto &payload = message.payload();
+    const auto err = payload.val_int("code", params._code);
+    if (is_error(err)) {
+        return err;
     }
 
     return ONE_ERROR_NONE;
@@ -171,22 +330,6 @@ Error host_information_request(const Message &message, params::HostInformationRe
 }  // namespace validation
 
 namespace invocation {
-
-Error error_response(const Message &message, std::function<void(void *)> callback,
-                     void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::ErrorResponse params;
-    const auto err = validation::error_response(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data);
-    return ONE_ERROR_NONE;
-}
 
 Error soft_stop_request(const Message &message, std::function<void(void *, int)> callback,
                         void *data) {
@@ -273,6 +416,39 @@ Error live_state_response(
     return ONE_ERROR_NONE;
 }
 
+Error player_joined_event_response(const Message &message,
+                                   std::function<void(void *, int)> callback,
+                                   void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::PlayerJoinedEventResponse params;
+    const auto err = validation::player_joined_event_response(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, params._num_players);
+    return ONE_ERROR_NONE;
+}
+
+Error player_left_response(const Message &message,
+                           std::function<void(void *, int)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::PlayerLeftResponse params;
+    const auto err = validation::player_left_response(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, params._num_players);
+    return ONE_ERROR_NONE;
+}
+
 Error host_information_request(const Message &message,
                                std::function<void(void *)> callback, void *data) {
     if (callback == nullptr) {
@@ -286,6 +462,128 @@ Error host_information_request(const Message &message,
     }
 
     callback(data);
+    return ONE_ERROR_NONE;
+}
+
+Error host_information_response(const Message &message,
+                                std::function<void(void *, Object *)> callback,
+                                void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::HostInformationResponse params;
+    const auto err = validation::host_information_response(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, &params._host_information);
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_information_request(const Message &message,
+                                               std::function<void(void *)> callback,
+                                               void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::ApplicationInstanceInformationRequest params;
+    const auto err =
+        validation::application_instance_information_request(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data);
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_information_response(
+    const Message &message, std::function<void(void *, Object *)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::ApplicationInstanceInformationResponse params;
+    const auto err =
+        validation::application_instance_information_response(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, &params._application_instance_information);
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_get_status_request(const Message &message,
+                                              std::function<void(void *)> callback,
+                                              void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::ApplicationInstanceGetStatusRequest params;
+    const auto err = validation::application_instance_get_status_request(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data);
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_get_status_response(const Message &message,
+                                               std::function<void(void *, int)> callback,
+                                               void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::ApplicationInstanceGetStatusResponse params;
+    const auto err =
+        validation::application_instance_get_status_response(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, params._status);
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_set_status_request(const Message &message,
+                                              std::function<void(void *, int)> callback,
+                                              void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::ApplicationInstanceSetStatusRequest params;
+    const auto err = validation::application_instance_set_status_request(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, params._status);
+    return ONE_ERROR_NONE;
+}
+
+Error application_instance_set_status_response(const Message &message,
+                                               std::function<void(void *, int)> callback,
+                                               void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::ApplicationInstanceSetStatusResponse params;
+    const auto err =
+        validation::application_instance_set_status_response(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, params._code);
     return ONE_ERROR_NONE;
 }
 

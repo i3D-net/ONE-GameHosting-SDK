@@ -284,6 +284,33 @@ Error Client::process_incoming_message(const Message &message) {
 Error Client::process_outgoing_message(const Message &message) {
     Error err = ONE_ERROR_NONE;
     switch (message.code()) {
+        case Opcode::soft_stop_request: {
+            params::SoftStopRequest params;
+            err = validation::soft_stop_request(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::allocated_request: {
+            params::AllocatedRequest params;
+            err = validation::allocated_request(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::meta_data_request: {
+            params::MetaDataRequest params;
+            err = validation::meta_data_request(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
         case Opcode::live_state_request: {
             params::LiveStateRequest params;
             err = validation::live_state_request(message, params);
@@ -301,12 +328,13 @@ Error Client::process_outgoing_message(const Message &message) {
         return ONE_ERROR_VALIDATION_CONNECTION_IS_NULLPTR;
     }
 
-    // Todo: message pointer here, passing ownership of memory from client to
-    // connection.
-    // error = _connection->push_outgoing(message);
-    // if (is_error(error)) {
-    //     return -1;
-    // }
+    err = _connection->add_outgoing([&](Message &m) {
+        m = message;
+        return ONE_ERROR_NONE;
+    });
+    if (is_error(err)) {
+        return err;
+    }
 
     return ONE_ERROR_NONE;
 }

@@ -98,6 +98,7 @@ OneError one_message_val_string(OneMessagePtr message, const char *key, char *va
                                 size_t val_size);
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
 OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
+OneError one_message_val_root_object(OneMessagePtr message, OneObjectPtr val);
 
 /// Setters.
 OneError one_message_set_val_bool(OneMessagePtr message, const char *key, bool val);
@@ -108,6 +109,7 @@ OneError one_message_set_val_array(OneMessagePtr message, const char *key,
                                    OneArrayPtr val);
 OneError one_message_set_val_object(OneMessagePtr message, const char *key,
                                     OneObjectPtr val);
+OneError one_message_set_val_root_object(OneMessagePtr message, OneObjectPtr val);
 
 ///
 /// OneArrayApi is used to work with arrays use in the messages.
@@ -200,12 +202,20 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
 /// way to set the messages content.
 ///
 
-OneError one_message_prepare_error_response(OneMessagePtr message);
 OneError one_message_prepare_live_state_response(int player, int max_player,
                                                  const char *name, const char *map,
                                                  const char *mode, const char *version,
                                                  OneMessagePtr message);
+OneError one_message_prepare_player_joined_event_response(int num_players,
+                                                          OneMessagePtr message);
+OneError one_message_prepare_player_left_response(int num_players, OneMessagePtr message);
 OneError one_message_prepare_host_information_request(OneMessagePtr message);
+OneError one_message_prepare_application_instance_information_request(
+    OneMessagePtr message);
+OneError one_message_prepare_application_instance_get_status_request(
+    OneMessagePtr message);
+OneError one_message_prepare_application_instance_set_status_request(
+    int status, OneMessagePtr message);
 
 ///
 /// OneArrayApi is used to work with an array to retrieve from or set in the
@@ -260,30 +270,39 @@ OneError one_server_shutdown(OneServerPtr server);
 //--------------------------------------------------------------------------
 // Outgoing messages.
 
-// Note: these will change in final V1.0 to match new incoming Arcus API
-// messages.
-
-// See the [One Arcus protocol documentation website](todo.html) for more
-// information.
-
-///
-/// Send the Arcus API server live_state opcode message.
-/// Message Empty Content:
-/// {}
-OneError one_server_send_error_response(OneServerPtr server, OneMessagePtr message);
+// See the [One Arcus protocol documentation
+// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
+// for more information.
 
 ///
 /// Send the Arcus API server live_state_response opcode message.
 /// Message Mandatory Content:
 /// {
-///   players : 0,
-///   max players : 0,
-///   server name : "",
-///   server map : "",
-///   server mode : "",
-///   server version : "",
+///   "players" : 0,
+///   "maxPlayers" : 0,
+///   "name" : "",
+///   "map" : "",
+///   "mode" : "",
+///   "version" : "",
 /// }
 OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
+
+///
+/// send player_joined_event_response.
+/// Message Mandatory Content:
+/// {
+///   "numPlayers" : 0
+/// }
+OneError one_server_send_player_joined_event_response(OneServerPtr server,
+                                                      OneMessagePtr message);
+
+///
+/// send player_left_response.
+/// Message Mandatory Content:
+/// {
+///   "numPlayers" : 0
+/// }
+OneError one_server_send_player_left_response(OneServerPtr server, OneMessagePtr message);
 
 ///
 /// Send the Arcus API server host_information_request opcode message.
@@ -292,66 +311,117 @@ OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr 
 OneError one_server_send_host_information_request(OneServerPtr server,
                                                   OneMessagePtr message);
 
+///
+/// send application_instance_information_request.
+/// Message Empty Content:
+/// {}
+OneError one_server_send_application_instance_information_request(OneServerPtr server,
+                                                                  OneMessagePtr message);
+
+///
+/// send application_instance_get_status_request.
+/// Message Empty Content:
+/// {}
+OneError one_server_send_application_instance_get_status_request(OneServerPtr server,
+                                                                 OneMessagePtr message);
+
+///
+/// send application_instance_set_status_request.
+/// Message Empty Content:
+/// {
+///   "status": 0
+/// }
+OneError one_server_send_application_instance_set_status_request(OneServerPtr server,
+                                                                 OneMessagePtr message);
+
 //--------------------------------------------------------------------------
 // Incoming Message callbacks.
 
-// Note: these will change in final V1.0 to match new incoming Arcus API
-// messages.
-
-// See the [One Arcus protocol documentation website](todo.html) for more
-// information.
-
-// Todo:
-// - register the following callbacks to notified of incoming messages directed
-// at the game server
-// - the callbacks are called during processing of the update call on the
-// server
-// - if the callbacks are not set, then the messages are ignored
-// - extract to separate api struct
-
-// Required: Register the callback to be notified of a soft_stop_request. The process
-// should stop at its earliest convenience. If the server process is still
-// active after the given timeout (seconds), then One will terminate the
-// process directly on the deployment.
-// The `void *data` is the user provided & will be passed as the first argument
-// of the callback when invoked.
-// The `data` can be nullptr, the callback is responsible to use the data properly.
+///
+/// See the [One Arcus protocol documentation
+/// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
+/// for more information.
+///
+/// Required before received the soft stop request message. Register the callback to be
+/// notified of a soft_stop_request. The process should stop at its earliest convenience.
+/// If the server process is still active after the given timeout (seconds), then One will
+/// terminate the process directly on the deployment. The `void *data` is the user
+/// provided & will be passed as the first argument of the callback when invoked. The
+/// `data` can be nullptr, the callback is responsible to use the data properly.
 OneError one_server_set_soft_stop_callback(OneServerPtr server,
                                            void (*callback)(void *data, int timeout),
                                            void *data);
 
-// Required: Register the callback to be notified of a allocated_request.
-// The `void *data` is the user provided & will be passed as the first argument
-// of the callback when invoked.
-// The `data` can be nullptr, the callback is responsible to use the data properly.
-// The `void *array` must be of type OneArrayPtr or the callback will error out.
+///
+/// Register the callback to be notified of a allocated_request.
+/// The `void *data` is the user provided & will be passed as the first argument
+/// of the callback when invoked.
+/// The `data` can be nullptr, the callback is responsible to use the data properly.
+/// The `void *array` will be of type OneArrayPtr or the callback will error out.
 OneError one_server_set_allocated_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data);
 
-// Required: Register the callback to be notified of a meta_data_request.
-// The `void *data` is the user provided & will be passed as the first argument
-// of the callback when invoked.
-// The `data` can be nullptr, the callback is responsible to use the data properly.
-// The `void *array` must be of type OneArrayPtr or the callback will error out.
+///
+/// Register the callback to be notified of a meta_data_request.
+/// The `void *data` is the user provided & will be passed as the first argument
+/// of the callback when invoked.
+/// The `data` can be nullptr, the callback is responsible to use the data properly.
+/// The `void *array` will be of type OneArrayPtr or the callback will error out.
 OneError one_server_set_meta_data_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data);
 
-// Required: Register to be notified of when the game must call
-// live_state_request.
+///
+/// Register to be notified of when the game must call live_state_request.
 OneError one_server_set_live_state_request_callback(OneServerPtr server,
                                                     void (*callback)(void *data),
                                                     void *data);
 
 ///
+/// Register the callback to be notified of a host_information_response.
+/// The `void *data` is the user provided & will be passed as the first argument
+/// of the callback when invoked.
+/// The `data` can be nullptr, the callback is responsible to use the data properly.
+/// The `void *object` will be of type OneObjectPtr or the callback will error out.
+OneError one_server_set_host_information_response_callback(
+    OneServerPtr server, void (*callback)(void *data, void *object), void *data);
+
+///
+/// Register the callback to be notified of a application_instance_information_response.
+/// The `void *data` is the user provided & will be passed as the first argument
+/// of the callback when invoked.
+/// The `data` can be nullptr, the callback is responsible to use the data properly.
+/// The `void *object` will be of type OneObjectPtr or the callback will error out.
+OneError one_server_set_application_instance_information_response_callback(
+    OneServerPtr server, void (*callback)(void *data, void *object), void *data);
+
+///
+/// Register the callback to be notified of a application_instance_get_status_response.
+/// The `void *data` is the user provided & will be passed as the first argument
+/// of the callback when invoked.
+/// The `data` can be nullptr, the callback is responsible to use the data properly.
+OneError one_server_set_application_instance_get_status_response_callback(
+    OneServerPtr server, void (*callback)(void *data, int status), void *data);
+
+///
+/// Register the callback to be notified of a application_instance_set_status_response.
+/// The `void *data` is the user provided & will be passed as the first argument
+/// of the callback when invoked.
+/// The `data` can be nullptr, the callback is responsible to use the data properly.
+OneError one_server_set_application_instance_set_status_response_callback(
+    OneServerPtr server, void (*callback)(void *data, int code), void *data);
+
+///
 /// OneAllocatorApi allows for control of all allocations made within the SDK.
 ///
 
+///
 /// Provide custom memory alloc.
 /// Must be set at init time, before using any other APIs.
 void one_allocator_set_alloc(void *(callback)(unsigned int size));
 
+///
 /// Provide custom memory free.
 /// Must be set at init time, before using any other APIs.
 void one_allocator_set_free(void(callback)(void *));
