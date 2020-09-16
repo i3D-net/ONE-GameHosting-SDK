@@ -22,8 +22,8 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _port(port)
     , host_information_request_sent(false)
     , application_instance_information_request_sent(false)
-    , _game_state({0})
-    , _last_update_game_state({0})
+    , _game_state()
+    , _last_update_game_state()
     , _soft_stop_callback(nullptr)
     , _allocated_callback(nullptr)
     , _meta_data_callback(nullptr)
@@ -466,7 +466,7 @@ void OneServerWrapper::allocated(void *userdata, void *allocated) {
 
     auto array = reinterpret_cast<OneArrayPtr>(allocated);
 
-    AllocatedData allocated_payload = {0};
+    AllocatedData allocated_payload;
     if (!extract_allocated_payload(array, allocated_payload)) {
         L_ERROR("failed to extract allocated payload");
         return;
@@ -496,7 +496,7 @@ void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
     }
 
     auto array = reinterpret_cast<OneArrayPtr>(meta_data);
-    MetaDataData meta_data_payload = {0};
+    MetaDataData meta_data_payload;
     if (!extract_meta_data_payload(array, meta_data_payload)) {
         L_ERROR("failed to extract meta data payload");
         return;
@@ -526,7 +526,7 @@ void OneServerWrapper::host_information(void *userdata, void *information) {
     }
 
     auto object = reinterpret_cast<OneObjectPtr>(meta_data);
-    HostInformationData information_payload = {0};
+    HostInformationData information_payload;
     if (!extract_host_information_payload(object, information_payload)) {
         L_ERROR("failed to extract host information payload");
         return;
@@ -557,7 +557,7 @@ void OneServerWrapper::application_instance_information(void *userdata,
     }
 
     auto object = reinterpret_cast<OneObjectPtr>(meta_data);
-    ApplicationInstanceInformationData information_payload = {0};
+    ApplicationInstanceInformationData information_payload;
     if (!extract_application_instance_information_payload(object, information_payload)) {
         L_ERROR("failed to extract host information payload");
         return;
