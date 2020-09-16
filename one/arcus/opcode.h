@@ -8,8 +8,8 @@ namespace one {
 // Todo - set final opcode values.
 enum class Opcode {
     invalid = 0,
-    ping = 0x02,   // Used internally by the connection.
-    hello = 0x04,  // Used internally by the connection.
+    Health = 0x02,  // Used internally by the connection.
+    hello = 0x04,   // Used internally by the connection.
     soft_stop_request = 0x30,
     allocated_request = 0x60,
     meta_data_request = 0x40,
@@ -29,7 +29,7 @@ enum class Opcode {
 
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcode code) {
-    return code == Opcode::ping || code == Opcode::hello ||
+    return code == Opcode::Health || code == Opcode::hello ||
            code == Opcode::soft_stop_request || code == Opcode::allocated_request ||
            code == Opcode::meta_data_request || code == Opcode::live_state_request ||
            code == Opcode::live_state_response ||
