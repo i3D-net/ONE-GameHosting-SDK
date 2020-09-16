@@ -21,7 +21,7 @@ bool Game::init(int players, int max_players, const std::string &name,
         return false;
     }
 
-    OneServerWrapper::GameState state = {0};
+    OneServerWrapper::GameState state;
     state.players = players;
     state.max_players = max_players;
     state.name = name;
@@ -63,30 +63,29 @@ void Game::meta_data_callback(OneServerWrapper::MetaDataData data) {
     L_INFO("type:" + data.type);
 }
 
-void Game::host_information_callback(OneServerWrapper::HostInformationData data)
-{
+void Game::host_information_callback(OneServerWrapper::HostInformationData data) {
     L_INFO("host information payload:");
     L_INFO("id:" + data.id);
     L_INFO("server id:" + data.server_id);
     L_INFO("server name:" + data.server_name);
 }
 
-void Game::application_instance_information_callback(OneServerWrapper::ApplicationInstanceInformationData data)
-{
+void Game::application_instance_information_callback(
+    OneServerWrapper::ApplicationInstanceInformationData data) {
     L_INFO("application instance information payload:");
     L_INFO("fleet id:" + data.fleet_id);
     L_INFO("host id:" + data.host_id);
     L_INFO("is virtual:" + data.is_virtual);
 }
 
-void Game::application_instance_get_status_callback(OneServerWrapper::ApplicationInstanceGetStatusData data)
-{
+void Game::application_instance_get_status_callback(
+    OneServerWrapper::ApplicationInstanceGetStatusData data) {
     L_INFO("application instance get status payload:");
     L_INFO("status:" + data.status);
 }
 
-void Game::application_instance_set_status_callback(OneServerWrapper::ApplicationInstanceSetStatusData data)
-{
+void Game::application_instance_set_status_callback(
+    OneServerWrapper::ApplicationInstanceSetStatusData data) {
     L_INFO("application instance set status payload:");
     L_INFO("code:" + data.code);
 }

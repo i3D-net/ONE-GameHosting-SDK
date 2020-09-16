@@ -44,6 +44,8 @@ public:
     Status status() const;
 
     struct GameState {
+        GameState() : players(0), max_players(0), name(), map(), mode(), version() {}
+
         int players;          // Game number of players.
         int max_players;      // Game max number of players.
         std::string name;     // Server name.
@@ -61,6 +63,8 @@ public:
     // The current values are matching the payload shown in the documentation at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#allocated-request
     struct AllocatedData {
+        AllocatedData() : max_players(), map() {}
+
         std::string max_players;  // Game max number of players.
         std::string map;          // Game map.
     };
@@ -71,6 +75,8 @@ public:
     // The current values are matching the payload shown in the documentation at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#meta-data-request
     struct MetaDataData {
+        MetaDataData() : map(), mode(), type() {}
+
         std::string map;   // Game map.
         std::string mode;  // Game mode.
         std::string type;  // Game type.
@@ -81,6 +87,8 @@ public:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information-response
     // In this example only a handfull of fields are used for simplicity.
     struct HostInformationData {
+        HostInformationData() : id(0), server_id(0), server_name() {}
+
         int id;                   // id.
         int server_id;            // server id.
         std::string server_name;  // server name.
@@ -92,6 +100,8 @@ public:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information-response
     // In this example only a handfull of fields are used for simplicity.
     struct ApplicationInstanceInformationData {
+        ApplicationInstanceInformationData() : fleet_id(), host_id(0), is_virtual(0) {}
+
         std::string fleet_id;  // fleet id.
         int host_id;           // host id.
         int is_virtual;        // is virtual.
@@ -104,6 +114,8 @@ public:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-get-status-response
     // In this example only a handfull of fields are used for simplicity.
     struct ApplicationInstanceGetStatusData {
+        ApplicationInstanceGetStatusData() : status(0) {}
+
         int status;  // status.
     };
     void set_application_instance_get_status_callback(
@@ -113,6 +125,8 @@ public:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-response
     // In this example only a handfull of fields are used for simplicity.
     struct ApplicationInstanceSetStatusData {
+        ApplicationInstanceSetStatusData() : code(0) {}
+
         int code;  // code.
     };
     void set_application_instance_set_status_callback(
