@@ -117,7 +117,7 @@ Error data_to_header(const void *data, size_t length, Header &header) {
 
     // Endian handling. Network byte order for the Header itself is
     // non-standard: little.
-    if (endian::which() == endian::Arch::big) {
+    if (endian::which() == endian::Arch::little) {
         header.length = endian::swap_uint32(header.length);
         header.packet_id = endian::swap_uint32(header.packet_id);
     }
@@ -137,12 +137,12 @@ Error header_to_data(const Header &header, std::array<char, header_size()> &data
     // Endian handling. Network byte order for the Header itself is
     // non-standard: little.
     Header swapped_header(header);
-    if (endian::which() == endian::Arch::big) {
+    if (endian::which() == endian::Arch::little) {
         swapped_header.length = endian::swap_uint32(header.length);
         swapped_header.packet_id = endian::swap_uint32(header.packet_id);
     }
 
-    std::memcpy(data.data(), &header, header_size());
+    std::memcpy(data.data(), &swapped_header, header_size());
     return ONE_ERROR_NONE;
 }
 
