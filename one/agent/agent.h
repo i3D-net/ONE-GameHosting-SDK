@@ -8,8 +8,9 @@
 namespace i3d {
 namespace one {
 
-class Message;
 class Array;
+class Object;
+class Message;
 
 /// Agent can connect to a Server and simulate production deployment behavior.
 class Agent final {
@@ -35,9 +36,6 @@ public:
 
     // Request allocated_request message.
     Error send_meta_data_request(Array *array);
-
-    // Set error_response callback
-    Error set_error_response_callback(std::function<void(void *)> callback, void *data);
 
     // Set live_state callback.
     Error set_live_state_response_callback(

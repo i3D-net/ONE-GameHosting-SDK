@@ -45,6 +45,7 @@ public:
     Error val_string(const char *key, std::string &val) const;
     Error val_array(const char *key, Array &val) const;
     Error val_object(const char *key, Object &val) const;
+    Error val_root_object(Object &val) const;
 
     // Setters.
     Error set_val_bool(const char *key, bool val);
@@ -52,6 +53,7 @@ public:
     Error set_val_string(const char *key, const std::string &val);
     Error set_val_array(const char *key, const Array &val);
     Error set_val_object(const char *key, const Object &val);
+    Error set_val_root_object(const Object &val);
 
 private:
     rapidjson::Document _doc;
@@ -81,15 +83,25 @@ private:
 };
 
 namespace messages {
-Error prepare_error_response(Message &message);
 Error prepare_soft_stop_request(int timeout, Message &message);
-Error prepare_allocated_request(Array &array, Message &message);
-Error prepare_meta_data_request(Array &array, Message &message);
+Error prepare_allocated_request(const Array &array, Message &message);
+Error prepare_meta_data_request(const Array &array, Message &message);
 Error prepare_live_state_request(Message &message);
 Error prepare_live_state_response(int player, int max_player, const char *name,
                                   const char *map, const char *mode, const char *version,
                                   Message &message);
+Error prepare_player_joined_event_response(int num_players, Message &message);
+Error prepare_player_left_response(int num_players, Message &message);
 Error prepare_host_information_request(Message &message);
+Error prepare_host_information_response(const Object &information, Message &message);
+Error prepare_application_instance_information_request(Message &message);
+Error prepare_application_instance_information_response(const Object &information,
+                                                        Message &message);
+Error prepare_application_instance_get_status_request(Message &message);
+Error prepare_application_instance_get_status_response(int status, Message &message);
+Error prepare_application_instance_set_status_request(int status, Message &message);
+Error prepare_application_instance_set_status_response(int code, Message &message);
+
 }  // namespace messages
 
 }  // namespace one

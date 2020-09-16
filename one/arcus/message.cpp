@@ -1,4 +1,4 @@
-#include <one/arcus/message.h>
+﻿#include <one/arcus/message.h>
 
 #include <one/arcus/array.h>
 #include <one/arcus/internal/rapidjson/stringbuffer.h>
@@ -198,6 +198,15 @@ Error Payload::val_object(const char *key, Object &val) const {
     return ONE_ERROR_NONE;
 }
 
+Error Payload::val_root_object(Object &val) const {
+    if (!_doc.IsObject()) {
+        return ONE_ERROR_PAYLOAD_WRONG_TYPE_IS_EXPECTING_OBJECT;
+    }
+
+    val.set(_doc);
+    return ONE_ERROR_NONE;
+}
+
 Error Payload::set_val_bool(const char *key, bool val) {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
@@ -316,6 +325,15 @@ Error Payload::set_val_object(const char *key, const Object &val) {
     return ONE_ERROR_NONE;
 }
 
+Error Payload::set_val_root_object(const Object &val) {
+    if (!_doc.IsObject()) {
+        return ONE_ERROR_PAYLOAD_WRONG_TYPE_IS_EXPECTING_OBJECT;
+    }
+
+    _doc.CopyFrom(val.get(), _doc.GetAllocator());
+    return ONE_ERROR_NONE;
+}
+
 Message::Message() : _code(Opcode::invalid) {}
 
 Message::Message(const Message &other) {
@@ -365,16 +383,6 @@ const Payload &Message::payload() const {
 
 namespace messages {
 
-Error prepare_error_response(Message &message) {
-    message.reset();
-    auto err = message.init(Opcode::error_response, Payload());
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error prepare_soft_stop_request(int timeout, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("timeout", timeout);
@@ -391,7 +399,7 @@ Error prepare_soft_stop_request(int timeout, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_allocated_request(Array &array, Message &message) {
+Error prepare_allocated_request(const Array &array, Message &message) {
     Payload payload;
     auto err = payload.set_val_array("data", array);
     if (is_error(err)) {
@@ -407,7 +415,7 @@ Error prepare_allocated_request(Array &array, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_meta_data_request(Array &array, Message &message) {
+Error prepare_meta_data_request(const Array &array, Message &message) {
     Payload payload;
     auto err = payload.set_val_array("data", array);
     if (is_error(err)) {
@@ -475,8 +483,134 @@ Error prepare_live_state_response(int player, int max_player, const char *name,
     return ONE_ERROR_NONE;
 }
 
+Error prepare_player_joined_event_response(int num_players, Message &message) {
+    Payload payload;
+    auto err = payload.set_val_int("numPlayers", num_players);
+    if (is_error(err)) {
+        return err;
+    }
+
+    message.reset();
+    err = message.init(Opcode::player_joined_event_response, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_player_left_response(int num_players, Message &message) {
+    Payload payload;
+    auto err = payload.set_val_int("numPlayers", num_players);
+    if (is_error(err)) {
+        return err;
+    }
+
+    message.reset();
+    err = message.init(Opcode::player_left_response, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
 Error prepare_host_information_request(Message &message) {
     auto err = message.init(Opcode::host_information_request, Payload());
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_host_information_response(const Object &information, Message &message) {
+    Payload payload;
+    auto err = payload.set_val_root_object(information);
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = message.init(Opcode::host_information_response, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_application_instance_information_request(Message &message) {
+    auto err = message.init(Opcode::application_instance_information_request, Payload());
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_application_instance_information_response(const Object &information,
+                                                        Message &message) {
+    Payload payload;
+    auto err = payload.set_val_root_object(information);
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = message.init(Opcode::application_instance_information_response, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_application_instance_get_status_request(Message &message) {
+    auto err = message.init(Opcode::application_instance_get_status_request, Payload());
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_application_instance_get_status_response(int status, Message &message) {
+    Payload payload;
+    auto err = payload.set_val_int("status", status);
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = message.init(Opcode::application_instance_get_status_response, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_application_instance_set_status_request(int status, Message &message) {
+    Payload payload;
+    auto err = payload.set_val_int("status", status);
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = message.init(Opcode::application_instance_set_status_request, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error prepare_application_instance_set_status_response(int code, Message &message) {
+    Payload payload;
+    auto err = payload.set_val_int("code", code);
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = message.init(Opcode::application_instance_set_status_response, payload);
     if (is_error(err)) {
         return err;
     }

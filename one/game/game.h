@@ -32,6 +32,13 @@ private:
     static void soft_stop_callback(int timeout);
     static void allocated_callback(OneServerWrapper::AllocatedData data);
     static void meta_data_callback(OneServerWrapper::MetaDataData data);
+    static void host_information_callback(OneServerWrapper::HostInformationData data);
+    static void application_instance_information_callback(
+        OneServerWrapper::ApplicationInstanceInformationData data);
+    static void application_instance_get_status_callback(
+        OneServerWrapper::ApplicationInstanceGetStatusData data);
+    static void application_instance_set_status_callback(
+        OneServerWrapper::ApplicationInstanceSetStatusData data);
 
     OneServerWrapper _server;
 };

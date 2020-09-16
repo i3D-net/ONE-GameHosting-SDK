@@ -59,16 +59,6 @@ Error Agent::send_meta_data_request(Array *array) {
     return ONE_ERROR_NONE;
 }
 
-Error Agent::set_error_response_callback(std::function<void(void *)> callback,
-                                         void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
-    }
-
-    _client.set_error_callback(callback, data);
-    return ONE_ERROR_NONE;
-}
-
 Error Agent::set_live_state_response_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>

@@ -23,25 +23,41 @@ TEST_CASE("current arcus version", "[arcus]") {
 
 TEST_CASE("opcode version V2 validation", "[arcus]") {
     REQUIRE(is_opcode_supported_v2(Opcode::hello));
-    REQUIRE(is_opcode_supported_v2(Opcode::error_response));
+    REQUIRE(is_opcode_supported_v2(Opcode::ping));
     REQUIRE(is_opcode_supported_v2(Opcode::soft_stop_request));
     REQUIRE(is_opcode_supported_v2(Opcode::allocated_request));
     REQUIRE(is_opcode_supported_v2(Opcode::meta_data_request));
     REQUIRE(is_opcode_supported_v2(Opcode::live_state_request));
-    REQUIRE(is_opcode_supported_v2(Opcode::live_state_response));
+    REQUIRE(is_opcode_supported_v2(Opcode::player_joined_event_response));
+    REQUIRE(is_opcode_supported_v2(Opcode::player_left_response));
     REQUIRE(is_opcode_supported_v2(Opcode::host_information_request));
+    REQUIRE(is_opcode_supported_v2(Opcode::host_information_response));
+    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_information_request));
+    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_information_response));
+    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_get_status_request));
+    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_get_status_response));
+    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_set_status_request));
+    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_set_status_response));
     REQUIRE(is_opcode_supported_v2(Opcode::invalid) == false);
 }
 
 TEST_CASE("opcode current version validation", "[arcus]") {
     REQUIRE(is_opcode_supported(Opcode::hello));
-    REQUIRE(is_opcode_supported(Opcode::error_response));
+    REQUIRE(is_opcode_supported(Opcode::ping));
     REQUIRE(is_opcode_supported(Opcode::soft_stop_request));
     REQUIRE(is_opcode_supported(Opcode::allocated_request));
     REQUIRE(is_opcode_supported(Opcode::meta_data_request));
     REQUIRE(is_opcode_supported(Opcode::live_state_request));
-    REQUIRE(is_opcode_supported(Opcode::live_state_response));
+    REQUIRE(is_opcode_supported(Opcode::player_joined_event_response));
+    REQUIRE(is_opcode_supported(Opcode::player_left_response));
     REQUIRE(is_opcode_supported(Opcode::host_information_request));
+    REQUIRE(is_opcode_supported(Opcode::host_information_response));
+    REQUIRE(is_opcode_supported(Opcode::application_instance_information_request));
+    REQUIRE(is_opcode_supported(Opcode::application_instance_information_response));
+    REQUIRE(is_opcode_supported(Opcode::application_instance_get_status_request));
+    REQUIRE(is_opcode_supported(Opcode::application_instance_get_status_response));
+    REQUIRE(is_opcode_supported(Opcode::application_instance_set_status_request));
+    REQUIRE(is_opcode_supported(Opcode::application_instance_set_status_response));
     REQUIRE(is_opcode_supported(Opcode::invalid) == false);
 }
 

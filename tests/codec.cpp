@@ -123,9 +123,9 @@ TEST_CASE("message empty payload consistency", "[codec]") {
     std::array<char, codec::header_size() + codec::payload_max_size()> data;
     uint32_t packet_id = 0;
 
-    {  // error request: because it has an empty payload.
+    {  // live state request: because it has an empty payload.
 
-        REQUIRE(!is_error(messages::prepare_error_response(message)));
+        REQUIRE(!is_error(messages::prepare_live_state_request(message)));
         data_length = 0;
         data_read = 0;
         header = {0};
@@ -136,8 +136,8 @@ TEST_CASE("message empty payload consistency", "[codec]") {
         REQUIRE(data_length == data_read);
         REQUIRE(data_length == codec::header_size());
         REQUIRE(header.length == 0);
-        REQUIRE((Opcode)header.opcode == Opcode::error_response);
-        REQUIRE(message.code() == Opcode::error_response);
+        REQUIRE((Opcode)header.opcode == Opcode::live_state_request);
+        REQUIRE(message.code() == Opcode::live_state_request);
         REQUIRE(new_message.code() == message.code());
         REQUIRE(new_message.payload().is_empty());
     }
@@ -151,23 +151,6 @@ TEST_CASE("message", "[codec]") {
     size_t data_read = 0;
     std::array<char, codec::header_size() + codec::payload_max_size()> data;
     uint32_t packet_id = 0;
-
-    {  // error request
-
-        REQUIRE(!is_error(messages::prepare_error_response(message)));
-        data_length = 0;
-        data_read = 0;
-        header = {0};
-        REQUIRE(
-            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
-        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
-                                                 header, new_message)));
-        REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::error_response);
-        REQUIRE(message.code() == Opcode::error_response);
-        REQUIRE(new_message.code() == message.code());
-        REQUIRE(new_message.payload().get() == message.payload().get());
-    }
 
     {  // soft stop request
         REQUIRE(!is_error(messages::prepare_soft_stop_request(1000, message)));

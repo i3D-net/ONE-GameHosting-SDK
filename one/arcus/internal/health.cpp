@@ -21,7 +21,7 @@ Error HealthChecker::process_send(
     _send_timer.sync_now();
 
     auto err = sender([](Message &message) {
-        message.init(Opcode::health, Payload());
+        message.init(Opcode::ping, Payload());
         return ONE_ERROR_NONE;
     });
     return err;
