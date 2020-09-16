@@ -48,6 +48,9 @@ public:
     Error set_host_information_request_callback(std::function<void(void *)> callback,
                                                 void *data);
 
+    // Exposed for testing purposes, however use of this should be kept to a
+    // minimum or removed. The agent, as much as reasonable, should be tested as
+    // a black box.
     Client &client() {
         return _client;
     }
