@@ -22,8 +22,8 @@ TEST_CASE("current arcus version", "[arcus]") {
 }
 
 TEST_CASE("opcode version V2 validation", "[arcus]") {
-    REQUIRE(is_opcode_supported_v2(Opcode::hello));
     REQUIRE(is_opcode_supported_v2(Opcode::ping));
+    REQUIRE(is_opcode_supported_v2(Opcode::hello));
     REQUIRE(is_opcode_supported_v2(Opcode::soft_stop_request));
     REQUIRE(is_opcode_supported_v2(Opcode::allocated_request));
     REQUIRE(is_opcode_supported_v2(Opcode::meta_data_request));
@@ -42,8 +42,8 @@ TEST_CASE("opcode version V2 validation", "[arcus]") {
 }
 
 TEST_CASE("opcode current version validation", "[arcus]") {
-    REQUIRE(is_opcode_supported(Opcode::hello));
     REQUIRE(is_opcode_supported(Opcode::ping));
+    REQUIRE(is_opcode_supported(Opcode::hello));
     REQUIRE(is_opcode_supported(Opcode::soft_stop_request));
     REQUIRE(is_opcode_supported(Opcode::allocated_request));
     REQUIRE(is_opcode_supported(Opcode::meta_data_request));

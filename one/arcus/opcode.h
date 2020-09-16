@@ -8,28 +8,28 @@ namespace one {
 // Todo - set final opcode values.
 enum class Opcode {
     invalid = 0,
-    hello,  // Used internally by the connection.
-    ping,   // Used internally by the connection.
-    soft_stop_request,
-    allocated_request,
-    meta_data_request,
-    live_state_request,
-    live_state_response,
-    player_joined_event_response,
-    player_left_response,
-    host_information_request,
-    host_information_response,
-    application_instance_information_request,
-    application_instance_information_response,
-    application_instance_get_status_request,
-    application_instance_get_status_response,
-    application_instance_set_status_request,
-    application_instance_set_status_response,
+    ping = 0x02,   // Used internally by the connection.
+    hello = 0x04,  // Used internally by the connection.
+    soft_stop_request = 0x30,
+    allocated_request = 0x60,
+    meta_data_request = 0x40,
+    live_state_request = 0x20,
+    live_state_response = 0x21,
+    player_joined_event_response = 0x22,
+    player_left_response = 0x23,
+    host_information_request = 0x50,
+    host_information_response = 0x51,
+    application_instance_information_request = 0x70,
+    application_instance_information_response = 0x71,
+    application_instance_get_status_request = 0x72,
+    application_instance_get_status_response = 0x73,
+    application_instance_set_status_request = 0x74,
+    application_instance_set_status_response = 0x75,
 };
 
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcode code) {
-    return code == Opcode::hello || code == Opcode::ping ||
+    return code == Opcode::ping || code == Opcode::hello ||
            code == Opcode::soft_stop_request || code == Opcode::allocated_request ||
            code == Opcode::meta_data_request || code == Opcode::live_state_request ||
            code == Opcode::live_state_response ||
