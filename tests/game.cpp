@@ -14,31 +14,6 @@
 using namespace game;
 using namespace i3d::one;
 
-bool soft_stop_callback_has_been_called = false;
-bool allocated_callback_has_been_called = false;
-bool meta_data_callback_has_been_called = false;
-
-void soft_stop_callback(int timeout) {
-    L_INFO("soft stop payload:");
-    L_INFO("timeout:" + std::to_string(timeout));
-    soft_stop_callback_has_been_called = true;
-}
-
-void allocated_callback(OneServerWrapper::AllocatedData data) {
-    L_INFO("allocated payload:");
-    L_INFO("max_players:" + data.max_players);
-    L_INFO("map:" + data.map);
-    allocated_callback_has_been_called = true;
-}
-
-void meta_data_callback(OneServerWrapper::MetaDataData data) {
-    L_INFO("allocated payload:");
-    L_INFO("map:" + data.map);
-    L_INFO("mode:" + data.mode);
-    L_INFO("type:" + data.type);
-    allocated_callback_has_been_called = true;
-}
-
 TEST_CASE("life cycle", "[fake game]") {
     Game game(19001);
     REQUIRE(game.init(10, 54, "test game", "test map", "test mode", "test version"));
@@ -195,19 +170,12 @@ TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
     REQUIRE(agent.client().status() == Client::Status::ready);
 
-    auto &wrapper = game.one_server_wrapper();
-    wrapper.set_soft_stop_callback(soft_stop_callback);
-    wrapper.set_allocated_callback(allocated_callback);
-    wrapper.set_meta_data_callback(meta_data_callback);
-
     {
         REQUIRE(agent.send_soft_stop_request(1000) == 0);
         agent.update();
         game.update();
-        REQUIRE(soft_stop_callback_has_been_called == true);
+        REQUIRE(game.soft_stop_call_count() == 1);
     }
-
-    return;
 
     // allocated_request
     {
@@ -230,7 +198,7 @@ TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
         REQUIRE(agent.send_allocated_request(&data) == 0);
         agent.update();
         game.update();
-        REQUIRE(allocated_callback_has_been_called == true);
+        REQUIRE(game.allocated_call_count() == 1);
     }
 
     // meta_data_request
@@ -262,7 +230,7 @@ TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
         REQUIRE(agent.send_meta_data_request(&data) == 0);
         agent.update();
         game.update();
-        REQUIRE(meta_data_callback_has_been_called == true);
+        REQUIRE(game.allocated_call_count() == 1);
     }
 
     game.shutdown();

@@ -25,8 +25,11 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _game_state()
     , _last_update_game_state()
     , _soft_stop_callback(nullptr)
+    , _soft_stop_userdata(nullptr)
     , _allocated_callback(nullptr)
+    , _allocated_userdata(nullptr)
     , _meta_data_callback(nullptr)
+    , _meta_data_userdata(nullptr)
     , _host_information_callback(nullptr)
     , _application_instance_information_callback(nullptr) {}
 
@@ -278,18 +281,22 @@ OneServerWrapper::Status OneServerWrapper::status() const {
     }
 }
 
-void OneServerWrapper::set_soft_stop_callback(std::function<void(int)> callback) {
+void OneServerWrapper::set_soft_stop_callback(std::function<void(int, void *)> callback,
+                                              void *userdata) {
     _soft_stop_callback = callback;
+    _soft_stop_userdata = userdata;
 }
 
 void OneServerWrapper::set_allocated_callback(
-    std::function<void(AllocatedData)> callback) {
+    std::function<void(const AllocatedData &, void *)> callback, void *userdata) {
     _allocated_callback = callback;
+    _allocated_userdata = userdata;
 }
 
 void OneServerWrapper::set_meta_data_callback(
-    std::function<void(MetaDataData)> callback) {
+    std::function<void(const MetaDataData &, void *)> callback, void *userdata) {
     _meta_data_callback = callback;
+    _meta_data_userdata = userdata;
 }
 
 void OneServerWrapper::set_host_information_callback(
@@ -441,8 +448,10 @@ void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
         return;
     }
 
+    // Leave userdata optional.
+
     L_INFO("invoking soft stop callback");
-    wrapper->_soft_stop_callback(timeout_seconds);
+    wrapper->_soft_stop_callback(timeout_seconds, wrapper->_soft_stop_userdata);
 }
 
 void OneServerWrapper::allocated(void *userdata, void *allocated) {
@@ -473,7 +482,7 @@ void OneServerWrapper::allocated(void *userdata, void *allocated) {
     }
 
     L_INFO("invoking allocated callback");
-    wrapper->_allocated_callback(allocated_payload);
+    wrapper->_allocated_callback(allocated_payload, wrapper->_allocated_userdata);
 }
 
 void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
@@ -503,7 +512,7 @@ void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
     }
 
     L_INFO("invoking meta data callback");
-    wrapper->_meta_data_callback(meta_data_payload);
+    wrapper->_meta_data_callback(meta_data_payload, wrapper->_meta_data_userdata);
 }
 
 void OneServerWrapper::host_information(void *userdata, void *information) {

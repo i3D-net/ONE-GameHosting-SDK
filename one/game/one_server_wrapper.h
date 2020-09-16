@@ -56,7 +56,15 @@ public:
     void set_game_state(const GameState &);
     void update();
 
-    void set_soft_stop_callback(std::function<void(int)> callback);
+    // Sets a callback that is triggered when the remote client has notified the
+    // server that it must gracefully exit the entire process. A timeout in
+    // seconds is passed to allow the server to wait for as much active gameplay
+    // (e.g. an active match) as possible to finish before shutting down. If the
+    // timeout expires before the process is closed, the process will be
+    // terminated forcefully.
+    // userdata may be nullptr.
+    void set_soft_stop_callback(std::function<void(int timeout, void *userdata)> callback,
+                                void *userdata);
 
     // The allocation request has a optional body containing a JSON object with key value
     // pairs for meta data this keys and values are definable by the customer.
@@ -68,7 +76,8 @@ public:
         std::string max_players;  // Game max number of players.
         std::string map;          // Game map.
     };
-    void set_allocated_callback(std::function<void(AllocatedData)> callback);
+    void set_allocated_callback(
+        std::function<void(const AllocatedData &, void *)> callback, void *userdata);
 
     // The meta data request has a optional body containing a JSON object with key value
     // pairs for meta data this keys and values are definable by the customer.
@@ -81,7 +90,8 @@ public:
         std::string mode;  // Game mode.
         std::string type;  // Game type.
     };
-    void set_meta_data_callback(std::function<void(MetaDataData)> callback);
+    void set_meta_data_callback(
+        std::function<void(const MetaDataData &, void *)> callback, void *userdata);
 
     // The host information response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information-response
@@ -188,9 +198,15 @@ private:
 
     // Callbacks that can be set by game to be notified of events received from
     // the Arcus Server.
-    std::function<void(int)> _soft_stop_callback;
-    std::function<void(AllocatedData)> _allocated_callback;
-    std::function<void(MetaDataData)> _meta_data_callback;
+    std::function<void(int, void *)> _soft_stop_callback;
+    void *_soft_stop_userdata;
+
+    std::function<void(const AllocatedData &, void *)> _allocated_callback;
+    void *_allocated_userdata;
+
+    std::function<void(const MetaDataData &, void *)> _meta_data_callback;
+    void *_meta_data_userdata;
+
     std::function<void(HostInformationData)> _host_information_callback;
     std::function<void(ApplicationInstanceInformationData)>
         _application_instance_information_callback;
