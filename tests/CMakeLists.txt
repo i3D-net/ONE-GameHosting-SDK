@@ -13,6 +13,7 @@ add_executable(${UNIT_TEST}
     main.cpp
     message.cpp
     object.cpp
+    parsing.cpp
     ring.cpp
     util.cpp
 )

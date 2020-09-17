@@ -18,8 +18,6 @@ typedef OneObject *OneObjectPtr;
 
 namespace game {
 
-class TestOneServerWrapper;
-
 class OneServerWrapper final {
 public:
     OneServerWrapper(unsigned int port);
@@ -214,20 +212,6 @@ private:
         _application_instance_get_status_callback;
     std::function<void(ApplicationInstanceSetStatusData)>
         _application_instance_set_status_callback;
-
-    friend TestOneServerWrapper;
-};
-
-class TestOneServerWrapper final {
-public:
-    static bool extract_allocated_payload(
-        OneArrayPtr array, OneServerWrapper::AllocatedData &allocated_data);
-    static bool extract_meta_data_payload(OneArrayPtr array,
-                                          OneServerWrapper::MetaDataData &meta_data);
-
-private:
-    TestOneServerWrapper() = delete;
-    ~TestOneServerWrapper() = delete;
 };
 
 }  // namespace game

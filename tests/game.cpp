@@ -70,88 +70,6 @@ TEST_CASE("connection error handling", "[fake game]") {
     game.shutdown();
 }
 
-TEST_CASE("ancillary message payload parsing", "[fake game]") {
-    {  // Allocated payload.
-        const std::string map_str = "islands_large";
-        const std::string max_player_str = "16";
-
-        Object map;
-        auto err = map.set_val_string("key", "map");
-        REQUIRE(!is_error(err));
-        err = map.set_val_string("value", map_str);
-        REQUIRE(!is_error(err));
-
-        Object max_player;
-        err = max_player.set_val_string("key", "maxPlayer");
-        REQUIRE(!is_error(err));
-        err = max_player.set_val_string("value", max_player_str);
-        REQUIRE(!is_error(err));
-
-        Array data;
-
-        OneArrayPtr ptr = (OneArray *)&data;
-        OneServerWrapper::AllocatedData allocated;
-        REQUIRE(!TestOneServerWrapper::extract_allocated_payload(ptr, allocated));
-
-        data.push_back_object(map);
-        REQUIRE(!TestOneServerWrapper::extract_allocated_payload(ptr, allocated));
-
-        data.push_back_object(max_player);
-        REQUIRE(TestOneServerWrapper::extract_allocated_payload(ptr, allocated));
-        REQUIRE(!is_error(err));
-        REQUIRE(std::strncmp(allocated.map.c_str(), map_str.c_str(), map_str.size()) ==
-                0);
-        REQUIRE(std::strncmp(allocated.max_players.c_str(), max_player_str.c_str(),
-                             max_player_str.size()) == 0);
-    }
-
-    {  // MetaData payload.
-        const std::string map_str = "islands_large";
-        const std::string mode_str = "BR";
-        const std::string type_str = "squads";
-
-        Object map;
-        auto err = map.set_val_string("key", "map");
-        REQUIRE(!is_error(err));
-        err = map.set_val_string("value", map_str);
-        REQUIRE(!is_error(err));
-
-        Object mode;
-        err = mode.set_val_string("key", "mode");
-        REQUIRE(!is_error(err));
-        err = mode.set_val_string("value", mode_str);
-        REQUIRE(!is_error(err));
-
-        Object type;
-        err = type.set_val_string("key", "type");
-        REQUIRE(!is_error(err));
-        err = type.set_val_string("value", type_str);
-        REQUIRE(!is_error(err));
-
-        Array data;
-
-        OneArrayPtr ptr = (OneArray *)&data;
-        OneServerWrapper::MetaDataData meta_data;
-        REQUIRE(!TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
-
-        data.push_back_object(map);
-        REQUIRE(!TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
-
-        data.push_back_object(mode);
-        REQUIRE(!TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
-
-        data.push_back_object(type);
-        REQUIRE(TestOneServerWrapper::extract_meta_data_payload(ptr, meta_data));
-        REQUIRE(!is_error(err));
-        REQUIRE(std::strncmp(meta_data.map.c_str(), map_str.c_str(), map_str.size()) ==
-                0);
-        REQUIRE(std::strncmp(meta_data.mode.c_str(), mode_str.c_str(), mode_str.size()) ==
-                0);
-        REQUIRE(std::strncmp(meta_data.type.c_str(), type_str.c_str(), type_str.size()) ==
-                0);
-    }
-}
-
 TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19002;
@@ -186,7 +104,7 @@ TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
         REQUIRE(!is_error(err));
 
         Object max_player;
-        err = max_player.set_val_string("key", "maxPlayer");
+        err = max_player.set_val_string("key", "maxPlayers");
         REQUIRE(!is_error(err));
         err = max_player.set_val_string("value", "16");
         REQUIRE(!is_error(err));
