@@ -2,8 +2,8 @@
 
 #include <one/arcus/c_api.h>
 #include <one/arcus/c_error.h>
-
 #include <one/game/log.h>
+#include <one/game/parsing.h>
 
 #include <assert.h>
 #include <cstring>
@@ -649,101 +649,30 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
         return false;
     }
 
-    bool is_map_set = false;
-    bool is_max_player_set = false;
+    auto callback = [&](const size_t total_number_of_keys, const std::string &key,
+                        const std::string &value) {
+        if (total_number_of_keys != 2) {
+            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
+                    ") expected 2 instead");
+            return false;
+        }
 
-    size_t size = 0;
-    auto err = one_array_size(array, &size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+        if (key == "map") {
+            allocated_data.map = value;
+            return true;
+        }
+
+        if (key == "maxPlayers") {
+            allocated_data.max_players = value;
+            return true;
+        }
+
+        L_ERROR("key(" + key + ") is not handled");
         return false;
-    }
+    };
 
-    OneObjectPtr pair = nullptr;
-    err = one_object_create(&pair);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    for (unsigned int pos = 0; pos < size; ++pos) {
-        err = one_array_val_object(array, pos, pair);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            return false;
-        }
-
-        size_t key_size = 0;
-        err = one_object_val_string_size(pair, "key", &key_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            return false;
-        }
-
-        char *key = new char[key_size];
-        if (key == nullptr) {
-            L_ERROR("key is nullptr");
-            one_object_destroy(&pair);
-            return false;
-        }
-
-        err = one_object_val_string(pair, "key", key, key_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            delete[] key;
-            return false;
-        }
-
-        size_t value_size = 0;
-        err = one_object_val_string_size(pair, "value", &value_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            delete[] key;
-            return false;
-        }
-
-        char *value = new char[value_size];
-        if (value == nullptr) {
-            L_ERROR("value is nullptr");
-            one_object_destroy(&pair);
-            delete[] key;
-            return false;
-        }
-
-        err = one_object_val_string(pair, "value", value, value_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            delete[] key;
-            delete[] value;
-            return false;
-        }
-
-        if (std::strncmp(key, "map", key_size) == 0) {
-            allocated_data.map = std::string(value);
-            is_map_set = true;
-        } else if (std::strncmp(key, "maxPlayer", key_size) == 0) {
-            allocated_data.max_players = std::string(value);
-            is_max_player_set = true;
-        }
-
-        delete[] key;
-        delete[] value;
-    }
-
-    one_object_destroy(&pair);
-
-    if (!is_map_set) {
-        L_ERROR("map is missing from payload");
-        return false;
-    }
-
-    if (!is_max_player_set) {
-        L_ERROR("max_player is missing from payload");
+    if (!Parsing::extract_key_value_payload(array, callback)) {
+        L_ERROR("failed to extract key/value payload");
         return false;
     }
 
@@ -757,110 +686,35 @@ bool OneServerWrapper::extract_meta_data_payload(OneArrayPtr array,
         return false;
     }
 
-    bool is_map_set = false;
-    bool is_mode_set = false;
-    bool is_type_set = false;
+    auto callback = [&](const size_t total_number_of_keys, const std::string &key,
+                        const std::string &value) {
+        if (total_number_of_keys != 3) {
+            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
+                    ") expected 3 instead");
+            return false;
+        }
 
-    size_t size = 0;
-    auto err = one_array_size(array, &size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+        if (key == "map") {
+            meta_data.map = value;
+            return true;
+        }
+
+        if (key == "mode") {
+            meta_data.mode = value;
+            return true;
+        }
+
+        if (key == "type") {
+            meta_data.type = value;
+            return true;
+        }
+
+        L_ERROR("key(" + key + ") is not handled");
         return false;
-    }
+    };
 
-    OneObjectPtr pair = nullptr;
-    err = one_object_create(&pair);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    for (unsigned int pos = 0; pos < size; ++pos) {
-        err = one_array_val_object(array, pos, pair);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            return false;
-        }
-
-        size_t key_size = 0;
-        err = one_object_val_string_size(pair, "key", &key_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            return false;
-        }
-
-        char *key = new char[key_size];
-        if (key == nullptr) {
-            L_ERROR("key is nullptr");
-            one_object_destroy(&pair);
-            return false;
-        }
-
-        err = one_object_val_string(pair, "key", key, key_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            delete[] key;
-            return false;
-        }
-
-        size_t value_size = 0;
-        err = one_object_val_string_size(pair, "value", &value_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            delete[] key;
-            return false;
-        }
-
-        char *value = new char[value_size];
-        if (value == nullptr) {
-            L_ERROR("value is nullptr");
-            one_object_destroy(&pair);
-            delete[] key;
-            return false;
-        }
-
-        err = one_object_val_string(pair, "value", value, value_size);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
-            one_object_destroy(&pair);
-            delete[] key;
-            delete[] value;
-            return false;
-        }
-
-        if (std::strncmp(key, "map", key_size) == 0) {
-            meta_data.map = std::string(value);
-            is_map_set = true;
-        } else if (std::strncmp(key, "mode", key_size) == 0) {
-            meta_data.mode = std::string(value);
-            is_mode_set = true;
-        } else if (std::strncmp(key, "type", key_size) == 0) {
-            meta_data.type = std::string(value);
-            is_type_set = true;
-        }
-
-        delete[] key;
-        delete[] value;
-    }
-
-    one_object_destroy(&pair);
-
-    if (!is_map_set) {
-        L_ERROR("map is missing from payload");
-        return false;
-    }
-
-    if (!is_mode_set) {
-        L_ERROR("mode is missing from payload");
-        return false;
-    }
-
-    if (!is_type_set) {
-        L_ERROR("type is missing from payload");
+    if (!Parsing::extract_key_value_payload(array, callback)) {
+        L_ERROR("failed to extract key/value payload");
         return false;
     }
 
@@ -886,27 +740,13 @@ bool OneServerWrapper::extract_host_information_payload(
         return false;
     }
 
-    size_t size = 0;
-    err = one_object_val_string_size(object, "serverName", &size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (!Parsing::extract_string(object, "serverName", [&](const std::string &value) {
+            information.server_name = value;
+            return true;
+        })) {
+        L_ERROR("failed to extract serverName key");
         return false;
     }
-
-    char *temp = new char[size];
-    if (temp == nullptr) {
-        L_ERROR("temp is nullptr");
-        return false;
-    }
-
-    err = one_object_val_string(object, "serverName", temp, size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    information.server_name = temp;
-    delete[] temp;
 
     // ... add more field parsing as needed.
 
@@ -921,29 +761,15 @@ bool OneServerWrapper::extract_application_instance_information_payload(
         return false;
     }
 
-    size_t size = 0;
-    auto err = one_object_val_string_size(object, "fleetId", &size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (!Parsing::extract_string(object, "fleetId", [&](const std::string &value) {
+            information.fleet_id = value;
+            return true;
+        })) {
+        L_ERROR("failed to extract serverName key");
         return false;
     }
 
-    char *temp = new char[size];
-    if (temp == nullptr) {
-        L_ERROR("temp is nullptr");
-        return false;
-    }
-
-    err = one_object_val_string(object, "fleetId", temp, size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    information.fleet_id = temp;
-    delete[] temp;
-
-    err = one_object_val_int(object, "hostId", &information.host_id);
+    auto err = one_object_val_int(object, "hostId", &information.host_id);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -958,16 +784,6 @@ bool OneServerWrapper::extract_application_instance_information_payload(
     // ... add more field parsing as needed.
 
     return true;
-}
-
-bool TestOneServerWrapper::extract_allocated_payload(
-    OneArrayPtr array, OneServerWrapper::AllocatedData &allocated_data) {
-    return OneServerWrapper::extract_allocated_payload(array, allocated_data);
-}
-
-bool TestOneServerWrapper::extract_meta_data_payload(
-    OneArrayPtr array, OneServerWrapper::MetaDataData &meta_data) {
-    return OneServerWrapper::extract_meta_data_payload(array, meta_data);
 }
 
 }  // namespace game

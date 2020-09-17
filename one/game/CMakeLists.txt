@@ -9,12 +9,14 @@ set(HEADER_FILES
     game.h
     log.h
     one_server_wrapper.h
+    parsing.h
 )
 
 set(SOURCE_FILES
     game.cpp
     log.cpp
     one_server_wrapper.cpp
+    parsing.cpp
 )
 
 add_library(one_game ${SOURCE_FILES} ${HEADER_FILES})

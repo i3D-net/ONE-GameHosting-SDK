@@ -89,8 +89,8 @@ void Game::meta_data_callback(const OneServerWrapper::MetaDataData &data,
 
 void Game::host_information_callback(OneServerWrapper::HostInformationData data) {
     L_INFO("host information called:");
-    L_INFO("\tid:" + data.id);
-    L_INFO("\tserver id:" + data.server_id);
+    L_INFO("\tid:" + std::to_string(data.id));
+    L_INFO("\tserver id:" + std::to_string(data.server_id));
     L_INFO("\tserver name:" + data.server_name);
 }
 
@@ -98,20 +98,20 @@ void Game::application_instance_information_callback(
     OneServerWrapper::ApplicationInstanceInformationData data) {
     L_INFO("application instance information called:");
     L_INFO("\tfleet id:" + data.fleet_id);
-    L_INFO("\thost id:" + data.host_id);
-    L_INFO("\tis virtual:" + data.is_virtual);
+    L_INFO("\thost id:" + std::to_string(data.host_id));
+    L_INFO("\tis virtual:" + std::to_string(data.is_virtual));
 }
 
 void Game::application_instance_get_status_callback(
     OneServerWrapper::ApplicationInstanceGetStatusData data) {
     L_INFO("application instance get status called:");
-    L_INFO("\tstatus:" + data.status);
+    L_INFO("\tstatus:" + std::to_string(data.status));
 }
 
 void Game::application_instance_set_status_callback(
     OneServerWrapper::ApplicationInstanceSetStatusData data) {
     L_INFO("application instance set status called:");
-    L_INFO("\tcode:" + data.code);
+    L_INFO("\tcode:" + std::to_string(data.code));
 }
 
 }  // namespace game

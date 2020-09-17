@@ -1,13 +1,11 @@
 #pragma once
 
+#include <one/game/one_server_wrapper.h>
+
 #include <functional>
 #include <string>
 
-#include <one/game/one_server_wrapper.h>
-
 namespace game {
-
-class OneServerWrapper;
 
 class Game final {
 public:
