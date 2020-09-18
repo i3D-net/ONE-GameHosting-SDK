@@ -4,7 +4,7 @@ Providing game servers with the ability to communicate over TCP with the i3D.net
 
 - [Build](#Build) – How to build and test the repository.
 - [Integration Guide](docs/integration_guide.md) – How to integrate the Arcus API into a Game Server.
-- [VSCode Setup](docs/vscode.md) - How to configure VSCode for building the SDk.
+- [VSCode Setup](docs/vscode.md) - How to configure VSCode for building the SDK.
 
 The i3D.net Game Hosting SDK works on Windows and Linux.
 If something doesn’t work, please [file an issue](https://github.com/i3D-net/ONE-GameHosting-SDK/issues).

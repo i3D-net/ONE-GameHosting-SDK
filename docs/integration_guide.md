@@ -2,16 +2,6 @@
 
 The goal of the integration is for the game server to host an Arcus Server over TCP, allowing the One Platform to connect to the server to send and receive Arcus messages.
 
-## Overview
-
-The SDK is made up of code to be integrated into the Game Server and other components to aid in testing, development and integration of the Server components.
-
-1. [Arcus](../one/arcus/readme.md) provides a C/C++ implementation of the One platform's Arcus protocol and messaging API. Game Servers must integrate this component, using the [C API](../one/server/c_api.h).
-2. [Game](../one/game/readme.md) is a fake Game used in testing, development and as a guide and reference for integration of the [Arcus C API](../one/arcus/readme.md) into a Game Server.
-3. [Agent](../one/agent/readme.md) is a fake One Agent Client used for testing and development. It simulates the behavior of a One Agent connecting to a real Deployment on the One platform.
-
-The [tests](../tests/readme.md) and [docs](../docs/readme.md) folders serve their respective purposes.
-
 ## Adding the library to the Game
 
 The one/arcus folder must be copied to the project and configured for building. See the [Fake Game CMakeLists.txt](../one/game/CMakeLists.txt) for a cmake example and reference.
