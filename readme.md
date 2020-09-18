@@ -48,7 +48,7 @@ The [tests](one/tests/readme.md) and [docs](one/docs/readme.md) folders serve th
     - Windows: [Visual Studio 2017, or build tools (without Editor)](https://visualstudio.microsoft.com/vs/older-downloads/)
     - Linux: GCC (7.5.0 tested).
 2. [CMake](https://cmake.org/download/).
-3. To generate the documentation (optional)
+3. Optional: For documentation generation:
     - Windows:
         1. [doxygen](https://www.doxygen.nl/manual/install.html#install_bin_windows)
         2. [graphviz](https://graphviz.org/download/)
