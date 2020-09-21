@@ -8,11 +8,16 @@ The one/arcus folder must be copied to the project and configured for building. 
 
 ## Using the Arcus Server API
 
+The following headers should be included in a complete integration:
+- c_api.h
+- c_error.h
+
 To start, an integration must create an Arcus Server that corresponds with the Game Server:
 
 ```c++
     OneError err = one_server_create(&_server);
 ```
+
 Afterwards, the server must:
 - have its message callbacks configured
 - be instructed to listen for Arcus connections

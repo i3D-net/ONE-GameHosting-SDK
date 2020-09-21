@@ -3,7 +3,9 @@
 #include <functional>
 #include <string>
 
-// Forward declarations for One SDK object types.
+//----------------------------------------------
+// One SDK object types forward declarations
+
 struct OneServer;
 typedef OneServer *OneServerPtr;
 
@@ -18,6 +20,12 @@ typedef OneObject *OneObjectPtr;
 
 namespace game {
 
+///
+/// OneServerWrapper encapsulates the integration for the One Arcus Server and
+/// provides a game interface that hides the One Arcus Server API implementation
+/// from the game. Errors are handled directly in the implementation of the
+/// wrapper.
+///
 class OneServerWrapper final {
 public:
     OneServerWrapper(unsigned int port);
@@ -25,7 +33,10 @@ public:
     OneServerWrapper &operator=(const OneServerWrapper &) = delete;
     ~OneServerWrapper();
 
+    // Init creates the server and listens.
     bool init();
+
+    //
     void shutdown();
 
     enum class Status {
@@ -38,7 +49,6 @@ public:
         unknown
     };
     static std::string status_to_string(Status status);
-
     Status status() const;
 
     struct GameState {
@@ -51,7 +61,12 @@ public:
         std::string mode;     // Game mode.
         std::string version;  // Game version.
     };
+    // Set the game state to the current value. The wrapper uses this to send
+    // the current state to the One Platform, when requested to do so.
     void set_game_state(const GameState &);
+
+    // Must called often (e.g. each frame). Updates the Arcus Server, which
+    // processes incoming and outgoing messages.
     void update();
 
     // Sets a callback that is triggered when the remote client has notified the
@@ -132,23 +147,29 @@ public:
     // The application instancate information response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-response
     // In this example only a handfull of fields are used for simplicity.
+    // Todo: The intent is to use this wrapper as a complete integration
+    // reference.
+    // - all standard fields should be utilized here
+    // - iterate on online api docs as they are not clear
     struct ApplicationInstanceSetStatusData {
         ApplicationInstanceSetStatusData() : code(0) {}
 
-        int code;  // code.
+        int code;  // Todo: document.
     };
     void set_application_instance_set_status_callback(
         std::function<void(ApplicationInstanceSetStatusData)> callback);
 
     // Sends a application instance get status request message.
+    // Todo: purpose/when should this be called.
     bool send_application_instance_get_status();
 
     // Sends a application instance set status request message.
+    // Todo: purpose/when should this be called.
     bool send_application_instance_set_status(int status);
 
 private:
-    // Sends a player joined event response message to the agent when new players have
-    // joined.
+    // Sends a player joined event response message to the agent when new
+    // players have joined.
     bool send_player_joined_event(int num_players);
     // Sends a player left response message to the agent when players have left.
     bool send_player_left(int num_players);
@@ -178,7 +199,12 @@ private:
     static bool extract_application_instance_information_payload(
         OneObjectPtr object, ApplicationInstanceInformationData &information);
 
+    // The Arcus Server itself.
     OneServerPtr _server;
+    const unsigned int _port;
+
+    // Cached messages used to send the different predefined Arcus Messages
+    // types.
     OneMessagePtr _live_state;
     OneMessagePtr _player_joined;
     OneMessagePtr _player_left;
@@ -187,10 +213,9 @@ private:
     OneMessagePtr _application_instance_get_status;
     OneMessagePtr _application_instance_set_status;
 
-    const unsigned int _port;
-
     bool host_information_request_sent;
     bool application_instance_information_request_sent;
+
     GameState _game_state;
     GameState _last_update_game_state;
 

@@ -7,12 +7,23 @@
 
 namespace game {
 
+///
+/// A fake Game server. It owns a OneServerWrapper member that encapsulates
+/// the c_api.h of the arcus server.
+///
+/// The Fake Game's purpose is to:
+/// - Facilitate automated and manual integration testing of the SDK
+/// - Illustrate an integration
+///
 class Game final {
 public:
     Game(unsigned int port);
     Game(const Game &) = delete;
     Game &operator=(const Game &) = delete;
     ~Game();
+
+    //------------
+    // Life cycle.
 
     bool init(int players, int max_players, const std::string &name,
               const std::string &map, const std::string &mode,
@@ -21,12 +32,9 @@ public:
 
     void update();
 
-    // Exposed for testing purposes, however use of this should be kept to a
-    // minimum or removed. The game, as much as reasonable, should be tested as
-    // a black box.
-    OneServerWrapper &one_server_wrapper() {
-        return _server;
-    }
+    //--------------------------------------------------------------------------
+    // Query how many times message game information has been requested from the
+    // game by the One platform.
 
     int soft_stop_call_count() const {
         return _soft_stop_call_count;
@@ -36,6 +44,13 @@ public:
     }
     int meta_data_call_count() const {
         return _meta_data_call_count;
+    }
+
+    // Exposed for testing purposes, however use of this should be kept to a
+    // minimum or removed. The game, as much as reasonable, should be tested as
+    // a black box.
+    OneServerWrapper &one_server_wrapper() {
+        return _server;
     }
 
 private:
