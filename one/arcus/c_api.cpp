@@ -41,19 +41,6 @@ void message_destroy(OneMessagePtr *message) {
     }
 }
 
-Error message_init(OneMessagePtr message, int code, const char *data, unsigned int size) {
-    auto m = (Message *)message;
-    if (m == nullptr) {
-        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
-    }
-
-    if (data == nullptr) {
-        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
-    }
-
-    return m->init(static_cast<Opcode>(code), {data, size});
-}
-
 OneError message_reset(OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
@@ -76,6 +63,15 @@ Error message_code(OneMessagePtr message, int *code) {
 
     *code = static_cast<int>(m->code());
     return ONE_ERROR_NONE;
+}
+
+Error message_set_code(OneMessagePtr message, int code) {
+    auto m = (Message *)message;
+    if (m == nullptr) {
+        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+    }
+
+    return m->init(static_cast<Opcode>(code), Payload());
 }
 
 OneError message_is_val_bool(OneMessagePtr message, const char *key, bool *result) {
@@ -1583,17 +1579,16 @@ void one_message_destroy(OneMessagePtr *message) {
     one::message_destroy(message);
 }
 
-OneError one_message_init(OneMessagePtr message, int code, const char *data,
-                          unsigned int size) {
-    return one::message_init(message, code, data, size);
-}
-
 OneError one_message_reset(OneMessagePtr message) {
     return one::message_reset(message);
 }
 
 OneError one_message_code(OneMessagePtr message, int *code) {
     return one::message_code(message, code);
+}
+
+OneError one_message_set_code(OneMessagePtr message, int code) {
+    return one::message_set_code(message, code);
 }
 
 OneError one_message_is_val_bool(OneMessagePtr message, const char *key, bool *result) {
