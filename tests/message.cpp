@@ -257,9 +257,9 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(!is_error(one_message_create(&m)));
     REQUIRE(m != nullptr);
 
-    const std::string json = "{\"timeout\":1000}";
     const int original_code = static_cast<int>(Opcode::soft_stop_request);
-    REQUIRE(!is_error(one_message_init(m, original_code, json.c_str(), json.size())));
+    REQUIRE(!is_error(one_message_set_code(m, original_code)));
+    REQUIRE(!is_error(one_message_set_val_int(m, "timeout", 1000)));
     int code = 0;
     REQUIRE(!is_error(one_message_code(m, &code)));
     REQUIRE(code == original_code);
@@ -276,8 +276,7 @@ TEST_CASE("message c_api", "[message]") {
 
     unsigned int size = 0;
     const char *data = "{}";
-    REQUIRE(is_error(one_message_init(nullptr, code, data, size)));
-    REQUIRE(is_error(one_message_init(m, code, nullptr, size)));
+    REQUIRE(is_error(one_message_set_code(nullptr, code)));
 
     REQUIRE(is_error(one_message_reset(nullptr)));
     REQUIRE(is_error(one_message_code(nullptr, &code)));

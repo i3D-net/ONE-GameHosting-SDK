@@ -65,15 +65,16 @@ OneError one_message_create(OneMessagePtr *message);
 /// Must be called whenever finished with a message.
 void one_message_destroy(OneMessagePtr *message);
 
-/// Deprecated: Must be called to initialize a message from a string.
-OneError one_message_init(OneMessagePtr message, int code, const char *data,
-                          unsigned int size);
-
 /// Reset can be used to re-use message objects, removing any values set on it.
 OneError one_message_reset(OneMessagePtr message);
 
 /// Retrieves the Message's Arcus Opcode value, identifying the Message type.
 OneError one_message_code(OneMessagePtr message, int *code);
+
+/// Set the opcode value of the message. Not needed in integration code, which
+/// should be using the predefined messages which set the appropriate opcode for
+/// the message.
+OneError one_message_set_code(OneMessagePtr message, int code);
 
 OneError one_message_is_val_bool(OneMessagePtr message, const char *key, bool *result);
 OneError one_message_is_val_int(OneMessagePtr message, const char *key, bool *result);
