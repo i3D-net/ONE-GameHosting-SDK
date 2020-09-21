@@ -12,6 +12,7 @@ namespace game {
 
 OneServerWrapper::OneServerWrapper(unsigned int port)
     : _server(nullptr)
+    , _port(port)
     , _live_state(nullptr)
     , _player_joined(nullptr)
     , _player_left(nullptr)
@@ -19,7 +20,6 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _application_instance_information(nullptr)
     , _application_instance_get_status(nullptr)
     , _application_instance_set_status(nullptr)
-    , _port(port)
     , host_information_request_sent(false)
     , application_instance_information_request_sent(false)
     , _game_state()
@@ -47,18 +47,18 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    // Create the one server. This example has a game server with a
-    // corresponding arcus server. Multiple arcus servers may be created if
-    // the process is hosting multiple game servers. Each game server must have
-    // one corresponding arcus server.
+    //-----------------------
+    // Create the one server.
 
+    // Each game server must have one corresponding arcus server.
     OneError err = one_server_create(&_server);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    // Create cached messages that can be sent as responses.
+    //------------------------
+    // Create cached messages.
 
     err = one_message_create(&_live_state);
     if (is_error(err)) {
@@ -169,15 +169,13 @@ bool OneServerWrapper::init() {
     //------------------
     // Start the server.
 
-    // Todo - retry listen loop in update if listen fails...
-
     err = one_server_listen(_server, _port);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    L_INFO("init done");
+    L_INFO("OneServerWrapper init complete");
     return true;
 }
 
@@ -188,6 +186,9 @@ void OneServerWrapper::shutdown() {
         return;
     }
 
+    // Free all objects created via the One API.
+    // Todo: passing pointer to pointer is unusual, better to only pass pointer
+    // and explicitly set the pointers to null here.
     one_server_destroy(&_server);
     one_message_destroy(&_player_joined);
     one_message_destroy(&_player_left);
@@ -205,12 +206,14 @@ void OneServerWrapper::set_game_state(const GameState &state) {
 void OneServerWrapper::update() {
     assert(_server != nullptr);
 
+    // Todo: review, document.
     if (!host_information_request_sent) {
         if (send_host_information_request()) {
             host_information_request_sent = true;
         }
     }
 
+    // Todo: review, document.
     if (!application_instance_information_request_sent) {
         if (send_application_instance_information_request()) {
             application_instance_information_request_sent = true;
@@ -679,6 +682,7 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
     return true;
 }
 
+// Todo: can these extract_xxx functions be done within the API itself?
 bool OneServerWrapper::extract_meta_data_payload(OneArrayPtr array,
                                                  MetaDataData &meta_data) {
     if (array == nullptr) {

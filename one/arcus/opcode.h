@@ -5,7 +5,6 @@
 namespace i3d {
 namespace one {
 
-// Todo - set final opcode values.
 enum class Opcode {
     invalid = 0,
     Health = 0x02,  // Used internally by the connection.

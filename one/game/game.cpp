@@ -1,9 +1,9 @@
 #include <one/game/game.h>
 
-#include <one/game/log.h>
-
 #include <assert.h>
 #include <string>
+
+#include <one/game/log.h>
 
 namespace game {
 

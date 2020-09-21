@@ -3,12 +3,11 @@
 #include <cstddef>
 
 //------------------------------------------------------------------------------
-// This is the externally facing interface for the One Game Hosting SDK.
+// This is the externally facing interface for the One Game Hosting SDK, exposing
+// management an Arcus Server to allow communication with the One Platform.
 //
 // It is a C API for ABI compatibility and widespread language binding support.
 //
-// Users call the one_game_hosting_api function to obtain access and make calls
-// against its more granular APIs.
 
 #define ONE_EXPORT
 #define ONE_STDCALL
@@ -34,32 +33,28 @@ typedef enum OneServerStatus {
 } OneServerStatus;
 
 //------------------------------------------------------------------------------
-// Opaque types returned by Apis.
+// Opaque types.
 
-// The type operated on by the OneMessageApi.
-struct OneMessage;
-typedef OneMessage *OneMessagePtr;
-
-// Type type operated on by the OneArrayApi.
-struct OneArray;
-typedef OneArray *OneArrayPtr;
-
-// Type type operated on by the OneObjectApi.
-struct OneObject;
-typedef OneObject *OneObjectPtr;
-
-// The type operated on by the OneServerApi, and central object to manage a One
-// Server.
+// A One Arcus Server, that can be hosted and communicate with an incoming Arcus
+// connection.
 struct OneServer;
 typedef OneServer *OneServerPtr;
 
-//------------------------------------------------------------------------------
-// Apis.
+// A message corresponding to the messages documented in the Arcus protocol API:
+// https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/
+struct OneMessage;
+typedef OneMessage *OneMessagePtr;
 
-///
-/// OneMessageApi is used to work with messages either received from or sent to
-/// the OneServerApi.
-///
+// Optional Array value that may be present within a OneMessage.
+struct OneArray;
+typedef OneArray *OneArrayPtr;
+
+// Optional Object value that may be present within a OneMessage.
+struct OneObject;
+typedef OneObject *OneObjectPtr;
+
+//------------------------------------------------------------------------------
+// Message interface.
 
 ///
 /// Prepares a new outgoing message. Must be called to start setting
@@ -70,14 +65,14 @@ OneError one_message_create(OneMessagePtr *message);
 /// Must be called whenever finished with a message.
 void one_message_destroy(OneMessagePtr *message);
 
-/// Must be called to initialize a message from a string.
+/// Deprecated: Must be called to initialize a message from a string.
 OneError one_message_init(OneMessagePtr message, int code, const char *data,
                           unsigned int size);
 
-/// Must be called to reset a message.
+/// Reset can be used to re-use message objects, removing any values set on it.
 OneError one_message_reset(OneMessagePtr message);
 
-/// Getters.
+/// Retrieves the Message's Arcus Opcode value, identifying the Message type.
 OneError one_message_code(OneMessagePtr message, int *code);
 
 OneError one_message_is_val_bool(OneMessagePtr message, const char *key, bool *result);
@@ -89,18 +84,17 @@ OneError one_message_is_val_object(OneMessagePtr message, const char *key, bool 
 OneError one_message_val_bool(OneMessagePtr message, const char *key, bool *val);
 OneError one_message_val_int(OneMessagePtr message, const char *key, int *val);
 
-// The size is the number of characters in the string, excluding any trailing '\0'.
+// The size is the number of characters in the string, not including a trailing '\0'.
 OneError one_message_val_string_size(OneMessagePtr message, const char *key,
                                      size_t *size);
-// The content of the value is copied into val & val_size must be the size available in
-// val. There are no '\0' appended at the end.
+// The string is copied into val. size must be equal to the size set by
+// one_message_val_string_size. '\0' is not appended at the end.
 OneError one_message_val_string(OneMessagePtr message, const char *key, char *val,
-                                size_t val_size);
+                                size_t size);
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
 OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
 OneError one_message_val_root_object(OneMessagePtr message, OneObjectPtr val);
 
-/// Setters.
 OneError one_message_set_val_bool(OneMessagePtr message, const char *key, bool val);
 OneError one_message_set_val_int(OneMessagePtr message, const char *key, int val);
 OneError one_message_set_val_string(OneMessagePtr message, const char *key,
@@ -111,9 +105,8 @@ OneError one_message_set_val_object(OneMessagePtr message, const char *key,
                                     OneObjectPtr val);
 OneError one_message_set_val_root_object(OneMessagePtr message, OneObjectPtr val);
 
-///
-/// OneArrayApi is used to work with arrays use in the messages.
-///
+//------------------------------------------------------------------------------
+// Array interface.
 
 OneError one_array_create(OneArrayPtr *array);
 
@@ -159,9 +152,8 @@ OneError one_array_set_val_string(OneArrayPtr array, unsigned int pos, const cha
 OneError one_array_set_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
 OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
 
-///
-/// OneObjectApi is used to work with arrays use in the messages.
-///
+//------------------------------------------------------------------------------
+// Object interface.
 
 OneError one_object_create(OneObjectPtr *object);
 
@@ -197,10 +189,54 @@ OneError one_object_set_val_array(OneObjectPtr object, const char *key, OneArray
 OneError one_object_set_val_object(OneObjectPtr object, const char *key,
                                    OneObjectPtr val);
 
+//------------------------------------------------------------------------------
+// Server interface.
+
 ///
-/// OneMessagePrepareApi is used to streamlie working with messages. Providing an easy
-/// way to set the messages content.
+/// Creates a new Arcus Server. Each Game Server must have one corresponding
+/// Arcus Server. Listen, update, shutdown and destroy should be called to complete the
+/// life cycle.
 ///
+OneError one_server_create(OneServerPtr *server);
+
+void one_server_destroy(OneServerPtr *server);
+
+///
+/// Start listening on the given port. This should be called once, before
+/// update. Listening will fail and return an error if the port is already in
+/// use.
+///
+OneError one_server_listen(OneServerPtr server, unsigned int port);
+
+///
+/// Update the server. This must be called frequently (e.g. each frame) to
+/// process incoming and outgoing communications. Incoming messages trigger
+/// their respective incoming callbacks during the call to update. If the a
+/// callback for a message is not set then the message is ignored.
+///
+OneError one_server_update(OneServerPtr server);
+
+///
+/// Returns the status of the server
+/// \sa OneServerStatus.
+///
+OneError one_server_status(OneServerPtr const server, int *status);
+
+///
+/// Close the listen connection, if any.
+///
+OneError one_server_shutdown(OneServerPtr server);
+
+//------------------------------------------------------------------------------
+// Outgoing messages.
+
+// See the [One Arcus protocol documentation
+// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
+// for more information.
+
+// Message preperation functions add the required fields to the predefined
+// messages. The caller may add additional fields before sending, if the
+// One Platform is configured to utilize those extra fields.
 
 OneError one_message_prepare_live_state_response(int player, int max_player,
                                                  const char *name, const char *map,
@@ -216,63 +252,6 @@ OneError one_message_prepare_application_instance_get_status_request(
     OneMessagePtr message);
 OneError one_message_prepare_application_instance_set_status_request(
     int status, OneMessagePtr message);
-
-///
-/// OneArrayApi is used to work with an array to retrieve from or set in the
-/// OneMessageApi.
-///
-
-///
-/// OneObjectApi is used to work with an object to retrieve from or set in the
-/// OneMessageApi.
-///
-
-///
-/// The Server API is the main api used to work with the Server.
-/// It:
-///     - allows creating and destroying a server
-///     - accepts a connection from One to send and receive messages
-///     - provides an interface for the game to interact with those
-///       messages
-///     - is thread-safe
-///
-
-//--------------------------------------------------------------------------
-// One Server Life Cycle.
-
-OneError one_server_create(OneServerPtr *server);
-void one_server_destroy(OneServerPtr *server);
-
-///
-/// Update the server. This must be called frequently to process incoming
-/// and outgoing communications. Incoming messages will be forwarded to their
-/// respective incoming callbacks. If the a callback for a message is not set
-/// then the message is ignored.
-///
-OneError one_server_update(OneServerPtr server);
-
-///
-/// Returns the status of the listen connection.
-/// \sa listen.
-///
-OneError one_server_status(OneServerPtr const server, int *status);
-
-///
-/// Listens for messages on the given port.
-///
-OneError one_server_listen(OneServerPtr server, unsigned int port);
-
-///
-/// Stops listening for messages.
-///
-OneError one_server_shutdown(OneServerPtr server);
-
-//--------------------------------------------------------------------------
-// Outgoing messages.
-
-// See the [One Arcus protocol documentation
-// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
-// for more information.
 
 ///
 /// Send the Arcus API server live_state_response opcode message.
@@ -337,10 +316,10 @@ OneError one_server_send_application_instance_set_status_request(OneServerPtr se
 //--------------------------------------------------------------------------
 // Incoming Message callbacks.
 
-///
-/// See the [One Arcus protocol documentation
-/// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
-/// for more information.
+// See the [One Arcus protocol documentation
+// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
+// for more information.
+
 ///
 /// Required before received the soft stop request message. Register the callback to be
 /// notified of a soft_stop_request. The process should stop at its earliest convenience.
@@ -412,13 +391,13 @@ OneError one_server_set_application_instance_get_status_response_callback(
 OneError one_server_set_application_instance_set_status_response_callback(
     OneServerPtr server, void (*callback)(void *data, int code), void *data);
 
-///
-/// OneAllocatorApi allows for control of all allocations made within the SDK.
-///
+//--------------------------------------------------------------------------
+// Environment.
 
 ///
 /// Provide custom memory alloc.
-/// Must be set at init time, before using any other APIs.
+/// Must be set at init time, before using any other APIs. If this is called,
+// then one_allocator_set_free must also be called.
 void one_allocator_set_alloc(void *(callback)(unsigned int size));
 
 ///
