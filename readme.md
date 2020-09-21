@@ -1,5 +1,10 @@
 # i3D.net Game Hosting SDK
 
+**PREVIEW**
+> Work-in-progress functional preview. Not ready for integration. Some Todo's remain. Documentation and source is not yet representative of integration-ready v1.0 release.
+
+---
+
 Providing game servers with the ability to communicate over TCP with the i3D.net One Platform.
 
 - [Build](#Build) – How to build and test the repository.
