@@ -87,7 +87,7 @@ Error prepare_soft_stop_request(int timeout, Message &message);
 Error prepare_allocated_request(const Array &array, Message &message);
 Error prepare_meta_data_request(const Array &array, Message &message);
 Error prepare_live_state_request(Message &message);
-Error prepare_live_state_response(int player, int max_player, const char *name,
+Error prepare_live_state_response(int players, int max_players, const char *name,
                                   const char *map, const char *mode, const char *version,
                                   Message &message);
 Error prepare_player_joined_event_response(int num_players, Message &message);

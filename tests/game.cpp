@@ -103,15 +103,15 @@ TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
         err = map.set_val_string("value", "islands_large");
         REQUIRE(!is_error(err));
 
-        Object max_player;
-        err = max_player.set_val_string("key", "maxPlayers");
+        Object max_players;
+        err = max_players.set_val_string("key", "maxPlayers");
         REQUIRE(!is_error(err));
-        err = max_player.set_val_string("value", "16");
+        err = max_players.set_val_string("value", "16");
         REQUIRE(!is_error(err));
 
         Array data;
         data.push_back_object(map);
-        data.push_back_object(max_player);
+        data.push_back_object(max_players);
 
         REQUIRE(agent.send_allocated_request(&data) == 0);
         agent.update();

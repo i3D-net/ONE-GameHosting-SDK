@@ -239,7 +239,7 @@ OneError one_server_shutdown(OneServerPtr server);
 // messages. The caller may add additional fields before sending, if the
 // One Platform is configured to utilize those extra fields.
 
-OneError one_message_prepare_live_state_response(int player, int max_player,
+OneError one_message_prepare_live_state_response(int players, int max_players,
                                                  const char *name, const char *map,
                                                  const char *mode, const char *version,
                                                  OneMessagePtr message);

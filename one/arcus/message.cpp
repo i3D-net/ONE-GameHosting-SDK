@@ -440,16 +440,16 @@ Error prepare_live_state_request(Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_live_state_response(int player, int max_player, const char *name,
+Error prepare_live_state_response(int players, int max_players, const char *name,
                                   const char *map, const char *mode, const char *version,
                                   Message &message) {
     Payload payload;
-    auto err = payload.set_val_int("player", player);
+    auto err = payload.set_val_int("players", players);
     if (is_error(err)) {
         return err;
     }
 
-    err = payload.set_val_int("max_player", max_player);
+    err = payload.set_val_int("maxPlayers", max_players);
     if (is_error(err)) {
         return err;
     }
