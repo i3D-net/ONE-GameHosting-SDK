@@ -192,64 +192,203 @@ TEST_CASE("message unit tests", "[message]") {
 
 TEST_CASE("message prepare", "[message]") {
     Message m;
-    REQUIRE(messages::prepare_soft_stop_request(1000, m) == 0);
-    REQUIRE(m.code() == Opcode::soft_stop_request);
-    auto p = m.payload();
-    REQUIRE(p.is_empty() == false);
-    int timeout = 0;
-    REQUIRE(!is_error(p.val_int("timeout", timeout)));
-    REQUIRE(timeout == 1000);
 
-    m.reset();
-    Array allocated;
-    REQUIRE(messages::prepare_allocated_request(allocated, m) == 0);
-    REQUIRE(m.code() == Opcode::allocated_request);
-    p = m.payload();
-    REQUIRE(p.is_empty() == false);
-    REQUIRE(p.is_val_array("data"));
+    {  // soft_stop_request
+        m.reset();
+        REQUIRE(!is_error(messages::prepare_soft_stop_request(1000, m)));
+        REQUIRE(m.code() == Opcode::soft_stop_request);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+        int timeout = 0;
+        REQUIRE(!is_error(p.val_int("timeout", timeout)));
+        REQUIRE(timeout == 1000);
+    }
 
-    m.reset();
-    Array meta_data;
-    REQUIRE(messages::prepare_meta_data_request(meta_data, m) == 0);
-    REQUIRE(m.code() == Opcode::meta_data_request);
-    p = m.payload();
-    REQUIRE(p.is_empty() == false);
-    REQUIRE(p.is_val_array("data"));
+    {  // allocated_request
+        m.reset();
+        Array allocated;
+        REQUIRE(!is_error(messages::prepare_allocated_request(allocated, m)));
+        REQUIRE(m.code() == Opcode::allocated_request);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+        REQUIRE(p.is_val_array("data"));
+    }
 
-    m.reset();
-    REQUIRE(messages::prepare_live_state_request(m) == 0);
-    REQUIRE(m.code() == Opcode::live_state_request);
-    REQUIRE(m.payload().is_empty() == true);
+    {  // meta_data_request
+        m.reset();
+        Array meta_data;
+        REQUIRE(!is_error(messages::prepare_meta_data_request(meta_data, m)));
+        REQUIRE(m.code() == Opcode::meta_data_request);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+        REQUIRE(p.is_val_array("data"));
+    }
 
-    m.reset();
-    const int players = 1;
-    const int max_players = 16;
-    const std::string name = "test name";
-    const std::string map = "test map";
-    const std::string mode = "test mode";
-    const std::string version = "test version";
+    {  // live_state_request
+        m.reset();
+        REQUIRE(!is_error(messages::prepare_live_state_request(m)));
+        REQUIRE(m.code() == Opcode::live_state_request);
+        REQUIRE(m.payload().is_empty() == true);
+    }
 
-    REQUIRE(messages::prepare_live_state_response(players, max_players, name.c_str(),
-                                                  map.c_str(), mode.c_str(),
-                                                  version.c_str(), m) == 0);
-    REQUIRE(m.code() == Opcode::live_state_response);
-    p = m.payload();
-    REQUIRE(p.is_empty() == false);
+    {  // live_state_response
+        m.reset();
+        const int players = 1;
+        const int max_players = 16;
+        const std::string name = "test name";
+        const std::string map = "test map";
+        const std::string mode = "test mode";
+        const std::string version = "test version";
 
-    int int_val = 0;
-    REQUIRE(!is_error(p.val_int("players", int_val)));
-    REQUIRE(int_val == players);
-    REQUIRE(!is_error(p.val_int("maxPlayers", int_val)));
-    REQUIRE(int_val == max_players);
-    std::string val;
-    REQUIRE(!is_error(p.val_string("name", val)));
-    REQUIRE(val == name);
-    REQUIRE(!is_error(p.val_string("map", val)));
-    REQUIRE(val == map);
-    REQUIRE(!is_error(p.val_string("mode", val)));
-    REQUIRE(val == mode);
-    REQUIRE(!is_error(p.val_string("version", val)));
-    REQUIRE(val == version);
+        REQUIRE(!is_error(messages::prepare_live_state_response(
+            players, max_players, name.c_str(), map.c_str(), mode.c_str(),
+            version.c_str(), m)));
+        REQUIRE(m.code() == Opcode::live_state_response);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+
+        int int_val = 0;
+        REQUIRE(!is_error(p.val_int("players", int_val)));
+        REQUIRE(int_val == players);
+        REQUIRE(!is_error(p.val_int("maxPlayers", int_val)));
+        REQUIRE(int_val == max_players);
+        std::string val;
+        REQUIRE(!is_error(p.val_string("name", val)));
+        REQUIRE(val == name);
+        REQUIRE(!is_error(p.val_string("map", val)));
+        REQUIRE(val == map);
+        REQUIRE(!is_error(p.val_string("mode", val)));
+        REQUIRE(val == mode);
+        REQUIRE(!is_error(p.val_string("version", val)));
+        REQUIRE(val == version);
+    }
+
+    {  // player_joined_event_response
+        m.reset();
+        const int num_players = 10;
+
+        REQUIRE(
+            !is_error(messages::prepare_player_joined_event_response(num_players, m)));
+        REQUIRE(m.code() == Opcode::player_joined_event_response);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+
+        int number = 0;
+        REQUIRE(!is_error(p.val_int("numPlayers", number)));
+        REQUIRE(number == num_players);
+    }
+
+    {  // player_left_response
+        m.reset();
+        const int num_players = 5;
+
+        REQUIRE(!is_error(messages::prepare_player_left_response(num_players, m)));
+        REQUIRE(m.code() == Opcode::player_left_response);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+
+        int number = 0;
+        REQUIRE(!is_error(p.val_int("numPlayers", number)));
+        REQUIRE(number == num_players);
+    }
+
+    {  // host_information_request
+        m.reset();
+
+        REQUIRE(!is_error(messages::prepare_host_information_request(m)));
+        REQUIRE(m.code() == Opcode::host_information_request);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == true);
+    }
+
+    {  // host_information_response
+        m.reset();
+
+        Object object;
+
+        REQUIRE(!is_error(messages::prepare_host_information_response(object, m)));
+        REQUIRE(m.code() == Opcode::host_information_response);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == true);
+    }
+
+    {  // application_instance_information_request
+        m.reset();
+
+        REQUIRE(!is_error(messages::prepare_application_instance_information_request(m)));
+        REQUIRE(m.code() == Opcode::application_instance_information_request);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == true);
+    }
+
+    {  // application_instance_information_response
+        m.reset();
+
+        Object object;
+
+        REQUIRE(!is_error(
+            messages::prepare_application_instance_information_response(object, m)));
+        REQUIRE(m.code() == Opcode::application_instance_information_response);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == true);
+    }
+
+    {  // application_instance_get_status_request
+        m.reset();
+
+        REQUIRE(!is_error(messages::prepare_application_instance_get_status_request(m)));
+        REQUIRE(m.code() == Opcode::application_instance_get_status_request);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == true);
+    }
+
+    {  // application_instance_get_status_response
+        m.reset();
+
+        const int status = 4;
+
+        REQUIRE(!is_error(
+            messages::prepare_application_instance_get_status_response(status, m)));
+        REQUIRE(m.code() == Opcode::application_instance_get_status_response);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+
+        int s = 0;
+        REQUIRE(!is_error(p.val_int("status", s)));
+        REQUIRE(s == status);
+    }
+
+    {  // application_instance_set_status_request
+        m.reset();
+
+        const int status = 4;
+
+        REQUIRE(!is_error(
+            messages::prepare_application_instance_set_status_request(status, m)));
+        REQUIRE(m.code() == Opcode::application_instance_set_status_request);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+
+        int s = 0;
+        REQUIRE(!is_error(p.val_int("status", s)));
+        REQUIRE(s == status);
+    }
+
+    {  // application_instance_set_status_response
+        m.reset();
+
+        const int code = 10;
+
+        REQUIRE(!is_error(
+            messages::prepare_application_instance_set_status_response(code, m)));
+        REQUIRE(m.code() == Opcode::application_instance_set_status_response);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+
+        int c = 0;
+        REQUIRE(!is_error(p.val_int("code", c)));
+        REQUIRE(c == code);
+    }
 }
 
 TEST_CASE("message c_api", "[message]") {
@@ -393,7 +532,12 @@ TEST_CASE("message c_api", "[message]") {
 
     REQUIRE(!is_error(one_message_prepare_live_state_response(1, 16, "name", "map",
                                                               "mode", "version", m)));
+    REQUIRE(!is_error(one_message_prepare_player_joined_event_response(1, m)));
+    REQUIRE(!is_error(one_message_prepare_player_left_response(16, m)));
     REQUIRE(!is_error(one_message_prepare_host_information_request(m)));
+    REQUIRE(!is_error(one_message_prepare_application_instance_information_request(m)));
+    REQUIRE(!is_error(one_message_prepare_application_instance_get_status_request(m)));
+    REQUIRE(!is_error(one_message_prepare_application_instance_set_status_request(4, m)));
 
     one_message_destroy(&m);
     REQUIRE(m == nullptr);
