@@ -39,7 +39,7 @@ public:
 
     // Set live_state callback.
     Error set_live_state_response_callback(
-        std::function<void(void *, int player, int max_player, const std::string &name,
+        std::function<void(void *, int players, int max_players, const std::string &name,
                            const std::string &map, const std::string &mode,
                            const std::string &version)>,
         void *data);

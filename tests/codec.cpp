@@ -243,12 +243,12 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(message.code() == Opcode::live_state_response);
         REQUIRE(new_message.code() == message.code());
         REQUIRE(new_message.payload().get() == message.payload().get());
-        int player;
-        REQUIRE(!is_error(message.payload().val_int("player", player)));
-        REQUIRE(player == 1);
-        int max_player;
-        REQUIRE(!is_error(message.payload().val_int("max_player", max_player)));
-        REQUIRE(player == 1);
+        int players;
+        REQUIRE(!is_error(message.payload().val_int("players", players)));
+        REQUIRE(players == 1);
+        int max_players;
+        REQUIRE(!is_error(message.payload().val_int("maxPlayers", max_players)));
+        REQUIRE(max_players == 16);
         std::string name;
         REQUIRE(!is_error(message.payload().val_string("name", name)));
         REQUIRE(name == "name test");

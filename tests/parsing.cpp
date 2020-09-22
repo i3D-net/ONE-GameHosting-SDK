@@ -20,10 +20,10 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
         err = map.set_val_string("value", map_str);
         REQUIRE(!is_error(err));
 
-        Object max_player;
-        err = max_player.set_val_string("key", "maxPlayers");
+        Object max_players;
+        err = max_players.set_val_string("key", "maxPlayers");
         REQUIRE(!is_error(err));
-        err = max_player.set_val_string("value", max_players_str);
+        err = max_players.set_val_string("value", max_players_str);
         REQUIRE(!is_error(err));
 
         Array data;
@@ -55,11 +55,11 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
         REQUIRE(!Parsing::extract_key_value_payload(ptr, callback));
         data.push_back_object(map);
         REQUIRE(!Parsing::extract_key_value_payload(ptr, callback));
-        data.push_back_object(max_player);
+        data.push_back_object(max_players);
         REQUIRE(Parsing::extract_key_value_payload(ptr, callback));
         REQUIRE(allocated.map == map_str);
         REQUIRE(allocated.max_players == max_players_str);
-        data.push_back_object(max_player);
+        data.push_back_object(max_players);
         REQUIRE(!Parsing::extract_key_value_payload(ptr, callback));
     }
 

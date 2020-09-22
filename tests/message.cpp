@@ -222,14 +222,14 @@ TEST_CASE("message prepare", "[message]") {
     REQUIRE(m.payload().is_empty() == true);
 
     m.reset();
-    const int player = 1;
-    const int max_player = 16;
+    const int players = 1;
+    const int max_players = 16;
     const std::string name = "test name";
     const std::string map = "test map";
     const std::string mode = "test mode";
     const std::string version = "test version";
 
-    REQUIRE(messages::prepare_live_state_response(player, max_player, name.c_str(),
+    REQUIRE(messages::prepare_live_state_response(players, max_players, name.c_str(),
                                                   map.c_str(), mode.c_str(),
                                                   version.c_str(), m) == 0);
     REQUIRE(m.code() == Opcode::live_state_response);
@@ -237,10 +237,10 @@ TEST_CASE("message prepare", "[message]") {
     REQUIRE(p.is_empty() == false);
 
     int int_val = 0;
-    REQUIRE(!is_error(p.val_int("player", int_val)));
-    REQUIRE(int_val == player);
-    REQUIRE(!is_error(p.val_int("max_player", int_val)));
-    REQUIRE(int_val == max_player);
+    REQUIRE(!is_error(p.val_int("players", int_val)));
+    REQUIRE(int_val == players);
+    REQUIRE(!is_error(p.val_int("maxPlayers", int_val)));
+    REQUIRE(int_val == max_players);
     std::string val;
     REQUIRE(!is_error(p.val_string("name", val)));
     REQUIRE(val == name);

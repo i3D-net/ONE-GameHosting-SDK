@@ -1175,7 +1175,7 @@ OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPt
     return o->set_val_object(key, *v);
 }
 
-Error message_prepare_live_state_response(int player, int max_player, const char *name,
+Error message_prepare_live_state_response(int players, int max_players, const char *name,
                                           const char *map, const char *mode,
                                           const char *version, OneMessagePtr message) {
     auto m = (Message *)message;
@@ -1199,7 +1199,7 @@ Error message_prepare_live_state_response(int player, int max_player, const char
         return ONE_ERROR_VALIDATION_VERSION_IS_NULLPTR;
     }
 
-    return messages::prepare_live_state_response(player, max_player, name, map, mode,
+    return messages::prepare_live_state_response(players, max_players, name, map, mode,
                                                  version, *m);
 }
 
@@ -1877,11 +1877,11 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
     return one::object_set_val_object(object, key, val);
 }
 
-OneError one_message_prepare_live_state_response(int player, int max_player,
+OneError one_message_prepare_live_state_response(int players, int max_players,
                                                  const char *name, const char *map,
                                                  const char *mode, const char *version,
                                                  OneMessagePtr message) {
-    return one::message_prepare_live_state_response(player, max_player, name, map, mode,
+    return one::message_prepare_live_state_response(players, max_players, name, map, mode,
                                                     version, message);
 }
 
