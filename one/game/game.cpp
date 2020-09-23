@@ -11,7 +11,11 @@ Game::Game(unsigned int port)
     : _server(port)
     , _soft_stop_call_count(0)
     , _allocated_call_count(0)
-    , _meta_data_call_count(0) {}
+    , _meta_data_call_count(0)
+    , _host_information_call_count(0)
+    , _application_instance_information_call_count(0)
+    , _application_instance_get_status_call_count(0)
+    , _application_instance_set_status_call_count(0) {}
 
 Game::~Game() {
     _server.shutdown();
@@ -36,6 +40,10 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
     _server.set_soft_stop_callback(soft_stop_callback, this);
     _server.set_allocated_callback(allocated_callback, this);
     _server.set_meta_data_callback(meta_data_callback, this);
+    _server.set_host_information_callback(host_information_callback, this);
+    _server.set_application_instance_information_callback(application_instance_information_callback, this);
+    _server.set_application_instance_get_status_callback(application_instance_get_status_callback, this);
+    _server.set_application_instance_set_status_callback(application_instance_set_status_callback, this);
 
     return (_server.status() == OneServerWrapper::Status::waiting_for_client);
 }
@@ -86,7 +94,8 @@ void Game::meta_data_callback(const OneServerWrapper::MetaDataData &data,
     game->_meta_data_call_count++;
 }
 
-void Game::host_information_callback(OneServerWrapper::HostInformationData data) {
+void Game::host_information_callback(const OneServerWrapper::HostInformationData &data,
+                                     void *userdata) {
     L_INFO("host information called:");
     L_INFO("\tid:" + std::to_string(data.id));
     L_INFO("\tserver id:" + std::to_string(data.server_id));
@@ -94,7 +103,8 @@ void Game::host_information_callback(OneServerWrapper::HostInformationData data)
 }
 
 void Game::application_instance_information_callback(
-    OneServerWrapper::ApplicationInstanceInformationData data) {
+    const OneServerWrapper::ApplicationInstanceInformationData &data,
+        void *userdata) {
     L_INFO("application instance information called:");
     L_INFO("\tfleet id:" + data.fleet_id);
     L_INFO("\thost id:" + std::to_string(data.host_id));
@@ -102,13 +112,15 @@ void Game::application_instance_information_callback(
 }
 
 void Game::application_instance_get_status_callback(
-    OneServerWrapper::ApplicationInstanceGetStatusData data) {
+    const OneServerWrapper::ApplicationInstanceGetStatusData &data,
+        void *userdata) {
     L_INFO("application instance get status called:");
     L_INFO("\tstatus:" + std::to_string(data.status));
 }
 
 void Game::application_instance_set_status_callback(
-    OneServerWrapper::ApplicationInstanceSetStatusData data) {
+    const OneServerWrapper::ApplicationInstanceSetStatusData &data,
+        void *userdata) {
     L_INFO("application instance set status called:");
     L_INFO("\tcode:" + std::to_string(data.code));
 }

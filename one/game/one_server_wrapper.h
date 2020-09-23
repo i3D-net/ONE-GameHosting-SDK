@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include <functional>
 #include <mutex>
@@ -95,7 +95,8 @@ public:
         std::string map;          // Game map.
     };
     void set_allocated_callback(
-        std::function<void(const AllocatedData &, void *)> callback, void *userdata);
+        std::function<void(const AllocatedData &data, void *userdata)> callback,
+        void *userdata);
 
     // The meta data request has a optional body containing a JSON object with key value
     // pairs for meta data this keys and values are definable by the customer.
@@ -109,7 +110,8 @@ public:
         std::string type;  // Game type.
     };
     void set_meta_data_callback(
-        std::function<void(const MetaDataData &, void *)> callback, void *userdata);
+        std::function<void(const MetaDataData &data, void *userdata)> callback,
+        void *userdata);
 
     // The host information response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information-response
@@ -122,7 +124,9 @@ public:
         std::string server_name;  // server name.
         // ... add members as needed.
     };
-    void set_host_information_callback(std::function<void(HostInformationData)> callback);
+    void set_host_information_callback(
+        std::function<void(const HostInformationData &data, void *userdata)> callback,
+        void *userdata);
 
     // The application instancate information response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information-response
@@ -136,7 +140,10 @@ public:
         // ... add members as needed.
     };
     void set_application_instance_information_callback(
-        std::function<void(ApplicationInstanceInformationData)> callback);
+        std::function<void(const ApplicationInstanceInformationData &data,
+                           void *userdata)>
+            callback,
+        void *userdata);
 
     // The application instancate information response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-get-status-response
@@ -147,7 +154,9 @@ public:
         int status;  // status.
     };
     void set_application_instance_get_status_callback(
-        std::function<void(ApplicationInstanceGetStatusData)> callback);
+        std::function<void(const ApplicationInstanceGetStatusData &data, void *userdata)>
+            callback,
+        void *userdata);
 
     // The application instancate information response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-response
@@ -162,7 +171,9 @@ public:
         int code;  // Todo: document.
     };
     void set_application_instance_set_status_callback(
-        std::function<void(ApplicationInstanceSetStatusData)> callback);
+        std::function<void(const ApplicationInstanceSetStatusData &data, void *userdata)>
+            callback,
+        void *userdata);
 
     // Sends a application instance get status request message.
     // Todo: purpose/when should this be called.
@@ -235,13 +246,17 @@ private:
     std::function<void(const MetaDataData &, void *)> _meta_data_callback;
     void *_meta_data_userdata;
 
-    std::function<void(HostInformationData)> _host_information_callback;
-    std::function<void(ApplicationInstanceInformationData)>
+    std::function<void(const HostInformationData &, void *)> _host_information_callback;
+    void *_host_information_userdata;
+    std::function<void(const ApplicationInstanceInformationData &, void *)>
         _application_instance_information_callback;
-    std::function<void(ApplicationInstanceGetStatusData)>
+    void *_application_instance_information_userdata;
+    std::function<void(const ApplicationInstanceGetStatusData &, void *)>
         _application_instance_get_status_callback;
-    std::function<void(ApplicationInstanceSetStatusData)>
+    void *_application_instance_get_status_userdata;
+    std::function<void(const ApplicationInstanceSetStatusData &, void *)>
         _application_instance_set_status_callback;
+    void *_application_instance_set_status_userdata;
 
     mutable std::mutex _wrapper;
 };

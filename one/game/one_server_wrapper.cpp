@@ -31,7 +31,13 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _meta_data_callback(nullptr)
     , _meta_data_userdata(nullptr)
     , _host_information_callback(nullptr)
-    , _application_instance_information_callback(nullptr) {}
+    , _host_information_userdata(nullptr)
+    , _application_instance_information_callback(nullptr)
+    , _application_instance_information_userdata(nullptr)
+    , _application_instance_get_status_callback(nullptr)
+    , _application_instance_get_status_userdata(nullptr)
+    , _application_instance_set_status_callback(nullptr)
+    , _application_instance_set_status_userdata(nullptr) {}
 
 OneServerWrapper::~OneServerWrapper() {
     shutdown();
@@ -293,49 +299,62 @@ OneServerWrapper::Status OneServerWrapper::status() const {
     }
 }
 
-void OneServerWrapper::set_soft_stop_callback(std::function<void(int, void *)> callback,
-                                              void *userdata) {
+void OneServerWrapper::set_soft_stop_callback(
+    std::function<void(int timeout, void *userdata)> callback, void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     _soft_stop_callback = callback;
     _soft_stop_userdata = userdata;
 }
 
 void OneServerWrapper::set_allocated_callback(
-    std::function<void(const AllocatedData &, void *)> callback, void *userdata) {
+    std::function<void(const AllocatedData &data, void *userdata)> callback,
+    void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     _allocated_callback = callback;
     _allocated_userdata = userdata;
 }
 
 void OneServerWrapper::set_meta_data_callback(
-    std::function<void(const MetaDataData &, void *)> callback, void *userdata) {
+    std::function<void(const MetaDataData &data, void *userdata)> callback,
+    void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     _meta_data_callback = callback;
     _meta_data_userdata = userdata;
 }
 
 void OneServerWrapper::set_host_information_callback(
-    std::function<void(HostInformationData)> callback) {
+    std::function<void(const HostInformationData &data, void *userdata)> callback,
+    void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     _host_information_callback = callback;
+    _host_information_userdata = userdata;
 }
 
 void OneServerWrapper::set_application_instance_information_callback(
-    std::function<void(ApplicationInstanceInformationData)> callback) {
+    std::function<void(const ApplicationInstanceInformationData &data, void *userdata)>
+        callback,
+    void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_information_callback = callback;
+    _application_instance_information_userdata = userdata;
 }
 
 void OneServerWrapper::set_application_instance_get_status_callback(
-    std::function<void(ApplicationInstanceGetStatusData)> callback) {
+    std::function<void(const ApplicationInstanceGetStatusData &data, void *userdata)>
+        callback,
+    void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_get_status_callback = callback;
+    _application_instance_get_status_userdata = userdata;
 }
 
 void OneServerWrapper::set_application_instance_set_status_callback(
-    std::function<void(ApplicationInstanceSetStatusData)> callback) {
+    std::function<void(const ApplicationInstanceSetStatusData &data, void *userdata)>
+        callback,
+    void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_set_status_callback = callback;
+    _application_instance_set_status_userdata = userdata;
 }
 
 bool OneServerWrapper::send_application_instance_get_status() {
@@ -563,7 +582,8 @@ void OneServerWrapper::host_information(void *userdata, void *information) {
     }
 
     L_INFO("invoking host information callback");
-    wrapper->_host_information_callback(information_payload);
+    wrapper->_host_information_callback(information_payload,
+                                        wrapper->_host_information_userdata);
 }
 
 void OneServerWrapper::application_instance_information(void *userdata,
@@ -582,7 +602,7 @@ void OneServerWrapper::application_instance_information(void *userdata,
     assert(wrapper->_server != nullptr);
 
     if (wrapper->_application_instance_information_callback == nullptr) {
-        L_INFO("host information callback is nullptr");
+        L_INFO("application instance information callback is nullptr");
         return;
     }
 
@@ -593,8 +613,9 @@ void OneServerWrapper::application_instance_information(void *userdata,
         return;
     }
 
-    L_INFO("invoking host information callback");
-    wrapper->_application_instance_information_callback(information_payload);
+    L_INFO("invoking application instance information callback");
+    wrapper->_application_instance_information_callback(
+        information_payload, wrapper->_application_instance_information_userdata);
 }
 
 void OneServerWrapper::application_instance_get_status(void *userdata, int status) {
@@ -606,15 +627,16 @@ void OneServerWrapper::application_instance_get_status(void *userdata, int statu
     auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
     assert(wrapper->_server != nullptr);
 
-    if (wrapper->_application_instance_information_callback == nullptr) {
-        L_INFO("host information callback is nullptr");
+    if (wrapper->_application_instance_get_status_callback == nullptr) {
+        L_INFO("application instance get status callback is nullptr");
         return;
     }
 
-    L_INFO("invoking host information callback");
+    L_INFO("invoking application instance get status callback");
     ApplicationInstanceGetStatusData data;
     data.status = status;
-    wrapper->_application_instance_get_status_callback(data);
+    wrapper->_application_instance_get_status_callback(
+        data, wrapper->_application_instance_get_status_userdata);
 }
 
 void OneServerWrapper::application_instance_set_status(void *userdata, int code) {
@@ -626,15 +648,16 @@ void OneServerWrapper::application_instance_set_status(void *userdata, int code)
     auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
     assert(wrapper->_server != nullptr);
 
-    if (wrapper->_application_instance_information_callback == nullptr) {
-        L_INFO("host information callback is nullptr");
+    if (wrapper->_application_instance_set_status_callback == nullptr) {
+        L_INFO("application instance information set status is nullptr");
         return;
     }
 
-    L_INFO("invoking host information callback");
+    L_INFO("invoking application instance set status callback");
     ApplicationInstanceSetStatusData data;
     data.code = code;
-    wrapper->_application_instance_set_status_callback(data);
+    wrapper->_application_instance_set_status_callback(
+        data, wrapper->_application_instance_set_status_userdata);
 }
 
 void OneServerWrapper::live_state_request(void *userdata) {
