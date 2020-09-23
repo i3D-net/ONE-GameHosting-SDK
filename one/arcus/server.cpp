@@ -21,6 +21,8 @@ Server::~Server() {
 }
 
 Error Server::init() {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (_listen_socket != nullptr || _client_socket != nullptr ||
         _client_connection != nullptr) {
         return ONE_ERROR_SERVER_ALREADY_INITIALIZED;
@@ -59,6 +61,8 @@ Error Server::init() {
 }
 
 Error Server::shutdown() {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (_client_connection != nullptr) {
         delete _client_connection;
         _client_connection = nullptr;
@@ -98,6 +102,8 @@ std::string Server::status_to_string(Status status) {
 }
 
 Server::Status Server::status() const {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (!is_initialized()) return Status::uninitialized;
 
     if (_is_waiting_for_client) return Status::waiting_for_client;
@@ -121,6 +127,8 @@ Server::Status Server::status() const {
 }
 
 Error Server::listen(unsigned int port) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (_listen_socket == nullptr) {
         return ONE_ERROR_SERVER_SOCKET_IS_NULLPTR;
     }
@@ -144,59 +152,13 @@ Error Server::listen(unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Server::update_listen_socket() {
-    assert(_listen_socket != nullptr);
-
-    bool is_ready;
-    auto err = _listen_socket->ready_for_read(0.f, is_ready);
-    if (is_error(err)) {
-        return err;
-    }
-    if (!is_ready) {
-        return ONE_ERROR_NONE;
-    }
-
-    std::string client_ip;
-    unsigned int client_port;
-    Socket incoming_client;
-    err = _listen_socket->accept(incoming_client, client_ip, client_port);
-    if (is_error(err)) {
-        return ONE_ERROR_NONE;
-    }
-
-    // If no client was accepted, exit.
-    if (!incoming_client.is_initialized()) {
-        return ONE_ERROR_NONE;
-    }
-
-    // If a client is already connected, then close the incoming connection.
-    if (_client_socket->is_initialized()) {
-        incoming_client.close();
-        return ONE_ERROR_NONE;
-    }
-
-    // Client accepted, add it.
-
-    _is_waiting_for_client = false;
-
-    *_client_socket = incoming_client;
-    _client_connection->init(*_client_socket);
-
-    // The Arcus Server is responsible for initiating the handshake against agents.
-    // The agent waits for an initial hello packet from the Server.
-    _client_connection->initiate_handshake();
-
-    return ONE_ERROR_NONE;
-}
-
-bool Server::is_initialized() const {
-    return (_listen_socket != nullptr);
-}
-
 Error Server::update() {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (!is_initialized()) {
         return ONE_ERROR_SERVER_SOCKET_NOT_INITIALIZED;
     }
+
     assert(_client_socket != nullptr);
     assert(_client_connection != nullptr);
 
@@ -250,6 +212,8 @@ Error Server::update() {
 
 Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
                                      void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -261,6 +225,8 @@ Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
 
 Error Server::set_allocated_callback(std::function<void(void *, Array *)> callback,
                                      void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -272,6 +238,8 @@ Error Server::set_allocated_callback(std::function<void(void *, Array *)> callba
 
 Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callback,
                                      void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -283,6 +251,8 @@ Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callba
 
 Error Server::set_live_state_request_callback(std::function<void(void *)> callback,
                                               void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -294,6 +264,8 @@ Error Server::set_live_state_request_callback(std::function<void(void *)> callba
 
 Error Server::set_host_information_response_callback(
     std::function<void(void *, Object *)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -305,6 +277,8 @@ Error Server::set_host_information_response_callback(
 
 Error Server::set_application_instance_information_response_callback(
     std::function<void(void *, Object *)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -316,6 +290,8 @@ Error Server::set_application_instance_information_response_callback(
 
 Error Server::set_application_instance_get_status_response_callback(
     std::function<void(void *, int)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -327,6 +303,8 @@ Error Server::set_application_instance_get_status_response_callback(
 
 Error Server::set_application_instance_set_status_response_callback(
     std::function<void(void *, int)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     if (callback == nullptr) {
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
@@ -337,6 +315,8 @@ Error Server::set_application_instance_set_status_response_callback(
 }
 
 Error Server::send_live_state_response(const Message &message) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -346,6 +326,8 @@ Error Server::send_live_state_response(const Message &message) {
 }
 
 Error Server::send_player_joined_event_response(const Message &message) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -355,6 +337,8 @@ Error Server::send_player_joined_event_response(const Message &message) {
 }
 
 Error Server::send_player_left_response(const Message &message) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -364,6 +348,8 @@ Error Server::send_player_left_response(const Message &message) {
 }
 
 Error Server::send_host_information_request(const Message &message) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -373,6 +359,8 @@ Error Server::send_host_information_request(const Message &message) {
 }
 
 Error Server::send_application_instance_information_request(const Message &message) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -382,6 +370,8 @@ Error Server::send_application_instance_information_request(const Message &messa
 }
 
 Error Server::send_application_instance_get_status_request(const Message &message) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -391,10 +381,61 @@ Error Server::send_application_instance_get_status_request(const Message &messag
 }
 
 Error Server::send_application_instance_set_status_request(const Message &message) {
+    const std::lock_guard<std::mutex> lock(_server);
+
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
     }
+
+    return ONE_ERROR_NONE;
+}
+
+bool Server::is_initialized() const {
+    return (_listen_socket != nullptr);
+}
+
+Error Server::update_listen_socket() {
+    assert(_listen_socket != nullptr);
+
+    bool is_ready;
+    auto err = _listen_socket->ready_for_read(0.f, is_ready);
+    if (is_error(err)) {
+        return err;
+    }
+    if (!is_ready) {
+        return ONE_ERROR_NONE;
+    }
+
+    std::string client_ip;
+    unsigned int client_port;
+    Socket incoming_client;
+    err = _listen_socket->accept(incoming_client, client_ip, client_port);
+    if (is_error(err)) {
+        return ONE_ERROR_NONE;
+    }
+
+    // If no client was accepted, exit.
+    if (!incoming_client.is_initialized()) {
+        return ONE_ERROR_NONE;
+    }
+
+    // If a client is already connected, then close the incoming connection.
+    if (_client_socket->is_initialized()) {
+        incoming_client.close();
+        return ONE_ERROR_NONE;
+    }
+
+    // Client accepted, add it.
+
+    _is_waiting_for_client = false;
+
+    *_client_socket = incoming_client;
+    _client_connection->init(*_client_socket);
+
+    // The Arcus Server is responsible for initiating the handshake against agents.
+    // The agent waits for an initial hello packet from the Server.
+    _client_connection->initiate_handshake();
 
     return ONE_ERROR_NONE;
 }

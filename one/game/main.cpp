@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
     Game game(port);
 
-    if (!game.init(0, 16, "test game", "test map", "test mode", "test version")) {
+    if (!game.init(16, "test game", "test map", "test mode", "test version")) {
         L_ERROR("failed to init game");
         return 1;
     }

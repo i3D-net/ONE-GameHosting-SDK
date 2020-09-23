@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <mutex>
 #include <string>
 
 //----------------------------------------------
@@ -64,6 +65,10 @@ public:
     // Set the game state to the current value. The wrapper uses this to send
     // the current state to the One Platform, when requested to do so.
     void set_game_state(const GameState &);
+
+    const GameState &game_state() const {
+        return _game_state;
+    };
 
     // Must called often (e.g. each frame). Updates the Arcus Server, which
     // processes incoming and outgoing messages.
@@ -237,6 +242,8 @@ private:
         _application_instance_get_status_callback;
     std::function<void(ApplicationInstanceSetStatusData)>
         _application_instance_set_status_callback;
+
+    mutable std::mutex _wrapper;
 };
 
 }  // namespace game

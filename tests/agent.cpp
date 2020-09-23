@@ -9,7 +9,7 @@ using namespace i3d::one;
 
 TEST_CASE("Agent standalone life cycle", "[agent]") {
     Agent agent;
-    REQUIRE(!is_error(agent.init("127.0.0.1", 19001)));
+    REQUIRE(!is_error(agent.init("127.0.0.1", 19000)));
     REQUIRE(agent.update() == ONE_ERROR_SOCKET_CONNECT_FAILED);
     REQUIRE(agent.client().status() == Client::Status::connecting);
 }

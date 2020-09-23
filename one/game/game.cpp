@@ -17,16 +17,15 @@ Game::~Game() {
     _server.shutdown();
 }
 
-bool Game::init(int players, int max_players, const std::string &name,
-                const std::string &map, const std::string &mode,
-                const std::string &version) {
+bool Game::init(int max_players, const std::string &name, const std::string &map,
+                const std::string &mode, const std::string &version) {
     if (!_server.init()) {
         L_ERROR("failed to init server");
         return false;
     }
 
     OneServerWrapper::GameState state;
-    state.players = players;
+    state.players = 0;  // Game starts with 0 active players.
     state.max_players = max_players;
     state.name = name;
     state.map = map;

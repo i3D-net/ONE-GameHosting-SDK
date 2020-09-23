@@ -6,6 +6,7 @@ add_executable(${UNIT_TEST}
     array.cpp
     arcus.cpp
     codec.cpp
+    concurrency.cpp
     endian.cpp
     error.cpp
     game.cpp
@@ -18,10 +19,13 @@ add_executable(${UNIT_TEST}
     util.cpp
 )
 
+find_package(Threads REQUIRED)
+
 target_compile_features(${UNIT_TEST} PRIVATE cxx_std_11)
 target_link_libraries(${UNIT_TEST} PRIVATE one_agent)
 target_link_libraries(${UNIT_TEST} PRIVATE one_game)
 target_link_libraries(${UNIT_TEST} PRIVATE one_arcus)
+target_link_libraries(${UNIT_TEST}  PRIVATE Threads::Threads)
 include_directories(catch2)
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
