@@ -11,16 +11,20 @@ https://github.com/catchorg/Catch2
 tag: `v2.12.2`
 Commit: `b1b5cb812277f367387844aab46eb2d3b15d03cd`
 
-## Adding Tests
+## File Structure
 
-1. Add tests to the file matching their corresponding component folder within the one folder. For example if adding a test for something within one/arcus/.. then add the test to tests/arcus.cpp. If the test uses multiple components, add it to tests/integration.cpp.
+### Unit Tests
+
+Do one of the following:
+
+1. Name the file after the corresponding component folder within the one folder. For example "tests/arcus.cpp" if adding a test for something within "one/arcus/..".
+2. Name the file after a header that is being tests, e.g. "ring.cpp" if testing "one/arcus/internal/ring.h".
+
+### Integration Tests
+
+1. If the testing a Fake Game with a Fake Agent, add it to tests/integration.cpp.
 2. Integration tests should only reference public interfaces. No friend classes for testing purposes or touching of /internal folders.
-3. If adding a new file, add the reference in the `CMakeList.txt` in the current folder:
-    ```cmake
-    add_executable(${UNIT_TEST}
-        main.cpp
-        ...
-        NEW_TEST.cpp
-    )
-    ```
-4. Test utilities go in tests/util.h.
+
+### Utilities
+
+Test utilities go in tests/util.h.
