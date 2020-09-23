@@ -23,12 +23,12 @@ TEST_CASE("Agent connection failure", "[.][integration]") {
     const unsigned int port = 19001;
 
     Game game(port);
-    REQUIRE(game.init(1, 16, "name", "map", "mode", "version"));
+    REQUIRE(game.init(16, "name", "map", "mode", "version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
     Agent agent;
-    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(!is_error(agent.init(address, port)));
 
     game.update();
     REQUIRE(agent.update() == ONE_ERROR_NONE);
@@ -40,12 +40,12 @@ TEST_CASE("long:Handshake timeout", "[integration]") {
     const unsigned int port = 19003;
 
     Game game(port);
-    REQUIRE(game.init(1, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
-    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(!is_error(agent.init(address, port)));
     // Update agent and game one time to initiate the connection.
-    REQUIRE(agent.update() == int(ONE_ERROR_NONE));
+    REQUIRE(!is_error(agent.update()));
     game.update();
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::handshake);
 
@@ -71,10 +71,10 @@ TEST_CASE("long:Reconnection", "[integration]") {
     const unsigned int port = 19003;
 
     Game game(port);
-    REQUIRE(game.init(1, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
-    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(!is_error(agent.init(address, port)));
 
     pump_updates(10, 1, agent, game);
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
@@ -91,7 +91,7 @@ TEST_CASE("long:Reconnection", "[integration]") {
     REQUIRE(agent.client().status() == Client::Status::connecting);
 
     // Restart the server and it should be waiting for client.
-    REQUIRE(game.init(1, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -106,10 +106,10 @@ TEST_CASE("long:Maintain connection", "[integration]") {
     const unsigned int port = 19003;
 
     Game game(port);
-    REQUIRE(game.init(1, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
-    REQUIRE(agent.init(address, port) == 0);
+    REQUIRE(!is_error(agent.init(address, port)));
 
     const auto start = steady_clock::now();
 

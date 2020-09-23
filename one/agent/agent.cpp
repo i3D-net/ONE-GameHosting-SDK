@@ -1,15 +1,34 @@
 #include <one/agent/agent.h>
 
 #include <one/arcus/message.h>
+#include <one/game/log.h>
 
 namespace i3d {
 namespace one {
+
+Agent::Agent() : _player_join_call_count(0), _player_left_call_count(0) {}
 
 Error Agent::init(const char *addr, unsigned int port) {
     auto err = _client.init(addr, port);
     if (is_error(err)) {
         return err;
     }
+
+    _client.set_player_joined_event_response_callback(
+        [this](void *, int num_players) {
+            _player_join_call_count++;
+            L_INFO("player joined event response received:");
+            L_INFO("\tnum_players:" + std::to_string(num_players));
+        },
+        nullptr);
+
+    _client.set_player_left_response_callback(
+        [this](void *, int num_players) {
+            _player_left_call_count++;
+            L_INFO("player left response received:");
+            L_INFO("\tnum_players:" + std::to_string(num_players));
+        },
+        nullptr);
 
     return ONE_ERROR_NONE;
 }

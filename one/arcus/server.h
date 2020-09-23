@@ -3,6 +3,7 @@
 #include <one/arcus/error.h>
 
 #include <functional>
+#include <mutex>
 #include <string>
 
 namespace i3d {
@@ -195,6 +196,8 @@ private:
     bool _is_waiting_for_client;
 
     callback::ServerCallbacks _callbacks;
+
+    mutable std::mutex _server;
 };
 
 }  // namespace one

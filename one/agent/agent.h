@@ -15,7 +15,7 @@ class Message;
 /// Agent can connect to a Server and simulate production deployment behavior.
 class Agent final {
 public:
-    Agent() = default;
+    Agent();
     ~Agent() = default;
 
     // Init with a target remote address. The agent attempts to connect during
@@ -55,8 +55,19 @@ public:
         return _client;
     }
 
+    int player_join_call_count() const {
+        return _player_join_call_count;
+    }
+
+    int player_left_call_count() const {
+        return _player_left_call_count;
+    }
+
 private:
     Client _client;
+
+    int _player_join_call_count;
+    int _player_left_call_count;
 };
 
 }  // namespace one

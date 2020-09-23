@@ -16,13 +16,13 @@ using namespace i3d::one;
 
 TEST_CASE("life cycle", "[fake game]") {
     Game game(19001);
-    REQUIRE(game.init(10, 54, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(54, "test game", "test map", "test mode", "test version"));
     game.shutdown();
 }
 
 TEST_CASE("connection error handling", "[fake game]") {
     Game game(19001);
-    REQUIRE(game.init(10, 54, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(54, "test game", "test map", "test mode", "test version"));
 
     // Connect a client socket to fake a scriptable agent.
     Socket client;
@@ -70,12 +70,12 @@ TEST_CASE("connection error handling", "[fake game]") {
     game.shutdown();
 }
 
-TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
+TEST_CASE("agent and game messaging", "[fake game]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19002;
 
     Game game(port);
-    REQUIRE(game.init(1, 16, "name", "map", "mode", "version"));
+    REQUIRE(game.init(16, "name", "map", "mode", "version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -88,6 +88,7 @@ TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
     REQUIRE(agent.client().status() == Client::Status::ready);
 
+    // soft stop
     {
         REQUIRE(agent.send_soft_stop_request(1000) == 0);
         agent.update();
@@ -149,6 +150,29 @@ TEST_CASE("Agent connects to a game & send requests", "[fake game]") {
         agent.update();
         game.update();
         REQUIRE(game.allocated_call_count() == 1);
+    }
+
+    auto &wrapper = game.one_server_wrapper();
+    {
+        REQUIRE(agent.player_join_call_count() == 0);
+        const auto &state = wrapper.game_state();
+        auto new_state = state;
+        new_state.players++;
+        wrapper.set_game_state(new_state);
+        game.update();
+        agent.update();
+        REQUIRE(agent.player_join_call_count() == 1);
+    }
+
+    {
+        REQUIRE(agent.player_left_call_count() == 0);
+        const auto &state = wrapper.game_state();
+        auto new_state = state;
+        new_state.players--;
+        wrapper.set_game_state(new_state);
+        game.update();
+        agent.update();
+        REQUIRE(agent.player_left_call_count() == 1);
     }
 
     game.shutdown();

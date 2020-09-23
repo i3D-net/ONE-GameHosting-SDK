@@ -59,7 +59,7 @@ bool Parsing::extract_key_value_payload(
         }
 
         if (!callback(number_of_keys, _key.data(), _value.data())) {
-            L_ERROR("callback failed");
+            L_ERROR("callback unable to extract key value pair");
             one_object_destroy(&pair);
             return false;
         }
@@ -161,7 +161,7 @@ bool Parsing::extract_string(const OneObjectPtr object, const char *key,
     _string_buffer[size] = '\0';
 
     if (!callback(_string_buffer.data())) {
-        L_ERROR("callback failed");
+        L_ERROR("callback unable to extract string");
         return false;
     }
 

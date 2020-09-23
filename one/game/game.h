@@ -25,9 +25,8 @@ public:
     //------------
     // Life cycle.
 
-    bool init(int players, int max_players, const std::string &name,
-              const std::string &map, const std::string &mode,
-              const std::string &version);
+    bool init(int max_players, const std::string &name, const std::string &map,
+              const std::string &mode, const std::string &version);
     void shutdown();
 
     void update();

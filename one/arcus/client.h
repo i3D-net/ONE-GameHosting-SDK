@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <functional>
+#include <mutex>
 #include <string>
 
 using namespace std::chrono;
@@ -19,14 +20,22 @@ class Socket;
 namespace callback {
 
 struct ClientCallbacks {
-    std::function<void(void *)> _error_response;
-    void *_error_response_data;
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         _live_state_response;
     void *_live_state_response_data;
+    std::function<void(void *, int)> _player_joined_event_response;
+    void *_player_joined_event_response_data;
+    std::function<void(void *, int)> _player_left_response;
+    void *_player_left_response_data;
     std::function<void(void *)> _host_information_request;
     void *_host_information_request_data;
+    std::function<void(void *)> _application_instance_information_request;
+    void *_application_instance_information_request_data;
+    std::function<void(void *)> _application_instance_get_status_request;
+    void *_application_instance_get_status_request_data;
+    std::function<void(void *, int)> _application_instance_set_status_request;
+    void *_application_instance_set_status_request_data;
 };
 
 }  // namespace callback
@@ -46,7 +55,7 @@ public:
     enum class Status { uninitialized, connecting, handshake, ready, error };
     static std::string status_to_string(Status status);
 
-    Status status();
+    Status status() const;
 
     //-------------------
     // Outgoing Messages.
@@ -61,14 +70,6 @@ public:
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
 
-    // Todo: update functions to match complete list from One API v2.
-
-    // set the callback for when a error_response message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
-    // of the callback when invoked.
-    // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_error_callback(std::function<void(void *)> callback, void *data);
-
     // set the callback for when a live_state_response message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
@@ -79,12 +80,47 @@ public:
             callback,
         void *data);
 
+    // set the callback for when a player_joined_event_response message in received.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    Error set_player_joined_event_response_callback(
+        std::function<void(void *, int)> callback, void *data);
+
+    // set the callback for when a player_left_response message in received.
+    // The `void *data` is the user provided & will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    Error set_player_left_response_callback(std::function<void(void *, int)> callback,
+                                            void *data);
+
     // set the callback for when a host_information_request message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_host_information_request_callback(std::function<void(void *)> callback,
                                                 void *data);
+
+    // set the callback for when an application_instance_information_request message in
+    // received. The `void *data` is the user provided & will be passed as the first
+    // argument of the callback when invoked. The `data` can be nullptr, the callback is
+    // responsible to use the data properly.
+    Error set_application_instance_information_request_callback(
+        std::function<void(void *)> callback, void *data);
+
+    // set the callback for when an application_instance_get_status_request message in
+    // received. The `void *data` is the user provided & will be passed as the first
+    // argument of the callback when invoked. The `data` can be nullptr, the callback is
+    // responsible to use the data properly.
+    Error set_application_instance_get_status_request_callback(
+        std::function<void(void *)> callback, void *data);
+
+    // set the callback for when an application_instance_set_status_request message in
+    // received. The `void *data` is the user provided & will be passed as the first
+    // argument of the callback when invoked. The `data` can be nullptr, the callback is
+    // responsible to use the data properly.
+    Error set_application_instance_set_status_request_callback(
+        std::function<void(void *, int)> callback, void *data);
 
 private:
     Error process_incoming_message(const Message &message);
@@ -106,6 +142,8 @@ private:
     steady_clock::time_point _last_connection_attempt_time;
 
     callback::ClientCallbacks _callbacks;
+
+    mutable std::mutex _client;
 };
 
 }  // namespace one

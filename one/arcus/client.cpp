@@ -23,6 +23,8 @@ Client::~Client() {
 }
 
 Error Client::init(const char *address, unsigned int port) {
+    const std::lock_guard<std::mutex> lock(_client);
+
     _server_address = address;
     _server_port = port;
 
@@ -63,6 +65,8 @@ Error Client::init(const char *address, unsigned int port) {
 }
 
 void Client::shutdown() {
+    const std::lock_guard<std::mutex> lock(_client);
+
     _is_connected = false;
 
     if (_socket != nullptr) {
@@ -79,27 +83,9 @@ void Client::shutdown() {
     _callbacks = {0};
 }
 
-Error Client::connect() {
-    if (!is_initialized()) {
-        return ONE_ERROR_CLIENT_NOT_INITIALIZED;
-    }
-    assert(_socket != nullptr);
-    assert(_connection != nullptr);
-
-    if (!_socket->is_initialized()) {
-        return ONE_ERROR_CLIENT_NOT_INITIALIZED;
-    }
-
-    auto err = _socket->connect(_server_address.c_str(), _server_port);
-    if (is_error(err)) {
-        return err;
-    }
-
-    _is_connected = true;
-    return ONE_ERROR_NONE;
-}
-
 Error Client::update() {
+    const std::lock_guard<std::mutex> lock(_client);
+
     if (!is_initialized()) {
         return ONE_ERROR_CLIENT_NOT_INITIALIZED;
     }
@@ -120,15 +106,37 @@ Error Client::update() {
         }
     }
 
-    auto err = _connection->update();
-    // In the case of any error, reset the socket for reconnection attempt.
-    if (is_error(err)) {
+    auto close_client = [this](const Error passthrough_err) -> Error {
         _connection->shutdown();
         _socket->close();
         _is_connected = false;
         _socket->init();
         _connection->init(*_socket);
-        return err;
+        return passthrough_err;
+    };
+
+    auto err = _connection->update();
+    // In the case of any error, reset the socket for reconnection attempt.
+    if (is_error(err)) {
+        return close_client(err);
+    }
+
+    // Read pending incoming messages.
+    while (true) {
+        unsigned int count = 0;
+        err = _connection->incoming_count(count);
+        if (is_error(err)) return close_client(err);
+        if (count == 0) break;
+
+        err = _connection->remove_incoming([this](const Message &message) {
+            auto err = process_incoming_message(message);
+            if (is_error(err)) return err;
+
+            return ONE_ERROR_NONE;
+        });
+        if (is_error(err)) {
+            return close_client(err);
+        }
     }
 
     return ONE_ERROR_NONE;
@@ -150,7 +158,9 @@ std::string Client::status_to_string(Status status) {
     return "unknown";
 }
 
-Client::Status Client::status() {
+Client::Status Client::status() const {
+    const std::lock_guard<std::mutex> lock(_client);
+
     if (!is_initialized()) {
         return Status::uninitialized;
     }
@@ -172,6 +182,8 @@ Client::Status Client::status() {
 }
 
 Error Client::send_soft_stop_request(int timeout) {
+    const std::lock_guard<std::mutex> lock(_client);
+
     Message message;
     messages::prepare_soft_stop_request(timeout, message);
     auto err = process_outgoing_message(message);
@@ -183,6 +195,8 @@ Error Client::send_soft_stop_request(int timeout) {
 }
 
 Error Client::send_allocated_request(Array *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
     if (data == nullptr) {
         return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
     }
@@ -198,6 +212,8 @@ Error Client::send_allocated_request(Array *data) {
 }
 
 Error Client::send_meta_data_request(Array *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
     if (data == nullptr) {
         return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
     }
@@ -213,6 +229,8 @@ Error Client::send_meta_data_request(Array *data) {
 }
 
 Error Client::send_live_state_request() {
+    const std::lock_guard<std::mutex> lock(_client);
+
     Message message;
     messages::prepare_live_state_request(message);
     auto err = process_outgoing_message(message);
@@ -223,21 +241,13 @@ Error Client::send_live_state_request() {
     return ONE_ERROR_NONE;
 }
 
-Error Client::set_error_callback(std::function<void(void *)> callback, void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._error_response = callback;
-    _callbacks._error_response_data = data;
-    return ONE_ERROR_NONE;
-}
-
 Error Client::set_live_state_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         callback,
     void *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
     if (callback == nullptr) {
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
@@ -247,14 +257,81 @@ Error Client::set_live_state_callback(
     return ONE_ERROR_NONE;
 }
 
+Error Client::set_player_joined_event_response_callback(
+    std::function<void(void *, int)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._player_joined_event_response = callback;
+    _callbacks._player_joined_event_response_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Client::set_player_left_response_callback(std::function<void(void *, int)> callback,
+                                                void *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._player_left_response = callback;
+    _callbacks._player_left_response_data = data;
+    return ONE_ERROR_NONE;
+}
+
 Error Client::set_host_information_request_callback(std::function<void(void *)> callback,
                                                     void *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
     if (callback == nullptr) {
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
     _callbacks._host_information_request = callback;
     _callbacks._host_information_request_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Client::set_application_instance_information_request_callback(
+    std::function<void(void *)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._application_instance_information_request = callback;
+    _callbacks._application_instance_information_request_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Client::set_application_instance_get_status_request_callback(
+    std::function<void(void *)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._application_instance_get_status_request = callback;
+    _callbacks._application_instance_get_status_request_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Client::set_application_instance_set_status_request_callback(
+    std::function<void(void *, int)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._application_instance_set_status_request = callback;
+    _callbacks._application_instance_set_status_request_data = data;
     return ONE_ERROR_NONE;
 }
 
@@ -268,6 +345,22 @@ Error Client::process_incoming_message(const Message &message) {
             return invocation::live_state_response(message,
                                                    _callbacks._live_state_response,
                                                    _callbacks._live_state_response_data);
+        case Opcode::player_joined_event_response:
+            if (_callbacks._player_joined_event_response == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::player_joined_event_response(
+                message, _callbacks._player_joined_event_response,
+                _callbacks._player_joined_event_response_data);
+        case Opcode::player_left_response:
+            if (_callbacks._player_left_response == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::player_left_response(
+                message, _callbacks._player_left_response,
+                _callbacks._player_left_response_data);
         case Opcode::host_information_request:
             if (_callbacks._host_information_request == nullptr) {
                 return ONE_ERROR_NONE;
@@ -276,6 +369,30 @@ Error Client::process_incoming_message(const Message &message) {
             return invocation::host_information_request(
                 message, _callbacks._host_information_request,
                 _callbacks._host_information_request_data);
+        case Opcode::application_instance_information_request:
+            if (_callbacks._application_instance_information_request == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::application_instance_information_request(
+                message, _callbacks._application_instance_information_request,
+                _callbacks._application_instance_information_request_data);
+        case Opcode::application_instance_get_status_request:
+            if (_callbacks._application_instance_get_status_request == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::application_instance_get_status_request(
+                message, _callbacks._application_instance_get_status_request,
+                _callbacks._application_instance_get_status_request_data);
+        case Opcode::application_instance_set_status_request:
+            if (_callbacks._application_instance_set_status_request == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::application_instance_set_status_request(
+                message, _callbacks._application_instance_set_status_request,
+                _callbacks._application_instance_set_status_request_data);
         default:
             return ONE_ERROR_NONE;
     }
@@ -336,6 +453,26 @@ Error Client::process_outgoing_message(const Message &message) {
         return err;
     }
 
+    return ONE_ERROR_NONE;
+}
+
+Error Client::connect() {
+    if (!is_initialized()) {
+        return ONE_ERROR_CLIENT_NOT_INITIALIZED;
+    }
+    assert(_socket != nullptr);
+    assert(_connection != nullptr);
+
+    if (!_socket->is_initialized()) {
+        return ONE_ERROR_CLIENT_NOT_INITIALIZED;
+    }
+
+    auto err = _socket->connect(_server_address.c_str(), _server_port);
+    if (is_error(err)) {
+        return err;
+    }
+
+    _is_connected = true;
     return ONE_ERROR_NONE;
 }
 

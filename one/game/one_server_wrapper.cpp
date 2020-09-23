@@ -38,6 +38,8 @@ OneServerWrapper::~OneServerWrapper() {
 }
 
 bool OneServerWrapper::init() {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
     if (_server != nullptr || _live_state != nullptr || _player_joined != nullptr ||
         _player_left != nullptr || _host_information != nullptr ||
         _application_instance_information != nullptr ||
@@ -180,6 +182,8 @@ bool OneServerWrapper::init() {
 }
 
 void OneServerWrapper::shutdown() {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
     if (_server == nullptr && _player_joined == nullptr && _player_left == nullptr &&
         _live_state == nullptr && _host_information == nullptr &&
         _application_instance_information == nullptr) {
@@ -200,10 +204,14 @@ void OneServerWrapper::shutdown() {
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
     _game_state = state;
 }
 
 void OneServerWrapper::update() {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
     assert(_server != nullptr);
 
     // Todo: review, document.
@@ -255,8 +263,9 @@ std::string OneServerWrapper::status_to_string(Status status) {
             return "ready";
         case Status::error:
             return "error";
+        default:
+            return "unknown";
     }
-    return "unknown";
 }
 
 OneServerWrapper::Status OneServerWrapper::status() const {
@@ -286,44 +295,52 @@ OneServerWrapper::Status OneServerWrapper::status() const {
 
 void OneServerWrapper::set_soft_stop_callback(std::function<void(int, void *)> callback,
                                               void *userdata) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
     _soft_stop_callback = callback;
     _soft_stop_userdata = userdata;
 }
 
 void OneServerWrapper::set_allocated_callback(
     std::function<void(const AllocatedData &, void *)> callback, void *userdata) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
     _allocated_callback = callback;
     _allocated_userdata = userdata;
 }
 
 void OneServerWrapper::set_meta_data_callback(
     std::function<void(const MetaDataData &, void *)> callback, void *userdata) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
     _meta_data_callback = callback;
     _meta_data_userdata = userdata;
 }
 
 void OneServerWrapper::set_host_information_callback(
     std::function<void(HostInformationData)> callback) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
     _host_information_callback = callback;
 }
 
 void OneServerWrapper::set_application_instance_information_callback(
     std::function<void(ApplicationInstanceInformationData)> callback) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_information_callback = callback;
 }
 
 void OneServerWrapper::set_application_instance_get_status_callback(
     std::function<void(ApplicationInstanceGetStatusData)> callback) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_get_status_callback = callback;
 }
 
 void OneServerWrapper::set_application_instance_set_status_callback(
     std::function<void(ApplicationInstanceSetStatusData)> callback) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_set_status_callback = callback;
 }
 
 bool OneServerWrapper::send_application_instance_get_status() {
     assert(_server != nullptr && _application_instance_get_status != nullptr);
+    const std::lock_guard<std::mutex> lock(_wrapper);
 
     OneError err = one_message_prepare_application_instance_get_status_request(
         _application_instance_get_status);
@@ -344,6 +361,7 @@ bool OneServerWrapper::send_application_instance_get_status() {
 
 bool OneServerWrapper::send_application_instance_set_status(int status) {
     assert(_server != nullptr && _application_instance_set_status != nullptr);
+    const std::lock_guard<std::mutex> lock(_wrapper);
 
     OneError err = one_message_prepare_application_instance_set_status_request(
         status, _application_instance_set_status);
@@ -399,24 +417,6 @@ bool OneServerWrapper::send_player_left(int num_players) {
     return true;
 }
 
-bool OneServerWrapper::send_host_information_request() {
-    assert(_server != nullptr && _host_information != nullptr);
-
-    OneError err = one_message_prepare_host_information_request(_host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_send_host_information_request(_server, _host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    return true;
-}
-
 bool OneServerWrapper::send_application_instance_information_request() {
     assert(_server != nullptr && _application_instance_information != nullptr);
 
@@ -429,6 +429,24 @@ bool OneServerWrapper::send_application_instance_information_request() {
 
     err = one_server_send_application_instance_information_request(
         _server, _application_instance_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::send_host_information_request() {
+    assert(_server != nullptr && _host_information != nullptr);
+
+    OneError err = one_message_prepare_host_information_request(_host_information);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_host_information_request(_server, _host_information);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
