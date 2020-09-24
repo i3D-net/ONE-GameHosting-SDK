@@ -574,7 +574,7 @@ void OneServerWrapper::host_information(void *userdata, void *information) {
         return;
     }
 
-    auto object = reinterpret_cast<OneObjectPtr>(meta_data);
+    auto object = reinterpret_cast<OneObjectPtr>(information);
     HostInformationData information_payload;
     if (!extract_host_information_payload(object, information_payload)) {
         L_ERROR("failed to extract host information payload");
@@ -606,7 +606,7 @@ void OneServerWrapper::application_instance_information(void *userdata,
         return;
     }
 
-    auto object = reinterpret_cast<OneObjectPtr>(meta_data);
+    auto object = reinterpret_cast<OneObjectPtr>(information);
     ApplicationInstanceInformationData information_payload;
     if (!extract_application_instance_information_payload(object, information_payload)) {
         L_ERROR("failed to extract host information payload");
