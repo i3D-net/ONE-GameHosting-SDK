@@ -138,7 +138,7 @@ bool Parsing::extract_string(const OneObjectPtr object, const char *key,
     }
 
     size_t size = 0;
-    auto err = one_object_val_string_size(object, "serverName", &size);
+    auto err = one_object_val_string_size(object, key, &size);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -150,8 +150,8 @@ bool Parsing::extract_string(const OneObjectPtr object, const char *key,
         return false;
     }
 
-    err = one_object_val_string(object, "serverName", _string_buffer.data(),
-                                _string_buffer.size());
+    err =
+        one_object_val_string(object, key, _string_buffer.data(), _string_buffer.size());
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;

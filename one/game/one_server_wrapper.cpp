@@ -810,7 +810,7 @@ bool OneServerWrapper::extract_application_instance_information_payload(
             information.fleet_id = value;
             return true;
         })) {
-        L_ERROR("failed to extract serverName key");
+        L_ERROR("failed to extract fleetId key");
         return false;
     }
 
