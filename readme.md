@@ -51,7 +51,7 @@ The [tests](one/tests/readme.md) and [docs](one/docs/readme.md) folders serve th
 
 1. C++ Toolchain:
     - Windows: [Visual Studio 2017, or build tools (without Editor)](https://visualstudio.microsoft.com/vs/older-downloads/)
-    - Linux: GCC (7.5.0 tested).
+    - Linux: GCC (7.5.0 tested)
 2. [CMake](https://cmake.org/download/).
 3. Optional: For documentation generation:
     - Windows:
