@@ -83,6 +83,9 @@ private:
 
     OneServerWrapper _server;
 
+    // Todo: nothing from OneServerWrapper should be here other than _server.
+    // Game should manage its own state, totally decoupled from Wrapper. Wrapper just
+    // gets notifications of updates to state.
     OneServerWrapper::StatusCode _status;
 
     int _soft_stop_call_count;
