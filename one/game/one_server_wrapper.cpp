@@ -212,6 +212,9 @@ void OneServerWrapper::shutdown() {
 void OneServerWrapper::set_game_state(const GameState &state) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
+    // Todo: before setting the state, check what has changed with the previous
+    // state and send One messages for each.
+
     _game_state = state;
 }
 

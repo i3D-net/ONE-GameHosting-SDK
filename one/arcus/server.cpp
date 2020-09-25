@@ -580,6 +580,11 @@ Error Server::process_outgoing_message(const Message &message) {
     if (_client_connection == nullptr) {
         return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
     }
+    // Do not accumulate messages if the connection is not active and past
+    // handshaking.
+    if (_client_connection->status() != Connection::Status::ready) {
+        return ONE_ERROR_SERVER_CONNECTION_NOT_READY;
+    }
 
     err = _client_connection->add_outgoing([&](Message &m) {
         m = message;

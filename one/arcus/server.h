@@ -187,6 +187,10 @@ private:
     Error update_listen_socket();
 
     Error process_incoming_message(const Message &message);
+    // The server must have an active and ready listen connection in order to
+    // send outgoing messages. If not, either ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR or
+    // ONE_ERROR_SERVER_CONNECTION_NOT_READY is returned and the message is
+    // not sent.
     Error process_outgoing_message(const Message &message);
 
     Socket *_listen_socket;
