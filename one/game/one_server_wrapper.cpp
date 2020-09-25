@@ -378,12 +378,12 @@ bool OneServerWrapper::send_application_instance_get_status() {
     return true;
 }
 
-bool OneServerWrapper::send_application_instance_set_status(int status) {
+bool OneServerWrapper::send_application_instance_set_status(StatusCode status) {
     assert(_server != nullptr && _application_instance_set_status != nullptr);
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     OneError err = one_message_prepare_application_instance_set_status_request(
-        status, _application_instance_set_status);
+        static_cast<int>(status), _application_instance_set_status);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -655,7 +655,7 @@ void OneServerWrapper::application_instance_set_status(void *userdata, int code)
 
     L_INFO("invoking application instance set status callback");
     ApplicationInstanceSetStatusData data;
-    data.code = code;
+    data.code = static_cast<OneServerWrapper::StatusSetCodeResult>(code);
     wrapper->_application_instance_set_status_callback(
         data, wrapper->_application_instance_set_status_userdata);
 }

@@ -52,6 +52,14 @@ public:
     static std::string status_to_string(Status status);
     Status status() const;
 
+    // As defined in:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
+    enum class StatusCode { starting = 3, online = 4, allocated = 5 };
+
+    // As defined in:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-response
+    enum class StatusSetCodeResult { success = 0, invalid_status = 10 };
+
     struct GameState {
         GameState() : players(0), max_players(0), name(), map(), mode(), version() {}
 
@@ -166,9 +174,8 @@ public:
     // - all standard fields should be utilized here
     // - iterate on online api docs as they are not clear
     struct ApplicationInstanceSetStatusData {
-        ApplicationInstanceSetStatusData() : code(0) {}
-
-        int code;  // Todo: document.
+        ApplicationInstanceSetStatusData() : code(StatusSetCodeResult::success) {}
+        StatusSetCodeResult code;
     };
     void set_application_instance_set_status_callback(
         std::function<void(const ApplicationInstanceSetStatusData &data, void *userdata)>
@@ -181,7 +188,7 @@ public:
 
     // Sends a application instance set status request message.
     // Todo: purpose/when should this be called.
-    bool send_application_instance_set_status(int status);
+    bool send_application_instance_set_status(StatusCode status);
 
 private:
     // Sends a player joined event response message to the agent when new

@@ -45,10 +45,10 @@ void update_agent(Agent *agent) {
 void update_game_send_statistics(Game *game) {
     for (int i = 0; i < 10; ++i) {
         auto &wrapper = game->one_server_wrapper();
-        const auto &status = wrapper.game_state();
-        auto new_state = status;
+        const auto &state = wrapper.game_state();
+        auto new_state = state;
 
-        if (status.max_players < status.players + 1) {
+        if (state.max_players < state.players + 1) {
             new_state.players = 0;
         } else {
             new_state.players++;

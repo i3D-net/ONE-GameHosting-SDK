@@ -45,6 +45,7 @@ int main(int argc, char **argv) {
 
     while (true) {
         sleep(50);
+        game.alter_game_state();
         game.update();
 
         auto old_status = status;
