@@ -9,6 +9,7 @@ namespace game {
 
 Game::Game(unsigned int port)
     : _server(port)
+    , _status(OneServerWrapper::StatusCode::starting)
     , _soft_stop_call_count(0)
     , _allocated_call_count(0)
     , _meta_data_call_count(0)
@@ -41,15 +42,66 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
     _server.set_allocated_callback(allocated_callback, this);
     _server.set_meta_data_callback(meta_data_callback, this);
     _server.set_host_information_callback(host_information_callback, this);
-    _server.set_application_instance_information_callback(application_instance_information_callback, this);
-    _server.set_application_instance_get_status_callback(application_instance_get_status_callback, this);
-    _server.set_application_instance_set_status_callback(application_instance_set_status_callback, this);
+    _server.set_application_instance_information_callback(
+        application_instance_information_callback, this);
+    _server.set_application_instance_get_status_callback(
+        application_instance_get_status_callback, this);
+    _server.set_application_instance_set_status_callback(
+        application_instance_set_status_callback, this);
 
     return (_server.status() == OneServerWrapper::Status::waiting_for_client);
 }
 
 void Game::shutdown() {
     _server.shutdown();
+}
+
+void Game::alter_game_state() {
+    // This is mainly to emulate a very simple game change (i.e.: changing both the number
+    // of player & status.
+    const auto &state = _server.game_state();
+    auto new_state = state;
+
+    if (state.max_players < state.players + 1) {
+        new_state.players = 0;
+    } else {
+        new_state.players++;
+    }
+
+    _server.set_game_state(new_state);
+
+    switch (_status) {
+        case OneServerWrapper::StatusCode::starting:
+            if (!_server.send_application_instance_set_status(_status)) {
+                L_ERROR("failed to send set status code starting");
+                break;
+            }
+
+            _status = OneServerWrapper::StatusCode::online;
+            break;
+        case OneServerWrapper::StatusCode::online:
+            if (!_server.send_application_instance_set_status(_status)) {
+                L_ERROR("failed to send set status code online");
+                break;
+            }
+
+            _status = OneServerWrapper::StatusCode::allocated;
+            break;
+        case OneServerWrapper::StatusCode::allocated:
+            if (!_server.send_application_instance_set_status(_status)) {
+                L_ERROR("failed to send set status code allocated");
+                break;
+            }
+
+            _status = OneServerWrapper::StatusCode::online;
+            break;
+        default:
+            L_INFO("unhandled status: skipping set status");
+    }
+
+    if (!_server.send_application_instance_get_status()) {
+        L_ERROR("failed to send get status code");
+    }
 }
 
 void Game::update() {
@@ -95,7 +147,7 @@ void Game::meta_data_callback(const OneServerWrapper::MetaDataData &data,
 }
 
 void Game::host_information_callback(const OneServerWrapper::HostInformationData &data,
-                                     void *userdata) {
+                                     void *) {
     L_INFO("host information called:");
     L_INFO("\tid:" + std::to_string(data.id));
     L_INFO("\tserver id:" + std::to_string(data.server_id));
@@ -103,8 +155,7 @@ void Game::host_information_callback(const OneServerWrapper::HostInformationData
 }
 
 void Game::application_instance_information_callback(
-    const OneServerWrapper::ApplicationInstanceInformationData &data,
-        void *userdata) {
+    const OneServerWrapper::ApplicationInstanceInformationData &data, void *) {
     L_INFO("application instance information called:");
     L_INFO("\tfleet id:" + data.fleet_id);
     L_INFO("\thost id:" + std::to_string(data.host_id));
@@ -112,17 +163,15 @@ void Game::application_instance_information_callback(
 }
 
 void Game::application_instance_get_status_callback(
-    const OneServerWrapper::ApplicationInstanceGetStatusData &data,
-        void *userdata) {
+    const OneServerWrapper::ApplicationInstanceGetStatusData &data, void *) {
     L_INFO("application instance get status called:");
     L_INFO("\tstatus:" + std::to_string(data.status));
 }
 
 void Game::application_instance_set_status_callback(
-    const OneServerWrapper::ApplicationInstanceSetStatusData &data,
-        void *userdata) {
+    const OneServerWrapper::ApplicationInstanceSetStatusData &data, void *) {
     L_INFO("application instance set status called:");
-    L_INFO("\tcode:" + std::to_string(data.code));
+    L_INFO("\tcode:" + std::to_string(static_cast<int>(data.code)));
 }
 
 }  // namespace game

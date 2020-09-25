@@ -29,6 +29,8 @@ public:
               const std::string &mode, const std::string &version);
     void shutdown();
 
+    void alter_game_state();
+
     void update();
 
     //--------------------------------------------------------------------------
@@ -80,6 +82,8 @@ private:
         const OneServerWrapper::ApplicationInstanceSetStatusData &data, void *userdata);
 
     OneServerWrapper _server;
+
+    OneServerWrapper::StatusCode _status;
 
     int _soft_stop_call_count;
     int _allocated_call_count;
