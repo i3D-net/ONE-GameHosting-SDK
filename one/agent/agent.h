@@ -4,6 +4,7 @@
 #include <one/arcus/error.h>
 
 #include <functional>
+#include <mutex>
 
 namespace i3d {
 namespace one {
@@ -21,6 +22,10 @@ public:
     // Init with a target remote address. The agent attempts to connect during
     // update.
     Error init(const char *ip, unsigned int port);
+
+    void set_quiet(bool quiet) {
+        _quiet = quiet;
+    }
 
     // Update: process incomming message & outgoing messages.
     Error update();
@@ -44,9 +49,28 @@ public:
                            const std::string &version)>,
         void *data);
 
-    // Set error_response callback
+    // Set player joined event callback
+    Error set_player_joined_event_callback(std::function<void(void *, int)> callback,
+                                           void *data);
+
+    // Set player left callback
+    Error set_player_left_callback(std::function<void(void *, int)> callback, void *data);
+
+    // Set host information callback
     Error set_host_information_request_callback(std::function<void(void *)> callback,
                                                 void *data);
+
+    // Set application instance information callback
+    Error set_application_instance_information_request_callback(
+        std::function<void(void *)> callback, void *data);
+
+    // Set application instance get status callback
+    Error set_application_instance_get_status_request_callback(
+        std::function<void(void *)> callback, void *data);
+
+    // Set application instance set status callback
+    Error set_application_instance_set_status_request_callback(
+        std::function<void(void *, int)> callback, void *data);
 
     // Exposed for testing purposes, however use of this should be kept to a
     // minimum or removed. The agent, as much as reasonable, should be tested as
@@ -55,19 +79,55 @@ public:
         return _client;
     }
 
+    int live_state_call_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _live_state_call_count;
+    }
+
     int player_join_call_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
         return _player_join_call_count;
     }
 
     int player_left_call_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
         return _player_left_call_count;
+    }
+
+    int host_information_call_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _host_information_call_count;
+    }
+
+    int application_instance_information_call_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _application_instance_information_call_count;
+    }
+
+    int application_instance_get_status_call_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _application_instance_get_status_call_count;
+    }
+
+    int application_instance_set_status_call_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _application_instance_set_status_call_count;
     }
 
 private:
     Client _client;
 
+    bool _quiet;
+
+    int _live_state_call_count;
     int _player_join_call_count;
     int _player_left_call_count;
+    int _host_information_call_count;
+    int _application_instance_information_call_count;
+    int _application_instance_get_status_call_count;
+    int _application_instance_set_status_call_count;
+
+    mutable std::mutex _agent;
 };
 
 }  // namespace one

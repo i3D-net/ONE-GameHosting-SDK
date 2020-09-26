@@ -212,9 +212,6 @@ void OneServerWrapper::shutdown() {
 void OneServerWrapper::set_game_state(const GameState &state) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
-    // Todo: before setting the state, check what has changed with the previous
-    // state and send One messages for each.
-
     _game_state = state;
 }
 
@@ -223,20 +220,30 @@ void OneServerWrapper::update() {
 
     assert(_server != nullptr);
 
-    // Todo: review, document.
+    // Requesting host information request only once at startup.
+    // The agent will reply with the host information message providing
+    // the host information details.
+    // Retry sending the message until it is succesfully put in the outgoing message
+    // queue.
     if (!host_information_request_sent) {
         if (send_host_information_request()) {
             host_information_request_sent = true;
         }
     }
 
-    // Todo: review, document.
+    // Requesting application instance information request only once at startup.
+    // The agent will reply with the host information message providing
+    // the host information details.
+    // Retry sending the message until it is succesfully put in the outgoing message
+    // queue.
     if (!application_instance_information_request_sent) {
         if (send_application_instance_information_request()) {
             application_instance_information_request_sent = true;
         }
     }
 
+    // Keeping track of player count changes & send out the appropriate
+    // player joined or player left message.
     if (_last_update_game_state.players != _game_state.players) {
         if (_last_update_game_state.players < _game_state.players) {
             if (!send_player_joined_event(_game_state.players)) {
@@ -255,6 +262,8 @@ void OneServerWrapper::update() {
         return;
     }
 
+    // Updating the last sent game state to keep track of changes occuring inbetween
+    // update calls.
     _last_update_game_state = _game_state;
 }
 
@@ -374,7 +383,7 @@ bool OneServerWrapper::send_application_instance_get_status() {
     err = one_server_send_application_instance_get_status_request(
         _server, _application_instance_get_status);
     if (is_error(err)) {
-        L_ERROR(error_text(err));
+
         return false;
     }
 
@@ -395,7 +404,6 @@ bool OneServerWrapper::send_application_instance_set_status(StatusCode status) {
     err = one_server_send_application_instance_set_status_request(
         _server, _application_instance_set_status);
     if (is_error(err)) {
-        L_ERROR(error_text(err));
         return false;
     }
 
@@ -414,7 +422,6 @@ bool OneServerWrapper::send_player_joined_event(int num_players) {
 
     err = one_server_send_player_joined_event_response(_server, _player_joined);
     if (is_error(err)) {
-        L_ERROR(error_text(err));
         return false;
     }
 
@@ -432,7 +439,6 @@ bool OneServerWrapper::send_player_left(int num_players) {
 
     err = one_server_send_player_left_response(_server, _player_left);
     if (is_error(err)) {
-        L_ERROR(error_text(err));
         return false;
     }
 
@@ -452,7 +458,6 @@ bool OneServerWrapper::send_application_instance_information_request() {
     err = one_server_send_application_instance_information_request(
         _server, _application_instance_information);
     if (is_error(err)) {
-        L_ERROR(error_text(err));
         return false;
     }
 
@@ -470,7 +475,6 @@ bool OneServerWrapper::send_host_information_request() {
 
     err = one_server_send_host_information_request(_server, _host_information);
     if (is_error(err)) {
-        L_ERROR(error_text(err));
         return false;
     }
 
