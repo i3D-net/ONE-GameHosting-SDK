@@ -241,7 +241,7 @@ Error Client::send_live_state_request() {
     return ONE_ERROR_NONE;
 }
 
-Error Client::set_live_state_callback(
+Error Client::set_live_state_response_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         callback,

@@ -74,7 +74,7 @@ public:
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_live_state_callback(
+    Error set_live_state_response_callback(
         std::function<void(void *, int, int, const std::string &, const std::string &,
                            const std::string &, const std::string &)>
             callback,

@@ -21,6 +21,7 @@ void init_game(Game *game) {
 
 void init_agent(Agent *agent, const char *address, int port) {
     agent->init(address, port);
+    agent->set_quiet(true);
 }
 
 void shutdown(Game *game) {
@@ -43,18 +44,12 @@ void update_agent(Agent *agent) {
 }
 
 void update_game_send_statistics(Game *game) {
+    while (game->one_server_wrapper().status() != OneServerWrapper::Status::ready) {
+        game->update();
+    }
+
     for (int i = 0; i < 10; ++i) {
-        auto &wrapper = game->one_server_wrapper();
-        const auto &state = wrapper.game_state();
-        auto new_state = state;
-
-        if (state.max_players < state.players + 1) {
-            new_state.players = 0;
-        } else {
-            new_state.players++;
-        }
-
-        wrapper.set_game_state(new_state);
+        game->alter_game_state();
         game->update();
     }
 }
@@ -62,23 +57,19 @@ void update_game_send_statistics(Game *game) {
 TEST_CASE("single thread", "[concurrency]") {
     const unsigned int port = 19012;
 
-    L_INFO("single thread check: START");
-
     Game game(port);
+    game.set_quiet(true);
 
     init_game(&game);
     update_game(&game);
     shutdown(&game);
-
-    L_INFO("single thread check: END");
 }
 
 TEST_CASE("two thread", "[concurrency]") {
     const unsigned int port = 19013;
 
-    L_INFO("two thread check: START");
-
     Game game(port);
+    game.set_quiet(true);
 
     std::thread t1(init_game, &game);
     std::thread t2(init_game, &game);
@@ -97,21 +88,19 @@ TEST_CASE("two thread", "[concurrency]") {
 
     t5.join();
     t6.join();
-
-    L_INFO("two thread check: END");
 }
 
 TEST_CASE("single thread send information", "[concurrency]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19112;
 
-    L_INFO("single thread send information: START");
-
     Game game(port);
+    game.set_quiet(true);
     init_game(&game);
 
     Agent agent;
-    REQUIRE(!is_error(agent.init(address, port)));
+    init_agent(&agent, address, port);
+    agent.set_quiet(true);
 
     pump_updates(10, 1, agent, game);
 
@@ -121,17 +110,14 @@ TEST_CASE("single thread send information", "[concurrency]") {
     }
 
     shutdown(&game);
-
-    L_INFO("single thread send information: END");
 }
 
 TEST_CASE("two thread send information", "[concurrency]") {
     const unsigned int port = 19213;
     const auto address = "127.0.0.1";
 
-    L_INFO("two thread send information: START");
-
     Game game(port);
+    game.set_quiet(true);
 
     std::thread t1(init_game, &game);
     std::thread t2(init_game, &game);
@@ -143,6 +129,13 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t2.join();
     t3.join();
 
+    REQUIRE(agent.player_join_call_count() == 0);
+    REQUIRE(agent.player_left_call_count() == 0);
+    REQUIRE(agent.host_information_call_count() == 0);
+    REQUIRE(agent.application_instance_information_call_count() == 0);
+    REQUIRE(agent.application_instance_get_status_call_count() == 0);
+    REQUIRE(agent.application_instance_set_status_call_count() == 0);
+
     std::thread t4(update_game_send_statistics, &game);
     std::thread t5(update_game_send_statistics, &game);
     std::thread t6(update_agent, &agent);
@@ -151,28 +144,33 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t5.join();
     t6.join();
 
+    REQUIRE(agent.player_join_call_count() == 19);
+    REQUIRE(agent.player_left_call_count() == 1);
+    REQUIRE(agent.host_information_call_count() == 1);
+    REQUIRE(agent.application_instance_information_call_count() == 1);
+    REQUIRE(agent.application_instance_get_status_call_count() == 20);
+    REQUIRE(agent.application_instance_set_status_call_count() == 3);
+
     std::thread t7(shutdown, &game);
     std::thread t8(shutdown, &game);
 
     t7.join();
     t8.join();
-
-    L_INFO("two thread send information: END");
 }
 
 TEST_CASE("multiple thread send information", "[concurrency]") {
     const unsigned int port = 19313;
     const auto address = "127.0.0.1";
 
-    L_INFO("two thread send information: START");
-
     Game game(port);
+    game.set_quiet(true);
 
     std::thread t1(init_game, &game);
     std::thread t2(init_game, &game);
     std::thread t3(init_game, &game);
 
     Agent agent;
+    agent.set_quiet(true);
 
     std::thread t4(init_agent, &agent, address, port);
 
@@ -180,6 +178,13 @@ TEST_CASE("multiple thread send information", "[concurrency]") {
     t2.join();
     t3.join();
     t4.join();
+
+    REQUIRE(agent.player_join_call_count() == 0);
+    REQUIRE(agent.player_left_call_count() == 0);
+    REQUIRE(agent.host_information_call_count() == 0);
+    REQUIRE(agent.application_instance_information_call_count() == 0);
+    REQUIRE(agent.application_instance_get_status_call_count() == 0);
+    REQUIRE(agent.application_instance_set_status_call_count() == 0);
 
     std::thread t5(update_game_send_statistics, &game);
     std::thread t6(update_game_send_statistics, &game);
@@ -191,11 +196,16 @@ TEST_CASE("multiple thread send information", "[concurrency]") {
     t7.join();
     t8.join();
 
+    REQUIRE(agent.player_join_call_count() == 29);
+    REQUIRE(agent.player_left_call_count() == 1);
+    REQUIRE(agent.host_information_call_count() == 1);
+    REQUIRE(agent.application_instance_information_call_count() == 1);
+    REQUIRE(agent.application_instance_get_status_call_count() == 30);
+    REQUIRE(agent.application_instance_set_status_call_count() == 3);
+
     std::thread t9(shutdown, &game);
     std::thread t10(shutdown, &game);
 
     t9.join();
     t10.join();
-
-    L_INFO("two thread send information: END");
 }

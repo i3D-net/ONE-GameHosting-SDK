@@ -9,14 +9,19 @@ namespace game {
 
 Game::Game(unsigned int port)
     : _server(port)
-    , _status(OneServerWrapper::StatusCode::starting)
     , _soft_stop_call_count(0)
     , _allocated_call_count(0)
     , _meta_data_call_count(0)
     , _host_information_call_count(0)
     , _application_instance_information_call_count(0)
     , _application_instance_get_status_call_count(0)
-    , _application_instance_set_status_call_count(0) {}
+    , _application_instance_set_status_call_count(0)
+    , _quiet(false)
+    , _players(0)
+    , _max_players(0)
+    , _starting(false)
+    , _online(false)
+    , _allocated(false) {}
 
 Game::~Game() {
     _server.shutdown();
@@ -24,18 +29,26 @@ Game::~Game() {
 
 bool Game::init(int max_players, const std::string &name, const std::string &map,
                 const std::string &mode, const std::string &version) {
+    const std::lock_guard<std::mutex> lock(_game);
     if (!_server.init()) {
         L_ERROR("failed to init server");
         return false;
     }
 
+    _players = 0;  // Game starts with 0 active players.
+    _max_players = max_players;
+    _name = name;
+    _map = map;
+    _mode = mode;
+    _version = version;
+
     OneServerWrapper::GameState state;
     state.players = 0;  // Game starts with 0 active players.
-    state.max_players = max_players;
-    state.name = name;
-    state.map = map;
-    state.mode = mode;
-    state.version = version;
+    state.max_players = _max_players;
+    state.name = _name;
+    state.map = _map;
+    state.mode = _mode;
+    state.version = _version;
     _server.set_game_state(state);
 
     _server.set_soft_stop_callback(soft_stop_callback, this);
@@ -53,59 +66,114 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
 }
 
 void Game::shutdown() {
+    const std::lock_guard<std::mutex> lock(_game);
     _server.shutdown();
 }
 
 void Game::alter_game_state() {
+    const std::lock_guard<std::mutex> lock(_game);
+
     // This is mainly to emulate a very simple game change (i.e.: changing both the number
     // of player & status.
-    const auto &state = _server.game_state();
-    auto new_state = state;
+    // In a real life senario the game would use its own mecahnisms to get the number of
+    // players, current maps, etc...
 
-    if (state.max_players < state.players + 1) {
-        new_state.players = 0;
+    // The number of player is arbitrarily changed to trigger player joined & left
+    // messages.
+    if (_max_players < _players + 1) {
+        _players = 0;
     } else {
-        new_state.players++;
+        _players += 1;
     }
+
+    OneServerWrapper::GameState new_state;
+    new_state.players = _players;
+    new_state.max_players = _max_players;
+    new_state.name = _name;
+    new_state.map = _map;
+    new_state.mode = _mode;
+    new_state.version = _version;
 
     _server.set_game_state(new_state);
 
-    switch (_status) {
-        case OneServerWrapper::StatusCode::starting:
-            if (!_server.send_application_instance_set_status(_status)) {
-                L_ERROR("failed to send set status code starting");
-                break;
-            }
-
-            _status = OneServerWrapper::StatusCode::online;
-            break;
-        case OneServerWrapper::StatusCode::online:
-            if (!_server.send_application_instance_set_status(_status)) {
-                L_ERROR("failed to send set status code online");
-                break;
-            }
-
-            _status = OneServerWrapper::StatusCode::allocated;
-            break;
-        case OneServerWrapper::StatusCode::allocated:
-            if (!_server.send_application_instance_set_status(_status)) {
-                L_ERROR("failed to send set status code allocated");
-                break;
-            }
-
-            _status = OneServerWrapper::StatusCode::online;
-            break;
-        default:
-            L_INFO("unhandled status: skipping set status");
+    // Updating the server status incrementally.
+    // First time it is set as starting.
+    // Second time it is set as online.
+    // Third time it is set as allocated.
+    // The progession order is the good one, but the timing is arbitrarily and might
+    // change depending on the game startup sequence.
+    if (!_allocated && _online && _starting) {
+        if (!_server.send_application_instance_set_status(
+                OneServerWrapper::StatusCode::allocated)) {
+            if (!_quiet) L_ERROR("failed to send set status code allocated");
+        } else {
+            _allocated = true;
+        }
     }
 
+    if (!_online && _starting) {
+        if (!_server.send_application_instance_set_status(
+                OneServerWrapper::StatusCode::online)) {
+            if (!_quiet) L_ERROR("failed to send set status code starting");
+        } else {
+            _online = true;
+        }
+    }
+
+    if (!_starting) {
+        if (!_server.send_application_instance_set_status(
+                OneServerWrapper::StatusCode::starting)) {
+            if (!_quiet) L_ERROR("failed to send set status code starting");
+        } else {
+            _starting = true;
+        }
+    }
+
+    // This get status is only sent to show how the game can get the current status.
+    // The frequency of it being sent should be a lot less in a real life senario.
     if (!_server.send_application_instance_get_status()) {
-        L_ERROR("failed to send get status code");
+        if (!_quiet) L_ERROR("failed to send get status code");
     }
 }
 
 void Game::update() {
+    const std::lock_guard<std::mutex> lock(_game);
     _server.update();
+}
+
+int Game::soft_stop_call_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _soft_stop_call_count;
+}
+
+int Game::allocated_call_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _allocated_call_count;
+}
+
+int Game::meta_data_call_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _meta_data_call_count;
+}
+
+int Game::host_information_call_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _host_information_call_count;
+}
+
+int Game::application_instance_information_call_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _application_instance_information_call_count;
+}
+
+int Game::application_instance_get_status_call_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _application_instance_get_status_call_count;
+}
+
+int Game::application_instance_set_status_call_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _application_instance_set_status_call_count;
 }
 
 void Game::soft_stop_callback(int timeout, void *userdata) {

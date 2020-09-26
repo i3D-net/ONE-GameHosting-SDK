@@ -34,11 +34,13 @@ public:
     OneServerWrapper &operator=(const OneServerWrapper &) = delete;
     ~OneServerWrapper();
 
-    // Init creates the server and listens.
-    bool init();
+    //------------
+    // Life cycle.
 
-    //
+    bool init();
     void shutdown();
+
+    //------------
 
     enum class Status {
         uninitialized = 0,
