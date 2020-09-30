@@ -6,6 +6,12 @@
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/message.h>
 
+//#define ONE_ARCUS_CLIENT_LOGGING
+
+#ifdef ONE_ARCUS_CLIENT_LOGGING
+    #include <iostream>
+#endif
+
 namespace i3d {
 namespace one {
 
@@ -107,6 +113,14 @@ Error Client::update() {
     }
 
     auto close_client = [this](const Error passthrough_err) -> Error {
+#ifdef ONE_ARCUS_CLIENT_LOGGING
+        std::string ip;
+        unsigned int port;
+        _socket->address(ip, port);
+        std::cout << "ip: " << ip << ", port: " << port << ", closing client"
+                  << std::endl;
+#endif
+
         _connection->shutdown();
         _socket->close();
         _is_connected = false;

@@ -23,18 +23,19 @@ void for_sleep(int count, int ms_per_loop, std::function<bool()> cb) {
     }
 }
 
-bool wait_with_cancel(int wait_ms, std::function<bool()> cb) {
+bool wait_until(int timeout_ms, std::function<bool()> check) {
     const auto start = steady_clock::now();
-    if (cb()) {
-        return false;
+    if (check()) {
+        return true;
     }
-    while (duration_cast<milliseconds>(steady_clock::now() - start).count() > wait_ms) {
+    while (duration_cast<milliseconds>(steady_clock::now() - start).count() <
+           timeout_ms) {
         std::this_thread::sleep_for(milliseconds(1));
-        if (cb()) {
-            return false;
+        if (check()) {
+            return true;
         }
     }
-    return true;
+    return false;
 }
 
 void pump_updates(int count, int ms_per_loop, Agent &agent, game::Game &game) {
