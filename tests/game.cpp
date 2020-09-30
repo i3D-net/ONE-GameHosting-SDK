@@ -88,15 +88,18 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::ready);
     REQUIRE(agent.client().status() == Client::Status::ready);
 
-    // soft stop
+    // soft stop.
     {
         REQUIRE(agent.send_soft_stop_request(1000) == 0);
-        agent.update();
-        game.update();
-        REQUIRE(game.soft_stop_call_count() == 1);
+
+        bool passed = wait_until(200, [&]() {
+            agent.update();
+            game.update();
+            return game.soft_stop_call_count() == 1;
+        });
     }
 
-    // allocated_request
+    // allocated_request.
     {
         Object map;
         auto err = map.set_val_string("key", "map");
@@ -115,12 +118,15 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         data.push_back_object(max_players);
 
         REQUIRE(agent.send_allocated_request(&data) == 0);
-        agent.update();
-        game.update();
-        REQUIRE(game.allocated_call_count() == 1);
+
+        bool passed = wait_until(200, [&]() {
+            agent.update();
+            game.update();
+            return game.allocated_call_count() == 1;
+        });
     }
 
-    // meta_data_request
+    // meta_data_request.
     {
         Object map;
         auto err = map.set_val_string("key", "map");
@@ -147,11 +153,18 @@ TEST_CASE("agent and game messaging", "[fake game]") {
 
         Array array;
         REQUIRE(agent.send_meta_data_request(&data) == 0);
-        agent.update();
-        game.update();
-        REQUIRE(game.allocated_call_count() == 1);
+
+        bool passed = wait_until(200, [&]() {
+            agent.update();
+            game.update();
+            return game.allocated_call_count() == 1;
+        });
     }
 
+    //--------------------------------------------------------------------------
+    // Sending from game to agent.
+
+    // player join.
     auto &wrapper = game.one_server_wrapper();
     {
         REQUIRE(agent.player_join_call_count() == 0);
@@ -159,20 +172,27 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         auto new_state = state;
         new_state.players++;
         wrapper.set_game_state(new_state);
-        game.update();
-        agent.update();
-        REQUIRE(agent.player_join_call_count() == 1);
+        bool passed = wait_until(200, [&]() {
+            game.update();
+            agent.update();
+            return agent.player_join_call_count() == 1;
+        });
+        REQUIRE(passed);
     }
 
+    // player left.
     {
         REQUIRE(agent.player_left_call_count() == 0);
         const auto &state = wrapper.game_state();
         auto new_state = state;
         new_state.players--;
         wrapper.set_game_state(new_state);
-        game.update();
-        agent.update();
-        REQUIRE(agent.player_left_call_count() == 1);
+        bool passed = wait_until(200, [&]() {
+            game.update();
+            agent.update();
+            return agent.player_left_call_count() == 1;
+        });
+        REQUIRE(passed);
     }
 
     game.shutdown();

@@ -1,22 +1,49 @@
 #include <one/arcus/internal/connection.h>
 
-#include <one/arcus/message.h>
-#include <one/arcus/internal/codec.h>
-#include <one/arcus/opcode.h>
-#include <one/arcus/internal/socket.h>
-
 #include <assert.h>
 #include <array>
 #include <cstring>
 #include <string>
+
+#include <one/arcus/message.h>
+#include <one/arcus/internal/codec.h>
+#include <one/arcus/opcode.h>
+#include <one/arcus/internal/socket.h>
 
 #ifdef WINDOWS
 #else
     #include <errno.h>
 #endif
 
+//#define ONE_ARCUS_CONNECTION_LOGGING
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+    #include <functional>
+    #include <iostream>
+    #include <sstream>
+#endif
+
 namespace i3d {
 namespace one {
+
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+namespace {
+
+void log(const Socket &socket, std::function<void(std::ostringstream &)> cb) {
+    // Get socket info to help identify the connection.
+    std::string ip;
+    unsigned int port;
+    socket.address(ip, port);
+    std::ostringstream stream;
+
+    // Write it to the stream, then allow caller to add more.
+    stream << "ip: " << ip << ", port: " << port << ". ";
+    cb(stream);
+
+    std::cout << stream.str() << std::endl;
+}
+
+}  // namespace
+#endif  // ONE_ARCUS_CONNECTION_LOGGING
 
 Connection::Connection(size_t max_messages_in, size_t max_messages_out)
     : _socket(nullptr)
@@ -114,6 +141,10 @@ Error Connection::update() {
         }
     }
 
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+    log(*_socket, [&](std::ostringstream &stream) { stream << "connection update"; });
+#endif
+
     // Return if socket has no activity or has an error.
     bool is_ready = false;
     auto err = _socket->ready_for_send(0.f, is_ready);
@@ -121,6 +152,11 @@ Error Connection::update() {
     if (!is_ready) return ONE_ERROR_NONE;
 
     if (_status != Status::ready) return process_handshake();
+
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+    log(*_socket,
+        [](std::ostringstream &stream) { stream << "connection processing messages"; });
+#endif
 
     // The server mostly replies to client request, so send outgoing messages
     // first.
@@ -272,6 +308,13 @@ Error Connection::try_read_data_into_in_stream() {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_MESSAGE_RECEIVE_FAILED;
     }
+
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+    log(*_socket, [&](std::ostringstream &stream) {
+        stream << "connection received data: " << received;
+    });
+#endif
+
     if (received > _in_stream.capacity() - _in_stream.size()) {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_READ_TOO_BIG_FOR_STREAM;
@@ -280,6 +323,11 @@ Error Connection::try_read_data_into_in_stream() {
     // Buffer bytes read.
     _in_stream.put(buffer.data(), received);
     if (_in_stream.size() < codec::header_size()) {
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+        log(*_socket, [&](std::ostringstream &stream) {
+            stream << "stream size smaller than header size: " << _in_stream.size();
+        });
+#endif
         return ONE_ERROR_CONNECTION_TRY_AGAIN;
     }
 
@@ -302,6 +350,12 @@ Error Connection::try_read_message_from_in_stream(codec::Header &header,
     auto err = codec::data_to_message(data, in_stream_size, size_read, header, message);
     if (is_error(err)) return err;
     _in_stream.trim(size_read);
+
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+    log(*_socket, [&](std::ostringstream &stream) {
+        stream << "connection read message opcode: " << (int)message.code();
+    });
+#endif
 
     return ONE_ERROR_NONE;
 }
@@ -472,6 +526,12 @@ Error Connection::process_outgoing_messages() {
 
         _out_stream.trim(size);
 
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+        log(*_socket, [&](std::ostringstream &stream) {
+            stream << "connection sent data: " << sent;
+        });
+#endif
+
         return ONE_ERROR_NONE;
     };
 
@@ -479,6 +539,12 @@ Error Connection::process_outgoing_messages() {
     // sending.
     auto err = send_pending_data();
     if (is_error(err)) return err;
+
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+    log(*_socket, [&](std::ostringstream &stream) {
+        stream << "processing outgoing messages: " << _outgoing_messages.size();
+    });
+#endif
 
     // Attempt to send all pending messages.
     bool did_drop_messages = false;
@@ -513,6 +579,12 @@ Error Connection::process_outgoing_messages() {
             _status = Status::error;
             return err;
         }
+
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+        log(*_socket, [&](std::ostringstream &stream) {
+            stream << "connection sent message opcode: " << (int)message->code();
+        });
+#endif
     }
 
     return ONE_ERROR_NONE;

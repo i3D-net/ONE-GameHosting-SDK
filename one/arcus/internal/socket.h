@@ -69,7 +69,7 @@ public:
     Error bind(unsigned int port);
 
     // Returns the address of this socket.
-    Error address(std::string &ip, unsigned int &port);
+    Error address(std::string &ip, unsigned int &port) const;
 
     // A decent default for the listen queue length for production. Ensure
     // the listen socket is serviced by accept to keep the queue free.

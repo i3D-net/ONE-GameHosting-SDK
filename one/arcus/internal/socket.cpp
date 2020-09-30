@@ -13,6 +13,8 @@ typedef int socklen_t;
     #include <netinet/in.h>
     #include <sys/ioctl.h>
     #include <unistd.h>
+
+    #include <netinet/tcp.h>
 #endif
 
 #include <one/arcus/internal/platform.h>
@@ -92,6 +94,17 @@ Error Socket::init() {
 
     if (setsockopt(_socket, SOL_SOCKET, SO_REUSEPORT, &enable, sizeof(int)) < 0)
         return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
+
+        // The TCP_NODELAY option can be used to ensure that our very small TCP
+        // packets are sent immediatley, at the cost of more network messages.
+        // This can be useful when using TCP for scenarios where small packets
+        // are often sent and need to be processed immediately, e.g. in a
+        // realtime editor scenario that requires high user input fidelity. This
+        // is not required for Arcus, where the client does not need to process
+        // messages in 0-500 millisecond timeframe. In the case of Arcus
+        // messages and their goals, it is ok to sometimes take hundreds of
+        // milliseconds to arrive on the server or agent.
+        // setsockopt(_socket, IPPROTO_TCP, TCP_NODELAY, &enable, sizeof(int));
 #endif
 
     return ONE_ERROR_NONE;
@@ -149,7 +162,7 @@ Error Socket::bind(unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::address(std::string &ip, unsigned int &port) {
+Error Socket::address(std::string &ip, unsigned int &port) const {
     sockaddr_in addr;
     socklen_t addr_size = sizeof(addr);
 

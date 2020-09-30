@@ -1,10 +1,14 @@
 #include <one/arcus/server.h>
 
+#include <iostream>
+
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/message.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/message.h>
+
+//#define ONE_ARCUS_SERVER_LOGGING
 
 namespace i3d {
 namespace one {
@@ -179,6 +183,15 @@ Error Server::update() {
         _client_connection->shutdown();
         _client_socket->close();
         _is_waiting_for_client = true;
+
+#ifdef ONE_ARCUS_SERVER_LOGGING
+        std::string ip;
+        unsigned int port;
+        _client_socket->address(ip, port);
+        std::cout << "ip: " << ip << ", port: " << port << ", closing client"
+                  << std::endl;
+#endif
+
         return passthrough_err;
     };
 
@@ -194,6 +207,11 @@ Error Server::update() {
         unsigned int count = 0;
         err = _client_connection->incoming_count(count);
         if (is_error(err)) return close_client(err);
+
+#ifdef ONE_ARCUS_SERVER_LOGGING
+        std::cout << "server processing incoming: " << count << std::endl;
+#endif
+
         if (count == 0) break;
 
         err = _client_connection->remove_incoming([this](const Message &message) {
