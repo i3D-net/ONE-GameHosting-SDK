@@ -4,8 +4,9 @@
 
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/message.h>
-#include <one/arcus/opcode.h>
+#include <one/arcus/internal/mutex.h>
 #include <one/arcus/internal/socket.h>
+#include <one/arcus/opcode.h>
 #include <one/arcus/message.h>
 
 //#define ONE_ARCUS_SERVER_LOGGING
@@ -459,6 +460,11 @@ Error Server::update_listen_socket() {
 }
 
 Error Server::process_incoming_message(const Message &message) {
+    // Unlock and relock the server mutex when processing incoming messages to
+    // allow the callback to be re-entrant on server functions (e.g. to send
+    // an outgoing message in response to an incoming message).
+    const ReverseLockGuard<std::mutex> reverse_lock(_server);
+
     switch (message.code()) {
         case Opcode::soft_stop_request:
             if (_callbacks._soft_stop_request == nullptr) {
