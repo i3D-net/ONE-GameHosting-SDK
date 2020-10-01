@@ -10,6 +10,7 @@ set(HEADER_FILES
     internal/endian.h
     internal/health.h
     internal/message.h
+    internal/mutex.h
     internal/platform.h
     internal/ring.h
     internal/socket.h

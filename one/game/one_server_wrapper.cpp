@@ -245,7 +245,6 @@ void OneServerWrapper::update() {
     // Keeping track of player count changes & send out the appropriate
     // player joined or player left message.
     if (_last_update_game_state.players != _game_state.players) {
-        L_INFO("player counts don't match");
         if (_last_update_game_state.players < _game_state.players) {
             L_INFO("player joined");
             if (!send_player_joined_event(_game_state.players)) {
