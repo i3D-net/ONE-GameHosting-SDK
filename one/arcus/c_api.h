@@ -172,44 +172,64 @@ OneError one_object_is_val_string(OneObjectPtr object, const char *key, bool *re
 OneError one_object_is_val_array(OneObjectPtr object, const char *key, bool *result);
 OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *result);
 
+///@name Object Getters
+///@{
+
+/// Retrieves and sets the value of the given type from the object. The given value
+/// pointer must be non-null and will have the return value set on it.
+/// @return May return of ONE_ERROR_OBJECT_*.
+/// @param object A valid object created via one_object_create.
+/// @param key The key of the value to return.
 OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
 OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
-// The size is the number of characters in the string, excluding any trailing '\0'.
+/// Returns the number of characters in the string. This does not include a trailing null
+/// character.
+/// @return May return of ONE_ERROR_OBJECT_*.
+/// @param object A valid object created via one_object_create.
+/// @param key The key of the value to return.
 OneError one_object_val_string_size(OneObjectPtr object, const char *key, size_t *size);
-// The content of the value is copied into val & val_size must be the size available in
-// val. There are no '\0' appended at the end.
+/// Writes the key value to the given character buffer.
+/// @return May return of ONE_ERROR_OBJECT_*.
+/// @param object A valid object created via one_object_create.
+/// @param key The key of the value to return.
+/// @param size Size of the value buffer that can be written to. Must be equal
+/// to size obtained via one_object_val_string_size.
 OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
                                size_t size);
 OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
 OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val);
+///@}
 
+///@name Object Setters
+///@{
+
+/// Allows setting a sub key/value pair on the object of the given type.
+/// @param object A valid object created via one_object_create.
 OneError one_object_set_val_bool(OneObjectPtr object, const char *key, bool val);
 OneError one_object_set_val_int(OneObjectPtr object, const char *key, int val);
 OneError one_object_set_val_string(OneObjectPtr object, const char *key, const char *val);
 OneError one_object_set_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
 OneError one_object_set_val_object(OneObjectPtr object, const char *key,
                                    OneObjectPtr val);
+///@}
 
 //------------------------------------------------------------------------------
 // Server interface.
 
-///
 /// Creates a new Arcus Server. Each Game Server must have one corresponding
 /// Arcus Server. Listen, update, shutdown and destroy should be called to complete the
 /// life cycle.
-///
+/// @param server A null server pointer, which will be set to a new server.
 OneError one_server_create(OneServerPtr *server);
 
 void one_server_destroy(OneServerPtr *server);
 
-///
 /// Start listening on the given port. This should be called once, before
 /// update. Listening will fail and return an error if the port is already in
 /// use.
 ///
 OneError one_server_listen(OneServerPtr server, unsigned int port);
 
-///
 /// Update the server. This must be called frequently (e.g. each frame) to
 /// process incoming and outgoing communications. Incoming messages trigger
 /// their respective incoming callbacks during the call to update. If the a
@@ -217,7 +237,6 @@ OneError one_server_listen(OneServerPtr server, unsigned int port);
 ///
 OneError one_server_update(OneServerPtr server);
 
-///
 /// Returns the status of the server
 /// \sa OneServerStatus.
 ///
@@ -225,7 +244,6 @@ OneError one_server_status(OneServerPtr const server, int *status);
 
 ///
 /// Close the listen connection, if any.
-///
 OneError one_server_shutdown(OneServerPtr server);
 
 //------------------------------------------------------------------------------
@@ -254,7 +272,6 @@ OneError one_message_prepare_application_instance_get_status_request(
 OneError one_message_prepare_application_instance_set_status_request(
     int status, OneMessagePtr message);
 
-///
 /// Send the Arcus API server live_state_response opcode message.
 /// Message Mandatory Content:
 /// {
@@ -267,7 +284,6 @@ OneError one_message_prepare_application_instance_set_status_request(
 /// }
 OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
 
-///
 /// send player_joined_event_response.
 /// Message Mandatory Content:
 /// {
@@ -276,7 +292,6 @@ OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr 
 OneError one_server_send_player_joined_event_response(OneServerPtr server,
                                                       OneMessagePtr message);
 
-///
 /// send player_left_response.
 /// Message Mandatory Content:
 /// {
@@ -284,28 +299,24 @@ OneError one_server_send_player_joined_event_response(OneServerPtr server,
 /// }
 OneError one_server_send_player_left_response(OneServerPtr server, OneMessagePtr message);
 
-///
 /// Send the Arcus API server host_information_request opcode message.
 /// Message Empty Content:
 /// {}
 OneError one_server_send_host_information_request(OneServerPtr server,
                                                   OneMessagePtr message);
 
-///
 /// send application_instance_information_request.
 /// Message Empty Content:
 /// {}
 OneError one_server_send_application_instance_information_request(OneServerPtr server,
                                                                   OneMessagePtr message);
 
-///
 /// send application_instance_get_status_request.
 /// Message Empty Content:
 /// {}
 OneError one_server_send_application_instance_get_status_request(OneServerPtr server,
                                                                  OneMessagePtr message);
 
-///
 /// send application_instance_set_status_request.
 /// Message Empty Content:
 /// {
@@ -321,7 +332,6 @@ OneError one_server_send_application_instance_set_status_request(OneServerPtr se
 // website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
 // for more information.
 
-///
 /// Required before received the soft stop request message. Register the callback to be
 /// notified of a soft_stop_request. The process should stop at its earliest convenience.
 /// If the server process is still active after the given timeout (seconds), then One will
@@ -332,7 +342,6 @@ OneError one_server_set_soft_stop_callback(OneServerPtr server,
                                            void (*callback)(void *data, int timeout),
                                            void *data);
 
-///
 /// Register the callback to be notified of a allocated_request.
 /// The `void *data` is the user provided & will be passed as the first argument
 /// of the callback when invoked.
@@ -342,7 +351,6 @@ OneError one_server_set_allocated_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data);
 
-///
 /// Register the callback to be notified of a meta_data_request.
 /// The `void *data` is the user provided & will be passed as the first argument
 /// of the callback when invoked.
@@ -358,7 +366,6 @@ OneError one_server_set_live_state_request_callback(OneServerPtr server,
                                                     void (*callback)(void *data),
                                                     void *data);
 
-///
 /// Register the callback to be notified of a host_information_response.
 /// The `void *data` is the user provided & will be passed as the first argument
 /// of the callback when invoked.
@@ -367,7 +374,6 @@ OneError one_server_set_live_state_request_callback(OneServerPtr server,
 OneError one_server_set_host_information_response_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
 
-///
 /// Register the callback to be notified of a application_instance_information_response.
 /// The `void *data` is the user provided & will be passed as the first argument
 /// of the callback when invoked.
@@ -376,7 +382,6 @@ OneError one_server_set_host_information_response_callback(
 OneError one_server_set_application_instance_information_response_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
 
-///
 /// Register the callback to be notified of a application_instance_get_status_response.
 /// The `void *data` is the user provided & will be passed as the first argument
 /// of the callback when invoked.
@@ -384,7 +389,6 @@ OneError one_server_set_application_instance_information_response_callback(
 OneError one_server_set_application_instance_get_status_response_callback(
     OneServerPtr server, void (*callback)(void *data, int status), void *data);
 
-///
 /// Register the callback to be notified of a application_instance_set_status_response.
 /// The `void *data` is the user provided & will be passed as the first argument
 /// of the callback when invoked.
@@ -395,13 +399,11 @@ OneError one_server_set_application_instance_set_status_response_callback(
 //--------------------------------------------------------------------------
 // Environment.
 
-///
 /// Provide custom memory alloc.
 /// Must be set at init time, before using any other APIs. If this is called,
 // then one_allocator_set_free must also be called.
 void one_allocator_set_alloc(void *(callback)(unsigned int size));
 
-///
 /// Provide custom memory free.
 /// Must be set at init time, before using any other APIs.
 void one_allocator_set_free(void(callback)(void *));

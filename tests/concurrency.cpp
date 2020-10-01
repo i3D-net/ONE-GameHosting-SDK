@@ -90,7 +90,7 @@ TEST_CASE("two thread", "[concurrency]") {
     t6.join();
 }
 
-TEST_CASE("single thread send information", "[concurrency]") {
+TEST_CASE("long:single thread send information", "[concurrency]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19112;
 
@@ -112,6 +112,8 @@ TEST_CASE("single thread send information", "[concurrency]") {
     shutdown(&game);
 }
 
+// Left without long tag since it is relatively fast and good to run
+// at least one threading test per build.
 TEST_CASE("two thread send information", "[concurrency]") {
     const unsigned int port = 19213;
     const auto address = "127.0.0.1";
@@ -158,7 +160,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t8.join();
 }
 
-TEST_CASE("multiple thread send information", "[concurrency]") {
+TEST_CASE("long:multiple thread send information", "[concurrency]") {
     const unsigned int port = 19313;
     const auto address = "127.0.0.1";
 
