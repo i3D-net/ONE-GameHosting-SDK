@@ -77,8 +77,8 @@ void one_allocator_set_alloc(void *(callback)(unsigned int size));
 /// Must be set at init time, before using any other APIs.
 void one_allocator_set_free(void(callback)(void *));
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Server interface.
 /// The Server is the main object of the C API. One server should be created
 /// per "game server". The server needs to be updated often to send and receive
@@ -122,8 +122,8 @@ OneError one_server_update(OneServerPtr server);
 /// @param status A pointer to a status enum value to be set.
 OneError one_server_status(OneServerPtr const server, OneServerStatus *status);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Message main interface
 /// One Servers and Clients communicate over TCP by sending Messages. A Message
 /// contains an identifying code id, and can have variable number of Key/Value
@@ -156,8 +156,8 @@ OneError one_message_code(OneMessagePtr message, int *code);
 /// @param code A valid arcus message opcode.
 OneError one_message_set_code(OneMessagePtr message, int code);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Message key/value getters
 ///@{
 
@@ -171,8 +171,8 @@ OneError one_message_is_val_string(OneMessagePtr message, const char *key, bool 
 OneError one_message_is_val_array(OneMessagePtr message, const char *key, bool *result);
 OneError one_message_is_val_object(OneMessagePtr message, const char *key, bool *result);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Message key/value getters
 ///@{
 
@@ -202,8 +202,8 @@ OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayP
 OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
 OneError one_message_val_root_object(OneMessagePtr message, OneObjectPtr val);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Message key/value setters
 ///@{
 
@@ -221,8 +221,8 @@ OneError one_message_set_val_object(OneMessagePtr message, const char *key,
                                     OneObjectPtr val);
 OneError one_message_set_val_root_object(OneMessagePtr message, OneObjectPtr val);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Array main interface
 ///@{
 
@@ -259,8 +259,8 @@ OneError one_array_size(OneArrayPtr array, int *size);
 /// @param array A non-null OneArrayPtr.
 OneError one_array_capacity(OneArrayPtr array, int *capacity);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Array element addition and removal
 ///@{
 
@@ -279,8 +279,8 @@ OneError one_array_push_back_object(OneArrayPtr array, OneObjectPtr val);
 /// @param array A pointer that will be set to point to the new OneArrayPtr.
 OneError one_array_pop_back(OneArrayPtr array);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Array element value type checkers
 ///@{
 
@@ -295,8 +295,8 @@ OneError one_array_is_val_string(OneArrayPtr array, unsigned int pos, bool *resu
 OneError one_array_is_val_array(OneArrayPtr array, unsigned int pos, bool *result);
 OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *result);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Array Getters
 ///@{
 
@@ -326,6 +326,7 @@ OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr va
 OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
 
 //------------------------------------------------------------------------------
+///@}
 ///@name Array Setters
 ///@{
 
@@ -337,8 +338,8 @@ OneError one_array_set_val_string(OneArrayPtr array, unsigned int pos, const cha
 OneError one_array_set_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
 OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Object main interface
 ///@{
 
@@ -356,8 +357,8 @@ OneError one_object_clear(OneObjectPtr object);
 OneError one_object_is_empty(OneObjectPtr object, bool *empty);
 OneError one_object_remove_key(OneObjectPtr object, const char *key);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Object Key Value type checkers
 ///@{
 
@@ -372,8 +373,8 @@ OneError one_object_is_val_string(OneObjectPtr object, const char *key, bool *re
 OneError one_object_is_val_array(OneObjectPtr object, const char *key, bool *result);
 OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *result);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Object Getters
 ///@{
 
@@ -402,8 +403,8 @@ OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
 OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
 OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Object Setters
 ///@{
 
@@ -416,8 +417,8 @@ OneError one_object_set_val_array(OneObjectPtr object, const char *key, OneArray
 OneError one_object_set_val_object(OneObjectPtr object, const char *key,
                                    OneObjectPtr val);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Arcus Message Outgoing Message senders.
 /// See the [One Arcus protocol documentation website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
 /// for more information.
@@ -495,8 +496,8 @@ OneError one_server_send_application_instance_get_status_request(OneServerPtr se
 OneError one_server_send_application_instance_set_status_request(OneServerPtr server,
                                                                  OneMessagePtr message);
 
-///@}
 //------------------------------------------------------------------------------
+///@}
 ///@name Arcus Message Incoming Message handling.
 /// See the [One Arcus protocol documentation
 /// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
@@ -579,6 +580,8 @@ OneError one_server_set_application_instance_get_status_response_callback(
 /// @param data Optional user data that will be passed back to the callback.
 OneError one_server_set_application_instance_set_status_response_callback(
     OneServerPtr server, void (*callback)(void *data, int code), void *data);
+
+///@}
 
 #ifdef __cplusplus
 };

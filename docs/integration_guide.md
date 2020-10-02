@@ -4,11 +4,11 @@ The goal of the integration is for the game server to host an Arcus Server over 
 
 ## Adding the library to the Game
 
-The one/arcus folder must be copied to the project and configured for building. See the [Fake Game CMakeLists.txt](../one/game/CMakeLists.txt) for a cmake example and reference.
+The one/arcus folder must be copied to the project and configured for building. See one/game/CMakeLists.txt for CMake reference.
 
 ## Using the Arcus Server API
 
-The following headers should be included in a complete integration:
+The following headers must be included in the game server:
 - c_api.h
 - c_error.h
 
@@ -20,19 +20,18 @@ To start, an integration must create an Arcus Server that corresponds with the G
 
 Afterwards, the server must:
 - have its message callbacks configured
-- be instructed to listen for Arcus connections
+- be instructed to listen (for Arcus Client connections)
 - be updated each frame
-- be shutdown when the game server host goes away
+- send game state to the server
+- cleanup when the game server goes away
 
-The [Fake Game](../one/game/readme.md) provides a full sample integration using all API features.
-
-The [One Server Wrapper](../one/game/one_server_wrapper.h) is the core of this sample. It is a C++ header/cpp wrapper around the One API that
+The One Server Wrapper, defined in one/game/one_server_wrapper.cpp, is the core of this sample. It is a C++ header/cpp wrapper around the One API that:
 
 - isolates the One API from the rest of the game code
-- contains ample in-source code comments explaining the motivation and purpose of the API calls from the user's perspective
+- contains in-source code comments explaining the motivation and purpose of the API calls from the user's perspective
 - can be directly copied and used as a head-start for developers integrating the library into their own engines
 
-For details, please refer to the [Fake Game](../one/game/readme.md), specifically the [One Server Wrapper](../one/game/one_server_wrapper.h).
+See the [Fake Game readme](../one/game/readme.md) for more a detailed explanation on the integration goals and approach.
 
 ## Testing and Deploying
 
