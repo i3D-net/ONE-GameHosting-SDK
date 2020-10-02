@@ -30,7 +30,7 @@ bool Parsing::extract_key_value_payload(
         return false;
     }
 
-    size_t number_of_keys = 0;
+    int number_of_keys = 0;
     err = one_array_size(array, &number_of_keys);
     if (is_error(err)) {
         L_ERROR(error_text(err));
@@ -48,24 +48,24 @@ bool Parsing::extract_key_value_payload(
         err = one_array_val_object(array, pos, pair);
         if (is_error(err)) {
             L_ERROR(error_text(err));
-            one_object_destroy(&pair);
+            one_object_destroy(pair);
             return false;
         }
 
         if (!extract_key_value_pair(pair, _key, _value)) {
             L_ERROR(error_text(err));
-            one_object_destroy(&pair);
+            one_object_destroy(pair);
             return false;
         }
 
         if (!callback(number_of_keys, _key.data(), _value.data())) {
             L_ERROR("callback unable to extract key value pair");
-            one_object_destroy(&pair);
+            one_object_destroy(pair);
             return false;
         }
     }
 
-    one_object_destroy(&pair);
+    one_object_destroy(pair);
     return true;
 }
 
@@ -77,7 +77,7 @@ bool Parsing::extract_key_value_pair(
         return false;
     }
 
-    size_t key_size = 0;
+    int key_size = 0;
     auto err = one_object_val_string_size(pair, "key", &key_size);
     if (is_error(err)) {
         L_ERROR(error_text(err));
@@ -100,7 +100,7 @@ bool Parsing::extract_key_value_pair(
     // Ensure that the string is `\0` terminated.
     _key[key_size] = '\0';
 
-    size_t value_size = 0;
+    int value_size = 0;
     err = one_object_val_string_size(pair, "value", &value_size);
     if (is_error(err)) {
         L_ERROR(error_text(err));
@@ -137,7 +137,7 @@ bool Parsing::extract_string(const OneObjectPtr object, const char *key,
         return false;
     }
 
-    size_t size = 0;
+    int size = 0;
     auto err = one_object_val_string_size(object, key, &size);
     if (is_error(err)) {
         L_ERROR(error_text(err));

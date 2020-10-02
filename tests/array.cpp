@@ -190,7 +190,7 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(!is_error(one_array_create(&a)));
     REQUIRE(a != nullptr);
 
-    size_t size = 0;
+    int size = 0;
     bool val_bool = false;
     int val_int = 0;
     std::string val_string = "";
@@ -267,7 +267,7 @@ TEST_CASE("array c_api", "[array]") {
     size = 0;
     REQUIRE(!is_error(one_array_size(a, &size)));
     REQUIRE(size == 0);
-    size_t capacity = 0;
+    int capacity = 0;
     REQUIRE(!is_error(one_array_capacity(a, &capacity)));
     REQUIRE(capacity == 5);
 
@@ -314,7 +314,6 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(!is_error(one_array_set_val_array(a, 3, (OneArray *)&val_array)));
     REQUIRE(!is_error(one_array_set_val_object(a, 4, (OneObject *)&val_object)));
 
-    one_array_destroy(&a);
-    REQUIRE(a == nullptr);
+    one_array_destroy(a);
     one_array_destroy(nullptr);
 }

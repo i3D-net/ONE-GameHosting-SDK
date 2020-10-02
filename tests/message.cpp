@@ -514,7 +514,7 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(boolean == val_boolean);
     REQUIRE(!is_error(one_message_val_int(m, "int", &val_integer)));
     REQUIRE(integer == val_integer);
-    size_t val_size = 0;
+    int val_size = 0;
     REQUIRE(!is_error(one_message_val_string_size(m, "string", &val_size)));
     REQUIRE(val_size == string.size());
     const size_t val_string_size = 100;
@@ -539,7 +539,6 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(!is_error(one_message_prepare_application_instance_get_status_request(m)));
     REQUIRE(!is_error(one_message_prepare_application_instance_set_status_request(4, m)));
 
-    one_message_destroy(&m);
-    REQUIRE(m == nullptr);
+    one_message_destroy(m);
     one_message_destroy(nullptr);
 }

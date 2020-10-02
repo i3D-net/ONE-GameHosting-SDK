@@ -197,16 +197,22 @@ void OneServerWrapper::shutdown() {
     }
 
     // Free all objects created via the One API.
-    // Todo: passing pointer to pointer is unusual, better to only pass pointer
-    // and explicitly set the pointers to null here.
-    one_server_destroy(&_server);
-    one_message_destroy(&_player_joined);
-    one_message_destroy(&_player_left);
-    one_message_destroy(&_live_state);
-    one_message_destroy(&_host_information);
-    one_message_destroy(&_application_instance_information);
-    one_message_destroy(&_application_instance_get_status);
-    one_message_destroy(&_application_instance_set_status);
+    one_server_destroy(_server);
+    _server = nullptr;
+    one_message_destroy(_player_joined);
+    _player_joined = nullptr;
+    one_message_destroy(_player_left);
+    _player_left = nullptr;
+    one_message_destroy(_live_state);
+    _live_state = nullptr;
+    one_message_destroy(_host_information);
+    _host_information = nullptr;
+    one_message_destroy(_application_instance_information);
+    _application_instance_information = nullptr;
+    one_message_destroy(_application_instance_get_status);
+    _application_instance_get_status = nullptr;
+    one_message_destroy(_application_instance_set_status);
+    _application_instance_set_status = nullptr;
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
@@ -289,7 +295,7 @@ std::string OneServerWrapper::status_to_string(Status status) {
 }
 
 OneServerWrapper::Status OneServerWrapper::status() const {
-    int status = 0;
+    OneServerStatus status;
     OneError err = one_server_status(_server, &status);
     if (is_error(err)) {
         L_ERROR(error_text(err));

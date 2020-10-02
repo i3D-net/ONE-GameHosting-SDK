@@ -29,16 +29,13 @@ Error message_create(OneMessagePtr *message) {
     return ONE_ERROR_NONE;
 }
 
-void message_destroy(OneMessagePtr *message) {
+void message_destroy(OneMessagePtr message) {
     if (message == nullptr) {
         return;
     }
 
-    auto m = (Message *)(*message);
-    if (m != nullptr) {
-        delete m;
-        *message = nullptr;
-    }
+    auto m = (Message *)(message);
+    delete m;
 }
 
 OneError message_reset(OneMessagePtr message) {
@@ -198,7 +195,7 @@ Error message_val_int(OneMessagePtr message, const char *key, int *val) {
     return m->payload().val_int(key, *val);
 }
 
-Error message_val_string_size(OneMessagePtr message, const char *key, size_t *size) {
+Error message_val_string_size(OneMessagePtr message, const char *key, int *size) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
@@ -223,7 +220,7 @@ Error message_val_string_size(OneMessagePtr message, const char *key, size_t *si
 }
 
 Error message_val_string(OneMessagePtr message, const char *key, char *val,
-                         size_t val_size) {
+                         int val_size) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
@@ -408,16 +405,13 @@ OneError array_create(OneArrayPtr *array) {
     return ONE_ERROR_NONE;
 }
 
-void array_destroy(OneArrayPtr *array) {
+void array_destroy(OneArrayPtr array) {
     if (array == nullptr) {
         return;
     }
 
-    auto a = (Array *)(*array);
-    if (a != nullptr) {
-        delete a;
-        *array = nullptr;
-    }
+    auto a = (Array *)(array);
+    delete a;
 }
 
 OneError array_copy(OneArrayPtr source, OneArrayPtr destination) {
@@ -469,7 +463,7 @@ OneError array_is_empty(OneArrayPtr array, bool *empty) {
     return ONE_ERROR_NONE;
 }
 
-OneError array_size(OneArrayPtr array, size_t *size) {
+OneError array_size(OneArrayPtr array, int *size) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -483,7 +477,7 @@ OneError array_size(OneArrayPtr array, size_t *size) {
     return ONE_ERROR_NONE;
 }
 
-OneError array_capacity(OneArrayPtr array, size_t *capacity) {
+OneError array_capacity(OneArrayPtr array, int *capacity) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -493,7 +487,7 @@ OneError array_capacity(OneArrayPtr array, size_t *capacity) {
     }
 
     auto a = (Array *)array;
-    *capacity = a->capacity();
+    *capacity = static_cast<int>(a->capacity());
     return ONE_ERROR_NONE;
 }
 
@@ -666,7 +660,7 @@ OneError array_val_int(OneArrayPtr array, unsigned int pos, int *val) {
     return a->val_int(pos, *val);
 }
 
-OneError array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size) {
+OneError array_val_string_size(OneArrayPtr array, unsigned int pos, int *size) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -676,11 +670,13 @@ OneError array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size
     }
 
     auto a = (Array *)(array);
-    auto err = a->val_string_size(pos, *size);
+    size_t result = 0;
+    auto err = a->val_string_size(pos, result);
     if (is_error(err)) {
         return err;
     }
 
+    *size = static_cast<int>(result);
     return ONE_ERROR_NONE;
 }
 
@@ -816,16 +812,13 @@ OneError object_create(OneObjectPtr *object) {
     return ONE_ERROR_NONE;
 }
 
-void object_destroy(OneObjectPtr *object) {
+void object_destroy(OneObjectPtr object) {
     if (object == nullptr) {
         return;
     }
 
-    auto o = (Object *)(*object);
-    if (o != nullptr) {
-        delete o;
-        *object = nullptr;
-    }
+    auto o = reinterpret_cast<Object *>(object);
+    delete o;
 }
 
 OneError object_copy(OneObjectPtr source, OneObjectPtr destination) {
@@ -1004,7 +997,7 @@ OneError object_val_int(OneObjectPtr object, const char *key, int *val) {
     return o->val_int(key, *val);
 }
 
-OneError object_val_string_size(OneObjectPtr object, const char *key, size_t *size) {
+OneError object_val_string_size(OneObjectPtr object, const char *key, int *size) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
     }
@@ -1018,11 +1011,13 @@ OneError object_val_string_size(OneObjectPtr object, const char *key, size_t *si
     }
 
     auto o = (Object *)object;
-    auto err = o->val_string_size(key, *size);
+    size_t result = 0;
+    auto err = o->val_string_size(key, result);
     if (is_error(err)) {
         return err;
     }
 
+    *size = static_cast<int>(result);
     return ONE_ERROR_NONE;
 }
 
@@ -1279,16 +1274,13 @@ Error server_create(OneServerPtr *server) {
     return ONE_ERROR_NONE;
 }
 
-void server_destroy(OneServerPtr *server) {
+void server_destroy(OneServerPtr server) {
     if (server == nullptr) {
         return;
     }
 
-    auto s = (Server *)(*server);
-    if (s != nullptr) {
-        delete s;
-        *server = nullptr;
-    }
+    auto s = (Server *)(server);
+    delete s;
 }
 
 Error server_update(OneServerPtr server) {
@@ -1300,7 +1292,7 @@ Error server_update(OneServerPtr server) {
     return s->update();
 }
 
-Error server_status(OneServerPtr const server, int *status) {
+Error server_status(OneServerPtr const server, OneServerStatus *status) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -1310,7 +1302,7 @@ Error server_status(OneServerPtr const server, int *status) {
         return ONE_ERROR_VALIDATION_STATUS_IS_NULLPTR;
     }
 
-    *status = static_cast<int>(s->status());
+    *status = static_cast<OneServerStatus>(s->status());
     return ONE_ERROR_NONE;
 }
 
@@ -1575,7 +1567,7 @@ OneError one_message_create(OneMessagePtr *message) {
     return one::message_create(message);
 }
 
-void one_message_destroy(OneMessagePtr *message) {
+void one_message_destroy(OneMessagePtr message) {
     one::message_destroy(message);
 }
 
@@ -1616,13 +1608,13 @@ OneError one_message_val_int(OneMessagePtr message, const char *key, int *val) {
 }
 
 OneError one_message_val_string_size(OneMessagePtr message, const char *key,
-                                     size_t *size) {
+                                     int *size) {
     return one::message_val_string_size(message, key, size);
 }
 
 OneError one_message_val_string(OneMessagePtr message, const char *key, char *val,
-                                size_t val_size) {
-    return one::message_val_string(message, key, val, val_size);
+                                int val_size) {
+    return one::message_val_string(message, key, val,  val_size);
 }
 
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
@@ -1669,7 +1661,7 @@ OneError one_array_create(OneArrayPtr *array) {
     return one::array_create(array);
 }
 
-void one_array_destroy(OneArrayPtr *array) {
+void one_array_destroy(OneArrayPtr array) {
     return one::array_destroy(array);
 }
 
@@ -1681,7 +1673,7 @@ OneError one_array_clear(OneArrayPtr array) {
     return one::array_clear(array);
 }
 
-OneError one_array_reserve(OneArrayPtr array, size_t size) {
+OneError one_array_reserve(OneArrayPtr array, int size) {
     return one::array_reserve(array, size);
 }
 
@@ -1689,11 +1681,11 @@ OneError one_array_is_empty(OneArrayPtr array, bool *empty) {
     return one::array_is_empty(array, empty);
 }
 
-OneError one_array_size(OneArrayPtr array, size_t *size) {
+OneError one_array_size(OneArrayPtr array, int *size) {
     return one::array_size(array, size);
 }
 
-OneError one_array_capacity(OneArrayPtr array, size_t *capacity) {
+OneError one_array_capacity(OneArrayPtr array, int *capacity) {
     return one::array_capacity(array, capacity);
 }
 
@@ -1749,12 +1741,12 @@ OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val) {
     return one::array_val_int(array, pos, val);
 }
 
-OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, size_t *size) {
+OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, int *size) {
     return one::array_val_string_size(array, pos, size);
 }
 
 OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
-                              size_t val_size) {
+                              int val_size) {
     return one::array_val_string(array, pos, val, val_size);
 }
 
@@ -1790,7 +1782,7 @@ OneError one_object_create(OneObjectPtr *object) {
     return one::object_create(object);
 }
 
-void one_object_destroy(OneObjectPtr *object) {
+void one_object_destroy(OneObjectPtr object) {
     one::object_destroy(object);
 }
 
@@ -1838,12 +1830,12 @@ OneError one_object_val_int(OneObjectPtr object, const char *key, int *val) {
     return one::object_val_int(object, key, val);
 }
 
-OneError one_object_val_string_size(OneObjectPtr object, const char *key, size_t *size) {
+OneError one_object_val_string_size(OneObjectPtr object, const char *key, int *size) {
     return one::object_val_string_size(object, key, size);
 }
 
 OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
-                               size_t size) {
+                               int size) {
     return one::object_val_string(object, key, val, size);
 }
 
@@ -1918,7 +1910,7 @@ OneError one_server_create(OneServerPtr *server) {
     return one::server_create(server);
 }
 
-void one_server_destroy(OneServerPtr *server) {
+void one_server_destroy(OneServerPtr server) {
     return one::server_destroy(server);
 }
 
@@ -1926,7 +1918,7 @@ OneError one_server_update(OneServerPtr server) {
     return one::server_update(server);
 }
 
-OneError one_server_status(OneServerPtr const server, int *status) {
+OneError one_server_status(OneServerPtr const server, OneServerStatus *status) {
     return one::server_status(server, status);
 }
 
