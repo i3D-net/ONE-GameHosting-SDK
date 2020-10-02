@@ -3,6 +3,7 @@ set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
 set(DOXYGEN_EXCLUDE_PATTERNS "*/internal/*")
 set(DOXYGEN_HTML_EXTRA_STYLESHEET "${PROJECT_SOURCE_DIR}/docs/extra_style.css")
 set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
+set(DOXYGEN_PROJECT_NAME "i3D.net Game Hosting SDK")
 
 doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/docs/mainpage.md"

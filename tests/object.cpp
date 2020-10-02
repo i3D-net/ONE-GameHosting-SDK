@@ -188,7 +188,7 @@ TEST_CASE("object c_api", "[object]") {
     REQUIRE(!is_error(one_object_create(&o)));
     REQUIRE(o != nullptr);
 
-    size_t size = 0;
+    int size = 0;
     const char *key = {"key"};
     bool val_bool = false;
     int val_int = 1;
@@ -307,7 +307,6 @@ TEST_CASE("object c_api", "[object]") {
     REQUIRE(!is_error(one_object_val_object(o, "object", (OneObject *)&val_object)));
     REQUIRE(val_object.get() == object.get());
 
-    one_object_destroy(&o);
-    REQUIRE(o == nullptr);
+    one_object_destroy(o);
     one_object_destroy(nullptr);
 }
