@@ -35,12 +35,26 @@ void update_game(Game *game) {
 }
 
 void update_agent(Agent *agent) {
-    for (int i = 0; i < 10000; ++i) {
+    for_sleep(1000, 1, [&]() {
         auto err = agent->update();
         if (is_error(err)) {
             L_ERROR(error_text(err));
         }
-    }
+        return false;
+    });
+}
+
+void update_game_and_agent(Game *game, Agent *agent) {
+    for_sleep(100, 1, [&]() {
+        game->update();
+
+        auto err = agent->update();
+        if (is_error(err)) {
+            L_ERROR(error_text(err));
+        }
+
+        return false;
+    });
 }
 
 void update_game_send_statistics(Game *game) {
@@ -48,10 +62,11 @@ void update_game_send_statistics(Game *game) {
         game->update();
     }
 
-    for (int i = 0; i < 10; ++i) {
+    for_sleep(10, 0, [&]() {
         game->alter_game_state();
         game->update();
-    }
+        return false;
+    });
 }
 
 TEST_CASE("single thread", "[concurrency]") {
@@ -140,7 +155,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
 
     std::thread t4(update_game_send_statistics, &game);
     std::thread t5(update_game_send_statistics, &game);
-    std::thread t6(update_agent, &agent);
+    std::thread t6(update_game_and_agent, &game, &agent);
 
     t4.join();
     t5.join();
