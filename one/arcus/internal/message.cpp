@@ -132,25 +132,6 @@ Error host_information_response(const Message &message,
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_information_request(
-    const Message &message, params::ApplicationInstanceInformationRequest &) {
-    const auto code = message.code();
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::application_instance_information_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_INFORMATION_REQUEST;
-    }
-
-    const auto &payload = message.payload();
-    if (!payload.is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error application_instance_information_response(
     const Message &message, params::ApplicationInstanceInformationResponse &params) {
     const auto code = message.code();
@@ -171,45 +152,6 @@ Error application_instance_information_response(
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_get_status_request(
-    const Message &message, params::ApplicationInstanceGetStatusRequest &) {
-    const auto code = message.code();
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::application_instance_get_status_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_GET_STATUS_REQUEST;
-    }
-
-    const auto &payload = message.payload();
-    if (!payload.is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error application_instance_get_status_response(
-    const Message &message, params::ApplicationInstanceGetStatusResponse &params) {
-    const auto code = message.code();
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::application_instance_get_status_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_GET_STATUS_RESPONSE;
-    }
-
-    const auto &payload = message.payload();
-    const auto err = payload.val_int("status", params._status);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error application_instance_set_status_request(
     const Message &message, params::ApplicationInstanceSetStatusRequest &params) {
     const auto code = message.code();
@@ -223,26 +165,6 @@ Error application_instance_set_status_request(
 
     const auto &payload = message.payload();
     const auto err = payload.val_int("status", params._status);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error application_instance_set_status_response(
-    const Message &message, params::ApplicationInstanceSetStatusResponse &params) {
-    const auto code = message.code();
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::application_instance_set_status_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_APPLICATION_INSTANCE_SET_STATUS_RESPONSE;
-    }
-
-    const auto &payload = message.payload();
-    const auto err = payload.val_int("code", params._code);
     if (is_error(err)) {
         return err;
     }
@@ -340,24 +262,6 @@ Error host_information_response(const Message &message,
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_information_request(const Message &message,
-                                               std::function<void(void *)> callback,
-                                               void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::ApplicationInstanceInformationRequest params;
-    const auto err =
-        validation::application_instance_information_request(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data);
-    return ONE_ERROR_NONE;
-}
-
 Error application_instance_information_response(
     const Message &message, std::function<void(void *, Object *)> callback, void *data) {
     if (callback == nullptr) {
@@ -375,41 +279,6 @@ Error application_instance_information_response(
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_get_status_request(const Message &message,
-                                              std::function<void(void *)> callback,
-                                              void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::ApplicationInstanceGetStatusRequest params;
-    const auto err = validation::application_instance_get_status_request(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data);
-    return ONE_ERROR_NONE;
-}
-
-Error application_instance_get_status_response(const Message &message,
-                                               std::function<void(void *, int)> callback,
-                                               void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::ApplicationInstanceGetStatusResponse params;
-    const auto err =
-        validation::application_instance_get_status_response(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data, params._status);
-    return ONE_ERROR_NONE;
-}
-
 Error application_instance_set_status_request(const Message &message,
                                               std::function<void(void *, int)> callback,
                                               void *data) {
@@ -424,24 +293,6 @@ Error application_instance_set_status_request(const Message &message,
     }
 
     callback(data, params._status);
-    return ONE_ERROR_NONE;
-}
-
-Error application_instance_set_status_response(const Message &message,
-                                               std::function<void(void *, int)> callback,
-                                               void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::ApplicationInstanceSetStatusResponse params;
-    const auto err =
-        validation::application_instance_set_status_response(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data, params._code);
     return ONE_ERROR_NONE;
 }
 

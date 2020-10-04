@@ -148,9 +148,8 @@ TEST_CASE("two thread send information", "[concurrency]") {
 
     REQUIRE(agent.live_state_call_count() == 0);
     REQUIRE(agent.host_information_send_count() == 0);
-    REQUIRE(agent.application_instance_information_call_count() == 0);
-    REQUIRE(agent.application_instance_get_status_call_count() == 0);
-    REQUIRE(agent.application_instance_set_status_call_count() == 0);
+    REQUIRE(agent.application_instance_information_send_count() == 0);
+    REQUIRE(agent.application_instance_set_status_receive_count() == 0);
 
     std::thread t4(update_game_send_statistics, &game);
     std::thread t5(update_game_send_statistics, &game);
@@ -162,9 +161,8 @@ TEST_CASE("two thread send information", "[concurrency]") {
 
     REQUIRE(0 < agent.live_state_call_count());
     REQUIRE(agent.host_information_send_count() == 1);
-    REQUIRE(agent.application_instance_information_call_count() == 1);
-    REQUIRE(0 < agent.application_instance_get_status_call_count());
-    REQUIRE(agent.application_instance_set_status_call_count() == 3);
+    REQUIRE(agent.application_instance_information_send_count() == 1);
+    REQUIRE(agent.application_instance_set_status_receive_count() == 3);
 
     std::thread t7(shutdown, &game);
     std::thread t8(shutdown, &game);
@@ -196,9 +194,8 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
 
     REQUIRE(agent.live_state_call_count() == 0);
     REQUIRE(agent.host_information_send_count() == 0);
-    REQUIRE(agent.application_instance_information_call_count() == 0);
-    REQUIRE(agent.application_instance_get_status_call_count() == 0);
-    REQUIRE(agent.application_instance_set_status_call_count() == 0);
+    REQUIRE(agent.application_instance_information_send_count() == 0);
+    REQUIRE(agent.application_instance_set_status_receive_count() == 0);
 
     std::thread t5(update_game_send_statistics, &game);
     std::thread t6(update_game_send_statistics, &game);
@@ -212,9 +209,8 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
 
     REQUIRE(0 < agent.live_state_call_count());
     REQUIRE(agent.host_information_send_count() == 1);
-    REQUIRE(agent.application_instance_information_call_count() == 1);
-    REQUIRE(0 < agent.application_instance_get_status_call_count());
-    REQUIRE(agent.application_instance_set_status_call_count() == 3);
+    REQUIRE(agent.application_instance_information_send_count() == 1);
+    REQUIRE(agent.application_instance_set_status_receive_count() == 3);
 
     std::thread t9(shutdown, &game);
     std::thread t10(shutdown, &game);

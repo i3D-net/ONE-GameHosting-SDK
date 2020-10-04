@@ -28,12 +28,8 @@ TEST_CASE("opcode version V2 validation", "[arcus]") {
     REQUIRE(is_opcode_supported_v2(Opcode::allocated));
     REQUIRE(is_opcode_supported_v2(Opcode::metadata));
     REQUIRE(is_opcode_supported_v2(Opcode::host_information_response));
-    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_information_request));
     REQUIRE(is_opcode_supported_v2(Opcode::application_instance_information_response));
-    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_get_status_request));
-    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_get_status_response));
     REQUIRE(is_opcode_supported_v2(Opcode::application_instance_set_status_request));
-    REQUIRE(is_opcode_supported_v2(Opcode::application_instance_set_status_response));
     REQUIRE(is_opcode_supported_v2(Opcode::invalid) == false);
 }
 
@@ -44,12 +40,8 @@ TEST_CASE("opcode current version validation", "[arcus]") {
     REQUIRE(is_opcode_supported(Opcode::allocated));
     REQUIRE(is_opcode_supported(Opcode::metadata));
     REQUIRE(is_opcode_supported(Opcode::host_information_response));
-    REQUIRE(is_opcode_supported(Opcode::application_instance_information_request));
     REQUIRE(is_opcode_supported(Opcode::application_instance_information_response));
-    REQUIRE(is_opcode_supported(Opcode::application_instance_get_status_request));
-    REQUIRE(is_opcode_supported(Opcode::application_instance_get_status_response));
     REQUIRE(is_opcode_supported(Opcode::application_instance_set_status_request));
-    REQUIRE(is_opcode_supported(Opcode::application_instance_set_status_response));
     REQUIRE(is_opcode_supported(Opcode::invalid) == false);
 }
 

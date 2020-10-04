@@ -11,9 +11,8 @@ Agent::Agent()
     : _quiet(false)
     , _live_state_call_count(0)
     , _host_information_send_count(0)
-    , _application_instance_information_call_count(0)
-    , _application_instance_get_status_call_count(0)
-    , _application_instance_set_status_call_count(0) {}
+    , _application_instance_information_send_count(0)
+    , _application_instance_set_status_receive_count(0) {}
 
 Error Agent::init(const char *addr, unsigned int port) {
     const std::lock_guard<std::mutex> lock(_agent);
@@ -43,35 +42,9 @@ Error Agent::init(const char *addr, unsigned int port) {
         return err;
     }
 
-    err = _client.set_application_instance_information_request_callback(
-        [this](void *) {
-            ++_application_instance_information_call_count;
-            if (_quiet) {
-                return;
-            }
-            L_INFO("application instance information request received:");
-        },
-        nullptr);
-    if (is_error(err)) {
-        return err;
-    }
-
-    err = _client.set_application_instance_get_status_request_callback(
-        [this](void *) {
-            ++_application_instance_get_status_call_count;
-            if (_quiet) {
-                return;
-            }
-            L_INFO("application instance get status request received:");
-        },
-        nullptr);
-    if (is_error(err)) {
-        return err;
-    }
-
     err = _client.set_application_instance_set_status_request_callback(
         [this](void *, int status) {
-            ++_application_instance_set_status_call_count;
+            ++_application_instance_set_status_receive_count;
             if (_quiet) {
                 return;
             }
@@ -95,6 +68,15 @@ Error Agent::send_host_information() {
     return ONE_ERROR_NONE;
 }
 
+Error Agent::send_application_instance_information() {
+    // Todo: set fake info.
+    Object object;
+    auto err = _client.send_application_instance_information(object);
+    if (is_error(err)) return err;
+    _application_instance_information_send_count++;
+    return ONE_ERROR_NONE;
+}
+
 Error Agent::update() {
     const std::lock_guard<std::mutex> lock(_agent);
     const bool was_ready = _client.status() == Client::Status::ready;
@@ -103,9 +85,10 @@ Error Agent::update() {
         return err;
     }
 
-    // Send host information whenever the connection reaches a ready state.
+    // Send agent information whenever the connection reaches a ready state.
     if (_client.status() == Client::Status::ready && !was_ready) {
         send_host_information();
+        send_application_instance_information();
     }
 
     return ONE_ERROR_NONE;
@@ -148,28 +131,6 @@ Error Agent::set_live_state_response_callback(
     void *data) {
     const std::lock_guard<std::mutex> lock(_agent);
     auto err = _client.set_live_state_response_callback(callback, data);
-    if (is_error(err)) {
-        return err;
-    }
-    return ONE_ERROR_NONE;
-}
-
-Error Agent::set_application_instance_information_request_callback(
-    std::function<void(void *)> callback, void *data) {
-    const std::lock_guard<std::mutex> lock(_agent);
-    auto err =
-        _client.set_application_instance_information_request_callback(callback, data);
-    if (is_error(err)) {
-        return err;
-    }
-    return ONE_ERROR_NONE;
-}
-
-Error Agent::set_application_instance_get_status_request_callback(
-    std::function<void(void *)> callback, void *data) {
-    const std::lock_guard<std::mutex> lock(_agent);
-    auto err =
-        _client.set_application_instance_get_status_request_callback(callback, data);
     if (is_error(err)) {
         return err;
     }

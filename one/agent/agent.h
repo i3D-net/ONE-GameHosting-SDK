@@ -41,14 +41,6 @@ public:
                            const std::string &version)>,
         void *data);
 
-    // Set application instance information callback
-    Error set_application_instance_information_request_callback(
-        std::function<void(void *)> callback, void *data);
-
-    // Set application instance get status callback
-    Error set_application_instance_get_status_request_callback(
-        std::function<void(void *)> callback, void *data);
-
     // Set application instance set status callback
     Error set_application_instance_set_status_request_callback(
         std::function<void(void *, int)> callback, void *data);
@@ -70,23 +62,19 @@ public:
         return _host_information_send_count;
     }
 
-    int application_instance_information_call_count() const {
+    int application_instance_information_send_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
-        return _application_instance_information_call_count;
+        return _application_instance_information_send_count;
     }
 
-    int application_instance_get_status_call_count() const {
+    int application_instance_set_status_receive_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
-        return _application_instance_get_status_call_count;
-    }
-
-    int application_instance_set_status_call_count() const {
-        const std::lock_guard<std::mutex> lock(_agent);
-        return _application_instance_set_status_call_count;
+        return _application_instance_set_status_receive_count;
     }
 
 private:
     Error send_host_information();
+    Error send_application_instance_information();
 
     Client _client;
 
@@ -94,9 +82,8 @@ private:
 
     int _live_state_call_count;
     int _host_information_send_count;
-    int _application_instance_information_call_count;
-    int _application_instance_get_status_call_count;
-    int _application_instance_set_status_call_count;
+    int _application_instance_information_send_count;
+    int _application_instance_set_status_receive_count;
 
     mutable std::mutex _agent;
 };
