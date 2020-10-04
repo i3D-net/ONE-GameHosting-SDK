@@ -14,8 +14,6 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     : _server(nullptr)
     , _port(port)
     , _live_state(nullptr)
-    , _player_joined(nullptr)
-    , _player_left(nullptr)
     , _host_information(nullptr)
     , _application_instance_information(nullptr)
     , _application_instance_get_status(nullptr)
@@ -23,7 +21,8 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , host_information_request_sent(false)
     , application_instance_information_request_sent(false)
     , _game_state()
-    , _last_update_game_state()
+    , _last_sent_game_state()
+    , _game_state_was_set(false)
     , _soft_stop_callback(nullptr)
     , _soft_stop_userdata(nullptr)
     , _allocated_callback(nullptr)
@@ -46,8 +45,7 @@ OneServerWrapper::~OneServerWrapper() {
 bool OneServerWrapper::init() {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
-    if (_server != nullptr || _live_state != nullptr || _player_joined != nullptr ||
-        _player_left != nullptr || _host_information != nullptr ||
+    if (_server != nullptr || _live_state != nullptr || _host_information != nullptr ||
         _application_instance_information != nullptr ||
         _application_instance_get_status != nullptr ||
         _application_instance_set_status != nullptr) {
@@ -69,18 +67,6 @@ bool OneServerWrapper::init() {
     // Create cached messages.
 
     err = one_message_create(&_live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_message_create(&_player_joined);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_message_create(&_player_left);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -190,8 +176,7 @@ bool OneServerWrapper::init() {
 void OneServerWrapper::shutdown() {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
-    if (_server == nullptr && _player_joined == nullptr && _player_left == nullptr &&
-        _live_state == nullptr && _host_information == nullptr &&
+    if (_server == nullptr && _live_state == nullptr && _host_information == nullptr &&
         _application_instance_information == nullptr) {
         return;
     }
@@ -199,10 +184,6 @@ void OneServerWrapper::shutdown() {
     // Free all objects created via the One API.
     one_server_destroy(_server);
     _server = nullptr;
-    one_message_destroy(_player_joined);
-    _player_joined = nullptr;
-    one_message_destroy(_player_left);
-    _player_left = nullptr;
     one_message_destroy(_live_state);
     _live_state = nullptr;
     one_message_destroy(_host_information);
@@ -219,6 +200,7 @@ void OneServerWrapper::set_game_state(const GameState &state) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     _game_state = state;
+    _game_state_was_set = true;
 }
 
 void OneServerWrapper::update() {
@@ -248,20 +230,20 @@ void OneServerWrapper::update() {
         }
     }
 
-    // Keeping track of player count changes & send out the appropriate
-    // player joined or player left message.
-    if (_last_update_game_state.players != _game_state.players) {
-        if (_last_update_game_state.players < _game_state.players) {
-            L_INFO("player joined");
-            if (!send_player_joined_event(_game_state.players)) {
-                L_ERROR("failed to send player joined event response");
-            }
-        } else {
-            L_INFO("player left");
-            if (!send_player_left(_game_state.players)) {
-                L_ERROR("failed to send player left response");
-            }
+    if (_game_state_was_set) {
+        bool should_send = false;
+        if (_game_state.players != _last_sent_game_state.players) {
+            should_send = true;
+            if (_game_state.players > _last_sent_game_state.players)
+                L_INFO("player joined");
+            else
+                L_INFO("player left");
         }
+        if (should_send) {
+            if (!send_live_state()) L_ERROR("failed to send live state");
+        }
+        _game_state_was_set = false;
+        _last_sent_game_state = _game_state;
     }
 
     OneError err = one_server_update(_server);
@@ -269,11 +251,7 @@ void OneServerWrapper::update() {
         L_ERROR(error_text(err));
         return;
     }
-
-    // Updating the last sent game state to keep track of changes occuring inbetween
-    // update calls.
-    _last_update_game_state = _game_state;
-}
+}  // namespace game
 
 std::string OneServerWrapper::status_to_string(Status status) {
     switch (status) {
@@ -418,41 +396,6 @@ bool OneServerWrapper::send_application_instance_set_status(StatusCode status) {
     return true;
 }
 
-bool OneServerWrapper::send_player_joined_event(int num_players) {
-    assert(_server != nullptr && _player_joined != nullptr);
-
-    OneError err =
-        one_message_prepare_player_joined_event_response(num_players, _player_joined);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_send_player_joined_event_response(_server, _player_joined);
-    if (is_error(err)) {
-        return false;
-    }
-
-    return true;
-}
-
-bool OneServerWrapper::send_player_left(int num_players) {
-    assert(_server != nullptr && _player_left != nullptr);
-
-    OneError err = one_message_prepare_player_left_response(num_players, _player_left);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_send_player_left_response(_server, _player_left);
-    if (is_error(err)) {
-        return false;
-    }
-
-    return true;
-}
-
 bool OneServerWrapper::send_application_instance_information_request() {
     assert(_server != nullptr && _application_instance_information != nullptr);
 
@@ -483,6 +426,26 @@ bool OneServerWrapper::send_host_information_request() {
 
     err = one_server_send_host_information_request(_server, _host_information);
     if (is_error(err)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool OneServerWrapper::send_live_state() {
+    L_INFO("sending live state");
+    OneError err = one_message_prepare_live_state_response(
+        _game_state.players, _game_state.max_players, _game_state.name.c_str(),
+        _game_state.map.c_str(), _game_state.mode.c_str(), _game_state.version.c_str(),
+        _live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return false;
+    }
+
+    err = one_server_send_live_state_response(_server, _live_state);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
         return false;
     }
 

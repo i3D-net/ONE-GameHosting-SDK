@@ -90,8 +90,6 @@ Error prepare_live_state_request(Message &message);
 Error prepare_live_state_response(int players, int max_players, const char *name,
                                   const char *map, const char *mode, const char *version,
                                   Message &message);
-Error prepare_player_joined_event_response(int num_players, Message &message);
-Error prepare_player_left_response(int num_players, Message &message);
 Error prepare_host_information_request(Message &message);
 Error prepare_host_information_response(const Object &information, Message &message);
 Error prepare_application_instance_information_request(Message &message);

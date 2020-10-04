@@ -263,44 +263,6 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(version == "version test");
     }
 
-    {  // player joined event request
-        REQUIRE(!is_error(messages::prepare_player_joined_event_response(10, message)));
-        data_length = 0;
-        data_read = 0;
-        header = {0};
-        REQUIRE(
-            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
-        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
-                                                 header, new_message)));
-        REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::player_joined_event_response);
-        REQUIRE(message.code() == Opcode::player_joined_event_response);
-        REQUIRE(new_message.code() == message.code());
-        REQUIRE(new_message.payload().get() == message.payload().get());
-        int numPlayers = 0;
-        REQUIRE(!is_error(message.payload().val_int("numPlayers", numPlayers)));
-        REQUIRE(numPlayers == 10);
-    }
-
-    {  // player left request
-        REQUIRE(!is_error(messages::prepare_player_left_response(5, message)));
-        data_length = 0;
-        data_read = 0;
-        header = {0};
-        REQUIRE(
-            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
-        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
-                                                 header, new_message)));
-        REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::player_left_response);
-        REQUIRE(message.code() == Opcode::player_left_response);
-        REQUIRE(new_message.code() == message.code());
-        REQUIRE(new_message.payload().get() == message.payload().get());
-        int numPlayers = 0;
-        REQUIRE(!is_error(message.payload().val_int("numPlayers", numPlayers)));
-        REQUIRE(numPlayers == 5);
-    }
-
     {  // host information request
         REQUIRE(!is_error(messages::prepare_host_information_request(message)));
         data_length = 0;

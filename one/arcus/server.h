@@ -146,20 +146,6 @@ public:
     // }
     Error send_live_state_response(const Message &message);
 
-    // send player_joined_event_response.
-    // Message Mandatory Content:
-    // {
-    //   "numPlayers" : 0
-    // }
-    Error send_player_joined_event_response(const Message &message);
-
-    // send player_left_response.
-    // Message Mandatory Content:
-    // {
-    //   "numPlayers" : 0
-    // }
-    Error send_player_left_response(const Message &message);
-
     // send host_information_request.
     // Message Empty Content:
     // {}

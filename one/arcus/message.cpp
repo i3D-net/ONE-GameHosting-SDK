@@ -483,38 +483,6 @@ Error prepare_live_state_response(int players, int max_players, const char *name
     return ONE_ERROR_NONE;
 }
 
-Error prepare_player_joined_event_response(int num_players, Message &message) {
-    Payload payload;
-    auto err = payload.set_val_int("numPlayers", num_players);
-    if (is_error(err)) {
-        return err;
-    }
-
-    message.reset();
-    err = message.init(Opcode::player_joined_event_response, payload);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error prepare_player_left_response(int num_players, Message &message) {
-    Payload payload;
-    auto err = payload.set_val_int("numPlayers", num_players);
-    if (is_error(err)) {
-        return err;
-    }
-
-    message.reset();
-    err = message.init(Opcode::player_left_response, payload);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error prepare_host_information_request(Message &message) {
     auto err = message.init(Opcode::host_information_request, Payload());
     if (is_error(err)) {

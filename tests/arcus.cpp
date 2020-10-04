@@ -28,8 +28,6 @@ TEST_CASE("opcode version V2 validation", "[arcus]") {
     REQUIRE(is_opcode_supported_v2(Opcode::allocated));
     REQUIRE(is_opcode_supported_v2(Opcode::metadata));
     REQUIRE(is_opcode_supported_v2(Opcode::live_state_request));
-    REQUIRE(is_opcode_supported_v2(Opcode::player_joined_event_response));
-    REQUIRE(is_opcode_supported_v2(Opcode::player_left_response));
     REQUIRE(is_opcode_supported_v2(Opcode::host_information_request));
     REQUIRE(is_opcode_supported_v2(Opcode::host_information_response));
     REQUIRE(is_opcode_supported_v2(Opcode::application_instance_information_request));
@@ -48,8 +46,6 @@ TEST_CASE("opcode current version validation", "[arcus]") {
     REQUIRE(is_opcode_supported(Opcode::allocated));
     REQUIRE(is_opcode_supported(Opcode::metadata));
     REQUIRE(is_opcode_supported(Opcode::live_state_request));
-    REQUIRE(is_opcode_supported(Opcode::player_joined_event_response));
-    REQUIRE(is_opcode_supported(Opcode::player_left_response));
     REQUIRE(is_opcode_supported(Opcode::host_information_request));
     REQUIRE(is_opcode_supported(Opcode::host_information_response));
     REQUIRE(is_opcode_supported(Opcode::application_instance_information_request));
@@ -67,8 +63,7 @@ TEST_CASE("opcode current version validation", "[arcus]") {
 TEST_CASE("message handling", "[arcus]") {
     Message m;
     const std::string payload = "{\"timeout\":1000}";
-    REQUIRE(
-        !is_error(m.init(Opcode::soft_stop, {payload.c_str(), payload.size()})));
+    REQUIRE(!is_error(m.init(Opcode::soft_stop, {payload.c_str(), payload.size()})));
     REQUIRE(m.code() == Opcode::soft_stop);
     REQUIRE(m.payload().is_empty() == false);
     REQUIRE(is_error(m.init(Opcode::soft_stop, {nullptr, 0})));
@@ -462,8 +457,8 @@ TEST_CASE("message send bad json", "[arcus]") {
     // Send a message from client to server.
     err = objects.client_connection->add_outgoing([](Message &message) {
         const std::string invalid_json = "{\"invalid_json\":true";
-        auto error = message.init(Opcode::metadata,
-                                  {invalid_json.c_str(), invalid_json.size()});
+        auto error =
+            message.init(Opcode::metadata, {invalid_json.c_str(), invalid_json.size()});
         REQUIRE(error == ONE_ERROR_PAYLOAD_PARSE_FAILED);
         return ONE_ERROR_NONE;
     });

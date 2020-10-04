@@ -24,10 +24,6 @@ struct ClientCallbacks {
                        const std::string &, const std::string &)>
         _live_state_response;
     void *_live_state_response_data;
-    std::function<void(void *, int)> _player_joined_event_response;
-    void *_player_joined_event_response_data;
-    std::function<void(void *, int)> _player_left_response;
-    void *_player_left_response_data;
     std::function<void(void *)> _host_information_request;
     void *_host_information_request_data;
     std::function<void(void *)> _application_instance_information_request;
@@ -79,20 +75,6 @@ public:
                            const std::string &, const std::string &)>
             callback,
         void *data);
-
-    // set the callback for when a player_joined_event_response message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
-    // of the callback when invoked.
-    // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_player_joined_event_response_callback(
-        std::function<void(void *, int)> callback, void *data);
-
-    // set the callback for when a player_left_response message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
-    // of the callback when invoked.
-    // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_player_left_response_callback(std::function<void(void *, int)> callback,
-                                            void *data);
 
     // set the callback for when a host_information_request message in received.
     // The `void *data` is the user provided & will be passed as the first argument

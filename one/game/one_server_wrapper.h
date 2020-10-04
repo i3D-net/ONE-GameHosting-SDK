@@ -193,15 +193,11 @@ public:
     bool send_application_instance_set_status(StatusCode status);
 
 private:
-    // Sends a player joined event response message to the agent when new
-    // players have joined.
-    bool send_player_joined_event(int num_players);
-    // Sends a player left response message to the agent when players have left.
-    bool send_player_left(int num_players);
     // Sends a application instance information request message to the agent.
     bool send_application_instance_information_request();
     // Sends a host information request message to the agent.
     bool send_host_information_request();
+    bool send_live_state();
 
     // Callbacks potentially called by the arcus server.
     static void soft_stop(void *userdata, int timeout_seconds);
@@ -215,7 +211,7 @@ private:
     // Callback that sends out live_state response message by the server.
     static void live_state_request(void *userdata);
 
-    // ancillary function to show how to parse the message payloads.
+    // Ancillary function to show how to parse the message payloads.
     static bool extract_allocated_payload(OneArrayPtr array,
                                           AllocatedData &allocated_data);
     static bool extract_meta_data_payload(OneArrayPtr array, MetaDataData &meta_data);
@@ -231,8 +227,6 @@ private:
     // Cached messages used to send the different predefined Arcus Messages
     // types.
     OneMessagePtr _live_state;
-    OneMessagePtr _player_joined;
-    OneMessagePtr _player_left;
     OneMessagePtr _host_information;
     OneMessagePtr _application_instance_information;
     OneMessagePtr _application_instance_get_status;
@@ -242,7 +236,8 @@ private:
     bool application_instance_information_request_sent;
 
     GameState _game_state;
-    GameState _last_update_game_state;
+    GameState _last_sent_game_state;
+    bool _game_state_was_set;
 
     // Callbacks that can be set by game to be notified of events received from
     // the Arcus Server.

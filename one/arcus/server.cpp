@@ -344,28 +344,6 @@ Error Server::send_live_state_response(const Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error Server::send_player_joined_event_response(const Message &message) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error Server::send_player_left_response(const Message &message) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error Server::send_host_information_request(const Message &message) {
     const std::lock_guard<std::mutex> lock(_server);
 
@@ -537,24 +515,6 @@ Error Server::process_outgoing_message(const Message &message) {
         case Opcode::live_state_response: {
             params::LiveStateResponse params;
             err = validation::live_state_response(message, params);
-            if (is_error(err)) {
-                return err;
-            }
-
-            break;
-        }
-        case Opcode::player_joined_event_response: {
-            params::PlayerJoinedEventResponse params;
-            err = validation::player_joined_event_response(message, params);
-            if (is_error(err)) {
-                return err;
-            }
-
-            break;
-        }
-        case Opcode::player_left_response: {
-            params::PlayerLeftResponse params;
-            err = validation::player_left_response(message, params);
             if (is_error(err)) {
                 return err;
             }

@@ -263,35 +263,6 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(val == version);
     }
 
-    {  // player_joined_event_response
-        m.reset();
-        const int num_players = 10;
-
-        REQUIRE(
-            !is_error(messages::prepare_player_joined_event_response(num_players, m)));
-        REQUIRE(m.code() == Opcode::player_joined_event_response);
-        auto p = m.payload();
-        REQUIRE(p.is_empty() == false);
-
-        int number = 0;
-        REQUIRE(!is_error(p.val_int("numPlayers", number)));
-        REQUIRE(number == num_players);
-    }
-
-    {  // player_left_response
-        m.reset();
-        const int num_players = 5;
-
-        REQUIRE(!is_error(messages::prepare_player_left_response(num_players, m)));
-        REQUIRE(m.code() == Opcode::player_left_response);
-        auto p = m.payload();
-        REQUIRE(p.is_empty() == false);
-
-        int number = 0;
-        REQUIRE(!is_error(p.val_int("numPlayers", number)));
-        REQUIRE(number == num_players);
-    }
-
     {  // host_information_request
         m.reset();
 
@@ -532,8 +503,6 @@ TEST_CASE("message c_api", "[message]") {
 
     REQUIRE(!is_error(one_message_prepare_live_state_response(1, 16, "name", "map",
                                                               "mode", "version", m)));
-    REQUIRE(!is_error(one_message_prepare_player_joined_event_response(1, m)));
-    REQUIRE(!is_error(one_message_prepare_player_left_response(16, m)));
     REQUIRE(!is_error(one_message_prepare_host_information_request(m)));
     REQUIRE(!is_error(one_message_prepare_application_instance_information_request(m)));
     REQUIRE(!is_error(one_message_prepare_application_instance_get_status_request(m)));
