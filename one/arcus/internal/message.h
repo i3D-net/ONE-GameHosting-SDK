@@ -75,9 +75,9 @@ struct ApplicationInstanceSetStatusResponse {
 }  // namespace params
 
 namespace validation {
-Error soft_stop_request(const Message &message, params::SoftStopRequest &params);
-Error allocated_request(const Message &message, params::AllocatedRequest &params);
-Error meta_data_request(const Message &message, params::MetaDataRequest &params);
+Error soft_stop(const Message &message, params::SoftStopRequest &params);
+Error allocated(const Message &message, params::AllocatedRequest &params);
+Error metadata(const Message &message, params::MetaDataRequest &params);
 Error live_state_request(const Message &message, params::LiveStateRequest &params);
 Error live_state_response(const Message &message, params::LiveStateResponse &params);
 Error player_joined_event_response(const Message &message,
@@ -102,11 +102,11 @@ Error application_instance_set_status_response(
 }  // namespace validation
 
 namespace invocation {
-Error soft_stop_request(const Message &message, std::function<void(void *, int)> callback,
+Error soft_stop(const Message &message, std::function<void(void *, int)> callback,
                         void *data);
-Error allocated_request(const Message &message,
+Error allocated(const Message &message,
                         std::function<void(void *, Array *)> callback, void *data);
-Error meta_data_request(const Message &message,
+Error metadata(const Message &message,
                         std::function<void(void *, Array *)> callback, void *data);
 Error live_state_request(const Message &message, std::function<void(void *)> callback,
                          void *data);

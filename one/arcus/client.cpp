@@ -195,11 +195,11 @@ Client::Status Client::status() const {
     }
 }
 
-Error Client::send_soft_stop_request(int timeout) {
+Error Client::send_soft_stop(int timeout) {
     const std::lock_guard<std::mutex> lock(_client);
 
     Message message;
-    messages::prepare_soft_stop_request(timeout, message);
+    messages::prepare_soft_stop(timeout, message);
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -208,7 +208,7 @@ Error Client::send_soft_stop_request(int timeout) {
     return ONE_ERROR_NONE;
 }
 
-Error Client::send_allocated_request(Array *data) {
+Error Client::send_allocated(Array *data) {
     const std::lock_guard<std::mutex> lock(_client);
 
     if (data == nullptr) {
@@ -216,7 +216,7 @@ Error Client::send_allocated_request(Array *data) {
     }
 
     Message message;
-    messages::prepare_allocated_request(*data, message);
+    messages::prepare_allocated(*data, message);
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -225,7 +225,7 @@ Error Client::send_allocated_request(Array *data) {
     return ONE_ERROR_NONE;
 }
 
-Error Client::send_meta_data_request(Array *data) {
+Error Client::send_metadata(Array *data) {
     const std::lock_guard<std::mutex> lock(_client);
 
     if (data == nullptr) {
@@ -233,7 +233,7 @@ Error Client::send_meta_data_request(Array *data) {
     }
 
     Message message;
-    messages::prepare_meta_data_request(*data, message);
+    messages::prepare_metadata(*data, message);
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -415,27 +415,27 @@ Error Client::process_incoming_message(const Message &message) {
 Error Client::process_outgoing_message(const Message &message) {
     Error err = ONE_ERROR_NONE;
     switch (message.code()) {
-        case Opcode::soft_stop_request: {
+        case Opcode::soft_stop: {
             params::SoftStopRequest params;
-            err = validation::soft_stop_request(message, params);
+            err = validation::soft_stop(message, params);
             if (is_error(err)) {
                 return err;
             }
 
             break;
         }
-        case Opcode::allocated_request: {
+        case Opcode::allocated: {
             params::AllocatedRequest params;
-            err = validation::allocated_request(message, params);
+            err = validation::allocated(message, params);
             if (is_error(err)) {
                 return err;
             }
 
             break;
         }
-        case Opcode::meta_data_request: {
+        case Opcode::metadata: {
             params::MetaDataRequest params;
-            err = validation::meta_data_request(message, params);
+            err = validation::metadata(message, params);
             if (is_error(err)) {
                 return err;
             }

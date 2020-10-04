@@ -18,12 +18,12 @@ class Socket;
 namespace callback {
 
 struct ServerCallbacks {
-    std::function<void(void *, int)> _soft_stop_request;
-    void *_soft_stop_request_data;
-    std::function<void(void *, Array *)> _allocated_request;
-    void *_allocated_request_data;
-    std::function<void(void *, Array *)> _meta_data_request;
-    void *_meta_data_request_data;
+    std::function<void(void *, int)> _soft_stop;
+    void *_soft_stop_userdata;
+    std::function<void(void *, Array *)> _allocated;
+    void *_allocated_userdata;
+    std::function<void(void *, Array *)> _metadata;
+    void *_metadata_userdata;
     std::function<void(void *)> _live_state_request;
     void *_live_state_request_data;
     std::function<void(void *, Object *)> _host_information_response;

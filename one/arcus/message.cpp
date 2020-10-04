@@ -383,7 +383,7 @@ const Payload &Message::payload() const {
 
 namespace messages {
 
-Error prepare_soft_stop_request(int timeout, Message &message) {
+Error prepare_soft_stop(int timeout, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("timeout", timeout);
     if (is_error(err)) {
@@ -391,7 +391,7 @@ Error prepare_soft_stop_request(int timeout, Message &message) {
     }
 
     message.reset();
-    err = message.init(Opcode::soft_stop_request, payload);
+    err = message.init(Opcode::soft_stop, payload);
     if (is_error(err)) {
         return err;
     }
@@ -399,7 +399,7 @@ Error prepare_soft_stop_request(int timeout, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_allocated_request(const Array &array, Message &message) {
+Error prepare_allocated(const Array &array, Message &message) {
     Payload payload;
     auto err = payload.set_val_array("data", array);
     if (is_error(err)) {
@@ -407,7 +407,7 @@ Error prepare_allocated_request(const Array &array, Message &message) {
     }
 
     message.reset();
-    err = message.init(Opcode::allocated_request, payload);
+    err = message.init(Opcode::allocated, payload);
     if (is_error(err)) {
         return err;
     }
@@ -415,7 +415,7 @@ Error prepare_allocated_request(const Array &array, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_meta_data_request(const Array &array, Message &message) {
+Error prepare_metadata(const Array &array, Message &message) {
     Payload payload;
     auto err = payload.set_val_array("data", array);
     if (is_error(err)) {
@@ -423,7 +423,7 @@ Error prepare_meta_data_request(const Array &array, Message &message) {
     }
 
     message.reset();
-    err = message.init(Opcode::meta_data_request, payload);
+    err = message.init(Opcode::metadata, payload);
     if (is_error(err)) {
         return err;
     }

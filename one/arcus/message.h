@@ -83,9 +83,9 @@ private:
 };
 
 namespace messages {
-Error prepare_soft_stop_request(int timeout, Message &message);
-Error prepare_allocated_request(const Array &array, Message &message);
-Error prepare_meta_data_request(const Array &array, Message &message);
+Error prepare_soft_stop(int timeout, Message &message);
+Error prepare_allocated(const Array &array, Message &message);
+Error prepare_metadata(const Array &array, Message &message);
 Error prepare_live_state_request(Message &message);
 Error prepare_live_state_response(int players, int max_players, const char *name,
                                   const char *map, const char *mode, const char *version,

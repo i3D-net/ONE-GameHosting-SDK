@@ -31,16 +31,16 @@ public:
     Error update();
 
     // Send soft stop.
-    Error send_soft_stop_request(int timeout);
+    Error send_soft_stop(int timeout);
 
     // Request live_state_request message.
     Error send_live_state_request();
 
-    // Request allocated_request message.
-    Error send_allocated_request(Array *array);
+    // Request allocated message.
+    Error send_allocated(Array *array);
 
-    // Request allocated_request message.
-    Error send_meta_data_request(Array *array);
+    // Request allocated message.
+    Error send_metadata(Array *array);
 
     // Set live_state callback.
     Error set_live_state_response_callback(
