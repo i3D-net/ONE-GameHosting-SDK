@@ -41,10 +41,8 @@ public:
     int soft_stop_call_count() const;
     int allocated_call_count() const;
     int meta_data_call_count() const;
-    int host_information_send_count() const;
-    int application_instance_information_call_count() const;
-    int application_instance_get_status_call_count() const;
-    int application_instance_set_status_call_count() const;
+    int host_information_receive_count() const;
+    int application_instance_information_receive_count() const;
 
     // Exposed for testing purposes, however use of this should be kept to a
     // minimum or removed. The game, as much as reasonable, should be tested as
@@ -69,20 +67,17 @@ private:
         const OneServerWrapper::HostInformationData &data, void *userdata);
     static void application_instance_information_callback(
         const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata);
-    static void application_instance_get_status_callback(
-        const OneServerWrapper::ApplicationInstanceGetStatusData &data, void *userdata);
     static void application_instance_set_status_callback(
         const OneServerWrapper::ApplicationInstanceSetStatusData &data, void *userdata);
 
     OneServerWrapper _server;
 
+    // Todo: rename call -> receive here and elsewhere in codebase.
     int _soft_stop_call_count;
     int _allocated_call_count;
     int _meta_data_call_count;
-    int _host_information_send_count;
-    int _application_instance_information_call_count;
-    int _application_instance_get_status_call_count;
-    int _application_instance_set_status_call_count;
+    int _host_information_receive_count;
+    int _application_instance_information_receive_count;
 
     bool _quiet;
 

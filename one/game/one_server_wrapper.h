@@ -138,7 +138,7 @@ public:
         std::function<void(const HostInformationData &data, void *userdata)> callback,
         void *userdata);
 
-    // The application instancate information response has a payload as defined at:
+    // The application instance information response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information-response
     // In this example only a handfull of fields are used for simplicity.
     struct ApplicationInstanceInformationData {
@@ -155,20 +155,7 @@ public:
             callback,
         void *userdata);
 
-    // The application instancate information response has a payload as defined at:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-get-status-response
-    // In this example only a handfull of fields are used for simplicity.
-    struct ApplicationInstanceGetStatusData {
-        ApplicationInstanceGetStatusData() : status(0) {}
-
-        int status;  // status.
-    };
-    void set_application_instance_get_status_callback(
-        std::function<void(const ApplicationInstanceGetStatusData &data, void *userdata)>
-            callback,
-        void *userdata);
-
-    // The application instancate information response has a payload as defined at:
+    // The application instance set status response has a payload as defined at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-response
     // In this example only a handfull of fields are used for simplicity.
     // Todo: The intent is to use this wrapper as a complete integration
@@ -184,17 +171,11 @@ public:
             callback,
         void *userdata);
 
-    // Sends a application instance get status request message.
-    // Todo: purpose/when should this be called.
-    bool send_application_instance_get_status();
-
     // Sends a application instance set status request message.
     // Todo: purpose/when should this be called.
     bool send_application_instance_set_status(StatusCode status);
 
 private:
-    // Sends a application instance information request message to the agent.
-    bool send_application_instance_information_request();
     bool send_live_state();
 
     // Callbacks potentially called by the arcus server.
@@ -219,6 +200,8 @@ private:
     OneServerPtr _server;
     const unsigned int _port;
 
+    mutable std::mutex _wrapper;
+
     // Cached messages used to send the different predefined Arcus Messages
     // types.
     OneMessagePtr _live_state;
@@ -227,14 +210,13 @@ private:
     OneMessagePtr _application_instance_get_status;
     OneMessagePtr _application_instance_set_status;
 
-    bool application_instance_information_request_sent;
-
     GameState _game_state;
     GameState _last_sent_game_state;
     bool _game_state_was_set;
 
-    // Callbacks that can be set by game to be notified of events received from
-    // the Arcus Server.
+    //--------------------------------------------------------------------------
+    // Callbacks.
+
     std::function<void(int, void *)> _soft_stop_callback;
     void *_soft_stop_userdata;
 
@@ -246,17 +228,14 @@ private:
 
     std::function<void(const HostInformationData &, void *)> _host_information_callback;
     void *_host_information_userdata;
+
     std::function<void(const ApplicationInstanceInformationData &, void *)>
         _application_instance_information_callback;
     void *_application_instance_information_userdata;
-    std::function<void(const ApplicationInstanceGetStatusData &, void *)>
-        _application_instance_get_status_callback;
-    void *_application_instance_get_status_userdata;
+
     std::function<void(const ApplicationInstanceSetStatusData &, void *)>
         _application_instance_set_status_callback;
     void *_application_instance_set_status_userdata;
-
-    mutable std::mutex _wrapper;
 };
 
 }  // namespace game

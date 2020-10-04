@@ -489,15 +489,6 @@ Error prepare_host_information_response(const Object &information, Message &mess
     return ONE_ERROR_NONE;
 }
 
-Error prepare_application_instance_information_request(Message &message) {
-    auto err = message.init(Opcode::application_instance_information_request, Payload());
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error prepare_application_instance_information_response(const Object &information,
                                                         Message &message) {
     Payload payload;
@@ -514,30 +505,6 @@ Error prepare_application_instance_information_response(const Object &informatio
     return ONE_ERROR_NONE;
 }
 
-Error prepare_application_instance_get_status_request(Message &message) {
-    auto err = message.init(Opcode::application_instance_get_status_request, Payload());
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error prepare_application_instance_get_status_response(int status, Message &message) {
-    Payload payload;
-    auto err = payload.set_val_int("status", status);
-    if (is_error(err)) {
-        return err;
-    }
-
-    err = message.init(Opcode::application_instance_get_status_response, payload);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error prepare_application_instance_set_status_request(int status, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("status", status);
@@ -546,21 +513,6 @@ Error prepare_application_instance_set_status_request(int status, Message &messa
     }
 
     err = message.init(Opcode::application_instance_set_status_request, payload);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error prepare_application_instance_set_status_response(int code, Message &message) {
-    Payload payload;
-    auto err = payload.set_val_int("code", code);
-    if (is_error(err)) {
-        return err;
-    }
-
-    err = message.init(Opcode::application_instance_set_status_response, payload);
     if (is_error(err)) {
         return err;
     }

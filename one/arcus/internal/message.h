@@ -25,8 +25,6 @@ struct MetaDataRequest {
     Array _data;
 };
 
-struct LiveStateRequest {};
-
 struct LiveStateResponse {
     int _players;
     int _max_players;
@@ -38,38 +36,16 @@ struct LiveStateResponse {
     // Need a clean way to pass the user defined fields.
 };
 
-struct PlayerJoinedEventResponse {
-    int _num_players;
-};
-
-struct PlayerLeftResponse {
-    int _num_players;
-};
-
-struct HostInformationRequest {};
-
 struct HostInformationResponse {
     Object _host_information;
 };
-
-struct ApplicationInstanceInformationRequest {};
 
 struct ApplicationInstanceInformationResponse {
     Object _application_instance_information;
 };
 
-struct ApplicationInstanceGetStatusRequest {};
-
-struct ApplicationInstanceGetStatusResponse {
-    int _status;
-};
-
 struct ApplicationInstanceSetStatusRequest {
     int _status;
-};
-
-struct ApplicationInstanceSetStatusResponse {
-    int _code;
 };
 
 }  // namespace params
@@ -81,18 +57,10 @@ Error metadata(const Message &message, params::MetaDataRequest &params);
 Error live_state_response(const Message &message, params::LiveStateResponse &params);
 Error host_information_response(const Message &message,
                                 params::HostInformationResponse &params);
-Error application_instance_information_request(
-    const Message &message, params::ApplicationInstanceInformationRequest &params);
 Error application_instance_information_response(
     const Message &message, params::ApplicationInstanceInformationResponse &params);
-Error application_instance_get_status_request(
-    const Message &message, params::ApplicationInstanceGetStatusRequest &params);
-Error application_instance_get_status_response(
-    const Message &message, params::ApplicationInstanceGetStatusResponse &params);
 Error application_instance_set_status_request(
     const Message &message, params::ApplicationInstanceSetStatusRequest &params);
-Error application_instance_set_status_response(
-    const Message &message, params::ApplicationInstanceSetStatusResponse &params);
 }  // namespace validation
 
 namespace invocation {
@@ -117,28 +85,13 @@ Error host_information_response(const Message &message,
                                 std::function<void(void *, Object *)> callback,
                                 void *data);
 
-Error application_instance_information_request(const Message &message,
-                                               std::function<void(void *)> callback,
-                                               void *data);
-
 Error application_instance_information_response(
     const Message &message, std::function<void(void *, Object *)> callback, void *data);
-
-Error application_instance_get_status_request(const Message &message,
-                                              std::function<void(void *)> callback,
-                                              void *data);
-
-Error application_instance_get_status_response(const Message &message,
-                                               std::function<void(void *, int)> callback,
-                                               void *data);
 
 Error application_instance_set_status_request(const Message &message,
                                               std::function<void(void *, int)> callback,
                                               void *data);
 
-Error application_instance_set_status_response(const Message &message,
-                                               std::function<void(void *, int)> callback,
-                                               void *data);
 }  // namespace invocation
 
 }  // namespace one

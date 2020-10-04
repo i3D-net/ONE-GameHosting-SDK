@@ -294,19 +294,6 @@ Error Server::set_application_instance_information_response_callback(
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_application_instance_get_status_response_callback(
-    std::function<void(void *, int)> callback, void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._application_instance_get_status_response = callback;
-    _callbacks._application_instance_get_status_response_data = data;
-    return ONE_ERROR_NONE;
-}
-
 Error Server::set_application_instance_set_status_response_callback(
     std::function<void(void *, int)> callback, void *data) {
     const std::lock_guard<std::mutex> lock(_server);
@@ -321,28 +308,6 @@ Error Server::set_application_instance_set_status_response_callback(
 }
 
 Error Server::send_live_state_response(const Message &message) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error Server::send_application_instance_information_request(const Message &message) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error Server::send_application_instance_get_status_request(const Message &message) {
     const std::lock_guard<std::mutex> lock(_server);
 
     auto err = process_outgoing_message(message);
@@ -457,22 +422,6 @@ Error Server::process_incoming_message(const Message &message) {
             return invocation::application_instance_information_response(
                 message, _callbacks._application_instance_information_response,
                 _callbacks._application_instance_information_response_data);
-        case Opcode::application_instance_get_status_response:
-            if (_callbacks._application_instance_get_status_response == nullptr) {
-                return ONE_ERROR_NONE;
-            }
-
-            return invocation::application_instance_get_status_response(
-                message, _callbacks._application_instance_get_status_response,
-                _callbacks._application_instance_get_status_response_data);
-        case Opcode::application_instance_set_status_response:
-            if (_callbacks._application_instance_get_status_response == nullptr) {
-                return ONE_ERROR_NONE;
-            }
-
-            return invocation::application_instance_set_status_response(
-                message, _callbacks._application_instance_set_status_response,
-                _callbacks._application_instance_set_status_response_data);
         default:
             return ONE_ERROR_NONE;
     }
@@ -484,24 +433,6 @@ Error Server::process_outgoing_message(const Message &message) {
         case Opcode::live_state_response: {
             params::LiveStateResponse params;
             err = validation::live_state_response(message, params);
-            if (is_error(err)) {
-                return err;
-            }
-
-            break;
-        }
-        case Opcode::application_instance_information_request: {
-            params::ApplicationInstanceInformationRequest params;
-            err = validation::application_instance_information_request(message, params);
-            if (is_error(err)) {
-                return err;
-            }
-
-            break;
-        }
-        case Opcode::application_instance_get_status_request: {
-            params::ApplicationInstanceGetStatusRequest params;
-            err = validation::application_instance_get_status_request(message, params);
             if (is_error(err)) {
                 return err;
             }

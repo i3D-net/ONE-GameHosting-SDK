@@ -28,8 +28,6 @@ struct ServerCallbacks {
     void *_host_information_response_data;
     std::function<void(void *, Object *)> _application_instance_information_response;
     void *_application_instance_information_response_data;
-    std::function<void(void *, int)> _application_instance_get_status_response;
-    void *_application_instance_get_status_response_data;
     std::function<void(void *, int)> _application_instance_set_status_response;
     void *_application_instance_set_status_response_data;
 };
@@ -108,13 +106,6 @@ public:
     Error set_application_instance_information_response_callback(
         std::function<void(void *, Object *)> callback, void *data);
 
-    // set the callback for when a application_instance_get_status_response message in
-    // received. The `void *data` is the user provided & will be passed as the first
-    // argument of the callback when invoked. The `data` can be nullptr, the callback is
-    // responsible to use the data properly.
-    Error set_application_instance_get_status_response_callback(
-        std::function<void(void *, int)> callback, void *data);
-
     // set the callback for when a application_instance_set_status_response message in
     // received. The `void *data` is the user provided & will be passed as the first
     // argument of the callback when invoked. The `data` can be nullptr, the callback is
@@ -136,16 +127,6 @@ public:
     //   "version" : ""
     // }
     Error send_live_state_response(const Message &message);
-
-    // send application_instance_information_request.
-    // Message Empty Content:
-    // {}
-    Error send_application_instance_information_request(const Message &message);
-
-    // send application_instance_get_status_request.
-    // Message Empty Content:
-    // {}
-    Error send_application_instance_get_status_request(const Message &message);
 
     // send application_instance_set_status_request.
     // Message Empty Content:

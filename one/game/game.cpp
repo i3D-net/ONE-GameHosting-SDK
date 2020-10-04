@@ -12,10 +12,8 @@ Game::Game(unsigned int port)
     , _soft_stop_call_count(0)
     , _allocated_call_count(0)
     , _meta_data_call_count(0)
-    , _host_information_send_count(0)
-    , _application_instance_information_call_count(0)
-    , _application_instance_get_status_call_count(0)
-    , _application_instance_set_status_call_count(0)
+    , _host_information_receive_count(0)
+    , _application_instance_information_receive_count(0)
     , _quiet(false)
     , _players(0)
     , _max_players(0)
@@ -57,8 +55,6 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
     _server.set_host_information_callback(host_information_callback, this);
     _server.set_application_instance_information_callback(
         application_instance_information_callback, this);
-    _server.set_application_instance_get_status_callback(
-        application_instance_get_status_callback, this);
     _server.set_application_instance_set_status_callback(
         application_instance_set_status_callback, this);
 
@@ -134,12 +130,6 @@ void Game::alter_game_state() {
             _starting = true;
         }
     }
-
-    // This get status is only sent to show how the game can get the current status.
-    // The frequency of it being sent should be a lot less in a real life senario.
-    if (!_server.send_application_instance_get_status()) {
-        if (!_quiet) L_ERROR("failed to send get status code");
-    }
 }
 
 void Game::update() {
@@ -162,24 +152,14 @@ int Game::meta_data_call_count() const {
     return _meta_data_call_count;
 }
 
-int Game::host_information_send_count() const {
+int Game::host_information_receive_count() const {
     const std::lock_guard<std::mutex> lock(_game);
-    return _host_information_send_count;
+    return _host_information_receive_count;
 }
 
-int Game::application_instance_information_call_count() const {
+int Game::application_instance_information_receive_count() const {
     const std::lock_guard<std::mutex> lock(_game);
-    return _application_instance_information_call_count;
-}
-
-int Game::application_instance_get_status_call_count() const {
-    const std::lock_guard<std::mutex> lock(_game);
-    return _application_instance_get_status_call_count;
-}
-
-int Game::application_instance_set_status_call_count() const {
-    const std::lock_guard<std::mutex> lock(_game);
-    return _application_instance_set_status_call_count;
+    return _application_instance_information_receive_count;
 }
 
 void Game::soft_stop_callback(int timeout, void *userdata) {
@@ -214,32 +194,38 @@ void Game::meta_data_callback(const OneServerWrapper::MetaDataData &data,
     L_INFO("\ttype:" + data.type);
     auto game = reinterpret_cast<Game *>(userdata);
     if (game == nullptr) {
-        L_ERROR("null userdata");
+        L_ERROR("null game");
         return;
     }
     game->_meta_data_call_count++;
 }
 
 void Game::host_information_callback(const OneServerWrapper::HostInformationData &data,
-                                     void *) {
+                                     void *userdata) {
     L_INFO("host information called:");
     L_INFO("\tid:" + std::to_string(data.id));
     L_INFO("\tserver id:" + std::to_string(data.server_id));
     L_INFO("\tserver name:" + data.server_name);
+    auto game = reinterpret_cast<Game *>(userdata);
+    if (game == nullptr) {
+        L_ERROR("null game");
+        return;
+    }
+    game->_host_information_receive_count++;
 }
 
 void Game::application_instance_information_callback(
-    const OneServerWrapper::ApplicationInstanceInformationData &data, void *) {
+    const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata) {
     L_INFO("application instance information called:");
     L_INFO("\tfleet id:" + data.fleet_id);
     L_INFO("\thost id:" + std::to_string(data.host_id));
     L_INFO("\tis virtual:" + std::to_string(data.is_virtual));
-}
-
-void Game::application_instance_get_status_callback(
-    const OneServerWrapper::ApplicationInstanceGetStatusData &data, void *) {
-    L_INFO("application instance get status called:");
-    L_INFO("\tstatus:" + std::to_string(data.status));
+    auto game = reinterpret_cast<Game *>(userdata);
+    if (game == nullptr) {
+        L_ERROR("null game");
+        return;
+    }
+    game->_application_instance_information_receive_count++;
 }
 
 void Game::application_instance_set_status_callback(

@@ -267,15 +267,6 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(p.is_empty() == true);
     }
 
-    {  // application_instance_information_request
-        m.reset();
-
-        REQUIRE(!is_error(messages::prepare_application_instance_information_request(m)));
-        REQUIRE(m.code() == Opcode::application_instance_information_request);
-        auto p = m.payload();
-        REQUIRE(p.is_empty() == true);
-    }
-
     {  // application_instance_information_response
         m.reset();
 
@@ -286,31 +277,6 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(m.code() == Opcode::application_instance_information_response);
         auto p = m.payload();
         REQUIRE(p.is_empty() == true);
-    }
-
-    {  // application_instance_get_status_request
-        m.reset();
-
-        REQUIRE(!is_error(messages::prepare_application_instance_get_status_request(m)));
-        REQUIRE(m.code() == Opcode::application_instance_get_status_request);
-        auto p = m.payload();
-        REQUIRE(p.is_empty() == true);
-    }
-
-    {  // application_instance_get_status_response
-        m.reset();
-
-        const int status = 4;
-
-        REQUIRE(!is_error(
-            messages::prepare_application_instance_get_status_response(status, m)));
-        REQUIRE(m.code() == Opcode::application_instance_get_status_response);
-        auto p = m.payload();
-        REQUIRE(p.is_empty() == false);
-
-        int s = 0;
-        REQUIRE(!is_error(p.val_int("status", s)));
-        REQUIRE(s == status);
     }
 
     {  // application_instance_set_status_request
@@ -327,22 +293,6 @@ TEST_CASE("message prepare", "[message]") {
         int s = 0;
         REQUIRE(!is_error(p.val_int("status", s)));
         REQUIRE(s == status);
-    }
-
-    {  // application_instance_set_status_response
-        m.reset();
-
-        const int code = 10;
-
-        REQUIRE(!is_error(
-            messages::prepare_application_instance_set_status_response(code, m)));
-        REQUIRE(m.code() == Opcode::application_instance_set_status_response);
-        auto p = m.payload();
-        REQUIRE(p.is_empty() == false);
-
-        int c = 0;
-        REQUIRE(!is_error(p.val_int("code", c)));
-        REQUIRE(c == code);
     }
 }
 
@@ -486,8 +436,7 @@ TEST_CASE("message c_api", "[message]") {
 
     REQUIRE(!is_error(one_message_prepare_live_state_response(1, 16, "name", "map",
                                                               "mode", "version", m)));
-    REQUIRE(!is_error(one_message_prepare_application_instance_information_request(m)));
-    REQUIRE(!is_error(one_message_prepare_application_instance_get_status_request(m)));
+    // Todo: app instance info test?
     REQUIRE(!is_error(one_message_prepare_application_instance_set_status_request(4, m)));
 
     one_message_destroy(m);

@@ -248,14 +248,17 @@ OneError one_array_reserve(OneArrayPtr array, int size);
 
 /// Sets the given value to true if the array is empty.
 /// @param array A non-null OneArrayPtr.
+/// @param empty A non-null bool pointer to set the result on.
 OneError one_array_is_empty(OneArrayPtr array, bool *empty);
 
 /// Returns the number of elements pushed to the array.
 /// @param array A non-null OneArrayPtr.
+/// @param size A non-null int pointer to set the result on.
 OneError one_array_size(OneArrayPtr array, int *size);
 
 /// Returns the total size, allocated via one_array_reserve, of the array.
 /// @param array A non-null OneArrayPtr.
+/// @param capacity A non-null int pointer to set the result on.
 OneError one_array_capacity(OneArrayPtr array, int *capacity);
 
 //------------------------------------------------------------------------------
@@ -431,10 +434,6 @@ OneError one_message_prepare_live_state_response(int players, int max_players,
                                                  const char *name, const char *map,
                                                  const char *mode, const char *version,
                                                  OneMessagePtr message);
-OneError one_message_prepare_application_instance_information_request(
-    OneMessagePtr message);
-OneError one_message_prepare_application_instance_get_status_request(
-    OneMessagePtr message);
 OneError one_message_prepare_application_instance_set_status_request(
     int status, OneMessagePtr message);
 
@@ -449,18 +448,6 @@ OneError one_message_prepare_application_instance_set_status_request(
 ///   "version" : "",
 /// }
 OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
-
-/// send application_instance_information_request.
-/// Message Empty Content:
-/// {}
-OneError one_server_send_application_instance_information_request(OneServerPtr server,
-                                                                  OneMessagePtr message);
-
-/// send application_instance_get_status_request.
-/// Message Empty Content:
-/// {}
-OneError one_server_send_application_instance_get_status_request(OneServerPtr server,
-                                                                 OneMessagePtr message);
 
 /// send application_instance_set_status_request.
 /// Message Empty Content:
@@ -529,22 +516,6 @@ OneError one_server_set_host_information_response_callback(
 /// @param data Optional user data that will be passed back to the callback.
 OneError one_server_set_application_instance_information_response_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
-
-/// Register the callback to be notified of a application_instance_get_status_response.
-/// @param server Non-null server pointer.
-/// @param callback Callback to be called during a call to one_server_update, if
-///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_application_instance_get_status_response_callback(
-    OneServerPtr server, void (*callback)(void *data, int status), void *data);
-
-/// Register the callback to be notified of a application_instance_set_status_response.
-/// @param server Non-null server pointer.
-/// @param callback Callback to be called during a call to one_server_update, if
-///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_application_instance_set_status_response_callback(
-    OneServerPtr server, void (*callback)(void *data, int code), void *data);
 
 ///@}
 
