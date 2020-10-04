@@ -242,19 +242,6 @@ Error Client::send_metadata(Array *data) {
     return ONE_ERROR_NONE;
 }
 
-Error Client::send_live_state_request() {
-    const std::lock_guard<std::mutex> lock(_client);
-
-    Message message;
-    messages::prepare_live_state_request(message);
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error Client::set_live_state_response_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
@@ -394,15 +381,6 @@ Error Client::process_outgoing_message(const Message &message) {
         case Opcode::metadata: {
             params::MetaDataRequest params;
             err = validation::metadata(message, params);
-            if (is_error(err)) {
-                return err;
-            }
-
-            break;
-        }
-        case Opcode::live_state_request: {
-            params::LiveStateRequest params;
-            err = validation::live_state_request(message, params);
             if (is_error(err)) {
                 return err;
             }

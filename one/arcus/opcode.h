@@ -7,12 +7,11 @@ namespace one {
 
 enum class Opcode {
     invalid = 0,
-    Health = 0x02,  // Used internally by the connection.
+    health = 0x02,  // Used internally by the connection.
     hello = 0x04,   // Used internally by the connection.
     soft_stop = 0x30,
     allocated = 0x60,
     metadata = 0x40,
-    live_state_request = 0x20,
     live_state_response = 0x21,
     host_information_request = 0x50,
     host_information_response = 0x51,
@@ -26,9 +25,8 @@ enum class Opcode {
 
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcode code) {
-    return code == Opcode::Health || code == Opcode::hello ||
-           code == Opcode::soft_stop || code == Opcode::allocated ||
-           code == Opcode::metadata || code == Opcode::live_state_request ||
+    return code == Opcode::health || code == Opcode::hello || code == Opcode::soft_stop ||
+           code == Opcode::allocated || code == Opcode::metadata ||
            code == Opcode::live_state_response ||
            code == Opcode::host_information_request ||
            code == Opcode::host_information_response ||

@@ -33,9 +33,6 @@ public:
     // Send soft stop.
     Error send_soft_stop(int timeout);
 
-    // Request live_state_request message.
-    Error send_live_state_request();
-
     // Request allocated message.
     Error send_allocated(Array *array);
 

@@ -268,19 +268,6 @@ Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callba
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_live_state_request_callback(std::function<void(void *)> callback,
-                                              void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._live_state_request = callback;
-    _callbacks._live_state_request_data = data;
-    return ONE_ERROR_NONE;
-}
-
 Error Server::set_host_information_response_callback(
     std::function<void(void *, Object *)> callback, void *data) {
     const std::lock_guard<std::mutex> lock(_server);
@@ -450,28 +437,21 @@ Error Server::process_incoming_message(const Message &message) {
             }
 
             return invocation::soft_stop(message, _callbacks._soft_stop,
-                                                 _callbacks._soft_stop_userdata);
+                                         _callbacks._soft_stop_userdata);
         case Opcode::allocated:
             if (_callbacks._allocated == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
             return invocation::allocated(message, _callbacks._allocated,
-                                                 _callbacks._allocated_userdata);
+                                         _callbacks._allocated_userdata);
         case Opcode::metadata:
             if (_callbacks._metadata == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
             return invocation::metadata(message, _callbacks._metadata,
-                                                 _callbacks._metadata_userdata);
-        case Opcode::live_state_request:
-            if (_callbacks._live_state_request == nullptr) {
-                return ONE_ERROR_NONE;
-            }
-
-            return invocation::live_state_request(message, _callbacks._live_state_request,
-                                                  _callbacks._live_state_request_data);
+                                        _callbacks._metadata_userdata);
         case Opcode::host_information_response:
             if (_callbacks._host_information_response == nullptr) {
                 return ONE_ERROR_NONE;

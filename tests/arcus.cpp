@@ -22,12 +22,11 @@ TEST_CASE("current arcus version", "[arcus]") {
 }
 
 TEST_CASE("opcode version V2 validation", "[arcus]") {
-    REQUIRE(is_opcode_supported_v2(Opcode::Health));
+    REQUIRE(is_opcode_supported_v2(Opcode::health));
     REQUIRE(is_opcode_supported_v2(Opcode::hello));
     REQUIRE(is_opcode_supported_v2(Opcode::soft_stop));
     REQUIRE(is_opcode_supported_v2(Opcode::allocated));
     REQUIRE(is_opcode_supported_v2(Opcode::metadata));
-    REQUIRE(is_opcode_supported_v2(Opcode::live_state_request));
     REQUIRE(is_opcode_supported_v2(Opcode::host_information_request));
     REQUIRE(is_opcode_supported_v2(Opcode::host_information_response));
     REQUIRE(is_opcode_supported_v2(Opcode::application_instance_information_request));
@@ -40,12 +39,11 @@ TEST_CASE("opcode version V2 validation", "[arcus]") {
 }
 
 TEST_CASE("opcode current version validation", "[arcus]") {
-    REQUIRE(is_opcode_supported(Opcode::Health));
+    REQUIRE(is_opcode_supported(Opcode::health));
     REQUIRE(is_opcode_supported(Opcode::hello));
     REQUIRE(is_opcode_supported(Opcode::soft_stop));
     REQUIRE(is_opcode_supported(Opcode::allocated));
     REQUIRE(is_opcode_supported(Opcode::metadata));
-    REQUIRE(is_opcode_supported(Opcode::live_state_request));
     REQUIRE(is_opcode_supported(Opcode::host_information_request));
     REQUIRE(is_opcode_supported(Opcode::host_information_response));
     REQUIRE(is_opcode_supported(Opcode::application_instance_information_request));
@@ -412,7 +410,8 @@ TEST_CASE("message send and receive", "[arcus]") {
     }
     // Add one more message, which should not fit in the outgoing message queue.
     err = objects.client_connection->add_outgoing([](Message &message) {
-        messages::prepare_live_state_request(message);
+        Array array;
+        messages::prepare_allocated(array, message);
         return ONE_ERROR_NONE;
     });
     REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_INSUFFICIENT_SPACE);

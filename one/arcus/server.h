@@ -24,8 +24,6 @@ struct ServerCallbacks {
     void *_allocated_userdata;
     std::function<void(void *, Array *)> _metadata;
     void *_metadata_userdata;
-    std::function<void(void *)> _live_state_request;
-    void *_live_state_request_data;
     std::function<void(void *, Object *)> _host_information_response;
     void *_host_information_response_data;
     std::function<void(void *, Object *)> _application_instance_information_response;
@@ -95,13 +93,6 @@ public:
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_meta_data_callback(std::function<void(void *, Array *)> callback,
                                  void *data);
-
-    // set the callback for when a live_state_request message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
-    // of the callback when invoked.
-    // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_live_state_request_callback(std::function<void(void *)> callback,
-                                          void *data);
 
     // set the callback for when a host_information_response message in received.
     // The `void *data` is the user provided & will be passed as the first argument

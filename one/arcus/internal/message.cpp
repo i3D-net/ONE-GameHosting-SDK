@@ -68,24 +68,6 @@ Error metadata(const Message &message, params::MetaDataRequest &params) {
     return ONE_ERROR_NONE;
 }
 
-Error live_state_request(const Message &message, params::LiveStateRequest &) {
-    const auto code = message.code();
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::live_state_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_LIVE_STATE_REQUEST;
-    }
-
-    const auto &payload = message.payload();
-    if (!payload.is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error live_state_response(const Message &message, params::LiveStateResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
@@ -291,7 +273,7 @@ Error application_instance_set_status_response(
 namespace invocation {
 
 Error soft_stop(const Message &message, std::function<void(void *, int)> callback,
-                        void *data) {
+                void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -306,8 +288,8 @@ Error soft_stop(const Message &message, std::function<void(void *, int)> callbac
     return ONE_ERROR_NONE;
 }
 
-Error allocated(const Message &message,
-                        std::function<void(void *, Array *)> callback, void *data) {
+Error allocated(const Message &message, std::function<void(void *, Array *)> callback,
+                void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -322,8 +304,8 @@ Error allocated(const Message &message,
     return ONE_ERROR_NONE;
 }
 
-Error metadata(const Message &message,
-                        std::function<void(void *, Array *)> callback, void *data) {
+Error metadata(const Message &message, std::function<void(void *, Array *)> callback,
+               void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -335,22 +317,6 @@ Error metadata(const Message &message,
     }
 
     callback(data, &params._data);
-    return ONE_ERROR_NONE;
-}
-
-Error live_state_request(const Message &message, std::function<void(void *)> callback,
-                         void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::LiveStateRequest params;
-    const auto err = validation::live_state_request(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data);
     return ONE_ERROR_NONE;
 }
 

@@ -120,18 +120,6 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    err = one_server_set_live_state_request_callback(_server, live_state_request, this);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_set_live_state_request_callback(_server, live_state_request, this);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
     err = one_server_set_host_information_response_callback(_server, host_information,
                                                             this);
     if (is_error(err)) {
@@ -636,32 +624,6 @@ void OneServerWrapper::application_instance_set_status(void *userdata, int code)
     data.code = static_cast<OneServerWrapper::StatusSetCodeResult>(code);
     wrapper->_application_instance_set_status_callback(
         data, wrapper->_application_instance_set_status_userdata);
-}
-
-void OneServerWrapper::live_state_request(void *userdata) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr && wrapper->_live_state != nullptr);
-
-    L_INFO("invoking live state request callback");
-    const auto &state = wrapper->_game_state;
-    OneError err = one_message_prepare_live_state_response(
-        state.players, state.max_players, state.name.c_str(), state.map.c_str(),
-        state.mode.c_str(), state.version.c_str(), wrapper->_live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-
-    err = one_server_send_live_state_response(wrapper->_server, wrapper->_live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
 }
 
 bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,

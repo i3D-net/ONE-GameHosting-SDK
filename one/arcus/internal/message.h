@@ -78,7 +78,6 @@ namespace validation {
 Error soft_stop(const Message &message, params::SoftStopRequest &params);
 Error allocated(const Message &message, params::AllocatedRequest &params);
 Error metadata(const Message &message, params::MetaDataRequest &params);
-Error live_state_request(const Message &message, params::LiveStateRequest &params);
 Error live_state_response(const Message &message, params::LiveStateResponse &params);
 Error host_information_request(const Message &message,
                                params::HostInformationRequest &params);
@@ -100,13 +99,11 @@ Error application_instance_set_status_response(
 
 namespace invocation {
 Error soft_stop(const Message &message, std::function<void(void *, int)> callback,
-                        void *data);
-Error allocated(const Message &message,
-                        std::function<void(void *, Array *)> callback, void *data);
-Error metadata(const Message &message,
-                        std::function<void(void *, Array *)> callback, void *data);
-Error live_state_request(const Message &message, std::function<void(void *)> callback,
-                         void *data);
+                void *data);
+Error allocated(const Message &message, std::function<void(void *, Array *)> callback,
+                void *data);
+Error metadata(const Message &message, std::function<void(void *, Array *)> callback,
+               void *data);
 Error live_state_response(
     const Message &message,
     std::function<void(void *, int, int, const std::string &, const std::string &,

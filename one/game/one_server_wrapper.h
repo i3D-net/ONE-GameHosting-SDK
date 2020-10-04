@@ -208,9 +208,6 @@ private:
     static void application_instance_get_status(void *userdata, int status);
     static void application_instance_set_status(void *userdata, int code);
 
-    // Callback that sends out live_state response message by the server.
-    static void live_state_request(void *userdata);
-
     // Ancillary function to show how to parse the message payloads.
     static bool extract_allocated_payload(OneArrayPtr array,
                                           AllocatedData &allocated_data);

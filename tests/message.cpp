@@ -224,13 +224,6 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(p.is_val_array("data"));
     }
 
-    {  // live_state_request
-        m.reset();
-        REQUIRE(!is_error(messages::prepare_live_state_request(m)));
-        REQUIRE(m.code() == Opcode::live_state_request);
-        REQUIRE(m.payload().is_empty() == true);
-    }
-
     {  // live_state_response
         m.reset();
         const int players = 1;
