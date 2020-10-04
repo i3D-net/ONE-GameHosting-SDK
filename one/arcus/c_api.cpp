@@ -1198,15 +1198,6 @@ Error message_prepare_live_state_response(int players, int max_players, const ch
                                                  version, *m);
 }
 
-Error message_prepare_host_information_request(OneMessagePtr message) {
-    auto m = (Message *)message;
-    if (m == nullptr) {
-        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
-    }
-
-    return messages::prepare_host_information_request(*m);
-}
-
 Error message_prepare_application_instance_information_request(OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
@@ -1317,20 +1308,6 @@ Error server_send_live_state_response(OneServerPtr server, OneMessagePtr message
     }
 
     return s->send_live_state_response(*m);
-}
-
-Error server_send_host_information_request(OneServerPtr server, OneMessagePtr message) {
-    auto s = (Server *)server;
-    if (s == nullptr) {
-        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
-    }
-
-    auto m = (Message *)message;
-    if (m == nullptr) {
-        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
-    }
-
-    return s->send_host_information_request(*m);
 }
 
 Error server_send_application_instance_information_request(OneServerPtr server,
@@ -1813,10 +1790,6 @@ OneError one_message_prepare_live_state_response(int players, int max_players,
                                                     version, message);
 }
 
-OneError one_message_prepare_host_information_request(OneMessagePtr message) {
-    return one::message_prepare_host_information_request(message);
-}
-
 OneError one_message_prepare_application_instance_information_request(
     OneMessagePtr message) {
     return one::message_prepare_application_instance_information_request(message);
@@ -1860,16 +1833,10 @@ OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr 
     return one::server_send_live_state_response(server, message);
 }
 
-OneError one_server_send_host_information_request(OneServerPtr server,
-                                                  OneMessagePtr message) {
-    return one::server_send_host_information_request(server, message);
-}
-
 OneError one_server_send_application_instance_information_request(OneServerPtr server,
                                                                   OneMessagePtr message) {
     return one::server_send_application_instance_information_request(server, message);
 }
-
 OneError one_server_send_application_instance_get_status_request(OneServerPtr server,
                                                                  OneMessagePtr message) {
     return one::server_send_application_instance_get_status_request(server, message);

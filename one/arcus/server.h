@@ -137,11 +137,6 @@ public:
     // }
     Error send_live_state_response(const Message &message);
 
-    // send host_information_request.
-    // Message Empty Content:
-    // {}
-    Error send_host_information_request(const Message &message);
-
     // send application_instance_information_request.
     // Message Empty Content:
     // {}

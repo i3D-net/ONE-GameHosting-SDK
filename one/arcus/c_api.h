@@ -431,7 +431,6 @@ OneError one_message_prepare_live_state_response(int players, int max_players,
                                                  const char *name, const char *map,
                                                  const char *mode, const char *version,
                                                  OneMessagePtr message);
-OneError one_message_prepare_host_information_request(OneMessagePtr message);
 OneError one_message_prepare_application_instance_information_request(
     OneMessagePtr message);
 OneError one_message_prepare_application_instance_get_status_request(
@@ -450,12 +449,6 @@ OneError one_message_prepare_application_instance_set_status_request(
 ///   "version" : "",
 /// }
 OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
-
-/// Send the Arcus API server host_information_request opcode message.
-/// Message Empty Content:
-/// {}
-OneError one_server_send_host_information_request(OneServerPtr server,
-                                                  OneMessagePtr message);
 
 /// send application_instance_information_request.
 /// Message Empty Content:

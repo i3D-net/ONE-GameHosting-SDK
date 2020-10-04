@@ -195,8 +195,6 @@ public:
 private:
     // Sends a application instance information request message to the agent.
     bool send_application_instance_information_request();
-    // Sends a host information request message to the agent.
-    bool send_host_information_request();
     bool send_live_state();
 
     // Callbacks potentially called by the arcus server.
@@ -229,7 +227,6 @@ private:
     OneMessagePtr _application_instance_get_status;
     OneMessagePtr _application_instance_set_status;
 
-    bool host_information_request_sent;
     bool application_instance_information_request_sent;
 
     GameState _game_state;

@@ -474,15 +474,6 @@ Error prepare_live_state_response(int players, int max_players, const char *name
     return ONE_ERROR_NONE;
 }
 
-Error prepare_host_information_request(Message &message) {
-    auto err = message.init(Opcode::host_information_request, Payload());
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error prepare_host_information_response(const Object &information, Message &message) {
     Payload payload;
     auto err = payload.set_val_root_object(information);

@@ -30,13 +30,8 @@ public:
     // Update: process incomming message & outgoing messages.
     Error update();
 
-    // Send soft stop.
     Error send_soft_stop(int timeout);
-
-    // Request allocated message.
     Error send_allocated(Array *array);
-
-    // Request allocated message.
     Error send_metadata(Array *array);
 
     // Set live_state callback.
@@ -45,10 +40,6 @@ public:
                            const std::string &map, const std::string &mode,
                            const std::string &version)>,
         void *data);
-
-    // Set host information callback
-    Error set_host_information_request_callback(std::function<void(void *)> callback,
-                                                void *data);
 
     // Set application instance information callback
     Error set_application_instance_information_request_callback(
@@ -74,9 +65,9 @@ public:
         return _live_state_call_count;
     }
 
-    int host_information_call_count() const {
+    int host_information_send_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
-        return _host_information_call_count;
+        return _host_information_send_count;
     }
 
     int application_instance_information_call_count() const {
@@ -95,12 +86,14 @@ public:
     }
 
 private:
+    Error send_host_information();
+
     Client _client;
 
     bool _quiet;
 
     int _live_state_call_count;
-    int _host_information_call_count;
+    int _host_information_send_count;
     int _application_instance_information_call_count;
     int _application_instance_get_status_call_count;
     int _application_instance_set_status_call_count;

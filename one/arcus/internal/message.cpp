@@ -112,24 +112,6 @@ Error live_state_response(const Message &message, params::LiveStateResponse &par
     return ONE_ERROR_NONE;
 }
 
-Error host_information_request(const Message &message, params::HostInformationRequest &) {
-    const auto code = message.code();
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::host_information_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_HOST_INFORMATION_REQUEST;
-    }
-
-    const auto &payload = message.payload();
-    if (!payload.is_empty()) {
-        return ONE_ERROR_MESSAGE_OPCODE_PAYLOAD_NOT_EMPTY;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error host_information_response(const Message &message,
                                 params::HostInformationResponse &params) {
     const auto code = message.code();
@@ -338,22 +320,6 @@ Error live_state_response(
 
     callback(data, params._players, params._max_players, params._name, params._map,
              params._mode, params._version);
-    return ONE_ERROR_NONE;
-}
-
-Error host_information_request(const Message &message,
-                               std::function<void(void *)> callback, void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::HostInformationRequest params;
-    const auto err = validation::host_information_request(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data);
     return ONE_ERROR_NONE;
 }
 

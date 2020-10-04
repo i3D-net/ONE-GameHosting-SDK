@@ -15,6 +15,7 @@ namespace one {
 class Array;
 class Connection;
 class Message;
+class Object;
 class Socket;
 
 namespace callback {
@@ -24,8 +25,6 @@ struct ClientCallbacks {
                        const std::string &, const std::string &)>
         _live_state_response;
     void *_live_state_response_data;
-    std::function<void(void *)> _host_information_request;
-    void *_host_information_request_data;
     std::function<void(void *)> _application_instance_information_request;
     void *_application_instance_information_request_data;
     std::function<void(void *)> _application_instance_get_status_request;
@@ -61,6 +60,7 @@ public:
     Error send_soft_stop(int timeout);
     Error send_allocated(Array *data);
     Error send_metadata(Array *data);
+    Error send_host_information(Object &data);
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
@@ -74,13 +74,6 @@ public:
                            const std::string &, const std::string &)>
             callback,
         void *data);
-
-    // set the callback for when a host_information_request message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
-    // of the callback when invoked.
-    // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_host_information_request_callback(std::function<void(void *)> callback,
-                                                void *data);
 
     // set the callback for when an application_instance_information_request message in
     // received. The `void *data` is the user provided & will be passed as the first

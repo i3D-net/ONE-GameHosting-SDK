@@ -256,15 +256,6 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(val == version);
     }
 
-    {  // host_information_request
-        m.reset();
-
-        REQUIRE(!is_error(messages::prepare_host_information_request(m)));
-        REQUIRE(m.code() == Opcode::host_information_request);
-        auto p = m.payload();
-        REQUIRE(p.is_empty() == true);
-    }
-
     {  // host_information_response
         m.reset();
 
@@ -452,7 +443,6 @@ TEST_CASE("message c_api", "[message]") {
                                                              nullptr, m)));
     REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", "map", "mode",
                                                              "version", nullptr)));
-    REQUIRE(is_error(one_message_prepare_host_information_request(nullptr)));
 
     // Check Setters.
     REQUIRE(!is_error(one_message_set_val_bool(m, "bool", boolean)));
@@ -496,7 +486,6 @@ TEST_CASE("message c_api", "[message]") {
 
     REQUIRE(!is_error(one_message_prepare_live_state_response(1, 16, "name", "map",
                                                               "mode", "version", m)));
-    REQUIRE(!is_error(one_message_prepare_host_information_request(m)));
     REQUIRE(!is_error(one_message_prepare_application_instance_information_request(m)));
     REQUIRE(!is_error(one_message_prepare_application_instance_get_status_request(m)));
     REQUIRE(!is_error(one_message_prepare_application_instance_set_status_request(4, m)));

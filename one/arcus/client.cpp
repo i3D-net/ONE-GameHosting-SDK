@@ -242,6 +242,19 @@ Error Client::send_metadata(Array *data) {
     return ONE_ERROR_NONE;
 }
 
+Error Client::send_host_information(Object &data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    Message message;
+    messages::prepare_host_information_response(data, message);
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
 Error Client::set_live_state_response_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
@@ -255,19 +268,6 @@ Error Client::set_live_state_response_callback(
 
     _callbacks._live_state_response = callback;
     _callbacks._live_state_response_data = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Client::set_host_information_request_callback(std::function<void(void *)> callback,
-                                                    void *data) {
-    const std::lock_guard<std::mutex> lock(_client);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._host_information_request = callback;
-    _callbacks._host_information_request_data = data;
     return ONE_ERROR_NONE;
 }
 
@@ -320,14 +320,6 @@ Error Client::process_incoming_message(const Message &message) {
             return invocation::live_state_response(message,
                                                    _callbacks._live_state_response,
                                                    _callbacks._live_state_response_data);
-        case Opcode::host_information_request:
-            if (_callbacks._host_information_request == nullptr) {
-                return ONE_ERROR_NONE;
-            }
-
-            return invocation::host_information_request(
-                message, _callbacks._host_information_request,
-                _callbacks._host_information_request_data);
         case Opcode::application_instance_information_request:
             if (_callbacks._application_instance_information_request == nullptr) {
                 return ONE_ERROR_NONE;

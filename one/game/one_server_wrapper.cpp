@@ -18,7 +18,6 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _application_instance_information(nullptr)
     , _application_instance_get_status(nullptr)
     , _application_instance_set_status(nullptr)
-    , host_information_request_sent(false)
     , application_instance_information_request_sent(false)
     , _game_state()
     , _last_sent_game_state()
@@ -195,17 +194,6 @@ void OneServerWrapper::update() {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     assert(_server != nullptr);
-
-    // Requesting host information request only once at startup.
-    // The agent will reply with the host information message providing
-    // the host information details.
-    // Retry sending the message until it is succesfully put in the outgoing message
-    // queue.
-    if (!host_information_request_sent) {
-        if (send_host_information_request()) {
-            host_information_request_sent = true;
-        }
-    }
 
     // Requesting application instance information request only once at startup.
     // The agent will reply with the host information message providing
@@ -396,23 +384,6 @@ bool OneServerWrapper::send_application_instance_information_request() {
 
     err = one_server_send_application_instance_information_request(
         _server, _application_instance_information);
-    if (is_error(err)) {
-        return false;
-    }
-
-    return true;
-}
-
-bool OneServerWrapper::send_host_information_request() {
-    assert(_server != nullptr && _host_information != nullptr);
-
-    OneError err = one_message_prepare_host_information_request(_host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_send_host_information_request(_server, _host_information);
     if (is_error(err)) {
         return false;
     }
