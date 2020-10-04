@@ -1423,21 +1423,6 @@ Error server_set_meta_data_callback(OneServerPtr server, void (*callback)(void *
     return ONE_ERROR_NONE;
 }
 
-Error server_set_live_state_request_callback(OneServerPtr server,
-                                             void (*callback)(void *), void *data) {
-    auto s = (Server *)server;
-    if (s == nullptr) {
-        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
-    }
-
-    if (callback == nullptr) {
-        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
-    }
-
-    s->set_live_state_request_callback(callback, data);
-    return ONE_ERROR_NONE;
-}
-
 Error server_set_host_information_response_callback(OneServerPtr server,
                                                     void (*callback)(void *, void *),
                                                     void *data) {
@@ -1559,14 +1544,13 @@ OneError one_message_val_int(OneMessagePtr message, const char *key, int *val) {
     return one::message_val_int(message, key, val);
 }
 
-OneError one_message_val_string_size(OneMessagePtr message, const char *key,
-                                     int *size) {
+OneError one_message_val_string_size(OneMessagePtr message, const char *key, int *size) {
     return one::message_val_string_size(message, key, size);
 }
 
 OneError one_message_val_string(OneMessagePtr message, const char *key, char *val,
                                 int val_size) {
-    return one::message_val_string(message, key, val,  val_size);
+    return one::message_val_string(message, key, val, val_size);
 }
 
 OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val) {
@@ -1912,12 +1896,6 @@ OneError one_server_set_meta_data_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data) {
     return one::server_set_meta_data_callback(server, callback, data);
-}
-
-OneError one_server_set_live_state_request_callback(OneServerPtr server,
-                                                    void (*callback)(void *data),
-                                                    void *data) {
-    return one::server_set_live_state_request_callback(server, callback, data);
 }
 
 OneError one_server_set_host_information_response_callback(

@@ -7,7 +7,7 @@
 
     This is the externally facing interface for the One Game Hosting SDK, exposing
     management an Arcus Server to allow communication with the One Platform.
-    
+
     It is a C API for ABI compatibility and widespread language binding support.
 
     The basic use pattern to support a game server integration is:
@@ -19,7 +19,7 @@
     3. If needed, use the Message API functions like one_message_val_int to read
     key/value pair details from the more complex messages.
     4. Properly cleanup the server as needed.
-*/ 
+*/
 
 #define ONE_EXPORT
 #define ONE_STDCALL
@@ -188,8 +188,7 @@ OneError one_message_val_int(OneMessagePtr message, const char *key, int *val);
 /// @param message A non-null message.
 /// @param key The key of the value to return.
 /// @param size A non-null int pointer to set the size on.
-OneError one_message_val_string_size(OneMessagePtr message, const char *key,
-                                     int *size);
+OneError one_message_val_string_size(OneMessagePtr message, const char *key, int *size);
 /// Writes the key value to the given character buffer.
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param message A non-null message.
@@ -398,8 +397,7 @@ OneError one_object_val_string_size(OneObjectPtr object, const char *key, int *s
 /// @param key The key of the value to return.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_object_val_string_size.
-OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
-                               int size);
+OneError one_object_val_string(OneObjectPtr object, const char *key, char *val, int size);
 OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
 OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val);
 
@@ -420,7 +418,8 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
 //------------------------------------------------------------------------------
 ///@}
 ///@name Arcus Message Outgoing Message senders.
-/// See the [One Arcus protocol documentation website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
+/// See the [One Arcus protocol documentation
+/// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
 /// for more information.
 ///
 /// Message preperation functions add the required fields to the predefined
@@ -519,15 +518,6 @@ OneError one_server_set_allocated_callback(OneServerPtr server,
 OneError one_server_set_meta_data_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data);
-
-/// Register to be notified of when the game must call live_state_request.
-/// @param server Non-null server pointer.
-/// @param callback Callback to be called during a call to one_server_update, if
-///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_live_state_request_callback(OneServerPtr server,
-                                                    void (*callback)(void *data),
-                                                    void *data);
 
 /// Register the callback to be notified of a host_information_response.
 /// The `void *object` will be of type OneObjectPtr or the callback will error out.

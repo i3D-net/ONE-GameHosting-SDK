@@ -431,15 +431,6 @@ Error prepare_metadata(const Array &array, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_live_state_request(Message &message) {
-    auto err = message.init(Opcode::live_state_request, Payload());
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error prepare_live_state_response(int players, int max_players, const char *name,
                                   const char *map, const char *mode, const char *version,
                                   Message &message) {

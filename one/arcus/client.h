@@ -61,7 +61,6 @@ public:
     Error send_soft_stop(int timeout);
     Error send_allocated(Array *data);
     Error send_metadata(Array *data);
-    Error send_live_state_request();
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
