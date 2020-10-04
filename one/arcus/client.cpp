@@ -271,32 +271,6 @@ Error Client::set_live_state_response_callback(
     return ONE_ERROR_NONE;
 }
 
-Error Client::set_player_joined_event_response_callback(
-    std::function<void(void *, int)> callback, void *data) {
-    const std::lock_guard<std::mutex> lock(_client);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._player_joined_event_response = callback;
-    _callbacks._player_joined_event_response_data = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Client::set_player_left_response_callback(std::function<void(void *, int)> callback,
-                                                void *data) {
-    const std::lock_guard<std::mutex> lock(_client);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._player_left_response = callback;
-    _callbacks._player_left_response_data = data;
-    return ONE_ERROR_NONE;
-}
-
 Error Client::set_host_information_request_callback(std::function<void(void *)> callback,
                                                     void *data) {
     const std::lock_guard<std::mutex> lock(_client);
@@ -359,22 +333,6 @@ Error Client::process_incoming_message(const Message &message) {
             return invocation::live_state_response(message,
                                                    _callbacks._live_state_response,
                                                    _callbacks._live_state_response_data);
-        case Opcode::player_joined_event_response:
-            if (_callbacks._player_joined_event_response == nullptr) {
-                return ONE_ERROR_NONE;
-            }
-
-            return invocation::player_joined_event_response(
-                message, _callbacks._player_joined_event_response,
-                _callbacks._player_joined_event_response_data);
-        case Opcode::player_left_response:
-            if (_callbacks._player_left_response == nullptr) {
-                return ONE_ERROR_NONE;
-            }
-
-            return invocation::player_left_response(
-                message, _callbacks._player_left_response,
-                _callbacks._player_left_response_data);
         case Opcode::host_information_request:
             if (_callbacks._host_information_request == nullptr) {
                 return ONE_ERROR_NONE;

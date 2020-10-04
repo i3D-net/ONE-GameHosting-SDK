@@ -9,8 +9,6 @@ namespace one {
 Agent::Agent()
     : _quiet(false)
     , _live_state_call_count(0)
-    , _player_join_call_count(0)
-    , _player_left_call_count(0)
     , _host_information_call_count(0)
     , _application_instance_information_call_count(0)
     , _application_instance_get_status_call_count(0)
@@ -38,34 +36,6 @@ Error Agent::init(const char *addr, unsigned int port) {
             L_INFO("\tmap:" + map);
             L_INFO("\tmode:" + mode);
             L_INFO("\tversion:" + version);
-        },
-        nullptr);
-    if (is_error(err)) {
-        return err;
-    }
-
-    err = _client.set_player_joined_event_response_callback(
-        [this](void *, int num_players) {
-            ++_player_join_call_count;
-            if (_quiet) {
-                return;
-            }
-            L_INFO("player joined event response received:");
-            L_INFO("\tnum_players:" + std::to_string(num_players));
-        },
-        nullptr);
-    if (is_error(err)) {
-        return err;
-    }
-
-    err = _client.set_player_left_response_callback(
-        [this](void *, int num_players) {
-            ++_player_left_call_count;
-            if (_quiet) {
-                return;
-            }
-            L_INFO("player left response received:");
-            L_INFO("\tnum_players:" + std::to_string(num_players));
         },
         nullptr);
     if (is_error(err)) {
@@ -185,26 +155,6 @@ Error Agent::set_live_state_response_callback(
     void *data) {
     const std::lock_guard<std::mutex> lock(_agent);
     auto err = _client.set_live_state_response_callback(callback, data);
-    if (is_error(err)) {
-        return err;
-    }
-    return ONE_ERROR_NONE;
-}
-
-Error Agent::set_player_joined_event_callback(std::function<void(void *, int)> callback,
-                                              void *data) {
-    const std::lock_guard<std::mutex> lock(_agent);
-    auto err = _client.set_player_joined_event_response_callback(callback, data);
-    if (is_error(err)) {
-        return err;
-    }
-    return ONE_ERROR_NONE;
-}
-
-Error Agent::set_player_left_callback(std::function<void(void *, int)> callback,
-                                      void *data) {
-    const std::lock_guard<std::mutex> lock(_agent);
-    auto err = _client.set_player_left_response_callback(callback, data);
     if (is_error(err)) {
         return err;
     }

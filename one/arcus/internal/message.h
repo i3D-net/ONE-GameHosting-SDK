@@ -80,9 +80,6 @@ Error allocated(const Message &message, params::AllocatedRequest &params);
 Error metadata(const Message &message, params::MetaDataRequest &params);
 Error live_state_request(const Message &message, params::LiveStateRequest &params);
 Error live_state_response(const Message &message, params::LiveStateResponse &params);
-Error player_joined_event_response(const Message &message,
-                                   params::PlayerJoinedEventResponse &params);
-Error player_left_response(const Message &message, params::PlayerLeftResponse &params);
 Error host_information_request(const Message &message,
                                params::HostInformationRequest &params);
 Error host_information_response(const Message &message,
@@ -116,10 +113,6 @@ Error live_state_response(
                        const std::string &, const std::string &)>
         callback,
     void *data);
-Error player_joined_event_response(const Message &message,
-                                   std::function<void(void *, int)> callback, void *data);
-Error player_left_response(const Message &message,
-                           std::function<void(void *, int)> callback, void *data);
 
 Error host_information_request(const Message &message,
                                std::function<void(void *)> callback, void *data);

@@ -130,47 +130,6 @@ Error live_state_response(const Message &message, params::LiveStateResponse &par
     return ONE_ERROR_NONE;
 }
 
-Error player_joined_event_response(const Message &message,
-                                   params::PlayerJoinedEventResponse &params) {
-    const auto code = message.code();
-
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::player_joined_event_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_PLAYER_JOINED_EVENT_RESPONSE;
-    }
-
-    const auto &payload = message.payload();
-    const auto err = payload.val_int("numPlayers", params._num_players);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error player_left_response(const Message &message, params::PlayerLeftResponse &params) {
-    const auto code = message.code();
-
-    if (!is_opcode_supported(code)) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
-    }
-
-    if (code != Opcode::player_left_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_PLAYER_LEFT_RESPONSE;
-    }
-
-    const auto &payload = message.payload();
-    const auto err = payload.val_int("numPlayers", params._num_players);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
 Error host_information_request(const Message &message, params::HostInformationRequest &) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
@@ -413,39 +372,6 @@ Error live_state_response(
 
     callback(data, params._players, params._max_players, params._name, params._map,
              params._mode, params._version);
-    return ONE_ERROR_NONE;
-}
-
-Error player_joined_event_response(const Message &message,
-                                   std::function<void(void *, int)> callback,
-                                   void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::PlayerJoinedEventResponse params;
-    const auto err = validation::player_joined_event_response(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data, params._num_players);
-    return ONE_ERROR_NONE;
-}
-
-Error player_left_response(const Message &message,
-                           std::function<void(void *, int)> callback, void *data) {
-    if (callback == nullptr) {
-        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
-    }
-
-    params::PlayerLeftResponse params;
-    const auto err = validation::player_left_response(message, params);
-    if (is_error(err)) {
-        return err;
-    }
-
-    callback(data, params._num_players);
     return ONE_ERROR_NONE;
 }
 

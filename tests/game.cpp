@@ -164,10 +164,10 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     //--------------------------------------------------------------------------
     // Sending from game to agent.
 
-    // player join.
+    // live state.
     auto &wrapper = game.one_server_wrapper();
     {
-        REQUIRE(agent.player_join_call_count() == 0);
+        REQUIRE(agent.live_state_call_count() == 0);
         const auto &state = wrapper.game_state();
         auto new_state = state;
         new_state.players++;
@@ -175,22 +175,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         bool passed = wait_until(200, [&]() {
             game.update();
             agent.update();
-            return agent.player_join_call_count() == 1;
-        });
-        REQUIRE(passed);
-    }
-
-    // player left.
-    {
-        REQUIRE(agent.player_left_call_count() == 0);
-        const auto &state = wrapper.game_state();
-        auto new_state = state;
-        new_state.players--;
-        wrapper.set_game_state(new_state);
-        bool passed = wait_until(200, [&]() {
-            game.update();
-            agent.update();
-            return agent.player_left_call_count() == 1;
+            return agent.live_state_call_count() == 1;
         });
         REQUIRE(passed);
     }

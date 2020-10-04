@@ -14,8 +14,6 @@ enum class Opcode {
     metadata = 0x40,
     live_state_request = 0x20,
     live_state_response = 0x21,
-    player_joined_event_response = 0x22,
-    player_left_response = 0x23,
     host_information_request = 0x50,
     host_information_response = 0x51,
     application_instance_information_request = 0x70,
@@ -32,8 +30,6 @@ constexpr bool is_opcode_supported_v2(Opcode code) {
            code == Opcode::soft_stop || code == Opcode::allocated ||
            code == Opcode::metadata || code == Opcode::live_state_request ||
            code == Opcode::live_state_response ||
-           code == Opcode::player_joined_event_response ||
-           code == Opcode::player_left_response ||
            code == Opcode::host_information_request ||
            code == Opcode::host_information_response ||
            code == Opcode::application_instance_information_request ||
