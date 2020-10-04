@@ -79,8 +79,6 @@ Error soft_stop(const Message &message, params::SoftStopRequest &params);
 Error allocated(const Message &message, params::AllocatedRequest &params);
 Error metadata(const Message &message, params::MetaDataRequest &params);
 Error live_state_response(const Message &message, params::LiveStateResponse &params);
-Error host_information_request(const Message &message,
-                               params::HostInformationRequest &params);
 Error host_information_response(const Message &message,
                                 params::HostInformationResponse &params);
 Error application_instance_information_request(
@@ -98,12 +96,16 @@ Error application_instance_set_status_response(
 }  // namespace validation
 
 namespace invocation {
+
 Error soft_stop(const Message &message, std::function<void(void *, int)> callback,
                 void *data);
+
 Error allocated(const Message &message, std::function<void(void *, Array *)> callback,
                 void *data);
+
 Error metadata(const Message &message, std::function<void(void *, Array *)> callback,
                void *data);
+
 Error live_state_response(
     const Message &message,
     std::function<void(void *, int, int, const std::string &, const std::string &,
@@ -111,8 +113,6 @@ Error live_state_response(
         callback,
     void *data);
 
-Error host_information_request(const Message &message,
-                               std::function<void(void *)> callback, void *data);
 Error host_information_response(const Message &message,
                                 std::function<void(void *, Object *)> callback,
                                 void *data);
@@ -120,18 +120,22 @@ Error host_information_response(const Message &message,
 Error application_instance_information_request(const Message &message,
                                                std::function<void(void *)> callback,
                                                void *data);
+
 Error application_instance_information_response(
     const Message &message, std::function<void(void *, Object *)> callback, void *data);
 
 Error application_instance_get_status_request(const Message &message,
                                               std::function<void(void *)> callback,
                                               void *data);
+
 Error application_instance_get_status_response(const Message &message,
                                                std::function<void(void *, int)> callback,
                                                void *data);
+
 Error application_instance_set_status_request(const Message &message,
                                               std::function<void(void *, int)> callback,
                                               void *data);
+
 Error application_instance_set_status_response(const Message &message,
                                                std::function<void(void *, int)> callback,
                                                void *data);

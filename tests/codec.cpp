@@ -246,22 +246,6 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(version == "version test");
     }
 
-    {  // host information request
-        REQUIRE(!is_error(messages::prepare_host_information_request(message)));
-        data_length = 0;
-        data_read = 0;
-        header = {0};
-        REQUIRE(
-            !is_error(codec::message_to_data(++packet_id, message, data_length, data)));
-        REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
-                                                 header, new_message)));
-        REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::host_information_request);
-        REQUIRE(message.code() == Opcode::host_information_request);
-        REQUIRE(new_message.code() == message.code());
-        REQUIRE(new_message.payload().get() == message.payload().get());
-    }
-
     {  // application instance information request
         REQUIRE(!is_error(
             messages::prepare_application_instance_information_request(message)));

@@ -41,7 +41,7 @@ public:
     int soft_stop_call_count() const;
     int allocated_call_count() const;
     int meta_data_call_count() const;
-    int host_information_call_count() const;
+    int host_information_send_count() const;
     int application_instance_information_call_count() const;
     int application_instance_get_status_call_count() const;
     int application_instance_set_status_call_count() const;
@@ -79,7 +79,7 @@ private:
     int _soft_stop_call_count;
     int _allocated_call_count;
     int _meta_data_call_count;
-    int _host_information_call_count;
+    int _host_information_send_count;
     int _application_instance_information_call_count;
     int _application_instance_get_status_call_count;
     int _application_instance_set_status_call_count;

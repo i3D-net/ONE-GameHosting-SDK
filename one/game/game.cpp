@@ -12,7 +12,7 @@ Game::Game(unsigned int port)
     , _soft_stop_call_count(0)
     , _allocated_call_count(0)
     , _meta_data_call_count(0)
-    , _host_information_call_count(0)
+    , _host_information_send_count(0)
     , _application_instance_information_call_count(0)
     , _application_instance_get_status_call_count(0)
     , _application_instance_set_status_call_count(0)
@@ -162,9 +162,9 @@ int Game::meta_data_call_count() const {
     return _meta_data_call_count;
 }
 
-int Game::host_information_call_count() const {
+int Game::host_information_send_count() const {
     const std::lock_guard<std::mutex> lock(_game);
-    return _host_information_call_count;
+    return _host_information_send_count;
 }
 
 int Game::application_instance_information_call_count() const {

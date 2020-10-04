@@ -89,7 +89,6 @@ Error prepare_metadata(const Array &array, Message &message);
 Error prepare_live_state_response(int players, int max_players, const char *name,
                                   const char *map, const char *mode, const char *version,
                                   Message &message);
-Error prepare_host_information_request(Message &message);
 Error prepare_host_information_response(const Object &information, Message &message);
 Error prepare_application_instance_information_request(Message &message);
 Error prepare_application_instance_information_response(const Object &information,

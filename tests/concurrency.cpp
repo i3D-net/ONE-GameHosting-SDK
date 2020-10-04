@@ -147,7 +147,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t3.join();
 
     REQUIRE(agent.live_state_call_count() == 0);
-    REQUIRE(agent.host_information_call_count() == 0);
+    REQUIRE(agent.host_information_send_count() == 0);
     REQUIRE(agent.application_instance_information_call_count() == 0);
     REQUIRE(agent.application_instance_get_status_call_count() == 0);
     REQUIRE(agent.application_instance_set_status_call_count() == 0);
@@ -161,7 +161,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t6.join();
 
     REQUIRE(0 < agent.live_state_call_count());
-    REQUIRE(agent.host_information_call_count() == 1);
+    REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_call_count() == 1);
     REQUIRE(0 < agent.application_instance_get_status_call_count());
     REQUIRE(agent.application_instance_set_status_call_count() == 3);
@@ -195,7 +195,7 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
     t4.join();
 
     REQUIRE(agent.live_state_call_count() == 0);
-    REQUIRE(agent.host_information_call_count() == 0);
+    REQUIRE(agent.host_information_send_count() == 0);
     REQUIRE(agent.application_instance_information_call_count() == 0);
     REQUIRE(agent.application_instance_get_status_call_count() == 0);
     REQUIRE(agent.application_instance_set_status_call_count() == 0);
@@ -211,7 +211,7 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
     t8.join();
 
     REQUIRE(0 < agent.live_state_call_count());
-    REQUIRE(agent.host_information_call_count() == 1);
+    REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_call_count() == 1);
     REQUIRE(0 < agent.application_instance_get_status_call_count());
     REQUIRE(agent.application_instance_set_status_call_count() == 3);
