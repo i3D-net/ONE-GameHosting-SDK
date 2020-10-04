@@ -48,7 +48,7 @@ TEST_CASE("hello", "[codec]") {
 TEST_CASE("header", "[codec]") {
     codec::Header header = {0};
     header.flags = (char)0x0;
-    header.opcode = (char)Opcode::meta_data_request;
+    header.opcode = (char)Opcode::metadata;
 
     REQUIRE(codec::validate_header(header));
     std::array<char, codec::header_size()> data;
@@ -64,7 +64,7 @@ TEST_CASE("header", "[codec]") {
     REQUIRE(is_error(header_to_data(header, data)));
 
     header.flags = (char)0x0;
-    header.opcode = (char)Opcode::meta_data_request;
+    header.opcode = (char)Opcode::metadata;
 
     REQUIRE(!is_error(header_to_data(header, data)));
 
@@ -152,7 +152,7 @@ TEST_CASE("message", "[codec]") {
     uint32_t packet_id = 0;
 
     {  // soft stop request
-        REQUIRE(!is_error(messages::prepare_soft_stop_request(1000, message)));
+        REQUIRE(!is_error(messages::prepare_soft_stop(1000, message)));
         data_length = 0;
         data_read = 0;
         header = {0};
@@ -161,8 +161,8 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
                                                  header, new_message)));
         REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::soft_stop_request);
-        REQUIRE(message.code() == Opcode::soft_stop_request);
+        REQUIRE((Opcode)header.opcode == Opcode::soft_stop);
+        REQUIRE(message.code() == Opcode::soft_stop);
         REQUIRE(new_message.code() == message.code());
         REQUIRE(new_message.payload().get() == message.payload().get());
         int timeout = 0;
@@ -173,7 +173,7 @@ TEST_CASE("message", "[codec]") {
     {  // allocated request
         Array array;
         array.push_back_int(1000);
-        REQUIRE(!is_error(messages::prepare_allocated_request(array, message)));
+        REQUIRE(!is_error(messages::prepare_allocated(array, message)));
         data_length = 0;
         data_read = 0;
         header = {0};
@@ -182,8 +182,8 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
                                                  header, new_message)));
         REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::allocated_request);
-        REQUIRE(message.code() == Opcode::allocated_request);
+        REQUIRE((Opcode)header.opcode == Opcode::allocated);
+        REQUIRE(message.code() == Opcode::allocated);
         REQUIRE(new_message.code() == message.code());
         REQUIRE(new_message.payload().get() == message.payload().get());
         Array new_array;
@@ -194,7 +194,7 @@ TEST_CASE("message", "[codec]") {
     {  // meta data request
         Array array;
         array.push_back_int(1000);
-        REQUIRE(!is_error(messages::prepare_meta_data_request(array, message)));
+        REQUIRE(!is_error(messages::prepare_metadata(array, message)));
         data_length = 0;
         data_read = 0;
         header = {0};
@@ -203,8 +203,8 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
                                                  header, new_message)));
         REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::meta_data_request);
-        REQUIRE(message.code() == Opcode::meta_data_request);
+        REQUIRE((Opcode)header.opcode == Opcode::metadata);
+        REQUIRE(message.code() == Opcode::metadata);
         REQUIRE(new_message.code() == message.code());
         REQUIRE(new_message.payload().get() == message.payload().get());
         Array new_array;

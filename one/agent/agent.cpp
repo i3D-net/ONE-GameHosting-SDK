@@ -138,9 +138,9 @@ Error Agent::update() {
     return ONE_ERROR_NONE;
 }
 
-Error Agent::send_soft_stop_request(int timeout) {
+Error Agent::send_soft_stop(int timeout) {
     const std::lock_guard<std::mutex> lock(_agent);
-    auto err = _client.send_soft_stop_request(timeout);
+    auto err = _client.send_soft_stop(timeout);
     if (is_error(err)) {
         return err;
     }
@@ -158,9 +158,9 @@ Error Agent::send_live_state_request() {
     return ONE_ERROR_NONE;
 }
 
-Error Agent::send_allocated_request(Array *array) {
+Error Agent::send_allocated(Array *array) {
     const std::lock_guard<std::mutex> lock(_agent);
-    auto err = _client.send_allocated_request(array);
+    auto err = _client.send_allocated(array);
     if (is_error(err)) {
         return err;
     }
@@ -168,9 +168,9 @@ Error Agent::send_allocated_request(Array *array) {
     return ONE_ERROR_NONE;
 }
 
-Error Agent::send_meta_data_request(Array *array) {
+Error Agent::send_metadata(Array *array) {
     const std::lock_guard<std::mutex> lock(_agent);
-    auto err = _client.send_meta_data_request(array);
+    auto err = _client.send_metadata(array);
     if (is_error(err)) {
         return err;
     }

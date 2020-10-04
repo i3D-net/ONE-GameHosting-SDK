@@ -504,12 +504,10 @@ OneError one_server_send_application_instance_set_status_request(OneServerPtr se
 /// for more information.
 ///@{
 
-/// Required before received the soft stop request message. Register the callback to be
-/// notified of a soft_stop_request. The process should stop at its earliest convenience.
-/// If the server process is still active after the given timeout (seconds), then One will
-/// terminate the process directly on the deployment. The `void *data` is the user
-/// provided & will be passed as the first argument of the callback when invoked. The
-/// `data` can be nullptr, the callback is responsible to use the data properly.
+/// Registers a callback to be called when a soft stop message is received. The
+/// process should stop at its earliest convenience. If the server process is
+/// still active after the given timeout (seconds), then One will terminate the
+/// process directly.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
@@ -518,8 +516,10 @@ OneError one_server_set_soft_stop_callback(OneServerPtr server,
                                            void (*callback)(void *data, int timeout),
                                            void *data);
 
-/// Register the callback to be notified of a allocated_request.
-/// The `void *array` will be of type OneArrayPtr or the callback will error out.
+/// Register the callback to be called when an allocated message is received.
+/// The game server must read the given array data and be ready to accept
+/// players in the directed gameplay environment (e.g. map, mode), if specified
+/// and required by the game's One platform configuration.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
@@ -528,7 +528,7 @@ OneError one_server_set_allocated_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data);
 
-/// Register the callback to be notified of a meta_data_request.
+/// Register the callback to be notified of a metadata.
 /// The `void *array` will be of type OneArrayPtr or the callback will error out.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if

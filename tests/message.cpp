@@ -172,8 +172,8 @@ TEST_CASE("message unit tests", "[message]") {
     Message m;
     REQUIRE(m.code() == Opcode::invalid);
     const std::string json = "{\"timeout\":1000}";
-    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {json.c_str(), json.size()})));
-    REQUIRE(m.code() == Opcode::soft_stop_request);
+    REQUIRE(!is_error(m.init(Opcode::soft_stop, {json.c_str(), json.size()})));
+    REQUIRE(m.code() == Opcode::soft_stop);
     auto p = m.payload();
     Payload copy = p;
     REQUIRE(!p.is_empty());
@@ -183,8 +183,8 @@ TEST_CASE("message unit tests", "[message]") {
     m.reset();
     REQUIRE(m.code() == Opcode::invalid);
     REQUIRE(m.payload().is_empty());
-    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, copy)));
-    REQUIRE(m.code() == Opcode::soft_stop_request);
+    REQUIRE(!is_error(m.init(Opcode::soft_stop, copy)));
+    REQUIRE(m.code() == Opcode::soft_stop);
     p = m.payload();
     REQUIRE(!is_error(p.val_int("timeout", timeout)));
     REQUIRE(timeout == 1000);
@@ -193,10 +193,10 @@ TEST_CASE("message unit tests", "[message]") {
 TEST_CASE("message prepare", "[message]") {
     Message m;
 
-    {  // soft_stop_request
+    {  // soft_stop
         m.reset();
-        REQUIRE(!is_error(messages::prepare_soft_stop_request(1000, m)));
-        REQUIRE(m.code() == Opcode::soft_stop_request);
+        REQUIRE(!is_error(messages::prepare_soft_stop(1000, m)));
+        REQUIRE(m.code() == Opcode::soft_stop);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
         int timeout = 0;
@@ -204,21 +204,21 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(timeout == 1000);
     }
 
-    {  // allocated_request
+    {  // allocated
         m.reset();
         Array allocated;
-        REQUIRE(!is_error(messages::prepare_allocated_request(allocated, m)));
-        REQUIRE(m.code() == Opcode::allocated_request);
+        REQUIRE(!is_error(messages::prepare_allocated(allocated, m)));
+        REQUIRE(m.code() == Opcode::allocated);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
         REQUIRE(p.is_val_array("data"));
     }
 
-    {  // meta_data_request
+    {  // metadata
         m.reset();
         Array meta_data;
-        REQUIRE(!is_error(messages::prepare_meta_data_request(meta_data, m)));
-        REQUIRE(m.code() == Opcode::meta_data_request);
+        REQUIRE(!is_error(messages::prepare_metadata(meta_data, m)));
+        REQUIRE(m.code() == Opcode::metadata);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
         REQUIRE(p.is_val_array("data"));
@@ -396,7 +396,7 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(!is_error(one_message_create(&m)));
     REQUIRE(m != nullptr);
 
-    const int original_code = static_cast<int>(Opcode::soft_stop_request);
+    const int original_code = static_cast<int>(Opcode::soft_stop);
     REQUIRE(!is_error(one_message_set_code(m, original_code)));
     REQUIRE(!is_error(one_message_set_val_int(m, "timeout", 1000)));
     int code = 0;

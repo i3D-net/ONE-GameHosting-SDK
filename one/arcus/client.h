@@ -62,9 +62,9 @@ public:
 
     // Todo: update functions to match complete list from One API v2.
 
-    Error send_soft_stop_request(int timeout);
-    Error send_allocated_request(Array *data);
-    Error send_meta_data_request(Array *data);
+    Error send_soft_stop(int timeout);
+    Error send_allocated(Array *data);
+    Error send_metadata(Array *data);
     Error send_live_state_request();
 
     //------------------------------------------------------------------------------

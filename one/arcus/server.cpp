@@ -237,8 +237,8 @@ Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
 
-    _callbacks._soft_stop_request = callback;
-    _callbacks._soft_stop_request_data = data;
+    _callbacks._soft_stop = callback;
+    _callbacks._soft_stop_userdata = data;
     return ONE_ERROR_NONE;
 }
 
@@ -250,8 +250,8 @@ Error Server::set_allocated_callback(std::function<void(void *, Array *)> callba
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
 
-    _callbacks._allocated_request = callback;
-    _callbacks._allocated_request_data = data;
+    _callbacks._allocated = callback;
+    _callbacks._allocated_userdata = data;
     return ONE_ERROR_NONE;
 }
 
@@ -263,8 +263,8 @@ Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callba
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
 
-    _callbacks._meta_data_request = callback;
-    _callbacks._meta_data_request_data = data;
+    _callbacks._metadata = callback;
+    _callbacks._metadata_userdata = data;
     return ONE_ERROR_NONE;
 }
 
@@ -466,27 +466,27 @@ Error Server::process_incoming_message(const Message &message) {
     const ReverseLockGuard<std::mutex> reverse_lock(_server);
 
     switch (message.code()) {
-        case Opcode::soft_stop_request:
-            if (_callbacks._soft_stop_request == nullptr) {
+        case Opcode::soft_stop:
+            if (_callbacks._soft_stop == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
-            return invocation::soft_stop_request(message, _callbacks._soft_stop_request,
-                                                 _callbacks._soft_stop_request_data);
-        case Opcode::allocated_request:
-            if (_callbacks._allocated_request == nullptr) {
+            return invocation::soft_stop(message, _callbacks._soft_stop,
+                                                 _callbacks._soft_stop_userdata);
+        case Opcode::allocated:
+            if (_callbacks._allocated == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
-            return invocation::allocated_request(message, _callbacks._allocated_request,
-                                                 _callbacks._allocated_request_data);
-        case Opcode::meta_data_request:
-            if (_callbacks._meta_data_request == nullptr) {
+            return invocation::allocated(message, _callbacks._allocated,
+                                                 _callbacks._allocated_userdata);
+        case Opcode::metadata:
+            if (_callbacks._metadata == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
-            return invocation::meta_data_request(message, _callbacks._meta_data_request,
-                                                 _callbacks._meta_data_request_data);
+            return invocation::metadata(message, _callbacks._metadata,
+                                                 _callbacks._metadata_userdata);
         case Opcode::live_state_request:
             if (_callbacks._live_state_request == nullptr) {
                 return ONE_ERROR_NONE;

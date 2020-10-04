@@ -9,9 +9,9 @@ enum class Opcode {
     invalid = 0,
     Health = 0x02,  // Used internally by the connection.
     hello = 0x04,   // Used internally by the connection.
-    soft_stop_request = 0x30,
-    allocated_request = 0x60,
-    meta_data_request = 0x40,
+    soft_stop = 0x30,
+    allocated = 0x60,
+    metadata = 0x40,
     live_state_request = 0x20,
     live_state_response = 0x21,
     player_joined_event_response = 0x22,
@@ -29,8 +29,8 @@ enum class Opcode {
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcode code) {
     return code == Opcode::Health || code == Opcode::hello ||
-           code == Opcode::soft_stop_request || code == Opcode::allocated_request ||
-           code == Opcode::meta_data_request || code == Opcode::live_state_request ||
+           code == Opcode::soft_stop || code == Opcode::allocated ||
+           code == Opcode::metadata || code == Opcode::live_state_request ||
            code == Opcode::live_state_response ||
            code == Opcode::player_joined_event_response ||
            code == Opcode::player_left_response ||

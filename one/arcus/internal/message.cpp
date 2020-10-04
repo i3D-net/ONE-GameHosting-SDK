@@ -10,15 +10,15 @@ namespace one {
 
 namespace validation {
 
-Error soft_stop_request(const Message &message, params::SoftStopRequest &params) {
+Error soft_stop(const Message &message, params::SoftStopRequest &params) {
     const auto code = message.code();
 
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
-    if (code != Opcode::soft_stop_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_SOFT_STOP_REQUEST;
+    if (code != Opcode::soft_stop) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_SOFT_STOP;
     }
 
     const auto &payload = message.payload();
@@ -30,14 +30,14 @@ Error soft_stop_request(const Message &message, params::SoftStopRequest &params)
     return ONE_ERROR_NONE;
 }
 
-Error allocated_request(const Message &message, params::AllocatedRequest &params) {
+Error allocated(const Message &message, params::AllocatedRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
-    if (code != Opcode::allocated_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_ALLOCATED_REQUEST;
+    if (code != Opcode::allocated) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_ALLOCATED;
     }
 
     const auto &payload = message.payload();
@@ -49,14 +49,14 @@ Error allocated_request(const Message &message, params::AllocatedRequest &params
     return ONE_ERROR_NONE;
 }
 
-Error meta_data_request(const Message &message, params::MetaDataRequest &params) {
+Error metadata(const Message &message, params::MetaDataRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
-    if (code != Opcode::meta_data_request) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_META_DATA_REQUEST;
+    if (code != Opcode::metadata) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_METADATA;
     }
 
     const auto &payload = message.payload();
@@ -331,14 +331,14 @@ Error application_instance_set_status_response(
 
 namespace invocation {
 
-Error soft_stop_request(const Message &message, std::function<void(void *, int)> callback,
+Error soft_stop(const Message &message, std::function<void(void *, int)> callback,
                         void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
 
     params::SoftStopRequest params;
-    const auto err = validation::soft_stop_request(message, params);
+    const auto err = validation::soft_stop(message, params);
     if (is_error(err)) {
         return err;
     }
@@ -347,14 +347,14 @@ Error soft_stop_request(const Message &message, std::function<void(void *, int)>
     return ONE_ERROR_NONE;
 }
 
-Error allocated_request(const Message &message,
+Error allocated(const Message &message,
                         std::function<void(void *, Array *)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
 
     params::AllocatedRequest params;
-    const auto err = validation::allocated_request(message, params);
+    const auto err = validation::allocated(message, params);
     if (is_error(err)) {
         return err;
     }
@@ -363,14 +363,14 @@ Error allocated_request(const Message &message,
     return ONE_ERROR_NONE;
 }
 
-Error meta_data_request(const Message &message,
+Error metadata(const Message &message,
                         std::function<void(void *, Array *)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
 
     params::MetaDataRequest params;
-    const auto err = validation::meta_data_request(message, params);
+    const auto err = validation::metadata(message, params);
     if (is_error(err)) {
         return err;
     }

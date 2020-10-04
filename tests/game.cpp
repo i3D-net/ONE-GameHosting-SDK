@@ -50,7 +50,7 @@ TEST_CASE("connection error handling", "[fake game]") {
 
     // Send wrong opcode back.
     static codec::Header hello_header = {0};
-    hello_header.opcode = static_cast<char>(Opcode::soft_stop_request);
+    hello_header.opcode = static_cast<char>(Opcode::soft_stop);
     size_t sent = 0;
     result = client.send(&hello_header, codec::header_size(), sent);
     REQUIRE(!is_error(result));
@@ -90,7 +90,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
 
     // soft stop.
     {
-        REQUIRE(agent.send_soft_stop_request(1000) == 0);
+        REQUIRE(agent.send_soft_stop(1000) == 0);
 
         bool passed = wait_until(200, [&]() {
             agent.update();
@@ -99,7 +99,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         });
     }
 
-    // allocated_request.
+    // allocated.
     {
         Object map;
         auto err = map.set_val_string("key", "map");
@@ -117,7 +117,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         data.push_back_object(map);
         data.push_back_object(max_players);
 
-        REQUIRE(agent.send_allocated_request(&data) == 0);
+        REQUIRE(agent.send_allocated(&data) == 0);
 
         bool passed = wait_until(200, [&]() {
             agent.update();
@@ -126,7 +126,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         });
     }
 
-    // meta_data_request.
+    // metadata.
     {
         Object map;
         auto err = map.set_val_string("key", "map");
@@ -152,7 +152,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         data.push_back_object(type);
 
         Array array;
-        REQUIRE(agent.send_meta_data_request(&data) == 0);
+        REQUIRE(agent.send_metadata(&data) == 0);
 
         bool passed = wait_until(200, [&]() {
             agent.update();

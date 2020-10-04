@@ -24,9 +24,9 @@ TEST_CASE("current arcus version", "[arcus]") {
 TEST_CASE("opcode version V2 validation", "[arcus]") {
     REQUIRE(is_opcode_supported_v2(Opcode::Health));
     REQUIRE(is_opcode_supported_v2(Opcode::hello));
-    REQUIRE(is_opcode_supported_v2(Opcode::soft_stop_request));
-    REQUIRE(is_opcode_supported_v2(Opcode::allocated_request));
-    REQUIRE(is_opcode_supported_v2(Opcode::meta_data_request));
+    REQUIRE(is_opcode_supported_v2(Opcode::soft_stop));
+    REQUIRE(is_opcode_supported_v2(Opcode::allocated));
+    REQUIRE(is_opcode_supported_v2(Opcode::metadata));
     REQUIRE(is_opcode_supported_v2(Opcode::live_state_request));
     REQUIRE(is_opcode_supported_v2(Opcode::player_joined_event_response));
     REQUIRE(is_opcode_supported_v2(Opcode::player_left_response));
@@ -44,9 +44,9 @@ TEST_CASE("opcode version V2 validation", "[arcus]") {
 TEST_CASE("opcode current version validation", "[arcus]") {
     REQUIRE(is_opcode_supported(Opcode::Health));
     REQUIRE(is_opcode_supported(Opcode::hello));
-    REQUIRE(is_opcode_supported(Opcode::soft_stop_request));
-    REQUIRE(is_opcode_supported(Opcode::allocated_request));
-    REQUIRE(is_opcode_supported(Opcode::meta_data_request));
+    REQUIRE(is_opcode_supported(Opcode::soft_stop));
+    REQUIRE(is_opcode_supported(Opcode::allocated));
+    REQUIRE(is_opcode_supported(Opcode::metadata));
     REQUIRE(is_opcode_supported(Opcode::live_state_request));
     REQUIRE(is_opcode_supported(Opcode::player_joined_event_response));
     REQUIRE(is_opcode_supported(Opcode::player_left_response));
@@ -68,15 +68,15 @@ TEST_CASE("message handling", "[arcus]") {
     Message m;
     const std::string payload = "{\"timeout\":1000}";
     REQUIRE(
-        !is_error(m.init(Opcode::soft_stop_request, {payload.c_str(), payload.size()})));
-    REQUIRE(m.code() == Opcode::soft_stop_request);
+        !is_error(m.init(Opcode::soft_stop, {payload.c_str(), payload.size()})));
+    REQUIRE(m.code() == Opcode::soft_stop);
     REQUIRE(m.payload().is_empty() == false);
-    REQUIRE(is_error(m.init(Opcode::soft_stop_request, {nullptr, 0})));
+    REQUIRE(is_error(m.init(Opcode::soft_stop, {nullptr, 0})));
     m.reset();
     REQUIRE(m.code() == Opcode::invalid);
     REQUIRE(m.payload().is_empty());
-    REQUIRE(!is_error(m.init(Opcode::soft_stop_request, {"{}", 2})));
-    REQUIRE(m.code() == Opcode::soft_stop_request);
+    REQUIRE(!is_error(m.init(Opcode::soft_stop, {"{}", 2})));
+    REQUIRE(m.code() == Opcode::soft_stop);
     REQUIRE(m.payload().is_empty());
     m.reset();
     REQUIRE(m.code() == Opcode::invalid);
@@ -332,7 +332,7 @@ TEST_CASE("handshake hello bad response", "[arcus]") {
 
     // Send wrong opcode back.
     static codec::Header hello_header = {0};
-    hello_header.opcode = static_cast<char>(Opcode::soft_stop_request);
+    hello_header.opcode = static_cast<char>(Opcode::soft_stop);
     size_t sent = 0;
     result = objects.out_client.send(&hello_header, codec::header_size(), sent);
     REQUIRE(!is_error(result));
@@ -380,7 +380,7 @@ TEST_CASE("message send and receive", "[arcus]") {
 
     // Send a message from client to server.
     err = objects.client_connection->add_outgoing([](Message &message) {
-        messages::prepare_soft_stop_request(1000, message);
+        messages::prepare_soft_stop(1000, message);
         return ONE_ERROR_NONE;
     });
 
@@ -399,7 +399,7 @@ TEST_CASE("message send and receive", "[arcus]") {
     // Message pointer was consumed by client connection, can re-use var safely without
     // leak.
     err = objects.server_connection->remove_incoming([](const Message &message) {
-        REQUIRE(message.code() == Opcode::soft_stop_request);
+        REQUIRE(message.code() == Opcode::soft_stop);
         int timeout = 0;
         REQUIRE(!is_error(message.payload().val_int("timeout", timeout)));
         REQUIRE(timeout == 1000);
@@ -410,7 +410,7 @@ TEST_CASE("message send and receive", "[arcus]") {
     // Fill up the outgoing messages.
     for (unsigned int i = 0; i < queue_length; ++i) {
         err = objects.client_connection->add_outgoing([](Message &message) {
-            messages::prepare_soft_stop_request(1000, message);
+            messages::prepare_soft_stop(1000, message);
             return ONE_ERROR_NONE;
         });
         REQUIRE(!is_error(err));
@@ -428,7 +428,7 @@ TEST_CASE("message send and receive", "[arcus]") {
     REQUIRE(count == queue_length);
     for (unsigned int i = 0; i < queue_length; ++i) {
         err = objects.server_connection->remove_incoming([](const Message &message) {
-            REQUIRE(message.code() == Opcode::soft_stop_request);
+            REQUIRE(message.code() == Opcode::soft_stop);
             int timeout = 0;
             REQUIRE(!is_error(message.payload().val_int("timeout", timeout)));
             REQUIRE(timeout == 1000);
@@ -462,7 +462,7 @@ TEST_CASE("message send bad json", "[arcus]") {
     // Send a message from client to server.
     err = objects.client_connection->add_outgoing([](Message &message) {
         const std::string invalid_json = "{\"invalid_json\":true";
-        auto error = message.init(Opcode::meta_data_request,
+        auto error = message.init(Opcode::metadata,
                                   {invalid_json.c_str(), invalid_json.size()});
         REQUIRE(error == ONE_ERROR_PAYLOAD_PARSE_FAILED);
         return ONE_ERROR_NONE;
