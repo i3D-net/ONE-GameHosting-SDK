@@ -67,9 +67,9 @@ public:
         return _application_instance_information_send_count;
     }
 
-    int application_instance_set_status_receive_count() const {
+    int application_instance_status_receive_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
-        return _application_instance_set_status_receive_count;
+        return _application_instance_status_receive_count;
     }
 
 private:
@@ -83,7 +83,7 @@ private:
     int _live_state_call_count;
     int _host_information_send_count;
     int _application_instance_information_send_count;
-    int _application_instance_set_status_receive_count;
+    int _application_instance_status_receive_count;
 
     mutable std::mutex _agent;
 };

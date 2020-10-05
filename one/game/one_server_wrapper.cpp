@@ -51,8 +51,7 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _live_state(nullptr)
     , _host_information(nullptr)
     , _application_instance_information(nullptr)
-    , _application_instance_get_status(nullptr)
-    , _application_instance_set_status(nullptr)
+    , _application_instance_status(nullptr)
     , _game_state()
     , _last_sent_game_state()
     , _game_state_was_set(false)
@@ -65,9 +64,7 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _host_information_callback(nullptr)
     , _host_information_userdata(nullptr)
     , _application_instance_information_callback(nullptr)
-    , _application_instance_information_userdata(nullptr)
-    , _application_instance_set_status_callback(nullptr)
-    , _application_instance_set_status_userdata(nullptr) {}
+    , _application_instance_information_userdata(nullptr) {}
 
 OneServerWrapper::~OneServerWrapper() {
     shutdown();
@@ -78,8 +75,7 @@ bool OneServerWrapper::init() {
 
     if (_server != nullptr || _live_state != nullptr || _host_information != nullptr ||
         _application_instance_information != nullptr ||
-        _application_instance_get_status != nullptr ||
-        _application_instance_set_status != nullptr) {
+        _application_instance_status != nullptr) {
         L_ERROR("already init");
         return false;
     }
@@ -115,13 +111,7 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    err = one_message_create(&_application_instance_get_status);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_message_create(&_application_instance_set_status);
+    err = one_message_create(&_application_instance_status);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -151,8 +141,7 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    err = one_server_set_host_information_callback(_server, host_information,
-                                                            this);
+    err = one_server_set_host_information_callback(_server, host_information, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -195,10 +184,8 @@ void OneServerWrapper::shutdown() {
     _host_information = nullptr;
     one_message_destroy(_application_instance_information);
     _application_instance_information = nullptr;
-    one_message_destroy(_application_instance_get_status);
-    _application_instance_get_status = nullptr;
-    one_message_destroy(_application_instance_set_status);
-    _application_instance_set_status = nullptr;
+    one_message_destroy(_application_instance_status);
+    _application_instance_status = nullptr;
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
@@ -332,28 +319,25 @@ void OneServerWrapper::set_application_instance_information_callback(
     _application_instance_information_userdata = userdata;
 }
 
-void OneServerWrapper::set_application_instance_set_status_callback(
-    std::function<void(const ApplicationInstanceSetStatusData &data, void *userdata)>
-        callback,
-    void *userdata) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
-    _application_instance_set_status_callback = callback;
-    _application_instance_set_status_userdata = userdata;
+bool OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus status) {
+    // Todo: move to member var and process during update.
+    return send_application_instance_status(status);
 }
 
-bool OneServerWrapper::send_application_instance_set_status(StatusCode status) {
-    assert(_server != nullptr && _application_instance_set_status != nullptr);
+bool OneServerWrapper::send_application_instance_status(
+    ApplicationInstanceStatus status) {
+    assert(_server != nullptr && _application_instance_status != nullptr);
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     OneError err = one_message_prepare_application_instance_status(
-        static_cast<int>(status), _application_instance_set_status);
+        static_cast<int>(status), _application_instance_status);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    err = one_server_send_application_instance_status(
-        _server, _application_instance_set_status);
+    err = one_server_send_application_instance_status(_server,
+                                                      _application_instance_status);
     if (is_error(err)) {
         return false;
     }
@@ -523,27 +507,6 @@ void OneServerWrapper::application_instance_information(void *userdata,
     L_INFO("invoking application instance information callback");
     wrapper->_application_instance_information_callback(
         information_payload, wrapper->_application_instance_information_userdata);
-}
-
-void OneServerWrapper::application_instance_set_status(void *userdata, int code) {
-    if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
-        return;
-    }
-
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
-    assert(wrapper->_server != nullptr);
-
-    if (wrapper->_application_instance_set_status_callback == nullptr) {
-        L_INFO("application instance information set status is nullptr");
-        return;
-    }
-
-    L_INFO("invoking application instance set status callback");
-    ApplicationInstanceSetStatusData data;
-    data.code = static_cast<OneServerWrapper::StatusSetCodeResult>(code);
-    wrapper->_application_instance_set_status_callback(
-        data, wrapper->_application_instance_set_status_userdata);
 }
 
 bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
