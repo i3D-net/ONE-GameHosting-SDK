@@ -86,7 +86,7 @@ namespace messages {
 Error prepare_soft_stop(int timeout, Message &message);
 Error prepare_allocated(const Array &array, Message &message);
 Error prepare_metadata(const Array &array, Message &message);
-Error prepare_live_state_response(int players, int max_players, const char *name,
+Error prepare_live_state(int players, int max_players, const char *name,
                                   const char *map, const char *mode, const char *version,
                                   Message &message);
 Error prepare_host_information_response(const Object &information, Message &message);

@@ -268,24 +268,24 @@ Error Client::send_application_instance_information(Object &data) {
     return ONE_ERROR_NONE;
 }
 
-Error Client::set_live_state_response_callback(
+Error Client::set_live_state_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         callback,
-    void *data) {
+    void *userdata) {
     const std::lock_guard<std::mutex> lock(_client);
 
     if (callback == nullptr) {
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    _callbacks._live_state_response = callback;
-    _callbacks._live_state_response_data = data;
+    _callbacks._live_state = callback;
+    _callbacks._live_state_userdata = userdata;
     return ONE_ERROR_NONE;
 }
 
 Error Client::set_application_instance_set_status_request_callback(
-    std::function<void(void *, int)> callback, void *data) {
+    std::function<void(void *, int)> callback, void *userdata) {
     const std::lock_guard<std::mutex> lock(_client);
 
     if (callback == nullptr) {
@@ -293,20 +293,19 @@ Error Client::set_application_instance_set_status_request_callback(
     }
 
     _callbacks._application_instance_set_status_request = callback;
-    _callbacks._application_instance_set_status_request_data = data;
+    _callbacks._application_instance_set_status_request_userdata = userdata;
     return ONE_ERROR_NONE;
 }
 
 Error Client::process_incoming_message(const Message &message) {
     switch (message.code()) {
-        case Opcode::live_state_response:
-            if (_callbacks._live_state_response == nullptr) {
+        case Opcode::live_state:
+            if (_callbacks._live_state == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
-            return invocation::live_state_response(message,
-                                                   _callbacks._live_state_response,
-                                                   _callbacks._live_state_response_data);
+            return invocation::live_state(message, _callbacks._live_state,
+                                          _callbacks._live_state_userdata);
         case Opcode::application_instance_set_status_request:
             if (_callbacks._application_instance_set_status_request == nullptr) {
                 return ONE_ERROR_NONE;
@@ -314,7 +313,7 @@ Error Client::process_incoming_message(const Message &message) {
 
             return invocation::application_instance_set_status_request(
                 message, _callbacks._application_instance_set_status_request,
-                _callbacks._application_instance_set_status_request_data);
+                _callbacks._application_instance_set_status_request_userdata);
         default:
             return ONE_ERROR_NONE;
     }

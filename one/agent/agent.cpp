@@ -21,7 +21,7 @@ Error Agent::init(const char *addr, unsigned int port) {
         return err;
     }
 
-    err = _client.set_live_state_response_callback(
+    err = _client.set_live_state_callback(
         [this](void *, int players, int max_players, const std::string &name,
                const std::string &map, const std::string &mode,
                const std::string &version) {
@@ -124,13 +124,13 @@ Error Agent::send_metadata(Array *array) {
     return ONE_ERROR_NONE;
 }
 
-Error Agent::set_live_state_response_callback(
+Error Agent::set_live_state_callback(
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
         callback,
     void *data) {
     const std::lock_guard<std::mutex> lock(_agent);
-    auto err = _client.set_live_state_response_callback(callback, data);
+    auto err = _client.set_live_state_callback(callback, data);
     if (is_error(err)) {
         return err;
     }

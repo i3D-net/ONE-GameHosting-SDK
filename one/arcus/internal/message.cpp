@@ -68,14 +68,14 @@ Error metadata(const Message &message, params::MetaDataRequest &params) {
     return ONE_ERROR_NONE;
 }
 
-Error live_state_response(const Message &message, params::LiveStateResponse &params) {
+Error live_state(const Message &message, params::LiveStateResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
     }
 
-    if (code != Opcode::live_state_response) {
-        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_LIVE_STATE_RESPONSE;
+    if (code != Opcode::live_state) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_LIVE_STATE;
     }
 
     const auto &payload = message.payload();
@@ -224,7 +224,7 @@ Error metadata(const Message &message, std::function<void(void *, Array *)> call
     return ONE_ERROR_NONE;
 }
 
-Error live_state_response(
+Error live_state(
     const Message &message,
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
@@ -235,7 +235,7 @@ Error live_state_response(
     }
 
     params::LiveStateResponse params;
-    const auto err = validation::live_state_response(message, params);
+    const auto err = validation::live_state(message, params);
     if (is_error(err)) {
         return err;
     }

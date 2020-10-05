@@ -1170,9 +1170,9 @@ OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPt
     return o->set_val_object(key, *v);
 }
 
-Error message_prepare_live_state_response(int players, int max_players, const char *name,
-                                          const char *map, const char *mode,
-                                          const char *version, OneMessagePtr message) {
+Error message_prepare_live_state(int players, int max_players, const char *name,
+                                 const char *map, const char *mode, const char *version,
+                                 OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
@@ -1194,8 +1194,8 @@ Error message_prepare_live_state_response(int players, int max_players, const ch
         return ONE_ERROR_VALIDATION_VERSION_IS_NULLPTR;
     }
 
-    return messages::prepare_live_state_response(players, max_players, name, map, mode,
-                                                 version, *m);
+    return messages::prepare_live_state(players, max_players, name, map, mode, version,
+                                        *m);
 }
 
 Error message_prepare_application_instance_set_status_request(int status,
@@ -1278,7 +1278,7 @@ Error server_shutdown(OneServerPtr server) {
     return s->shutdown();
 }
 
-Error server_send_live_state_response(OneServerPtr server, OneMessagePtr message) {
+Error server_send_live_state(OneServerPtr server, OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -1289,7 +1289,7 @@ Error server_send_live_state_response(OneServerPtr server, OneMessagePtr message
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
-    return s->send_live_state_response(*m);
+    return s->send_live_state(*m);
 }
 
 Error server_send_application_instance_set_status_request(OneServerPtr server,
@@ -1719,12 +1719,11 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
     return one::object_set_val_object(object, key, val);
 }
 
-OneError one_message_prepare_live_state_response(int players, int max_players,
-                                                 const char *name, const char *map,
-                                                 const char *mode, const char *version,
-                                                 OneMessagePtr message) {
-    return one::message_prepare_live_state_response(players, max_players, name, map, mode,
-                                                    version, message);
+OneError one_message_prepare_live_state(int players, int max_players, const char *name,
+                                        const char *map, const char *mode,
+                                        const char *version, OneMessagePtr message) {
+    return one::message_prepare_live_state(players, max_players, name, map, mode, version,
+                                           message);
 }
 
 OneError one_message_prepare_application_instance_set_status_request(
@@ -1756,8 +1755,8 @@ OneError one_server_shutdown(OneServerPtr server) {
     return one::server_shutdown(server);
 }
 
-OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message) {
-    return one::server_send_live_state_response(server, message);
+OneError one_server_send_live_state(OneServerPtr server, OneMessagePtr message) {
+    return one::server_send_live_state(server, message);
 }
 
 OneError one_server_send_application_instance_set_status_request(OneServerPtr server,

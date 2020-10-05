@@ -307,7 +307,7 @@ Error Server::set_application_instance_set_status_response_callback(
     return ONE_ERROR_NONE;
 }
 
-Error Server::send_live_state_response(const Message &message) {
+Error Server::send_live_state(const Message &message) {
     const std::lock_guard<std::mutex> lock(_server);
 
     auto err = process_outgoing_message(message);
@@ -430,9 +430,9 @@ Error Server::process_incoming_message(const Message &message) {
 Error Server::process_outgoing_message(const Message &message) {
     Error err = ONE_ERROR_NONE;
     switch (message.code()) {
-        case Opcode::live_state_response: {
+        case Opcode::live_state: {
             params::LiveStateResponse params;
-            err = validation::live_state_response(message, params);
+            err = validation::live_state(message, params);
             if (is_error(err)) {
                 return err;
             }

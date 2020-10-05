@@ -12,7 +12,7 @@ enum class Opcode {
     soft_stop = 0x30,
     allocated = 0x60,
     metadata = 0x40,
-    live_state_response = 0x21,
+    live_state = 0x21,
     host_information_response = 0x51,
     application_instance_information_response = 0x71,
     application_instance_set_status_request = 0x74,
@@ -22,7 +22,7 @@ enum class Opcode {
 constexpr bool is_opcode_supported_v2(Opcode code) {
     return code == Opcode::health || code == Opcode::hello || code == Opcode::soft_stop ||
            code == Opcode::allocated || code == Opcode::metadata ||
-           code == Opcode::live_state_response ||
+           code == Opcode::live_state ||
            code == Opcode::host_information_response ||
            code == Opcode::application_instance_information_response ||
            code == Opcode::application_instance_set_status_request;
