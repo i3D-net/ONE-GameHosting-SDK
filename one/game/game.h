@@ -67,8 +67,6 @@ private:
         const OneServerWrapper::HostInformationData &data, void *userdata);
     static void application_instance_information_callback(
         const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata);
-    static void application_instance_set_status_callback(
-        const OneServerWrapper::ApplicationInstanceSetStatusData &data, void *userdata);
 
     OneServerWrapper _server;
 

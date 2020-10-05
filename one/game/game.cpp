@@ -55,8 +55,6 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
     _server.set_host_information_callback(host_information_callback, this);
     _server.set_application_instance_information_callback(
         application_instance_information_callback, this);
-    _server.set_application_instance_set_status_callback(
-        application_instance_set_status_callback, this);
 
     return (_server.status() == OneServerWrapper::Status::waiting_for_client);
 }
@@ -104,9 +102,11 @@ void Game::alter_game_state() {
     // Third time it is set as allocated.
     // The progession order is the good one, but the timing is arbitrarily and might
     // change depending on the game startup sequence.
+
+    // Todo: only change to allocated in response to an allocated callback.
     if (!_allocated && _online && _starting) {
-        if (!_server.send_application_instance_set_status(
-                OneServerWrapper::StatusCode::allocated)) {
+        if (!_server.set_application_instance_status(
+                OneServerWrapper::ApplicationInstanceStatus::allocated)) {
             if (!_quiet) L_ERROR("failed to send set status code allocated");
         } else {
             _allocated = true;
@@ -114,8 +114,8 @@ void Game::alter_game_state() {
     }
 
     if (!_online && _starting) {
-        if (!_server.send_application_instance_set_status(
-                OneServerWrapper::StatusCode::online)) {
+        if (!_server.set_application_instance_status(
+                OneServerWrapper::ApplicationInstanceStatus::online)) {
             if (!_quiet) L_ERROR("failed to send set status code starting");
         } else {
             _online = true;
@@ -123,8 +123,8 @@ void Game::alter_game_state() {
     }
 
     if (!_starting) {
-        if (!_server.send_application_instance_set_status(
-                OneServerWrapper::StatusCode::starting)) {
+        if (!_server.set_application_instance_status(
+                OneServerWrapper::ApplicationInstanceStatus::starting)) {
             if (!_quiet) L_ERROR("failed to send set status code starting");
         } else {
             _starting = true;
@@ -226,12 +226,6 @@ void Game::application_instance_information_callback(
         return;
     }
     game->_application_instance_information_receive_count++;
-}
-
-void Game::application_instance_set_status_callback(
-    const OneServerWrapper::ApplicationInstanceSetStatusData &data, void *) {
-    L_INFO("application instance set status called:");
-    L_INFO("\tcode:" + std::to_string(static_cast<int>(data.code)));
 }
 
 }  // namespace game

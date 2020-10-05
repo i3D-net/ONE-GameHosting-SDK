@@ -40,7 +40,9 @@ public:
     bool init();
     void shutdown();
 
-    //------------
+    // Must called often (e.g. each frame). Updates the Arcus Server, which
+    // processes incoming and outgoing messages.
+    void update();
 
     enum class Status {
         uninitialized = 0,
@@ -54,13 +56,8 @@ public:
     static std::string status_to_string(Status status);
     Status status() const;
 
-    // As defined in:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
-    enum class StatusCode { starting = 3, online = 4, allocated = 5 };
-
-    // As defined in:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-response
-    enum class StatusSetCodeResult { success = 0, invalid_status = 10 };
+    //---------------
+    // Arcus setters.
 
     struct GameState {
         GameState() : players(0), max_players(0), name(), map(), mode(), version() {}
@@ -80,9 +77,18 @@ public:
         return _game_state;
     };
 
-    // Must called often (e.g. each frame). Updates the Arcus Server, which
-    // processes incoming and outgoing messages.
-    void update();
+    // As defined in:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
+    enum class ApplicationInstanceStatus { starting = 3, online = 4, allocated = 5 };
+
+    // Sets the Arcus application instance status. The game server must set
+    // the status to starting during initialization, online once the server is
+    // ready for matchmaking. Allocated is optional when directed for allocation
+    // by Arcus, depending on the matchmaking design and features used.
+    bool set_application_instance_status(ApplicationInstanceStatus status);
+
+    //------------------------
+    // Incoming Arcus Messages
 
     // Sets a callback that is triggered when the remote client has notified the
     // server that it must gracefully exit the entire process. A timeout in
@@ -155,28 +161,9 @@ public:
             callback,
         void *userdata);
 
-    // The application instance set status response has a payload as defined at:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-response
-    // In this example only a handfull of fields are used for simplicity.
-    // Todo: The intent is to use this wrapper as a complete integration
-    // reference.
-    // - all standard fields should be utilized here
-    // - iterate on online api docs as they are not clear
-    struct ApplicationInstanceSetStatusData {
-        ApplicationInstanceSetStatusData() : code(StatusSetCodeResult::success) {}
-        StatusSetCodeResult code;
-    };
-    void set_application_instance_set_status_callback(
-        std::function<void(const ApplicationInstanceSetStatusData &data, void *userdata)>
-            callback,
-        void *userdata);
-
-    // Sends a application instance set status request message.
-    // Todo: purpose/when should this be called.
-    bool send_application_instance_set_status(StatusCode status);
-
 private:
     bool send_live_state();
+    bool send_application_instance_status(ApplicationInstanceStatus status);
 
     // Callbacks potentially called by the arcus server.
     static void soft_stop(void *userdata, int timeout_seconds);
@@ -184,8 +171,6 @@ private:
     static void meta_data(void *userdata, void *meta_data);
     static void host_information(void *userdata, void *information);
     static void application_instance_information(void *userdata, void *information);
-    static void application_instance_get_status(void *userdata, int status);
-    static void application_instance_set_status(void *userdata, int code);
 
     // Ancillary function to show how to parse the message payloads.
     static bool extract_allocated_payload(OneArrayPtr array,
@@ -207,8 +192,7 @@ private:
     OneMessagePtr _live_state;
     OneMessagePtr _host_information;
     OneMessagePtr _application_instance_information;
-    OneMessagePtr _application_instance_get_status;
-    OneMessagePtr _application_instance_set_status;
+    OneMessagePtr _application_instance_status;
 
     GameState _game_state;
     GameState _last_sent_game_state;
@@ -232,10 +216,6 @@ private:
     std::function<void(const ApplicationInstanceInformationData &, void *)>
         _application_instance_information_callback;
     void *_application_instance_information_userdata;
-
-    std::function<void(const ApplicationInstanceSetStatusData &, void *)>
-        _application_instance_set_status_callback;
-    void *_application_instance_set_status_userdata;
 };
 
 }  // namespace game
