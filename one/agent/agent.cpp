@@ -42,7 +42,7 @@ Error Agent::init(const char *addr, unsigned int port) {
         return err;
     }
 
-    err = _client.set_application_instance_set_status_request_callback(
+    err = _client.set_application_instance_status_callback(
         [this](void *, int status) {
             ++_application_instance_set_status_receive_count;
             if (_quiet) {
@@ -137,11 +137,11 @@ Error Agent::set_live_state_callback(
     return ONE_ERROR_NONE;
 }
 
-Error Agent::set_application_instance_set_status_request_callback(
+Error Agent::set_application_instance_status_callback(
     std::function<void(void *, int)> callback, void *data) {
     const std::lock_guard<std::mutex> lock(_agent);
     auto err =
-        _client.set_application_instance_set_status_request_callback(callback, data);
+        _client.set_application_instance_status_callback(callback, data);
     if (is_error(err)) {
         return err;
     }

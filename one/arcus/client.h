@@ -26,8 +26,8 @@ struct ClientCallbacks {
         _live_state;
     void *_live_state_userdata;
 
-    std::function<void(void *, int)> _application_instance_set_status_request;
-    void *_application_instance_set_status_request_userdata;
+    std::function<void(void *, int)> _application_instance_status;
+    void *_application_instance_status_userdata;
 };
 
 }  // namespace callback
@@ -73,11 +73,11 @@ public:
             callback,
         void *data);
 
-    // set the callback for when an application_instance_set_status_request message in
+    // set the callback for when an application_instance_status message in
     // received. The `void *data` is the user provided & will be passed as the first
     // argument of the callback when invoked. The `data` can be nullptr, the callback is
     // responsible to use the data properly.
-    Error set_application_instance_set_status_request_callback(
+    Error set_application_instance_status_callback(
         std::function<void(void *, int)> callback, void *data);
 
 private:

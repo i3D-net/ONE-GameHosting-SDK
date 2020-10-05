@@ -268,7 +268,7 @@ Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callba
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_host_information_response_callback(
+Error Server::set_host_information_callback(
     std::function<void(void *, Object *)> callback, void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
@@ -276,12 +276,12 @@ Error Server::set_host_information_response_callback(
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
 
-    _callbacks._host_information_response = callback;
-    _callbacks._host_information_response_data = data;
+    _callbacks._host_information = callback;
+    _callbacks._host_information_data = data;
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_application_instance_information_response_callback(
+Error Server::set_application_instance_information_callback(
     std::function<void(void *, Object *)> callback, void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
@@ -289,21 +289,8 @@ Error Server::set_application_instance_information_response_callback(
         return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
     }
 
-    _callbacks._application_instance_information_response = callback;
-    _callbacks._application_instance_information_response_data = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Server::set_application_instance_set_status_response_callback(
-    std::function<void(void *, int)> callback, void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._application_instance_set_status_response = callback;
-    _callbacks._application_instance_set_status_response_data = data;
+    _callbacks._application_instance_information = callback;
+    _callbacks._application_instance_information_data = data;
     return ONE_ERROR_NONE;
 }
 
@@ -318,7 +305,7 @@ Error Server::send_live_state(const Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error Server::send_application_instance_set_status_request(const Message &message) {
+Error Server::send_application_instance_status(const Message &message) {
     const std::lock_guard<std::mutex> lock(_server);
 
     auto err = process_outgoing_message(message);
@@ -406,22 +393,21 @@ Error Server::process_incoming_message(const Message &message) {
 
             return invocation::metadata(message, _callbacks._metadata,
                                         _callbacks._metadata_userdata);
-        case Opcode::host_information_response:
-            if (_callbacks._host_information_response == nullptr) {
+        case Opcode::host_information:
+            if (_callbacks._host_information == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
-            return invocation::host_information_response(
-                message, _callbacks._host_information_response,
-                _callbacks._host_information_response_data);
-        case Opcode::application_instance_information_response:
-            if (_callbacks._application_instance_information_response == nullptr) {
+            return invocation::host_information(message, _callbacks._host_information,
+                                                _callbacks._host_information_data);
+        case Opcode::application_instance_information:
+            if (_callbacks._application_instance_information == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
-            return invocation::application_instance_information_response(
-                message, _callbacks._application_instance_information_response,
-                _callbacks._application_instance_information_response_data);
+            return invocation::application_instance_information(
+                message, _callbacks._application_instance_information,
+                _callbacks._application_instance_information_data);
         default:
             return ONE_ERROR_NONE;
     }
@@ -439,9 +425,9 @@ Error Server::process_outgoing_message(const Message &message) {
 
             break;
         }
-        case Opcode::application_instance_set_status_request: {
+        case Opcode::application_instance_status: {
             params::ApplicationInstanceSetStatusRequest params;
-            err = validation::application_instance_set_status_request(message, params);
+            err = validation::application_instance_status(message, params);
             if (is_error(err)) {
                 return err;
             }

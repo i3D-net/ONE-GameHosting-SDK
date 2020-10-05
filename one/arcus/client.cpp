@@ -246,7 +246,7 @@ Error Client::send_host_information(Object &data) {
     const std::lock_guard<std::mutex> lock(_client);
 
     Message message;
-    messages::prepare_host_information_response(data, message);
+    messages::prepare_host_information(data, message);
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -259,7 +259,7 @@ Error Client::send_application_instance_information(Object &data) {
     const std::lock_guard<std::mutex> lock(_client);
 
     Message message;
-    messages::prepare_application_instance_information_response(data, message);
+    messages::prepare_application_instance_information(data, message);
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -284,7 +284,7 @@ Error Client::set_live_state_callback(
     return ONE_ERROR_NONE;
 }
 
-Error Client::set_application_instance_set_status_request_callback(
+Error Client::set_application_instance_status_callback(
     std::function<void(void *, int)> callback, void *userdata) {
     const std::lock_guard<std::mutex> lock(_client);
 
@@ -292,8 +292,8 @@ Error Client::set_application_instance_set_status_request_callback(
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    _callbacks._application_instance_set_status_request = callback;
-    _callbacks._application_instance_set_status_request_userdata = userdata;
+    _callbacks._application_instance_status = callback;
+    _callbacks._application_instance_status_userdata = userdata;
     return ONE_ERROR_NONE;
 }
 
@@ -306,14 +306,14 @@ Error Client::process_incoming_message(const Message &message) {
 
             return invocation::live_state(message, _callbacks._live_state,
                                           _callbacks._live_state_userdata);
-        case Opcode::application_instance_set_status_request:
-            if (_callbacks._application_instance_set_status_request == nullptr) {
+        case Opcode::application_instance_status:
+            if (_callbacks._application_instance_status == nullptr) {
                 return ONE_ERROR_NONE;
             }
 
-            return invocation::application_instance_set_status_request(
-                message, _callbacks._application_instance_set_status_request,
-                _callbacks._application_instance_set_status_request_userdata);
+            return invocation::application_instance_status(
+                message, _callbacks._application_instance_status,
+                _callbacks._application_instance_status_userdata);
         default:
             return ONE_ERROR_NONE;
     }

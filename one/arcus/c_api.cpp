@@ -1198,14 +1198,13 @@ Error message_prepare_live_state(int players, int max_players, const char *name,
                                         *m);
 }
 
-Error message_prepare_application_instance_set_status_request(int status,
-                                                              OneMessagePtr message) {
+Error message_prepare_application_instance_status(int status, OneMessagePtr message) {
     auto m = (Message *)message;
     if (m == nullptr) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
-    return messages::prepare_application_instance_set_status_request(status, *m);
+    return messages::prepare_application_instance_status(status, *m);
 }
 
 Error server_create(OneServerPtr *server) {
@@ -1292,8 +1291,8 @@ Error server_send_live_state(OneServerPtr server, OneMessagePtr message) {
     return s->send_live_state(*m);
 }
 
-Error server_send_application_instance_set_status_request(OneServerPtr server,
-                                                          OneMessagePtr message) {
+Error server_send_application_instance_status(OneServerPtr server,
+                                              OneMessagePtr message) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -1304,7 +1303,7 @@ Error server_send_application_instance_set_status_request(OneServerPtr server,
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
-    return s->send_application_instance_set_status_request(*m);
+    return s->send_application_instance_status(*m);
 }
 
 Error server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *, int),
@@ -1352,9 +1351,8 @@ Error server_set_meta_data_callback(OneServerPtr server, void (*callback)(void *
     return ONE_ERROR_NONE;
 }
 
-Error server_set_host_information_response_callback(OneServerPtr server,
-                                                    void (*callback)(void *, void *),
-                                                    void *data) {
+Error server_set_host_information_callback(OneServerPtr server,
+                                           void (*callback)(void *, void *), void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -1364,11 +1362,11 @@ Error server_set_host_information_response_callback(OneServerPtr server,
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    s->set_host_information_response_callback(callback, data);
+    s->set_host_information_callback(callback, data);
     return ONE_ERROR_NONE;
 }
 
-Error server_set_application_instance_information_response_callback(
+Error server_set_application_instance_information_callback(
     OneServerPtr server, void (*callback)(void *, void *), void *data) {
     auto s = (Server *)server;
     if (s == nullptr) {
@@ -1379,22 +1377,7 @@ Error server_set_application_instance_information_response_callback(
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    s->set_application_instance_information_response_callback(callback, data);
-    return ONE_ERROR_NONE;
-}
-
-Error server_set_application_instance_set_status_response_callback(
-    OneServerPtr server, void (*callback)(void *, int), void *data) {
-    auto s = (Server *)server;
-    if (s == nullptr) {
-        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
-    }
-
-    if (callback == nullptr) {
-        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
-    }
-
-    s->set_application_instance_set_status_response_callback(callback, data);
+    s->set_application_instance_information_callback(callback, data);
     return ONE_ERROR_NONE;
 }
 
@@ -1726,9 +1709,9 @@ OneError one_message_prepare_live_state(int players, int max_players, const char
                                            message);
 }
 
-OneError one_message_prepare_application_instance_set_status_request(
-    int status, OneMessagePtr message) {
-    return one::message_prepare_application_instance_set_status_request(status, message);
+OneError one_message_prepare_application_instance_status(int status,
+                                                         OneMessagePtr message) {
+    return one::message_prepare_application_instance_status(status, message);
 }
 
 OneError one_server_create(OneServerPtr *server) {
@@ -1759,9 +1742,9 @@ OneError one_server_send_live_state(OneServerPtr server, OneMessagePtr message) 
     return one::server_send_live_state(server, message);
 }
 
-OneError one_server_send_application_instance_set_status_request(OneServerPtr server,
-                                                                 OneMessagePtr message) {
-    return one::server_send_application_instance_set_status_request(server, message);
+OneError one_server_send_application_instance_status(OneServerPtr server,
+                                                     OneMessagePtr message) {
+    return one::server_send_application_instance_status(server, message);
 }
 
 OneError one_server_set_soft_stop_callback(OneServerPtr server,
@@ -1782,21 +1765,16 @@ OneError one_server_set_meta_data_callback(OneServerPtr server,
     return one::server_set_meta_data_callback(server, callback, data);
 }
 
-OneError one_server_set_host_information_response_callback(
-    OneServerPtr server, void (*callback)(void *, void *), void *data) {
-    return one::server_set_host_information_response_callback(server, callback, data);
+OneError one_server_set_host_information_callback(OneServerPtr server,
+                                                  void (*callback)(void *, void *),
+                                                  void *data) {
+    return one::server_set_host_information_callback(server, callback, data);
 }
 
-OneError one_server_set_application_instance_information_response_callback(
+OneError one_server_set_application_instance_information_callback(
     OneServerPtr server, void (*callback)(void *, void *), void *data) {
-    return one::server_set_application_instance_information_response_callback(
-        server, callback, data);
-}
-
-OneError one_server_set_application_instance_set_status_response_callback(
-    OneServerPtr server, void (*callback)(void *, int), void *data) {
-    return one::server_set_application_instance_set_status_response_callback(
-        server, callback, data);
+    return one::server_set_application_instance_information_callback(server, callback,
+                                                                     data);
 }
 
 void one_allocator_set_alloc(void *(callback)(unsigned int size)) {
