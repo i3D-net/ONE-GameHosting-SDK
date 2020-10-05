@@ -23,10 +23,11 @@ namespace callback {
 struct ClientCallbacks {
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
-        _live_state_response;
-    void *_live_state_response_data;
+        _live_state;
+    void *_live_state_userdata;
+
     std::function<void(void *, int)> _application_instance_set_status_request;
-    void *_application_instance_set_status_request_data;
+    void *_application_instance_set_status_request_userdata;
 };
 
 }  // namespace callback
@@ -62,11 +63,11 @@ public:
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
 
-    // set the callback for when a live_state_response message in received.
+    // set the callback for when a live_state message in received.
     // The `void *data` is the user provided & will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_live_state_response_callback(
+    Error set_live_state_callback(
         std::function<void(void *, int, int, const std::string &, const std::string &,
                            const std::string &, const std::string &)>
             callback,

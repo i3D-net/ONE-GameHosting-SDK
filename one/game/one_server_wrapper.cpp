@@ -10,6 +10,41 @@
 
 namespace game {
 
+namespace {
+bool game_states_changed(OneServerWrapper::GameState &new_state,
+                         OneServerWrapper::GameState &old_state) {
+    bool result = false;
+    if (new_state.players != old_state.players) {
+        result = true;
+        if (new_state.players > old_state.players)
+            L_INFO("game state: player joined");
+        else
+            L_INFO("game state: player left");
+    }
+    if (new_state.max_players != old_state.max_players) {
+        result = true;
+        L_INFO("game state: max player count changed");
+    }
+    if (new_state.name != old_state.name) {
+        result = true;
+        L_INFO("game state: name changed");
+    }
+    if (new_state.map != old_state.map) {
+        result = true;
+        L_INFO("game state: map changed");
+    }
+    if (new_state.mode != old_state.mode) {
+        result = true;
+        L_INFO("game state: mode changed");
+    }
+    if (new_state.version != old_state.version) {
+        result = true;
+        L_INFO("game state: version changed");
+    }
+    return result;
+}
+}  // namespace
+
 OneServerWrapper::OneServerWrapper(unsigned int port)
     : _server(nullptr)
     , _port(port)
@@ -179,25 +214,37 @@ void OneServerWrapper::update() {
     assert(_server != nullptr);
 
     if (_game_state_was_set) {
-        bool should_send = false;
-        if (_game_state.players != _last_sent_game_state.players) {
-            should_send = true;
-            if (_game_state.players > _last_sent_game_state.players)
-                L_INFO("player joined");
-            else
-                L_INFO("player left");
-        }
-        if (should_send) {
+        if (game_states_changed(_game_state, _last_sent_game_state)) {
             if (!send_live_state()) L_ERROR("failed to send live state");
         }
         _game_state_was_set = false;
         _last_sent_game_state = _game_state;
     }
 
-    OneError err = one_server_update(_server);
+    OneServerStatus status;
+    auto err = one_server_status(_server, &status);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return;
+    }
+    const bool was_ready = (status == ONE_SERVER_STATUS_READY);
+
+    err = one_server_update(_server);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+
+    err = one_server_status(_server, &status);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+        return;
+    }
+    const bool is_ready = (status == ONE_SERVER_STATUS_READY);
+
+    if (is_ready && !was_ready) {
+        // Schedule a state send when connection is established.
+        _game_state_was_set = true;
     }
 }  // namespace game
 
@@ -316,7 +363,7 @@ bool OneServerWrapper::send_application_instance_set_status(StatusCode status) {
 
 bool OneServerWrapper::send_live_state() {
     L_INFO("sending live state");
-    OneError err = one_message_prepare_live_state_response(
+    OneError err = one_message_prepare_live_state(
         _game_state.players, _game_state.max_players, _game_state.name.c_str(),
         _game_state.map.c_str(), _game_state.mode.c_str(), _game_state.version.c_str(),
         _live_state);
@@ -325,7 +372,7 @@ bool OneServerWrapper::send_live_state() {
         return false;
     }
 
-    err = one_server_send_live_state_response(_server, _live_state);
+    err = one_server_send_live_state(_server, _live_state);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;

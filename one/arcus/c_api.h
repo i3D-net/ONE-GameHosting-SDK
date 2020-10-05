@@ -13,7 +13,7 @@
     The basic use pattern to support a game server integration is:
     1. Create a server. Tell it to listen on a port and update it.
     2. Use the outgoing and incoming message functions like
-       one_server_send_live_state_response and one_server_set_allocated_callback
+       one_server_send_live_state and one_server_set_allocated_callback
        to send and receive the supported Arcus Messages, which includes providing
        the high level game state to the Arcus platform.
     3. If needed, use the Message API functions like one_message_val_int to read
@@ -430,24 +430,17 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
 /// One Platform is configured to utilize those extra fields.
 ///@{
 
-OneError one_message_prepare_live_state_response(int players, int max_players,
-                                                 const char *name, const char *map,
-                                                 const char *mode, const char *version,
-                                                 OneMessagePtr message);
+OneError one_message_prepare_live_state(int players, int max_players, const char *name,
+                                        const char *map, const char *mode,
+                                        const char *version, OneMessagePtr message);
+
 OneError one_message_prepare_application_instance_set_status_request(
     int status, OneMessagePtr message);
 
-/// Send the Arcus API server live_state_response opcode message.
-/// Message Mandatory Content:
-/// {
-///   "players" : 0,
-///   "maxPlayers" : 0,
-///   "name" : "",
-///   "map" : "",
-///   "mode" : "",
-///   "version" : "",
-/// }
-OneError one_server_send_live_state_response(OneServerPtr server, OneMessagePtr message);
+/// Send the live game state of the server to the Arcus client. This should be
+/// called before the first call to update so that the initial state sent to
+/// the agent has valid, initialized values.
+OneError one_server_send_live_state(OneServerPtr server, OneMessagePtr message);
 
 /// send application_instance_set_status_request.
 /// Message Empty Content:

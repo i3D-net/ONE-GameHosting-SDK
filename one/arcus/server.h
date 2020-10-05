@@ -116,7 +116,7 @@ public:
     //------------------------------------------------------------------------------
     // Outgoing.
 
-    // send live_state_response opcode message.
+    // send live_state opcode message.
     // Message Mandatory Content:
     // {
     //   "players" : 0,
@@ -126,7 +126,7 @@ public:
     //   "mode" : "",
     //   "version" : ""
     // }
-    Error send_live_state_response(const Message &message);
+    Error send_live_state(const Message &message);
 
     // send application_instance_set_status_request.
     // Message Empty Content:

@@ -212,7 +212,7 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // live state response
-        REQUIRE(!is_error(messages::prepare_live_state_response(
+        REQUIRE(!is_error(messages::prepare_live_state(
             1, 16, "name test", "map test", "mode test", "version test", message)));
         data_length = 0;
         data_read = 0;
@@ -222,8 +222,8 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
                                                  header, new_message)));
         REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::live_state_response);
-        REQUIRE(message.code() == Opcode::live_state_response);
+        REQUIRE((Opcode)header.opcode == Opcode::live_state);
+        REQUIRE(message.code() == Opcode::live_state);
         REQUIRE(new_message.code() == message.code());
         REQUIRE(new_message.payload().get() == message.payload().get());
         int players = 0;

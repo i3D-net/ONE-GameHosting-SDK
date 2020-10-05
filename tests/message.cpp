@@ -224,7 +224,7 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(p.is_val_array("data"));
     }
 
-    {  // live_state_response
+    {  // live_state
         m.reset();
         const int players = 1;
         const int max_players = 16;
@@ -233,10 +233,10 @@ TEST_CASE("message prepare", "[message]") {
         const std::string mode = "test mode";
         const std::string version = "test version";
 
-        REQUIRE(!is_error(messages::prepare_live_state_response(
+        REQUIRE(!is_error(messages::prepare_live_state(
             players, max_players, name.c_str(), map.c_str(), mode.c_str(),
             version.c_str(), m)));
-        REQUIRE(m.code() == Opcode::live_state_response);
+        REQUIRE(m.code() == Opcode::live_state);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
 
@@ -383,15 +383,15 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(is_error(one_message_set_val_object(m, nullptr, o_ptr)));
     REQUIRE(is_error(one_message_set_val_object(m, key, nullptr)));
 
-    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, nullptr, "map",
+    REQUIRE(is_error(one_message_prepare_live_state(1, 12, nullptr, "map",
                                                              "mode", "version", m)));
-    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", nullptr,
+    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", nullptr,
                                                              "mode", "version", m)));
-    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", "map",
+    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", "map",
                                                              nullptr, "version", m)));
-    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", "map", "mode",
+    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", "map", "mode",
                                                              nullptr, m)));
-    REQUIRE(is_error(one_message_prepare_live_state_response(1, 12, "name", "map", "mode",
+    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", "map", "mode",
                                                              "version", nullptr)));
 
     // Check Setters.
@@ -434,7 +434,7 @@ TEST_CASE("message c_api", "[message]") {
 
     REQUIRE(!is_error(one_message_reset(m)));
 
-    REQUIRE(!is_error(one_message_prepare_live_state_response(1, 16, "name", "map",
+    REQUIRE(!is_error(one_message_prepare_live_state(1, 16, "name", "map",
                                                               "mode", "version", m)));
     // Todo: app instance info test?
     REQUIRE(!is_error(one_message_prepare_application_instance_set_status_request(4, m)));
