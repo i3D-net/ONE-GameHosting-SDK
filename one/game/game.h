@@ -82,7 +82,7 @@ private:
     // This is to emulate a game internal mecanims to get the number of players, current
     // maps, etc...
     // It is willfully avoiding use of OneServerWrapper::GameState to show how to bridge
-    // the gap between Game & OneServerWrapper.
+    // the gap between Game and OneServerWrapper.
     int _players;
     int _max_players;
     std::string _name;

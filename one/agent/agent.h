@@ -27,7 +27,7 @@ public:
         _quiet = quiet;
     }
 
-    // Update: process incomming message & outgoing messages.
+    // Update: process incomming message and outgoing messages.
     Error update();
 
     Error send_soft_stop(int timeout);

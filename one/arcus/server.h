@@ -71,34 +71,34 @@ public:
     // Todo: update functions to match complete list from One API v2.
 
     // set the callback for when a soft_stop message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
+    // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_soft_stop_callback(std::function<void(void *, int)> callback, void *data);
 
     // set the callback for when a allocated message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
+    // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_allocated_callback(std::function<void(void *, Array *)> callback,
                                  void *data);
 
     // set the callback for when a meta_data message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
+    // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_meta_data_callback(std::function<void(void *, Array *)> callback,
                                  void *data);
 
     // set the callback for when a host_information message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
+    // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_host_information_callback(std::function<void(void *, Object *)> callback,
                                         void *data);
 
     // set the callback for when a application_instance_information message in
-    // received. The `void *data` is the user provided & will be passed as the first
+    // received. The `void *data` is the user provided and will be passed as the first
     // argument of the callback when invoked. The `data` can be nullptr, the callback is
     // responsible to use the data properly.
     Error set_application_instance_information_callback(

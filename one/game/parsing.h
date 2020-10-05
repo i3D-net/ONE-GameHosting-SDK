@@ -19,7 +19,7 @@ namespace game {
 
 namespace codec {
 
-// For more details, go the to tab schema & expand all:
+// For more details, go the to tab schema and expand all:
 // https://www.i3d.net/docs/api/v3/game-publisher#/ApplicationInstance/updateApplicationInstanceGameEmptyAllocate
 constexpr size_t key_max_size() {
     return 50;
@@ -29,13 +29,13 @@ constexpr size_t key_max_size_null_terminated() {
     return key_max_size() + 1;
 }
 
-// For more details, go the to tab schema & expand all:
+// For more details, go the to tab schema and expand all:
 // https://www.i3d.net/docs/api/v3/game-publisher#/ApplicationInstance/updateApplicationInstanceGameEmptyAllocate
 constexpr size_t value_max_size() {
     return 2048;
 }
 
-// For more details, go the to tab schema & expand all:
+// For more details, go the to tab schema and expand all:
 // https://www.i3d.net/docs/api/v3/game-publisher#/ApplicationInstance/updateApplicationInstanceGameEmptyAllocate
 constexpr size_t value_max_size_null_terminated() {
     return value_max_size() + 1;

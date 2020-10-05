@@ -67,18 +67,19 @@ void Game::shutdown() {
 void Game::alter_game_state() {
     const std::lock_guard<std::mutex> lock(_game);
 
-    // The server will only be able to send game message & react to the agent message only
-    // after it is ready. Trying to send a message before the game will return an error.
+    // The server will only be able to send game message and react to the agent message
+    // only after it is ready. Trying to send a message while an agent is not connected
+    // and not ready will return an error.
     if (_server.status() != OneServerWrapper::Status::ready) {
         return;
     }
 
     // This is mainly to emulate a very simple game change (i.e.: changing both the number
-    // of player & status.
+    // of player and status.
     // In a real life senario the game would use its own mecahnisms to get the number of
     // players, current maps, etc...
 
-    // The number of player is arbitrarily changed to trigger player joined & left
+    // The number of player is arbitrarily changed to trigger player joined and left
     // messages.
     if (_max_players < _players + 1) {
         _players = 0;

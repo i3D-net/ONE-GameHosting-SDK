@@ -22,7 +22,7 @@ The documentation for the entire One Platform can be found [here](https://www.i3
 
 1. C/C++ v11 library.
 2. Easy-to-use C API interface for maximum language compatibility.
-3. Source-only build - "copy & drop-in" of files for building.
+3. Source-only build - "copy and drop-in" of files for building.
 4. Supported platforms:
     - Windows 10 Pro, Visual Studio 2017 and VSCode
     - Ubuntu 18.04, VSCode

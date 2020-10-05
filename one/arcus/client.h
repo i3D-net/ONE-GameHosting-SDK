@@ -64,7 +64,7 @@ public:
     // Callbacks to be notified of all possible incoming Arcus messages.
 
     // set the callback for when a live_state message in received.
-    // The `void *data` is the user provided & will be passed as the first argument
+    // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_live_state_callback(
@@ -74,7 +74,7 @@ public:
         void *data);
 
     // set the callback for when an application_instance_status message in
-    // received. The `void *data` is the user provided & will be passed as the first
+    // received. The `void *data` is the user provided and will be passed as the first
     // argument of the callback when invoked. The `data` can be nullptr, the callback is
     // responsible to use the data properly.
     Error set_application_instance_status_callback(
