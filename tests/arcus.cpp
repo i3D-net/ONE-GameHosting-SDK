@@ -67,7 +67,7 @@ TEST_CASE("message handling", "[arcus]") {
 }
 
 //------------------------------------------------------------------------------
-// Socket & Connection tests.
+// Socket and Connection tests.
 
 void wait_ready_for_read(Socket &socket) {
     bool is_ready;

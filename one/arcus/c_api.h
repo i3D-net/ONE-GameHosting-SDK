@@ -434,8 +434,8 @@ OneError one_message_prepare_live_state(int players, int max_players, const char
                                         const char *map, const char *mode,
                                         const char *version, OneMessagePtr message);
 
-OneError one_message_prepare_application_instance_status(
-    int status, OneMessagePtr message);
+OneError one_message_prepare_application_instance_status(int status,
+                                                         OneMessagePtr message);
 
 /// Send the live game state of the server to the Arcus client. This should be
 /// called before the first call to update so that the initial state sent to
@@ -448,7 +448,7 @@ OneError one_server_send_live_state(OneServerPtr server, OneMessagePtr message);
 ///   "status": 0
 /// }
 OneError one_server_send_application_instance_status(OneServerPtr server,
-                                                                 OneMessagePtr message);
+                                                     OneMessagePtr message);
 
 //------------------------------------------------------------------------------
 ///@}

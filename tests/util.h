@@ -26,7 +26,7 @@ void for_sleep(int count, int ms_per_loop, std::function<bool()> cb);
 // Returns true if done returned true, false if the timeout was reached.
 bool wait_until(int timeout_ms, std::function<bool()> check);
 
-// Loops for given number of times, calling the Agent & game update functions.
+// Loops for given number of times, calling the Agent and game update functions.
 void pump_updates(int count, int ms_per_loop, Agent &agent, game::Game &game);
 
 }  // namespace one
