@@ -13,19 +13,18 @@ enum class Opcode {
     allocated = 0x60,
     metadata = 0x40,
     live_state = 0x21,
-    host_information_response = 0x51,
-    application_instance_information_response = 0x71,
-    application_instance_set_status_request = 0x74,
+    host_information = 0x51,
+    application_instance_information = 0x71,
+    application_instance_status = 0x74,
 };
 
 // To finalize when the list of supported opcode is confirmed.
 constexpr bool is_opcode_supported_v2(Opcode code) {
     return code == Opcode::health || code == Opcode::hello || code == Opcode::soft_stop ||
            code == Opcode::allocated || code == Opcode::metadata ||
-           code == Opcode::live_state ||
-           code == Opcode::host_information_response ||
-           code == Opcode::application_instance_information_response ||
-           code == Opcode::application_instance_set_status_request;
+           code == Opcode::live_state || code == Opcode::host_information ||
+           code == Opcode::application_instance_information ||
+           code == Opcode::application_instance_status;
 }
 
 inline bool is_opcode_supported(Opcode code) {

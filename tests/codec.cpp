@@ -248,7 +248,7 @@ TEST_CASE("message", "[codec]") {
 
     {  // application instance set status request
         REQUIRE(!is_error(
-            messages::prepare_application_instance_set_status_request(4, message)));
+            messages::prepare_application_instance_status(4, message)));
         data_length = 0;
         data_read = 0;
         header = {0};
@@ -257,8 +257,8 @@ TEST_CASE("message", "[codec]") {
         REQUIRE(!is_error(codec::data_to_message(data.data(), data_length, data_read,
                                                  header, new_message)));
         REQUIRE(data_length == data_read);
-        REQUIRE((Opcode)header.opcode == Opcode::application_instance_set_status_request);
-        REQUIRE(message.code() == Opcode::application_instance_set_status_request);
+        REQUIRE((Opcode)header.opcode == Opcode::application_instance_status);
+        REQUIRE(message.code() == Opcode::application_instance_status);
         REQUIRE(new_message.code() == message.code());
         REQUIRE(new_message.payload().get() == message.payload().get());
         int status = 0;

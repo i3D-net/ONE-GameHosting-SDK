@@ -42,7 +42,7 @@ public:
         void *data);
 
     // Set application instance set status callback
-    Error set_application_instance_set_status_request_callback(
+    Error set_application_instance_status_callback(
         std::function<void(void *, int)> callback, void *data);
 
     // Exposed for testing purposes, however use of this should be kept to a

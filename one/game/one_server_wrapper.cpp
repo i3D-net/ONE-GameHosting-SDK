@@ -151,14 +151,14 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    err = one_server_set_host_information_response_callback(_server, host_information,
+    err = one_server_set_host_information_callback(_server, host_information,
                                                             this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    err = one_server_set_application_instance_information_response_callback(
+    err = one_server_set_application_instance_information_callback(
         _server, application_instance_information, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
@@ -345,14 +345,14 @@ bool OneServerWrapper::send_application_instance_set_status(StatusCode status) {
     assert(_server != nullptr && _application_instance_set_status != nullptr);
     const std::lock_guard<std::mutex> lock(_wrapper);
 
-    OneError err = one_message_prepare_application_instance_set_status_request(
+    OneError err = one_message_prepare_application_instance_status(
         static_cast<int>(status), _application_instance_set_status);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
     }
 
-    err = one_server_send_application_instance_set_status_request(
+    err = one_server_send_application_instance_status(
         _server, _application_instance_set_status);
     if (is_error(err)) {
         return false;

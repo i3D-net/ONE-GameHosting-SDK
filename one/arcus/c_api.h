@@ -434,7 +434,7 @@ OneError one_message_prepare_live_state(int players, int max_players, const char
                                         const char *map, const char *mode,
                                         const char *version, OneMessagePtr message);
 
-OneError one_message_prepare_application_instance_set_status_request(
+OneError one_message_prepare_application_instance_status(
     int status, OneMessagePtr message);
 
 /// Send the live game state of the server to the Arcus client. This should be
@@ -442,12 +442,12 @@ OneError one_message_prepare_application_instance_set_status_request(
 /// the agent has valid, initialized values.
 OneError one_server_send_live_state(OneServerPtr server, OneMessagePtr message);
 
-/// send application_instance_set_status_request.
+/// send application_instance_status.
 /// Message Empty Content:
 /// {
 ///   "status": 0
 /// }
-OneError one_server_send_application_instance_set_status_request(OneServerPtr server,
+OneError one_server_send_application_instance_status(OneServerPtr server,
                                                                  OneMessagePtr message);
 
 //------------------------------------------------------------------------------
@@ -492,22 +492,22 @@ OneError one_server_set_meta_data_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data);
 
-/// Register the callback to be notified of a host_information_response.
+/// Register the callback to be notified of a host_information.
 /// The `void *object` will be of type OneObjectPtr or the callback will error out.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_host_information_response_callback(
+OneError one_server_set_host_information_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
 
-/// Register the callback to be notified of a application_instance_information_response.
+/// Register the callback to be notified of a application_instance_information.
 /// The `void *object` will be of type OneObjectPtr or the callback will error out.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_application_instance_information_response_callback(
+OneError one_server_set_application_instance_information_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
 
 ///@}

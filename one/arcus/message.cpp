@@ -431,9 +431,8 @@ Error prepare_metadata(const Array &array, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_live_state(int players, int max_players, const char *name,
-                                  const char *map, const char *mode, const char *version,
-                                  Message &message) {
+Error prepare_live_state(int players, int max_players, const char *name, const char *map,
+                         const char *mode, const char *version, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("players", players);
     if (is_error(err)) {
@@ -474,14 +473,14 @@ Error prepare_live_state(int players, int max_players, const char *name,
     return ONE_ERROR_NONE;
 }
 
-Error prepare_host_information_response(const Object &information, Message &message) {
+Error prepare_host_information(const Object &information, Message &message) {
     Payload payload;
     auto err = payload.set_val_root_object(information);
     if (is_error(err)) {
         return err;
     }
 
-    err = message.init(Opcode::host_information_response, payload);
+    err = message.init(Opcode::host_information, payload);
     if (is_error(err)) {
         return err;
     }
@@ -489,15 +488,15 @@ Error prepare_host_information_response(const Object &information, Message &mess
     return ONE_ERROR_NONE;
 }
 
-Error prepare_application_instance_information_response(const Object &information,
-                                                        Message &message) {
+Error prepare_application_instance_information(const Object &information,
+                                               Message &message) {
     Payload payload;
     auto err = payload.set_val_root_object(information);
     if (is_error(err)) {
         return err;
     }
 
-    err = message.init(Opcode::application_instance_information_response, payload);
+    err = message.init(Opcode::application_instance_information, payload);
     if (is_error(err)) {
         return err;
     }
@@ -505,14 +504,14 @@ Error prepare_application_instance_information_response(const Object &informatio
     return ONE_ERROR_NONE;
 }
 
-Error prepare_application_instance_set_status_request(int status, Message &message) {
+Error prepare_application_instance_status(int status, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("status", status);
     if (is_error(err)) {
         return err;
     }
 
-    err = message.init(Opcode::application_instance_set_status_request, payload);
+    err = message.init(Opcode::application_instance_status, payload);
     if (is_error(err)) {
         return err;
     }

@@ -256,37 +256,37 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(val == version);
     }
 
-    {  // host_information_response
+    {  // host_information
         m.reset();
 
         Object object;
 
-        REQUIRE(!is_error(messages::prepare_host_information_response(object, m)));
-        REQUIRE(m.code() == Opcode::host_information_response);
+        REQUIRE(!is_error(messages::prepare_host_information(object, m)));
+        REQUIRE(m.code() == Opcode::host_information);
         auto p = m.payload();
         REQUIRE(p.is_empty() == true);
     }
 
-    {  // application_instance_information_response
+    {  // application_instance_information
         m.reset();
 
         Object object;
 
         REQUIRE(!is_error(
-            messages::prepare_application_instance_information_response(object, m)));
-        REQUIRE(m.code() == Opcode::application_instance_information_response);
+            messages::prepare_application_instance_information(object, m)));
+        REQUIRE(m.code() == Opcode::application_instance_information);
         auto p = m.payload();
         REQUIRE(p.is_empty() == true);
     }
 
-    {  // application_instance_set_status_request
+    {  // application_instance_status
         m.reset();
 
         const int status = 4;
 
         REQUIRE(!is_error(
-            messages::prepare_application_instance_set_status_request(status, m)));
-        REQUIRE(m.code() == Opcode::application_instance_set_status_request);
+            messages::prepare_application_instance_status(status, m)));
+        REQUIRE(m.code() == Opcode::application_instance_status);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
 
@@ -437,7 +437,7 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(!is_error(one_message_prepare_live_state(1, 16, "name", "map",
                                                               "mode", "version", m)));
     // Todo: app instance info test?
-    REQUIRE(!is_error(one_message_prepare_application_instance_set_status_request(4, m)));
+    REQUIRE(!is_error(one_message_prepare_application_instance_status(4, m)));
 
     one_message_destroy(m);
     one_message_destroy(nullptr);
