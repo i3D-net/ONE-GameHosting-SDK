@@ -66,6 +66,16 @@ public:
     Error update();
 
     //------------------------------------------------------------------------------
+    // Property setters.
+
+    Error set_live_state(int players, int max_players, const char *name, const char *map,
+                         const char *mode, const char *version, Object *additional_data);
+
+    // Must match api standards.
+    enum class ApplicationInstanceStatus { starting = 3, online = 4, allocated = 5 };
+    Error set_application_instance_status(ApplicationInstanceStatus status);
+
+    //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
 
     // Todo: update functions to match complete list from One API v2.
@@ -83,12 +93,12 @@ public:
     Error set_allocated_callback(std::function<void(void *, Array *)> callback,
                                  void *data);
 
-    // set the callback for when a meta_data message in received.
+    // set the callback for when a metadata message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_meta_data_callback(std::function<void(void *, Array *)> callback,
-                                 void *data);
+    Error set_metadata_callback(std::function<void(void *, Array *)> callback,
+                                void *data);
 
     // set the callback for when a host_information message in received.
     // The `void *data` is the user provided and will be passed as the first argument
@@ -104,30 +114,24 @@ public:
     Error set_application_instance_information_callback(
         std::function<void(void *, Object *)> callback, void *data);
 
-    //------------------------------------------------------------------------------
-    // Outgoing.
-
-    // send live_state opcode message.
-    // Message Mandatory Content:
-    // {
-    //   "players" : 0,
-    //   "maxPlayers" : 0,
-    //   "name" : "",
-    //   "map" : "",
-    //   "mode" : "",
-    //   "version" : ""
-    // }
-    Error send_live_state(const Message &message);
-
-    // send application_instance_status.
-    // Message Empty Content:
-    // {
-    //   "status": 0
-    // }
-    Error send_application_instance_status(const Message &message);
-
 private:
+    struct GameState {
+        GameState() : players(0), max_players(0), name(), map(), mode(), version() {}
+
+        int players;          // Game number of players.
+        int max_players;      // Game max number of players.
+        std::string name;     // Server name.
+        std::string map;      // Game map.
+        std::string mode;     // Game mode.
+        std::string version;  // Game version.
+
+        Object *additional_data;  // Optional extra fields.
+    };
+    static bool game_states_changed(Server::GameState &new_state,
+                                    Server::GameState &old_state);
+
     bool is_initialized() const;
+    Error update_client_connection();
     Error update_listen_socket();
 
     Error process_incoming_message(const Message &message);
@@ -137,11 +141,21 @@ private:
     // not sent.
     Error process_outgoing_message(const Message &message);
 
+    Error send_live_state();
+    Error send_application_instance_status();
+
     Socket *_listen_socket;
     Socket *_client_socket;
     Connection *_client_connection;
 
     bool _is_waiting_for_client;
+
+    GameState _game_state;
+    GameState _last_sent_game_state;
+    bool _game_state_was_set;
+
+    ApplicationInstanceStatus _status;
+    bool _should_send_status;
 
     callback::ServerCallbacks _callbacks;
 

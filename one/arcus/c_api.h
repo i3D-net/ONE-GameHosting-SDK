@@ -33,7 +33,8 @@ extern "C" {
 
 // See the c_error.h file for error values.
 
-// Server status values.
+///
+/// Status of a One Arcus Server.
 typedef enum OneServerStatus {
     ONE_SERVER_STATUS_UNINITIALIZED = 0,
     ONE_SERVER_STATUS_INITIALIZED,
@@ -42,6 +43,14 @@ typedef enum OneServerStatus {
     ONE_SERVER_STATUS_READY,
     ONE_SERVER_STATUS_ERROR
 } OneServerStatus;
+
+/// Status of a game server. As defined in:
+/// https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
+typedef enum OneApplicationInstanceStatus {
+    ONE_SERVER_STARTING = 3,
+    ONE_SERVER_ONLINE = 4,
+    ONE_SERVER_ALLOCATED = 5
+} OneeApplicationInstanceStatus;
 
 //------------------------------------------------------------------------------
 // Opaque types.
@@ -420,39 +429,39 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
 
 //------------------------------------------------------------------------------
 ///@}
-///@name Arcus Message Outgoing Message senders.
+///@name Arcus outgoing property setters.
 /// See the [One Arcus protocol documentation
 /// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
 /// for more information.
-///
-/// Message preperation functions add the required fields to the predefined
-/// messages. The caller may add additional fields before sending, if the
-/// One Platform is configured to utilize those extra fields.
 ///@{
 
-OneError one_message_prepare_live_state(int players, int max_players, const char *name,
-                                        const char *map, const char *mode,
-                                        const char *version, OneMessagePtr message);
+/// Set the live game state information about the game server. This should be
+/// called at the least when the state changes, but it is safe to call more
+/// often if it is more convenient to do so - data is only sent out if there are
+/// changes from the previous call.
+/// @param server A non-null server pointer.
+/// @param players Current player count.
+/// @param max_players Max player count allowed in current match.
+/// @param name Friendly server name.
+/// @param map Actively hosted map.
+/// @param mode Actively hosted game mode.
+/// @param version The version of the game software.
+/// @param additional_data Any key/value pairs set on this object will be added.
+OneError one_server_set_live_state(OneServerPtr server, int players, int max_players,
+                                   const char *name, const char *map, const char *mode,
+                                   const char *version, OneObjectPtr additional_data);
 
-OneError one_message_prepare_application_instance_status(int status,
-                                                         OneMessagePtr message);
-
-/// Send the live game state of the server to the Arcus client. This should be
-/// called before the first call to update so that the initial state sent to
-/// the agent has valid, initialized values.
-OneError one_server_send_live_state(OneServerPtr server, OneMessagePtr message);
-
-/// send application_instance_status.
-/// Message Empty Content:
-/// {
-///   "status": 0
-/// }
-OneError one_server_send_application_instance_status(OneServerPtr server,
-                                                     OneMessagePtr message);
+/// This should be called at the least when the state changes, but it is safe to
+/// call more often if it is more convenient to do so - data is only sent out if
+/// there are changes from the previous call.
+/// @param server A non-null server pointer.
+/// @param status The current status of the game server application instance.
+OneError one_server_set_application_instance_status(OneServerPtr server,
+                                                    OneApplicationInstanceStatus status);
 
 //------------------------------------------------------------------------------
 ///@}
-///@name Arcus Message Incoming Message handling.
+///@name Arcus incoming message handlers.
 /// See the [One Arcus protocol documentation
 /// website](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/)
 /// for more information.
@@ -488,11 +497,11 @@ OneError one_server_set_allocated_callback(OneServerPtr server,
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_meta_data_callback(OneServerPtr server,
-                                           void (*callback)(void *data, void *array),
-                                           void *data);
+OneError one_server_set_metadata_callback(OneServerPtr server,
+                                          void (*callback)(void *data, void *array),
+                                          void *data);
 
-/// Register the callback to be notified of a host_information.
+/// Register the callback to be notified of host_information.
 /// The `void *object` will be of type OneObjectPtr or the callback will error out.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if

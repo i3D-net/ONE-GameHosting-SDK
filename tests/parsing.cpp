@@ -88,7 +88,7 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
 
         Array data;
         OneArrayPtr ptr = (OneArray *)&data;
-        OneServerWrapper::MetaDataData meta_data;
+        OneServerWrapper::MetaDataData metadata;
         auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                             const std::string &value) {
             if (total_number_of_keys != 3) {
@@ -98,17 +98,17 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
             }
 
             if (key == "map") {
-                meta_data.map = value;
+                metadata.map = value;
                 return true;
             }
 
             if (key == "mode") {
-                meta_data.mode = value;
+                metadata.mode = value;
                 return true;
             }
 
             if (key == "type") {
-                meta_data.type = value;
+                metadata.type = value;
                 return true;
             }
 
@@ -125,9 +125,9 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
 
         data.push_back_object(type);
         REQUIRE(Parsing::extract_key_value_payload(ptr, callback));
-        REQUIRE(meta_data.map == map_str);
-        REQUIRE(meta_data.mode == mode_str);
-        REQUIRE(meta_data.type == type_str);
+        REQUIRE(metadata.map == map_str);
+        REQUIRE(metadata.mode == mode_str);
+        REQUIRE(metadata.type == type_str);
         data.push_back_object(type);
         REQUIRE(!Parsing::extract_key_value_payload(ptr, callback));
     }

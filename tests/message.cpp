@@ -216,8 +216,8 @@ TEST_CASE("message prepare", "[message]") {
 
     {  // metadata
         m.reset();
-        Array meta_data;
-        REQUIRE(!is_error(messages::prepare_metadata(meta_data, m)));
+        Array metadata;
+        REQUIRE(!is_error(messages::prepare_metadata(metadata, m)));
         REQUIRE(m.code() == Opcode::metadata);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
@@ -233,9 +233,9 @@ TEST_CASE("message prepare", "[message]") {
         const std::string mode = "test mode";
         const std::string version = "test version";
 
-        REQUIRE(!is_error(messages::prepare_live_state(
-            players, max_players, name.c_str(), map.c_str(), mode.c_str(),
-            version.c_str(), m)));
+        REQUIRE(!is_error(messages::prepare_live_state(players, max_players, name.c_str(),
+                                                       map.c_str(), mode.c_str(),
+                                                       version.c_str(), m)));
         REQUIRE(m.code() == Opcode::live_state);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
@@ -272,8 +272,7 @@ TEST_CASE("message prepare", "[message]") {
 
         Object object;
 
-        REQUIRE(!is_error(
-            messages::prepare_application_instance_information(object, m)));
+        REQUIRE(!is_error(messages::prepare_application_instance_information(object, m)));
         REQUIRE(m.code() == Opcode::application_instance_information);
         auto p = m.payload();
         REQUIRE(p.is_empty() == true);
@@ -284,8 +283,7 @@ TEST_CASE("message prepare", "[message]") {
 
         const int status = 4;
 
-        REQUIRE(!is_error(
-            messages::prepare_application_instance_status(status, m)));
+        REQUIRE(!is_error(messages::prepare_application_instance_status(status, m)));
         REQUIRE(m.code() == Opcode::application_instance_status);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
@@ -383,17 +381,6 @@ TEST_CASE("message c_api", "[message]") {
     REQUIRE(is_error(one_message_set_val_object(m, nullptr, o_ptr)));
     REQUIRE(is_error(one_message_set_val_object(m, key, nullptr)));
 
-    REQUIRE(is_error(one_message_prepare_live_state(1, 12, nullptr, "map",
-                                                             "mode", "version", m)));
-    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", nullptr,
-                                                             "mode", "version", m)));
-    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", "map",
-                                                             nullptr, "version", m)));
-    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", "map", "mode",
-                                                             nullptr, m)));
-    REQUIRE(is_error(one_message_prepare_live_state(1, 12, "name", "map", "mode",
-                                                             "version", nullptr)));
-
     // Check Setters.
     REQUIRE(!is_error(one_message_set_val_bool(m, "bool", boolean)));
     REQUIRE(!is_error(one_message_set_val_int(m, "int", integer)));
@@ -434,10 +421,7 @@ TEST_CASE("message c_api", "[message]") {
 
     REQUIRE(!is_error(one_message_reset(m)));
 
-    REQUIRE(!is_error(one_message_prepare_live_state(1, 16, "name", "map",
-                                                              "mode", "version", m)));
     // Todo: app instance info test?
-    REQUIRE(!is_error(one_message_prepare_application_instance_status(4, m)));
 
     one_message_destroy(m);
     one_message_destroy(nullptr);

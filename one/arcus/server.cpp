@@ -14,11 +14,39 @@
 namespace i3d {
 namespace one {
 
+bool Server::game_states_changed(Server::GameState &new_state,
+                                 Server::GameState &old_state) {
+    if (new_state.players != old_state.players) {
+        return true;
+    }
+    if (new_state.max_players != old_state.max_players) {
+        return true;
+    }
+    if (new_state.name != old_state.name) {
+        return true;
+    }
+    if (new_state.map != old_state.map) {
+        return true;
+    }
+    if (new_state.mode != old_state.mode) {
+        return true;
+    }
+    if (new_state.version != old_state.version) {
+        return true;
+    }
+    return false;
+}
+
 Server::Server()
     : _listen_socket(nullptr)
     , _client_socket(nullptr)
     , _client_connection(nullptr)
     , _is_waiting_for_client(false)
+    , _game_state()
+    , _last_sent_game_state()
+    , _game_state_was_set(false)
+    , _status(ApplicationInstanceStatus::starting)
+    , _should_send_status(false)
     , _callbacks({0}) {}
 
 Server::~Server() {
@@ -153,165 +181,6 @@ Error Server::listen(unsigned int port) {
     }
 
     _is_waiting_for_client = true;
-
-    return ONE_ERROR_NONE;
-}
-
-Error Server::update() {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (!is_initialized()) {
-        return ONE_ERROR_SERVER_SOCKET_NOT_INITIALIZED;
-    }
-
-    assert(_client_socket != nullptr);
-    assert(_client_connection != nullptr);
-
-    auto err = update_listen_socket();
-    if (is_error(err)) {
-        // Todo: put listening in update loop and close/recover here...
-        return err;
-    }
-
-    // Done if no client is connected.
-    if (!_client_socket->is_initialized()) {
-        return ONE_ERROR_NONE;
-    }
-
-    // If any errors are encountered while updating the connection, then close
-    // the connection and socket. The client is expected to reconnect.
-    auto close_client = [this](const Error passthrough_err) -> Error {
-        _client_connection->shutdown();
-        _client_socket->close();
-        _is_waiting_for_client = true;
-
-#ifdef ONE_ARCUS_SERVER_LOGGING
-        std::string ip;
-        unsigned int port;
-        _client_socket->address(ip, port);
-        std::cout << "ip: " << ip << ", port: " << port << ", closing client"
-                  << std::endl;
-#endif
-
-        return passthrough_err;
-    };
-
-    // Updating the connection will send pending outgoing messages and gather incoming
-    // messages for reading.
-    err = _client_connection->update();
-    if (is_error(err)) {
-        return close_client(err);
-    }
-
-    // Read pending incoming messages.
-    while (true) {
-        unsigned int count = 0;
-        err = _client_connection->incoming_count(count);
-        if (is_error(err)) return close_client(err);
-
-#ifdef ONE_ARCUS_SERVER_LOGGING
-        std::cout << "server processing incoming: " << count << std::endl;
-#endif
-
-        if (count == 0) break;
-
-        err = _client_connection->remove_incoming([this](const Message &message) {
-            auto err = process_incoming_message(message);
-            if (is_error(err)) return err;
-
-            return ONE_ERROR_NONE;
-        });
-        if (is_error(err)) {
-            return close_client(err);
-        }
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
-                                     void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._soft_stop = callback;
-    _callbacks._soft_stop_userdata = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Server::set_allocated_callback(std::function<void(void *, Array *)> callback,
-                                     void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._allocated = callback;
-    _callbacks._allocated_userdata = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Server::set_meta_data_callback(std::function<void(void *, Array *)> callback,
-                                     void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._metadata = callback;
-    _callbacks._metadata_userdata = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Server::set_host_information_callback(
-    std::function<void(void *, Object *)> callback, void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._host_information = callback;
-    _callbacks._host_information_data = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Server::set_application_instance_information_callback(
-    std::function<void(void *, Object *)> callback, void *data) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    if (callback == nullptr) {
-        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
-    }
-
-    _callbacks._application_instance_information = callback;
-    _callbacks._application_instance_information_data = data;
-    return ONE_ERROR_NONE;
-}
-
-Error Server::send_live_state(const Message &message) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
-        return err;
-    }
-
-    return ONE_ERROR_NONE;
-}
-
-Error Server::send_application_instance_status(const Message &message) {
-    const std::lock_guard<std::mutex> lock(_server);
-
-    auto err = process_outgoing_message(message);
-    if (is_error(err)) {
-        return err;
-    }
 
     return ONE_ERROR_NONE;
 }
@@ -455,6 +324,249 @@ Error Server::process_outgoing_message(const Message &message) {
         return err;
     }
 
+    return ONE_ERROR_NONE;
+}
+
+Error Server::update_client_connection() {
+    // If any errors are encountered while updating the connection, then close
+    // the connection and socket. The client is expected to reconnect.
+    auto close_client = [this](const Error passthrough_err) -> Error {
+        _client_connection->shutdown();
+        _client_socket->close();
+        _is_waiting_for_client = true;
+
+#ifdef ONE_ARCUS_SERVER_LOGGING
+        std::string ip;
+        unsigned int port;
+        _client_socket->address(ip, port);
+        std::cout << "ip: " << ip << ", port: " << port << ", closing client"
+                  << std::endl;
+#endif
+
+        return passthrough_err;
+    };
+
+    // Updating the connection will send pending outgoing messages and gather incoming
+    // messages for reading.
+    auto err = _client_connection->update();
+    if (is_error(err)) {
+        return close_client(err);
+    }
+
+    // Read pending incoming messages.
+    while (true) {
+        unsigned int count = 0;
+        err = _client_connection->incoming_count(count);
+        if (is_error(err)) return close_client(err);
+
+#ifdef ONE_ARCUS_SERVER_LOGGING
+        std::cout << "server processing incoming: " << count << std::endl;
+#endif
+
+        if (count == 0) break;
+
+        err = _client_connection->remove_incoming([this](const Message &message) {
+            auto err = process_incoming_message(message);
+            if (is_error(err)) return err;
+
+            return ONE_ERROR_NONE;
+        });
+        if (is_error(err)) {
+            return close_client(err);
+        }
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::update() {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    if (!is_initialized()) {
+        return ONE_ERROR_SERVER_SOCKET_NOT_INITIALIZED;
+    }
+
+    assert(_client_socket != nullptr);
+    assert(_client_connection != nullptr);
+
+    auto err = update_listen_socket();
+    if (is_error(err)) {
+        // Todo: put listening in update loop and close/recover here...
+        return err;
+    }
+
+    // Done if no client is connected.
+    if (!_client_socket->is_initialized()) {
+        return ONE_ERROR_NONE;
+    }
+
+    if (_game_state_was_set) {
+        if (game_states_changed(_game_state, _last_sent_game_state)) {
+            if (_client_connection->status() == Connection::Status::ready) {
+                err = send_live_state();
+                if (is_error(err)) {
+                    return err;
+                }
+                _game_state_was_set = false;
+                _last_sent_game_state = _game_state;
+            }
+        } else {
+            _game_state_was_set = false;
+        }
+    }
+    if (_should_send_status) {
+        err = send_application_instance_status();
+        if (is_error(err)) {
+            return err;
+        }
+        _should_send_status = false;
+    }
+
+    const bool was_ready = (_client_connection->status() == Connection::Status::ready);
+
+    err = update_client_connection();
+    if (is_error(err)) {
+        return err;
+    }
+
+    const bool is_ready = (_client_connection->status() == Connection::Status::ready);
+    if (is_ready && !was_ready) {
+        // Schedule a send when connection is established to ensure newly
+        // connected client has the correct state.
+        _game_state_was_set = true;
+        _should_send_status = true;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_live_state(int players, int max_players, const char *name,
+                             const char *map, const char *mode, const char *version,
+                             Object *additional_data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    _game_state.players = players;
+    _game_state.max_players = max_players;
+    _game_state.name = name;
+    _game_state.map = map;
+    _game_state.mode = mode;
+    _game_state.version = version;
+    _game_state_was_set = true;
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_application_instance_status(ApplicationInstanceStatus status) {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    if (status == _status) return ONE_ERROR_NONE;
+
+    _status = status;
+    _should_send_status = true;
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
+                                     void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._soft_stop = callback;
+    _callbacks._soft_stop_userdata = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Server::send_live_state() {
+    // Todo: cache message.
+    Message message;
+    // Todo: std::string.
+    auto err = messages::prepare_live_state(
+        _game_state.players, _game_state.max_players, _game_state.name.c_str(),
+        _game_state.map.c_str(), _game_state.mode.c_str(), _game_state.version.c_str(),
+        message);
+
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::send_application_instance_status() {
+    // Todo: cache message.
+    Message message;
+    // Todo: std string.
+    OneError err = messages::prepare_application_instance_status((int)_status, message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_allocated_callback(std::function<void(void *, Array *)> callback,
+                                     void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._allocated = callback;
+    _callbacks._allocated_userdata = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_metadata_callback(std::function<void(void *, Array *)> callback,
+                                    void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._metadata = callback;
+    _callbacks._metadata_userdata = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_host_information_callback(
+    std::function<void(void *, Object *)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._host_information = callback;
+    _callbacks._host_information_data = data;
+    return ONE_ERROR_NONE;
+}
+
+Error Server::set_application_instance_information_callback(
+    std::function<void(void *, Object *)> callback, void *data) {
+    const std::lock_guard<std::mutex> lock(_server);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._application_instance_information = callback;
+    _callbacks._application_instance_information_data = data;
     return ONE_ERROR_NONE;
 }
 

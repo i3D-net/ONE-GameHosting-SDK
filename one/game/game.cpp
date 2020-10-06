@@ -11,7 +11,7 @@ Game::Game(unsigned int port)
     : _server(port)
     , _soft_stop_call_count(0)
     , _allocated_call_count(0)
-    , _meta_data_call_count(0)
+    , _metadata_call_count(0)
     , _host_information_receive_count(0)
     , _application_instance_information_receive_count(0)
     , _quiet(false)
@@ -51,7 +51,7 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
 
     _server.set_soft_stop_callback(soft_stop_callback, this);
     _server.set_allocated_callback(allocated_callback, this);
-    _server.set_meta_data_callback(meta_data_callback, this);
+    _server.set_metadata_callback(metadata_callback, this);
     _server.set_host_information_callback(host_information_callback, this);
     _server.set_application_instance_information_callback(
         application_instance_information_callback, this);
@@ -106,36 +106,46 @@ void Game::alter_game_state() {
 
     // Todo: only change to allocated in response to an allocated callback.
     if (!_allocated && _online && _starting) {
-        if (!_server.set_application_instance_status(
-                OneServerWrapper::ApplicationInstanceStatus::allocated)) {
-            if (!_quiet) L_ERROR("failed to send set status code allocated");
-        } else {
-            _allocated = true;
-        }
+        _server.set_application_instance_status(
+            OneServerWrapper::ApplicationInstanceStatus::allocated);
+        _allocated = true;
     }
 
     if (!_online && _starting) {
-        if (!_server.set_application_instance_status(
-                OneServerWrapper::ApplicationInstanceStatus::online)) {
-            if (!_quiet) L_ERROR("failed to send set status code starting");
-        } else {
-            _online = true;
-        }
+        _server.set_application_instance_status(
+            OneServerWrapper::ApplicationInstanceStatus::online);
+        _online = true;
     }
 
     if (!_starting) {
-        if (!_server.set_application_instance_status(
-                OneServerWrapper::ApplicationInstanceStatus::starting)) {
-            if (!_quiet) L_ERROR("failed to send set status code starting");
-        } else {
-            _starting = true;
-        }
+        _server.set_application_instance_status(
+            OneServerWrapper::ApplicationInstanceStatus::starting);
+        _starting = true;
     }
 }
 
 void Game::update() {
     const std::lock_guard<std::mutex> lock(_game);
     _server.update();
+}
+
+void Game::update_arcus_server_game_state() {
+    OneServerWrapper::GameState game_state;
+
+    game_state.players = _players;
+    game_state.max_players = _max_players;
+    game_state.name = _name;
+    game_state.map = _map;
+    game_state.mode = _mode;
+    game_state.version = _version;
+
+    _server.set_game_state(game_state);
+}
+
+void Game::set_player_count(int count) {
+    if (count == _players) return;
+    _players = count;
+    update_arcus_server_game_state();
 }
 
 int Game::soft_stop_call_count() const {
@@ -148,9 +158,9 @@ int Game::allocated_call_count() const {
     return _allocated_call_count;
 }
 
-int Game::meta_data_call_count() const {
+int Game::metadata_call_count() const {
     const std::lock_guard<std::mutex> lock(_game);
-    return _meta_data_call_count;
+    return _metadata_call_count;
 }
 
 int Game::host_information_receive_count() const {
@@ -187,8 +197,7 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
     game->_allocated_call_count++;
 }
 
-void Game::meta_data_callback(const OneServerWrapper::MetaDataData &data,
-                              void *userdata) {
+void Game::metadata_callback(const OneServerWrapper::MetaDataData &data, void *userdata) {
     L_INFO("meta data called:");
     L_INFO("\tmap:" + data.map);
     L_INFO("\tmode:" + data.mode);
@@ -198,7 +207,7 @@ void Game::meta_data_callback(const OneServerWrapper::MetaDataData &data,
         L_ERROR("null game");
         return;
     }
-    game->_meta_data_call_count++;
+    game->_metadata_call_count++;
 }
 
 void Game::host_information_callback(const OneServerWrapper::HostInformationData &data,
