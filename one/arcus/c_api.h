@@ -60,16 +60,11 @@ typedef enum OneApplicationInstanceStatus {
 struct OneServer;
 typedef OneServer *OneServerPtr;
 
-// A message corresponding to the messages documented in the Arcus protocol API:
-// https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/
-struct OneMessage;
-typedef OneMessage *OneMessagePtr;
-
-// Optional Array value that may be present within a OneMessage.
+// Optional Array value that may be present within a One protocol Message.
 struct OneArray;
 typedef OneArray *OneArrayPtr;
 
-// Optional Object value that may be present within a OneMessage.
+// Optional Object value that may be present within a One protocol Message.
 struct OneObject;
 typedef OneObject *OneObjectPtr;
 
@@ -130,104 +125,6 @@ OneError one_server_update(OneServerPtr server);
 /// @param server A non-null server pointer.
 /// @param status A pointer to a status enum value to be set.
 OneError one_server_status(OneServerPtr const server, OneServerStatus *status);
-
-//------------------------------------------------------------------------------
-///@}
-///@name Message main interface
-/// One Servers and Clients communicate over TCP by sending Messages. A Message
-/// contains an identifying code id, and can have variable number of Key/Value
-/// pairs set on them.
-///@{
-
-/// Creates a new outgoing message. one_message_destroy must be called to free
-/// the message.
-/// @param message A non-null pointer to a Message pointer to set the new
-/// message on.
-OneError one_message_create(OneMessagePtr *message);
-
-/// Must be called whenever finished with a message.
-/// @param message A non-null Message pointer.
-void one_message_destroy(OneMessagePtr message);
-
-/// Reset can be used to re-use message objects, removing any values set on it.
-/// @param message A non-null Message pointer.
-OneError one_message_reset(OneMessagePtr message);
-
-/// Retrieves the Message's Arcus Opcode value, identifying the Message type.
-/// @param message A non-null Message pointer.
-/// @param code A non-null pointer to a code to set.
-OneError one_message_code(OneMessagePtr message, int *code);
-
-/// Set the opcode value of the message. Not needed in integration code, which
-/// should be using the predefined messages which set the appropriate opcode for
-/// the message.
-/// @param message A non-null Message pointer.
-/// @param code A valid arcus message opcode.
-OneError one_message_set_code(OneMessagePtr message, int code);
-
-//------------------------------------------------------------------------------
-///@}
-///@name Message key/value getters
-///@{
-
-/// Queries if the given message key contains a value type.
-/// @param message A non-null message.
-/// @param key A non-null key string.
-/// @param result A non-null pointer to a bool to set the result on.
-OneError one_message_is_val_bool(OneMessagePtr message, const char *key, bool *result);
-OneError one_message_is_val_int(OneMessagePtr message, const char *key, bool *result);
-OneError one_message_is_val_string(OneMessagePtr message, const char *key, bool *result);
-OneError one_message_is_val_array(OneMessagePtr message, const char *key, bool *result);
-OneError one_message_is_val_object(OneMessagePtr message, const char *key, bool *result);
-
-//------------------------------------------------------------------------------
-///@}
-///@name Message key/value getters
-///@{
-
-/// Sets the given key value pair on the message.
-/// @param message A non-null message.
-/// @param key A non-null key string.
-/// @param val A non-null pointer to a value to get for the given key.
-OneError one_message_val_bool(OneMessagePtr message, const char *key, bool *val);
-OneError one_message_val_int(OneMessagePtr message, const char *key, int *val);
-/// Returns the number of characters in the string. This does not include a trailing null
-/// character.
-/// @return May return of ONE_ERROR_MESSAGE_*.
-/// @param message A non-null message.
-/// @param key The key of the value to return.
-/// @param size A non-null int pointer to set the size on.
-OneError one_message_val_string_size(OneMessagePtr message, const char *key, int *size);
-/// Writes the key value to the given character buffer.
-/// @return May return of ONE_ERROR_OBJECT_*.
-/// @param message A non-null message.
-/// @param key The key of the value to return.
-/// @param size Size of the value buffer that can be written to. Must be equal
-/// to size obtained via one_message_val_string_size.
-OneError one_message_val_string(OneMessagePtr message, const char *key, char *val,
-                                int size);
-OneError one_message_val_array(OneMessagePtr message, const char *key, OneArrayPtr val);
-OneError one_message_val_object(OneMessagePtr message, const char *key, OneObjectPtr val);
-OneError one_message_val_root_object(OneMessagePtr message, OneObjectPtr val);
-
-//------------------------------------------------------------------------------
-///@}
-///@name Message key/value setters
-///@{
-
-/// Sets the given key value pair on the message.
-/// @param message A non-null message.
-/// @param key A non-null key string.
-/// @param val The value to set for the given key.
-OneError one_message_set_val_bool(OneMessagePtr message, const char *key, bool val);
-OneError one_message_set_val_int(OneMessagePtr message, const char *key, int val);
-OneError one_message_set_val_string(OneMessagePtr message, const char *key,
-                                    const char *val);
-OneError one_message_set_val_array(OneMessagePtr message, const char *key,
-                                   OneArrayPtr val);
-OneError one_message_set_val_object(OneMessagePtr message, const char *key,
-                                    OneObjectPtr val);
-OneError one_message_set_val_root_object(OneMessagePtr message, OneObjectPtr val);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -354,7 +251,7 @@ OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObject
 ///@name Object main interface
 ///@{
 
-/// Create a new object that can be used as a key value in a OneMessage.
+/// Create a new object that can be used as a key value in a One protocol message.
 /// one_object_destroy must be called to free the object.
 /// @param object A pointer that will be set to point to the new OneObjectPtr.
 OneError one_object_create(OneObjectPtr *object);

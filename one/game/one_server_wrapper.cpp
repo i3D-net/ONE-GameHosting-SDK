@@ -13,10 +13,6 @@ namespace game {
 OneServerWrapper::OneServerWrapper(unsigned int port)
     : _server(nullptr)
     , _port(port)
-    , _live_state(nullptr)
-    , _host_information(nullptr)
-    , _application_instance_information(nullptr)
-    , _application_instance_status(nullptr)
     , _soft_stop_callback(nullptr)
     , _soft_stop_userdata(nullptr)
     , _allocated_callback(nullptr)
@@ -35,10 +31,8 @@ OneServerWrapper::~OneServerWrapper() {
 bool OneServerWrapper::init() {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
-    if (_server != nullptr || _live_state != nullptr || _host_information != nullptr ||
-        _application_instance_information != nullptr ||
-        _application_instance_status != nullptr) {
-        L_ERROR("already init");
+    if (_server != nullptr) {
+        L_ERROR("already initialized");
         return false;
     }
 
@@ -47,33 +41,6 @@ bool OneServerWrapper::init() {
 
     // Each game server must have one corresponding arcus server.
     OneError err = one_server_create(&_server);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    //------------------------
-    // Create cached messages.
-
-    err = one_message_create(&_live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_message_create(&_host_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_message_create(&_application_instance_information);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_message_create(&_application_instance_status);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -132,22 +99,13 @@ bool OneServerWrapper::init() {
 void OneServerWrapper::shutdown() {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
-    if (_server == nullptr && _live_state == nullptr && _host_information == nullptr &&
-        _application_instance_information == nullptr) {
+    if (_server == nullptr) {
         return;
     }
 
     // Free all objects created via the One API.
     one_server_destroy(_server);
     _server = nullptr;
-    one_message_destroy(_live_state);
-    _live_state = nullptr;
-    one_message_destroy(_host_information);
-    _host_information = nullptr;
-    one_message_destroy(_application_instance_information);
-    _application_instance_information = nullptr;
-    one_message_destroy(_application_instance_status);
-    _application_instance_status = nullptr;
 }
 
 void OneServerWrapper::update() {

@@ -10,9 +10,6 @@
 struct OneServer;
 typedef OneServer *OneServerPtr;
 
-struct OneMessage;
-typedef OneMessage *OneMessagePtr;
-
 struct OneArray;
 typedef OneArray *OneArrayPtr;
 
@@ -166,9 +163,6 @@ public:
         void *userdata);
 
 private:
-    bool send_live_state();
-    bool send_application_instance_status(ApplicationInstanceStatus status);
-
     // Callbacks potentially called by the arcus server.
     static void soft_stop(void *userdata, int timeout_seconds);
     static void allocated(void *userdata, void *allocated);
@@ -185,18 +179,14 @@ private:
     static bool extract_application_instance_information_payload(
         OneObjectPtr object, ApplicationInstanceInformationData &information);
 
+    bool send_live_state();
+    bool send_application_instance_status(ApplicationInstanceStatus status);
+
     // The Arcus Server itself.
     OneServerPtr _server;
     const unsigned int _port;
 
     mutable std::mutex _wrapper;
-
-    // Cached messages used to send the different predefined Arcus Messages
-    // types.
-    OneMessagePtr _live_state;
-    OneMessagePtr _host_information;
-    OneMessagePtr _application_instance_information;
-    OneMessagePtr _application_instance_status;
 
     //--------------------------------------------------------------------------
     // Callbacks.
