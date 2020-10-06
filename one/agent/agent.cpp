@@ -104,7 +104,7 @@ Error Agent::send_soft_stop(int timeout) {
     return ONE_ERROR_NONE;
 }
 
-Error Agent::send_allocated(Array *array) {
+Error Agent::send_allocated(Array &array) {
     const std::lock_guard<std::mutex> lock(_agent);
     auto err = _client.send_allocated(array);
     if (is_error(err)) {
@@ -114,7 +114,7 @@ Error Agent::send_allocated(Array *array) {
     return ONE_ERROR_NONE;
 }
 
-Error Agent::send_metadata(Array *array) {
+Error Agent::send_metadata(Array &array) {
     const std::lock_guard<std::mutex> lock(_agent);
     auto err = _client.send_metadata(array);
     if (is_error(err)) {

@@ -31,8 +31,8 @@ public:
     Error update();
 
     Error send_soft_stop(int timeout);
-    Error send_allocated(Array *array);
-    Error send_metadata(Array *array);
+    Error send_allocated(Array &array);
+    Error send_metadata(Array &array);
 
     // Set live_state callback.
     Error set_live_state_callback(

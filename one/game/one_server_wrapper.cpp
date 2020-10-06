@@ -159,7 +159,7 @@ void OneServerWrapper::update() {
         L_ERROR(error_text(err));
         return;
     }
-}  // namespace game
+}
 
 std::string OneServerWrapper::status_to_string(Status status) {
     switch (status) {
@@ -181,6 +181,8 @@ std::string OneServerWrapper::status_to_string(Status status) {
 }
 
 OneServerWrapper::Status OneServerWrapper::status() const {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
     OneServerStatus status;
     OneError err = one_server_status(_server, &status);
     if (is_error(err)) {
@@ -206,9 +208,6 @@ OneServerWrapper::Status OneServerWrapper::status() const {
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
-    assert(_server != nullptr);
-
     // Todo: example of additional addition object pairs to the live state.
 
     auto err = one_server_set_live_state(
@@ -220,8 +219,6 @@ void OneServerWrapper::set_game_state(const GameState &state) {
 }
 
 void OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus status) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
-
     auto err = one_server_set_application_instance_status(
         _server, (OneApplicationInstanceStatus)status);
     if (is_error(err)) {
@@ -231,7 +228,7 @@ void OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus
 
 void OneServerWrapper::set_soft_stop_callback(
     std::function<void(int timeout, void *userdata)> callback, void *userdata) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
+
     _soft_stop_callback = callback;
     _soft_stop_userdata = userdata;
 }
@@ -239,7 +236,7 @@ void OneServerWrapper::set_soft_stop_callback(
 void OneServerWrapper::set_allocated_callback(
     std::function<void(const AllocatedData &data, void *userdata)> callback,
     void *userdata) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
+
     _allocated_callback = callback;
     _allocated_userdata = userdata;
 }
@@ -247,7 +244,6 @@ void OneServerWrapper::set_allocated_callback(
 void OneServerWrapper::set_metadata_callback(
     std::function<void(const MetaDataData &data, void *userdata)> callback,
     void *userdata) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
     _metadata_callback = callback;
     _metadata_userdata = userdata;
 }
@@ -255,7 +251,6 @@ void OneServerWrapper::set_metadata_callback(
 void OneServerWrapper::set_host_information_callback(
     std::function<void(const HostInformationData &data, void *userdata)> callback,
     void *userdata) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
     _host_information_callback = callback;
     _host_information_userdata = userdata;
 }
@@ -264,7 +259,6 @@ void OneServerWrapper::set_application_instance_information_callback(
     std::function<void(const ApplicationInstanceInformationData &data, void *userdata)>
         callback,
     void *userdata) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_information_callback = callback;
     _application_instance_information_userdata = userdata;
 }
@@ -420,32 +414,35 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
         return false;
     }
 
-    auto callback = [&](const size_t total_number_of_keys, const std::string &key,
-                        const std::string &value) {
-        if (total_number_of_keys != 2) {
-            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
-                    ") expected 2 instead");
-            return false;
-        }
+    // Optional - the game can require and read allocated keys to configure
+    // the server.
+    // auto callback = [&](const size_t total_number_of_keys, const std::string &key,
+    //                     const std::string &value) {
+    //     if (total_number_of_keys != 2) {
+    //         L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys)
+    //         +
+    //                 ") expected 2 instead");
+    //         return false;
+    //     }
 
-        if (key == "map") {
-            allocated_data.map = value;
-            return true;
-        }
+    //     if (key == "map") {
+    //         allocated_data.map = value;
+    //         return true;
+    //     }
 
-        if (key == "maxPlayers") {
-            allocated_data.max_players = value;
-            return true;
-        }
+    //     if (key == "maxPlayers") {
+    //         allocated_data.max_players = value;
+    //         return true;
+    //     }
 
-        L_ERROR("key(" + key + ") is not handled");
-        return false;
-    };
+    //     L_ERROR("key(" + key + ") is not handled");
+    //     return false;
+    // };
 
-    if (!Parsing::extract_key_value_payload(array, callback)) {
-        L_ERROR("failed to extract key/value payload");
-        return false;
-    }
+    // if (!Parsing::extract_key_value_payload(array, callback)) {
+    //     L_ERROR("failed to extract key/value payload");
+    //     return false;
+    // }
 
     return true;
 }

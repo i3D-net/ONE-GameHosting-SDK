@@ -94,9 +94,8 @@ private:
     std::string _mode;
     std::string _version;
 
-    bool _starting;
-    bool _online;
-    bool _allocated;
+    enum class MatchmakingStatus { none, starting, online, allocated };
+    MatchmakingStatus _matchmaking_status;
 
     mutable std::mutex _game;
 };

@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
     log_status(status);
 
     while (true) {
-        sleep(50);
+        sleep(100);
         game.alter_game_state();
         game.update();
 

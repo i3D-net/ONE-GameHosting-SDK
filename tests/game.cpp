@@ -117,12 +117,13 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         data.push_back_object(map);
         data.push_back_object(max_players);
 
-        REQUIRE(agent.send_allocated(&data) == 0);
+        REQUIRE(agent.send_allocated(data) == 0);
 
         bool passed = wait_until(200, [&]() {
             agent.update();
             game.update();
-            return game.allocated_call_count() == 1;
+            return game.allocated_call_count() == 1 &&
+                   agent.application_instance_status_receive_count() == 1;
         });
     }
 
@@ -152,7 +153,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         data.push_back_object(type);
 
         Array array;
-        REQUIRE(agent.send_metadata(&data) == 0);
+        REQUIRE(agent.send_metadata(data) == 0);
 
         bool passed = wait_until(200, [&]() {
             agent.update();

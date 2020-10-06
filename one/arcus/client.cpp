@@ -208,15 +208,11 @@ Error Client::send_soft_stop(int timeout) {
     return ONE_ERROR_NONE;
 }
 
-Error Client::send_allocated(Array *data) {
+Error Client::send_allocated(Array &data) {
     const std::lock_guard<std::mutex> lock(_client);
 
-    if (data == nullptr) {
-        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
-    }
-
     Message message;
-    messages::prepare_allocated(*data, message);
+    messages::prepare_allocated(data, message);
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
@@ -225,15 +221,11 @@ Error Client::send_allocated(Array *data) {
     return ONE_ERROR_NONE;
 }
 
-Error Client::send_metadata(Array *data) {
+Error Client::send_metadata(Array &data) {
     const std::lock_guard<std::mutex> lock(_client);
 
-    if (data == nullptr) {
-        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
-    }
-
     Message message;
-    messages::prepare_metadata(*data, message);
+    messages::prepare_metadata(data, message);
     auto err = process_outgoing_message(message);
     if (is_error(err)) {
         return err;
