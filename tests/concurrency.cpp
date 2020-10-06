@@ -162,7 +162,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
     REQUIRE(0 < agent.live_state_call_count());
     REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_send_count() == 1);
-    REQUIRE(agent.application_instance_status_receive_count() == 3);
+    REQUIRE(agent.application_instance_status_receive_count() > 0);
 
     std::thread t7(shutdown, &game);
     std::thread t8(shutdown, &game);

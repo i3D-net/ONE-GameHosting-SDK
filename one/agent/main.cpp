@@ -1,4 +1,5 @@
 #include <one/agent/agent.h>
+#include <one/arcus/array.h>
 #include <one/game/log.h>
 
 #include <chrono>
@@ -45,7 +46,17 @@ int main(int argc, char **argv) {
     log_status(status);
 
     while (true) {
-        sleep(50);
+        sleep(100);
+
+        if (agent.client().status() == Client::Status::ready) {
+            // Randomly tell the game server to become allocated.
+            bool shouldSend = std::rand() / ((RAND_MAX + 1u) / 50) == 0;
+            if (shouldSend) {
+                Array array;
+                L_INFO("sending allocated");
+                agent.send_allocated(array);
+            }
+        }
 
         err = agent.update();
         if (is_error(err)) {

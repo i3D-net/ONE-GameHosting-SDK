@@ -17,9 +17,7 @@ Game::Game(unsigned int port)
     , _quiet(false)
     , _players(0)
     , _max_players(0)
-    , _starting(false)
-    , _online(false)
-    , _allocated(false) {}
+    , _matchmaking_status(MatchmakingStatus::none) {}
 
 Game::~Game() {
     _server.shutdown();
@@ -40,14 +38,7 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
     _mode = mode;
     _version = version;
 
-    OneServerWrapper::GameState state;
-    state.players = 0;  // Game starts with 0 active players.
-    state.max_players = _max_players;
-    state.name = _name;
-    state.map = _map;
-    state.mode = _mode;
-    state.version = _version;
-    _server.set_game_state(state);
+    update_arcus_server_game_state();
 
     _server.set_soft_stop_callback(soft_stop_callback, this);
     _server.set_allocated_callback(allocated_callback, this);
@@ -87,15 +78,7 @@ void Game::alter_game_state() {
         _players += 1;
     }
 
-    OneServerWrapper::GameState new_state;
-    new_state.players = _players;
-    new_state.max_players = _max_players;
-    new_state.name = _name;
-    new_state.map = _map;
-    new_state.mode = _mode;
-    new_state.version = _version;
-
-    _server.set_game_state(new_state);
+    update_arcus_server_game_state();
 
     // Updating the server status incrementally.
     // First time it is set as starting.
@@ -104,23 +87,33 @@ void Game::alter_game_state() {
     // The progession order is the good one, but the timing is arbitrarily and might
     // change depending on the game startup sequence.
 
-    // Todo: only change to allocated in response to an allocated callback.
-    if (!_allocated && _online && _starting) {
-        _server.set_application_instance_status(
-            OneServerWrapper::ApplicationInstanceStatus::allocated);
-        _allocated = true;
-    }
-
-    if (!_online && _starting) {
-        _server.set_application_instance_status(
-            OneServerWrapper::ApplicationInstanceStatus::online);
-        _online = true;
-    }
-
-    if (!_starting) {
-        _server.set_application_instance_status(
-            OneServerWrapper::ApplicationInstanceStatus::starting);
-        _starting = true;
+    switch (_matchmaking_status) {
+        case MatchmakingStatus::none:
+            L_INFO("application instance status none");
+            _matchmaking_status = MatchmakingStatus::starting;
+            _server.set_application_instance_status(
+                OneServerWrapper::ApplicationInstanceStatus::starting);
+            break;
+        case MatchmakingStatus::starting:
+            L_INFO("application instance status starting");
+            _matchmaking_status = MatchmakingStatus::online;
+            _server.set_application_instance_status(
+                OneServerWrapper::ApplicationInstanceStatus::online);
+            break;
+        case MatchmakingStatus::allocated:
+            L_INFO("application instance status allocated");
+            // Fake ending an allocated match and going back to online.
+            if (_players == 0) {
+                _matchmaking_status = MatchmakingStatus::online;
+                _server.set_application_instance_status(
+                    OneServerWrapper::ApplicationInstanceStatus::online);
+            }
+            break;
+        case MatchmakingStatus::online:
+            L_INFO("application instance status online");
+            break;
+        default:
+            L_ERROR("invalid matchmaking status");
     }
 }
 
@@ -195,6 +188,10 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
         return;
     }
     game->_allocated_call_count++;
+
+    game->_matchmaking_status = MatchmakingStatus::allocated;
+    game->_server.set_application_instance_status(
+        OneServerWrapper::ApplicationInstanceStatus::allocated);
 }
 
 void Game::metadata_callback(const OneServerWrapper::MetaDataData &data, void *userdata) {

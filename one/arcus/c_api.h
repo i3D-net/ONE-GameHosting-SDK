@@ -79,7 +79,7 @@ typedef OneObject *OneObjectPtr;
 
 /// Provide custom memory alloc.
 /// Must be set at init time, before using any other APIs. If this is called,
-// then one_allocator_set_free must also be called.
+/// then one_allocator_set_free must also be called.
 void one_allocator_set_alloc(void *(callback)(unsigned int size));
 
 /// Provide custom memory free.
