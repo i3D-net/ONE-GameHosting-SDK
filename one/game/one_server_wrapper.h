@@ -68,14 +68,18 @@ public:
         std::string map;      // Game map.
         std::string mode;     // Game mode.
         std::string version;  // Game version.
+
+        // Add extra custom game-specific properties here, if needed. Then
+        // these need to be added to a OneObjectPtr in the implementation
+        // and passed to the c_api. See the cpp file for an example.
     };
     // Set the game state to the current value. The wrapper uses this to send
     // the current state to the One Platform, when requested to do so.
     void set_game_state(const GameState &);
 
-    const GameState &game_state() const {
-        return _game_state;
-    };
+    // const GameState &game_state() const {
+    //     return _game_state;
+    // };
 
     // As defined in:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
@@ -85,7 +89,7 @@ public:
     // the status to starting during initialization, online once the server is
     // ready for matchmaking. Allocated is optional when directed for allocation
     // by Arcus, depending on the matchmaking design and features used.
-    bool set_application_instance_status(ApplicationInstanceStatus status);
+    void set_application_instance_status(ApplicationInstanceStatus status);
 
     //------------------------
     // Incoming Arcus Messages
@@ -125,7 +129,7 @@ public:
         std::string mode;  // Game mode.
         std::string type;  // Game type.
     };
-    void set_meta_data_callback(
+    void set_metadata_callback(
         std::function<void(const MetaDataData &data, void *userdata)> callback,
         void *userdata);
 
@@ -168,14 +172,14 @@ private:
     // Callbacks potentially called by the arcus server.
     static void soft_stop(void *userdata, int timeout_seconds);
     static void allocated(void *userdata, void *allocated);
-    static void meta_data(void *userdata, void *meta_data);
+    static void metadata(void *userdata, void *metadata);
     static void host_information(void *userdata, void *information);
     static void application_instance_information(void *userdata, void *information);
 
     // Ancillary function to show how to parse the message payloads.
     static bool extract_allocated_payload(OneArrayPtr array,
                                           AllocatedData &allocated_data);
-    static bool extract_meta_data_payload(OneArrayPtr array, MetaDataData &meta_data);
+    static bool extract_metadata_payload(OneArrayPtr array, MetaDataData &metadata);
     static bool extract_host_information_payload(OneObjectPtr object,
                                                  HostInformationData &information);
     static bool extract_application_instance_information_payload(
@@ -194,10 +198,6 @@ private:
     OneMessagePtr _application_instance_information;
     OneMessagePtr _application_instance_status;
 
-    GameState _game_state;
-    GameState _last_sent_game_state;
-    bool _game_state_was_set;
-
     //--------------------------------------------------------------------------
     // Callbacks.
 
@@ -207,8 +207,8 @@ private:
     std::function<void(const AllocatedData &, void *)> _allocated_callback;
     void *_allocated_userdata;
 
-    std::function<void(const MetaDataData &, void *)> _meta_data_callback;
-    void *_meta_data_userdata;
+    std::function<void(const MetaDataData &, void *)> _metadata_callback;
+    void *_metadata_userdata;
 
     std::function<void(const HostInformationData &, void *)> _host_information_callback;
     void *_host_information_userdata;

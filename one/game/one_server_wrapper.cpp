@@ -10,41 +10,6 @@
 
 namespace game {
 
-namespace {
-bool game_states_changed(OneServerWrapper::GameState &new_state,
-                         OneServerWrapper::GameState &old_state) {
-    bool result = false;
-    if (new_state.players != old_state.players) {
-        result = true;
-        if (new_state.players > old_state.players)
-            L_INFO("game state: player joined");
-        else
-            L_INFO("game state: player left");
-    }
-    if (new_state.max_players != old_state.max_players) {
-        result = true;
-        L_INFO("game state: max player count changed");
-    }
-    if (new_state.name != old_state.name) {
-        result = true;
-        L_INFO("game state: name changed");
-    }
-    if (new_state.map != old_state.map) {
-        result = true;
-        L_INFO("game state: map changed");
-    }
-    if (new_state.mode != old_state.mode) {
-        result = true;
-        L_INFO("game state: mode changed");
-    }
-    if (new_state.version != old_state.version) {
-        result = true;
-        L_INFO("game state: version changed");
-    }
-    return result;
-}
-}  // namespace
-
 OneServerWrapper::OneServerWrapper(unsigned int port)
     : _server(nullptr)
     , _port(port)
@@ -52,15 +17,12 @@ OneServerWrapper::OneServerWrapper(unsigned int port)
     , _host_information(nullptr)
     , _application_instance_information(nullptr)
     , _application_instance_status(nullptr)
-    , _game_state()
-    , _last_sent_game_state()
-    , _game_state_was_set(false)
     , _soft_stop_callback(nullptr)
     , _soft_stop_userdata(nullptr)
     , _allocated_callback(nullptr)
     , _allocated_userdata(nullptr)
-    , _meta_data_callback(nullptr)
-    , _meta_data_userdata(nullptr)
+    , _metadata_callback(nullptr)
+    , _metadata_userdata(nullptr)
     , _host_information_callback(nullptr)
     , _host_information_userdata(nullptr)
     , _application_instance_information_callback(nullptr)
@@ -135,7 +97,7 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    err = one_server_set_meta_data_callback(_server, meta_data, this);
+    err = one_server_set_metadata_callback(_server, metadata, this);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return false;
@@ -188,50 +150,14 @@ void OneServerWrapper::shutdown() {
     _application_instance_status = nullptr;
 }
 
-void OneServerWrapper::set_game_state(const GameState &state) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
-
-    _game_state = state;
-    _game_state_was_set = true;
-}
-
 void OneServerWrapper::update() {
     const std::lock_guard<std::mutex> lock(_wrapper);
-
     assert(_server != nullptr);
 
-    if (_game_state_was_set) {
-        if (game_states_changed(_game_state, _last_sent_game_state)) {
-            if (!send_live_state()) L_ERROR("failed to send live state");
-        }
-        _game_state_was_set = false;
-        _last_sent_game_state = _game_state;
-    }
-
-    OneServerStatus status;
-    auto err = one_server_status(_server, &status);
+    auto err = one_server_update(_server);
     if (is_error(err)) {
         L_ERROR(error_text(err));
         return;
-    }
-    const bool was_ready = (status == ONE_SERVER_STATUS_READY);
-
-    err = one_server_update(_server);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-
-    err = one_server_status(_server, &status);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return;
-    }
-    const bool is_ready = (status == ONE_SERVER_STATUS_READY);
-
-    if (is_ready && !was_ready) {
-        // Schedule a state send when connection is established.
-        _game_state_was_set = true;
     }
 }  // namespace game
 
@@ -279,6 +205,30 @@ OneServerWrapper::Status OneServerWrapper::status() const {
     }
 }
 
+void OneServerWrapper::set_game_state(const GameState &state) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+    assert(_server != nullptr);
+
+    // Todo: example of additional addition object pairs to the live state.
+
+    auto err = one_server_set_live_state(
+        _server, state.players, state.max_players, state.name.c_str(), state.map.c_str(),
+        state.mode.c_str(), state.version.c_str(), nullptr);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+    }
+}
+
+void OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus status) {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
+    auto err = one_server_set_application_instance_status(
+        _server, (OneApplicationInstanceStatus)status);
+    if (is_error(err)) {
+        L_ERROR(error_text(err));
+    }
+}
+
 void OneServerWrapper::set_soft_stop_callback(
     std::function<void(int timeout, void *userdata)> callback, void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
@@ -294,12 +244,12 @@ void OneServerWrapper::set_allocated_callback(
     _allocated_userdata = userdata;
 }
 
-void OneServerWrapper::set_meta_data_callback(
+void OneServerWrapper::set_metadata_callback(
     std::function<void(const MetaDataData &data, void *userdata)> callback,
     void *userdata) {
     const std::lock_guard<std::mutex> lock(_wrapper);
-    _meta_data_callback = callback;
-    _meta_data_userdata = userdata;
+    _metadata_callback = callback;
+    _metadata_userdata = userdata;
 }
 
 void OneServerWrapper::set_host_information_callback(
@@ -317,52 +267,6 @@ void OneServerWrapper::set_application_instance_information_callback(
     const std::lock_guard<std::mutex> lock(_wrapper);
     _application_instance_information_callback = callback;
     _application_instance_information_userdata = userdata;
-}
-
-bool OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus status) {
-    // Todo: move to member var and process during update.
-    return send_application_instance_status(status);
-}
-
-bool OneServerWrapper::send_application_instance_status(
-    ApplicationInstanceStatus status) {
-    assert(_server != nullptr && _application_instance_status != nullptr);
-    const std::lock_guard<std::mutex> lock(_wrapper);
-
-    OneError err = one_message_prepare_application_instance_status(
-        static_cast<int>(status), _application_instance_status);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_send_application_instance_status(_server,
-                                                      _application_instance_status);
-    if (is_error(err)) {
-        return false;
-    }
-
-    return true;
-}
-
-bool OneServerWrapper::send_live_state() {
-    L_INFO("sending live state");
-    OneError err = one_message_prepare_live_state(
-        _game_state.players, _game_state.max_players, _game_state.name.c_str(),
-        _game_state.map.c_str(), _game_state.mode.c_str(), _game_state.version.c_str(),
-        _live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    err = one_server_send_live_state(_server, _live_state);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    return true;
 }
 
 // Tell the server to shutdown at the next appropriate time for its users (e.g.,
@@ -416,34 +320,34 @@ void OneServerWrapper::allocated(void *userdata, void *allocated) {
     wrapper->_allocated_callback(allocated_payload, wrapper->_allocated_userdata);
 }
 
-void OneServerWrapper::meta_data(void *userdata, void *meta_data) {
+void OneServerWrapper::metadata(void *userdata, void *metadata) {
     if (userdata == nullptr) {
         L_ERROR("userdata is nullptr");
         return;
     }
 
-    if (meta_data == nullptr) {
-        L_ERROR("meta_data is nullptr");
+    if (metadata == nullptr) {
+        L_ERROR("metadata is nullptr");
         return;
     }
 
     auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
     assert(wrapper->_server != nullptr);
 
-    if (wrapper->_meta_data_callback == nullptr) {
+    if (wrapper->_metadata_callback == nullptr) {
         L_INFO("meta data callback is nullptr");
         return;
     }
 
-    auto array = reinterpret_cast<OneArrayPtr>(meta_data);
-    MetaDataData meta_data_payload;
-    if (!extract_meta_data_payload(array, meta_data_payload)) {
+    auto array = reinterpret_cast<OneArrayPtr>(metadata);
+    MetaDataData metadata_payload;
+    if (!extract_metadata_payload(array, metadata_payload)) {
         L_ERROR("failed to extract meta data payload");
         return;
     }
 
     L_INFO("invoking meta data callback");
-    wrapper->_meta_data_callback(meta_data_payload, wrapper->_meta_data_userdata);
+    wrapper->_metadata_callback(metadata_payload, wrapper->_metadata_userdata);
 }
 
 void OneServerWrapper::host_information(void *userdata, void *information) {
@@ -547,8 +451,8 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
 }
 
 // Todo: can these extract_xxx functions be done within the API itself?
-bool OneServerWrapper::extract_meta_data_payload(OneArrayPtr array,
-                                                 MetaDataData &meta_data) {
+bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
+                                                MetaDataData &metadata) {
     if (array == nullptr) {
         L_ERROR("array is nullptr");
         return false;
@@ -563,17 +467,17 @@ bool OneServerWrapper::extract_meta_data_payload(OneArrayPtr array,
         }
 
         if (key == "map") {
-            meta_data.map = value;
+            metadata.map = value;
             return true;
         }
 
         if (key == "mode") {
-            meta_data.mode = value;
+            metadata.mode = value;
             return true;
         }
 
         if (key == "type") {
-            meta_data.type = value;
+            metadata.type = value;
             return true;
         }
 

@@ -167,15 +167,14 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     // live state.
     auto &wrapper = game.one_server_wrapper();
     {
-        REQUIRE(agent.live_state_call_count() == 0);
-        const auto &state = wrapper.game_state();
-        auto new_state = state;
-        new_state.players++;
-        wrapper.set_game_state(new_state);
+        // Agent should already receive one game state update when the connection
+        // is established.
+        REQUIRE(agent.live_state_call_count() == 1);
+        game.set_player_count(game.player_count() + 1);
         bool passed = wait_until(200, [&]() {
             game.update();
             agent.update();
-            return agent.live_state_call_count() == 1;
+            return agent.live_state_call_count() == 2;
         });
         REQUIRE(passed);
     }

@@ -40,7 +40,7 @@ public:
 
     int soft_stop_call_count() const;
     int allocated_call_count() const;
-    int meta_data_call_count() const;
+    int metadata_call_count() const;
     int host_information_receive_count() const;
     int application_instance_information_receive_count() const;
 
@@ -57,38 +57,43 @@ public:
         _quiet = quiet;
     }
 
+    int player_count() const {
+        return _players;
+    }
+    void set_player_count(int count);
+
 private:
     static void soft_stop_callback(int timeout, void *userdata);
     static void allocated_callback(const OneServerWrapper::AllocatedData &data,
                                    void *userdata);
-    static void meta_data_callback(const OneServerWrapper::MetaDataData &data,
-                                   void *userdata);
+    static void metadata_callback(const OneServerWrapper::MetaDataData &data,
+                                  void *userdata);
     static void host_information_callback(
         const OneServerWrapper::HostInformationData &data, void *userdata);
     static void application_instance_information_callback(
         const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata);
+
+    void update_arcus_server_game_state();
 
     OneServerWrapper _server;
 
     // Todo: rename call -> receive here and elsewhere in codebase.
     int _soft_stop_call_count;
     int _allocated_call_count;
-    int _meta_data_call_count;
+    int _metadata_call_count;
     int _host_information_receive_count;
     int _application_instance_information_receive_count;
 
     bool _quiet;
 
-    // This is to emulate a game internal mecanims to get the number of players, current
-    // maps, etc...
-    // It is willfully avoiding use of OneServerWrapper::GameState to show how to bridge
-    // the gap between Game and OneServerWrapper.
+    // Fake game state.
     int _players;
     int _max_players;
     std::string _name;
     std::string _map;
     std::string _mode;
     std::string _version;
+
     bool _starting;
     bool _online;
     bool _allocated;
