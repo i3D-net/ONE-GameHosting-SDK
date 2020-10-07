@@ -12,10 +12,10 @@ enum class Opcode {
     soft_stop = 0x30,
     allocated = 0x60,
     metadata = 0x40,
-    live_state = 0x21,
-    host_information = 0x51,
-    application_instance_information = 0x71,
-    application_instance_status = 0x74,
+    live_state = 0x20,
+    host_information = 0x50,
+    application_instance_information = 0x70,
+    application_instance_status = 0x71,
 };
 
 // To finalize when the list of supported opcode is confirmed.
