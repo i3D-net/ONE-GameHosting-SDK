@@ -96,3 +96,7 @@ cmake --build ./build --config Release --target all
 ## Clean build
 
 Delete the ./build folder and run the above build commands.
+
+## Testing
+
+As mentioned above, short tests are all run at the end of the cmake build, by default. Long test may be run in an IDE by running all tests, or by navigating to the /build/tests/Debug folder and running the process directly. Use the `-?` option to list cmake process options.
