@@ -214,7 +214,161 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
 
     std::thread t9(shutdown, &game);
     std::thread t10(shutdown, &game);
+    std::thread t11(shutdown, &game);
 
     t9.join();
     t10.join();
+    t11.join();
+}
+
+TEST_CASE("two game on same process", "[concurrency]") {
+    const unsigned int port = 19413;
+    const unsigned int port2 = 19414;
+    const auto address = "127.0.0.1";
+
+    Game game(port);
+    Game game2(port2);
+    game.set_quiet(true);
+    game2.set_quiet(true);
+
+    init_game(&game);
+    init_game(&game2);
+
+    Agent agent;
+    Agent agent2;
+    agent.set_quiet(true);
+    agent2.set_quiet(true);
+
+    init_agent(&agent, address, port);
+    init_agent(&agent2, address, port2);
+
+    REQUIRE(agent.live_state_call_count() == 0);
+    REQUIRE(agent.host_information_send_count() == 0);
+    REQUIRE(agent.application_instance_information_send_count() == 0);
+    REQUIRE(agent.application_instance_status_receive_count() == 0);
+
+    REQUIRE(agent2.live_state_call_count() == 0);
+    REQUIRE(agent2.host_information_send_count() == 0);
+    REQUIRE(agent2.application_instance_information_send_count() == 0);
+    REQUIRE(agent2.application_instance_status_receive_count() == 0);
+
+    while (game.one_server_wrapper().status() != OneServerWrapper::Status::ready &&
+           game2.one_server_wrapper().status() != OneServerWrapper::Status::ready) {
+        game.update();
+        game2.update();
+        agent.update();
+        agent2.update();
+    }
+
+    for_sleep(10, 0, [&]() {
+        game.alter_game_state();
+        game.update();
+
+        game2.alter_game_state();
+        game2.update();
+
+        agent.update();
+        agent2.update();
+        return false;
+    });
+
+    REQUIRE(0 < agent.live_state_call_count());
+    REQUIRE(agent.host_information_send_count() == 1);
+    REQUIRE(agent.application_instance_information_send_count() == 1);
+    REQUIRE(0 < agent.application_instance_status_receive_count());
+
+    REQUIRE(0 < agent2.live_state_call_count());
+    REQUIRE(agent2.host_information_send_count() == 1);
+    REQUIRE(agent2.application_instance_information_send_count() == 1);
+    REQUIRE(0 < agent2.application_instance_status_receive_count());
+
+    game.shutdown();
+    game2.shutdown();
+}
+
+TEST_CASE("multiple game on the same process", "[concurrency]") {
+    const unsigned int port = 19513;
+    const unsigned int port2 = 19514;
+    const unsigned int port3 = 19515;
+    const auto address = "127.0.0.1";
+
+    Game game(port);
+    Game game2(port2);
+    Game game3(port3);
+    game.set_quiet(true);
+    game2.set_quiet(true);
+    game3.set_quiet(true);
+    init_game(&game);
+    init_game(&game2);
+    init_game(&game3);
+
+    Agent agent;
+    Agent agent2;
+    Agent agent3;
+    agent.set_quiet(true);
+    agent2.set_quiet(true);
+    agent3.set_quiet(true);
+    init_agent(&agent, address, port);
+    init_agent(&agent2, address, port2);
+    init_agent(&agent3, address, port3);
+
+    REQUIRE(agent.live_state_call_count() == 0);
+    REQUIRE(agent.host_information_send_count() == 0);
+    REQUIRE(agent.application_instance_information_send_count() == 0);
+    REQUIRE(agent.application_instance_status_receive_count() == 0);
+
+    REQUIRE(agent2.live_state_call_count() == 0);
+    REQUIRE(agent2.host_information_send_count() == 0);
+    REQUIRE(agent2.application_instance_information_send_count() == 0);
+    REQUIRE(agent2.application_instance_status_receive_count() == 0);
+
+    REQUIRE(agent3.live_state_call_count() == 0);
+    REQUIRE(agent3.host_information_send_count() == 0);
+    REQUIRE(agent3.application_instance_information_send_count() == 0);
+    REQUIRE(agent3.application_instance_status_receive_count() == 0);
+
+    while (game.one_server_wrapper().status() != OneServerWrapper::Status::ready &&
+           game2.one_server_wrapper().status() != OneServerWrapper::Status::ready) {
+        game.update();
+        game2.update();
+        game3.update();
+        agent.update();
+        agent2.update();
+        agent3.update();
+    }
+
+    for_sleep(10, 0, [&]() {
+        game.alter_game_state();
+        game.update();
+
+        game2.alter_game_state();
+        game2.update();
+
+        game3.alter_game_state();
+        game3.update();
+
+        agent.update();
+        agent2.update();
+        agent3.update();
+        return false;
+    });
+
+    REQUIRE(0 < agent.live_state_call_count());
+    REQUIRE(agent.host_information_send_count() == 1);
+    REQUIRE(agent.application_instance_information_send_count() == 1);
+    REQUIRE(0 < agent.application_instance_status_receive_count());
+
+    REQUIRE(0 < agent2.live_state_call_count());
+    REQUIRE(agent2.host_information_send_count() == 1);
+    REQUIRE(agent2.application_instance_information_send_count() == 1);
+    REQUIRE(0 < agent2.application_instance_status_receive_count());
+
+    REQUIRE(0 < agent3.live_state_call_count());
+    REQUIRE(agent3.host_information_send_count() == 1);
+    REQUIRE(agent3.application_instance_information_send_count() == 1);
+    REQUIRE(0 < agent3.application_instance_status_receive_count());
+
+    game.shutdown();
+    game2.shutdown();
+    game3.shutdown();
 }
