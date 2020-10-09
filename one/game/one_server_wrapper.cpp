@@ -8,11 +8,10 @@
 #include <assert.h>
 #include <cstring>
 
-namespace game {
+namespace one_integration {
 
-OneServerWrapper::OneServerWrapper(unsigned int port)
+OneServerWrapper::OneServerWrapper()
     : _server(nullptr)
-    , _port(port)
     , _soft_stop_callback(nullptr)
     , _soft_stop_userdata(nullptr)
     , _allocated_callback(nullptr)
@@ -36,13 +35,15 @@ bool OneServerWrapper::init() {
         return false;
     }
 
+    // Todo: set custom allocator.
+
     //-----------------------
     // Create the one server.
 
     // Each game server must have one corresponding arcus server.
     OneError err = one_server_create(&_server);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -53,46 +54,46 @@ bool OneServerWrapper::init() {
     // required to configure a soft stop method for your application before this packet
     // will be send to your application.
     err = one_server_set_soft_stop_callback(_server, soft_stop, this);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_server_set_allocated_callback(_server, allocated, this);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_server_set_metadata_callback(_server, metadata, this);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_server_set_host_information_callback(_server, host_information, this);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_server_set_application_instance_information_callback(
         _server, application_instance_information, this);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
-        return false;
-    }
-
-    //------------------
-    // Start the server.
-
-    err = one_server_listen(_server, _port);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     L_INFO("OneServerWrapper init complete");
+    return true;
+}
+
+bool OneServerWrapper::listen(unsigned int port) {
+    OneError err = one_server_listen(_server, port);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return false;
+    }
     return true;
 }
 
@@ -113,8 +114,8 @@ void OneServerWrapper::update() {
     assert(_server != nullptr);
 
     auto err = one_server_update(_server);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return;
     }
 }
@@ -143,8 +144,8 @@ OneServerWrapper::Status OneServerWrapper::status() const {
 
     OneServerStatus status;
     OneError err = one_server_status(_server, &status);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return Status::unknown;
     }
     switch (status) {
@@ -171,16 +172,16 @@ void OneServerWrapper::set_game_state(const GameState &state) {
     auto err = one_server_set_live_state(
         _server, state.players, state.max_players, state.name.c_str(), state.map.c_str(),
         state.mode.c_str(), state.version.c_str(), nullptr);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
     }
 }
 
 void OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus status) {
     auto err = one_server_set_application_instance_status(
         _server, (OneApplicationInstanceStatus)status);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
     }
 }
 
@@ -456,14 +457,14 @@ bool OneServerWrapper::extract_host_information_payload(
     }
 
     auto err = one_object_val_int(object, "id", &information.id);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_object_val_int(object, "serverId", &information.server_id);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -497,14 +498,14 @@ bool OneServerWrapper::extract_application_instance_information_payload(
     }
 
     auto err = one_object_val_int(object, "hostId", &information.host_id);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_object_val_int(object, "isVirtual", &information.is_virtual);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -513,4 +514,4 @@ bool OneServerWrapper::extract_application_instance_information_payload(
     return true;
 }
 
-}  // namespace game
+}  // namespace one_integration

@@ -27,6 +27,7 @@ set(SOURCE_FILES
     client.cpp
     c_api.cpp
     c_error.cpp
+    error.cpp
     internal/accumulator.cpp
     internal/codec.cpp
     internal/connection.cpp

@@ -11,18 +11,18 @@
 #include <one/game/game.h>
 #include <one/game/log.h>
 
-using namespace game;
+using namespace one_integration;
 using namespace i3d::one;
 
 TEST_CASE("life cycle", "[fake game]") {
-    Game game(19001);
-    REQUIRE(game.init(54, "test game", "test map", "test mode", "test version"));
+    Game game;
+    REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version"));
     game.shutdown();
 }
 
 TEST_CASE("connection error handling", "[fake game]") {
-    Game game(19001);
-    REQUIRE(game.init(54, "test game", "test map", "test mode", "test version"));
+    Game game;
+    REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version"));
 
     // Connect a client socket to fake a scriptable agent.
     Socket client;
@@ -74,8 +74,8 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19002;
 
-    Game game(port);
-    REQUIRE(game.init(16, "name", "map", "mode", "version"));
+    Game game;
+    REQUIRE(game.init(port, 16, "name", "map", "mode", "version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -95,7 +95,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         bool passed = wait_until(200, [&]() {
             agent.update();
             game.update();
-            return game.soft_stop_call_count() == 1;
+            return game.soft_stop_receive_count() == 1;
         });
     }
 
@@ -122,7 +122,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         bool passed = wait_until(200, [&]() {
             agent.update();
             game.update();
-            return game.allocated_call_count() == 1 &&
+            return game.allocated_receive_count() == 1 &&
                    agent.application_instance_status_receive_count() == 1;
         });
     }
@@ -158,7 +158,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         bool passed = wait_until(200, [&]() {
             agent.update();
             game.update();
-            return game.allocated_call_count() == 1;
+            return game.allocated_receive_count() == 1;
         });
     }
 
@@ -170,12 +170,12 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     {
         // Agent should already receive one game state update when the connection
         // is established.
-        REQUIRE(agent.live_state_call_count() == 1);
+        REQUIRE(agent.live_state_receive_count() == 1);
         game.set_player_count(game.player_count() + 1);
         bool passed = wait_until(200, [&]() {
             game.update();
             agent.update();
-            return agent.live_state_call_count() == 2;
+            return agent.live_state_receive_count() == 2;
         });
         REQUIRE(passed);
     }

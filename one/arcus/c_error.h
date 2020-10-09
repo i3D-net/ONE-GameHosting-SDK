@@ -133,14 +133,12 @@ typedef enum OneError {
     ONE_ERROR_COUNT  // For testing purpose. Must remain in the last position.
 } OneError;
 
-constexpr bool is_error(OneError err) {
-    return err != ONE_ERROR_NONE;
-}
+bool one_is_error(OneError err);
 
 // Given a OneError, returns a string matching the symbol name, e.g.
 // error_text(ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) will return
 // "ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER".
-const char *error_text(OneError);
+const char *one_error_text(OneError);
 
 #ifdef __cplusplus
 };

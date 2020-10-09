@@ -6,7 +6,7 @@
 #include <one/arcus/object.h>
 #include <one/game/parsing.h>
 
-using namespace game;
+using namespace one_integration;
 using namespace i3d::one;
 
 TEST_CASE("ancillary message payload parsing", "[parsing]") {

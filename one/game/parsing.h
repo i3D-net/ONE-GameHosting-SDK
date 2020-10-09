@@ -15,7 +15,7 @@ typedef OneArray *OneArrayPtr;
 struct OneObject;
 typedef OneObject *OneObjectPtr;
 
-namespace game {
+namespace one_integration {
 
 namespace codec {
 
@@ -79,4 +79,4 @@ private:
     ~Parsing() = delete;
 };
 
-}  // namespace game
+}  // namespace one_integration

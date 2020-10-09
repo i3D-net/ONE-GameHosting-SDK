@@ -2,7 +2,7 @@
 
 #include <one/game/log.h>
 
-namespace game {
+namespace one_integration {
 
 bool Parsing::extract_key_value_payload(
     const OneArrayPtr array, std::function<bool(const size_t total_number_of_keys,
@@ -20,8 +20,8 @@ bool Parsing::extract_key_value_payload(
 
     bool empty = true;
     auto err = one_array_is_empty(array, &empty);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -32,28 +32,28 @@ bool Parsing::extract_key_value_payload(
 
     int number_of_keys = 0;
     err = one_array_size(array, &number_of_keys);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     OneObjectPtr pair = nullptr;
     err = one_object_create(&pair);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
     for (unsigned int pos = 0; pos < number_of_keys; ++pos) {
         err = one_array_val_object(array, pos, pair);
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
+        if (one_is_error(err)) {
+            L_ERROR(one_error_text(err));
             one_object_destroy(pair);
             return false;
         }
 
         if (!extract_key_value_pair(pair, _key, _value)) {
-            L_ERROR(error_text(err));
+            L_ERROR(one_error_text(err));
             one_object_destroy(pair);
             return false;
         }
@@ -79,8 +79,8 @@ bool Parsing::extract_key_value_pair(
 
     int key_size = 0;
     auto err = one_object_val_string_size(pair, "key", &key_size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -92,8 +92,8 @@ bool Parsing::extract_key_value_pair(
     }
 
     err = one_object_val_string(pair, "key", key.data(), codec::key_max_size());
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -102,8 +102,8 @@ bool Parsing::extract_key_value_pair(
 
     int value_size = 0;
     err = one_object_val_string_size(pair, "value", &value_size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -115,8 +115,8 @@ bool Parsing::extract_key_value_pair(
     }
 
     err = one_object_val_string(pair, "value", value.data(), codec::value_max_size());
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -139,8 +139,8 @@ bool Parsing::extract_string(const OneObjectPtr object, const char *key,
 
     int size = 0;
     auto err = one_object_val_string_size(object, key, &size);
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -152,8 +152,8 @@ bool Parsing::extract_string(const OneObjectPtr object, const char *key,
 
     err =
         one_object_val_string(object, key, _string_buffer.data(), _string_buffer.size());
-    if (is_error(err)) {
-        L_ERROR(error_text(err));
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -172,4 +172,4 @@ std::array<char, codec::key_max_size_null_terminated()> Parsing::_key = {};
 std::array<char, codec::value_max_size_null_terminated()> Parsing::_value = {};
 std::array<char, codec::string_buffer_max_size()> Parsing::_string_buffer = {};
 
-}  // namespace game
+}  // namespace one_integration

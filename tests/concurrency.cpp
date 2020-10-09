@@ -2,7 +2,7 @@
 #include <util.h>
 
 #include <one/agent/agent.h>
-#include <one/arcus/error.h>
+#include <one/arcus/c_error.h>
 #include <one/game/log.h>
 #include <one/game/game.h>
 #include <one/game/one_server_wrapper.h>
@@ -12,11 +12,11 @@
 
 #include <thread>
 
-using namespace game;
+using namespace one_integration;
 using namespace i3d::one;
 
-void init_game(Game *game) {
-    game->init(16, "name", "map", "mode", "version");
+void init_game(Game *game, unsigned int port) {
+    game->init(port, 16, "name", "map", "mode", "version");
 }
 
 void init_agent(Agent *agent, const char *address, int port) {
@@ -37,8 +37,8 @@ void update_game(Game *game) {
 void update_agent(Agent *agent) {
     for_sleep(1000, 1, [&]() {
         auto err = agent->update();
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
+        if (one_is_error(err)) {
+            L_ERROR(one_error_text(err));
         }
         return false;
     });
@@ -49,8 +49,8 @@ void update_game_and_agent(Game *game, Agent *agent) {
         game->update();
 
         auto err = agent->update();
-        if (is_error(err)) {
-            L_ERROR(error_text(err));
+        if (one_is_error(err)) {
+            L_ERROR(one_error_text(err));
         }
 
         return false;
@@ -72,10 +72,10 @@ void update_game_send_statistics(Game *game) {
 TEST_CASE("single thread", "[concurrency]") {
     const unsigned int port = 19012;
 
-    Game game(port);
+    Game game;
     game.set_quiet(true);
 
-    init_game(&game);
+    init_game(&game, port);
     update_game(&game);
     shutdown(&game);
 }
@@ -83,11 +83,11 @@ TEST_CASE("single thread", "[concurrency]") {
 TEST_CASE("two thread", "[concurrency]") {
     const unsigned int port = 19013;
 
-    Game game(port);
+    Game game;
     game.set_quiet(true);
 
-    std::thread t1(init_game, &game);
-    std::thread t2(init_game, &game);
+    std::thread t1(init_game, &game, port);
+    std::thread t2(init_game, &game, port);
 
     t1.join();
     t2.join();
@@ -109,9 +109,9 @@ TEST_CASE("long:single thread send information", "[concurrency]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19112;
 
-    Game game(port);
+    Game game;
     game.set_quiet(true);
-    init_game(&game);
+    init_game(&game, port);
 
     Agent agent;
     init_agent(&agent, address, port);
@@ -133,11 +133,11 @@ TEST_CASE("two thread send information", "[concurrency]") {
     const unsigned int port = 19213;
     const auto address = "127.0.0.1";
 
-    Game game(port);
+    Game game;
     game.set_quiet(true);
 
-    std::thread t1(init_game, &game);
-    std::thread t2(init_game, &game);
+    std::thread t1(init_game, &game, port);
+    std::thread t2(init_game, &game, port);
 
     Agent agent;
     std::thread t3(init_agent, &agent, address, port);
@@ -146,7 +146,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t2.join();
     t3.join();
 
-    REQUIRE(agent.live_state_call_count() == 0);
+    REQUIRE(agent.live_state_receive_count() == 0);
     REQUIRE(agent.host_information_send_count() == 0);
     REQUIRE(agent.application_instance_information_send_count() == 0);
     REQUIRE(agent.application_instance_status_receive_count() == 0);
@@ -159,7 +159,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t5.join();
     t6.join();
 
-    REQUIRE(0 < agent.live_state_call_count());
+    REQUIRE(0 < agent.live_state_receive_count());
     REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_send_count() == 1);
     REQUIRE(agent.application_instance_status_receive_count() > 0);
@@ -175,12 +175,12 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
     const unsigned int port = 19313;
     const auto address = "127.0.0.1";
 
-    Game game(port);
+    Game game;
     game.set_quiet(true);
 
-    std::thread t1(init_game, &game);
-    std::thread t2(init_game, &game);
-    std::thread t3(init_game, &game);
+    std::thread t1(init_game, &game, port);
+    std::thread t2(init_game, &game, port);
+    std::thread t3(init_game, &game, port);
 
     Agent agent;
     agent.set_quiet(true);
@@ -192,7 +192,7 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
     t3.join();
     t4.join();
 
-    REQUIRE(agent.live_state_call_count() == 0);
+    REQUIRE(agent.live_state_receive_count() == 0);
     REQUIRE(agent.host_information_send_count() == 0);
     REQUIRE(agent.application_instance_information_send_count() == 0);
     REQUIRE(agent.application_instance_status_receive_count() == 0);
@@ -207,7 +207,7 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
     t7.join();
     t8.join();
 
-    REQUIRE(0 < agent.live_state_call_count());
+    REQUIRE(0 < agent.live_state_receive_count());
     REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_send_count() == 1);
     REQUIRE(agent.application_instance_status_receive_count() == 3);
@@ -226,13 +226,13 @@ TEST_CASE("two game on same process", "[concurrency]") {
     const unsigned int port2 = 19414;
     const auto address = "127.0.0.1";
 
-    Game game(port);
-    Game game2(port2);
+    Game game;
+    Game game2;
     game.set_quiet(true);
     game2.set_quiet(true);
 
-    init_game(&game);
-    init_game(&game2);
+    init_game(&game, port);
+    init_game(&game2, port2);
 
     Agent agent;
     Agent agent2;
@@ -242,12 +242,12 @@ TEST_CASE("two game on same process", "[concurrency]") {
     init_agent(&agent, address, port);
     init_agent(&agent2, address, port2);
 
-    REQUIRE(agent.live_state_call_count() == 0);
+    REQUIRE(agent.live_state_receive_count() == 0);
     REQUIRE(agent.host_information_send_count() == 0);
     REQUIRE(agent.application_instance_information_send_count() == 0);
     REQUIRE(agent.application_instance_status_receive_count() == 0);
 
-    REQUIRE(agent2.live_state_call_count() == 0);
+    REQUIRE(agent2.live_state_receive_count() == 0);
     REQUIRE(agent2.host_information_send_count() == 0);
     REQUIRE(agent2.application_instance_information_send_count() == 0);
     REQUIRE(agent2.application_instance_status_receive_count() == 0);
@@ -272,12 +272,12 @@ TEST_CASE("two game on same process", "[concurrency]") {
         return false;
     });
 
-    REQUIRE(0 < agent.live_state_call_count());
+    REQUIRE(0 < agent.live_state_receive_count());
     REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_send_count() == 1);
     REQUIRE(0 < agent.application_instance_status_receive_count());
 
-    REQUIRE(0 < agent2.live_state_call_count());
+    REQUIRE(0 < agent2.live_state_receive_count());
     REQUIRE(agent2.host_information_send_count() == 1);
     REQUIRE(agent2.application_instance_information_send_count() == 1);
     REQUIRE(0 < agent2.application_instance_status_receive_count());
@@ -292,15 +292,15 @@ TEST_CASE("multiple game on the same process", "[concurrency]") {
     const unsigned int port3 = 19515;
     const auto address = "127.0.0.1";
 
-    Game game(port);
-    Game game2(port2);
-    Game game3(port3);
+    Game game;
+    Game game2;
+    Game game3;
     game.set_quiet(true);
     game2.set_quiet(true);
     game3.set_quiet(true);
-    init_game(&game);
-    init_game(&game2);
-    init_game(&game3);
+    init_game(&game, port);
+    init_game(&game2, port2);
+    init_game(&game3, port3);
 
     Agent agent;
     Agent agent2;
@@ -312,17 +312,17 @@ TEST_CASE("multiple game on the same process", "[concurrency]") {
     init_agent(&agent2, address, port2);
     init_agent(&agent3, address, port3);
 
-    REQUIRE(agent.live_state_call_count() == 0);
+    REQUIRE(agent.live_state_receive_count() == 0);
     REQUIRE(agent.host_information_send_count() == 0);
     REQUIRE(agent.application_instance_information_send_count() == 0);
     REQUIRE(agent.application_instance_status_receive_count() == 0);
 
-    REQUIRE(agent2.live_state_call_count() == 0);
+    REQUIRE(agent2.live_state_receive_count() == 0);
     REQUIRE(agent2.host_information_send_count() == 0);
     REQUIRE(agent2.application_instance_information_send_count() == 0);
     REQUIRE(agent2.application_instance_status_receive_count() == 0);
 
-    REQUIRE(agent3.live_state_call_count() == 0);
+    REQUIRE(agent3.live_state_receive_count() == 0);
     REQUIRE(agent3.host_information_send_count() == 0);
     REQUIRE(agent3.application_instance_information_send_count() == 0);
     REQUIRE(agent3.application_instance_status_receive_count() == 0);
@@ -353,17 +353,17 @@ TEST_CASE("multiple game on the same process", "[concurrency]") {
         return false;
     });
 
-    REQUIRE(0 < agent.live_state_call_count());
+    REQUIRE(0 < agent.live_state_receive_count());
     REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_send_count() == 1);
     REQUIRE(0 < agent.application_instance_status_receive_count());
 
-    REQUIRE(0 < agent2.live_state_call_count());
+    REQUIRE(0 < agent2.live_state_receive_count());
     REQUIRE(agent2.host_information_send_count() == 1);
     REQUIRE(agent2.application_instance_information_send_count() == 1);
     REQUIRE(0 < agent2.application_instance_status_receive_count());
 
-    REQUIRE(0 < agent3.live_state_call_count());
+    REQUIRE(0 < agent3.live_state_receive_count());
     REQUIRE(agent3.host_information_send_count() == 1);
     REQUIRE(agent3.application_instance_information_send_count() == 1);
     REQUIRE(0 < agent3.application_instance_status_receive_count());

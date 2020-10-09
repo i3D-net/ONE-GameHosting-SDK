@@ -9,7 +9,7 @@ namespace one {
 
 Agent::Agent()
     : _quiet(false)
-    , _live_state_call_count(0)
+    , _live_state_receive_count(0)
     , _host_information_send_count(0)
     , _application_instance_information_send_count(0)
     , _application_instance_status_receive_count(0) {}
@@ -25,7 +25,7 @@ Error Agent::init(const char *addr, unsigned int port) {
         [this](void *, int players, int max_players, const std::string &name,
                const std::string &map, const std::string &mode,
                const std::string &version) {
-            ++_live_state_call_count;
+            ++_live_state_receive_count;
             if (_quiet) {
                 return;
             }
