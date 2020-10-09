@@ -5,13 +5,13 @@
 
 #include <one/game/log.h>
 
-namespace game {
+namespace one_integration {
 
-Game::Game(unsigned int port)
-    : _server(port)
-    , _soft_stop_call_count(0)
-    , _allocated_call_count(0)
-    , _metadata_call_count(0)
+Game::Game()
+    : _one_server()
+    , _soft_stop_receive_count(0)
+    , _allocated_receive_count(0)
+    , _metadata_receive_count(0)
     , _host_information_receive_count(0)
     , _application_instance_information_receive_count(0)
     , _quiet(false)
@@ -20,14 +20,21 @@ Game::Game(unsigned int port)
     , _matchmaking_status(MatchmakingStatus::none) {}
 
 Game::~Game() {
-    _server.shutdown();
+    _one_server.shutdown();
 }
 
-bool Game::init(int max_players, const std::string &name, const std::string &map,
-                const std::string &mode, const std::string &version) {
+bool Game::init(unsigned int port, int max_players, const std::string &name,
+                const std::string &map, const std::string &mode,
+                const std::string &version) {
     const std::lock_guard<std::mutex> lock(_game);
-    if (!_server.init()) {
-        L_ERROR("failed to init server");
+
+    if (!_one_server.init()) {
+        L_ERROR("failed to init one server");
+        return false;
+    }
+
+    if (!_one_server.listen(port)) {
+        L_ERROR("failed to listen on one server");
         return false;
     }
 
@@ -40,19 +47,19 @@ bool Game::init(int max_players, const std::string &name, const std::string &map
 
     update_arcus_server_game_state();
 
-    _server.set_soft_stop_callback(soft_stop_callback, this);
-    _server.set_allocated_callback(allocated_callback, this);
-    _server.set_metadata_callback(metadata_callback, this);
-    _server.set_host_information_callback(host_information_callback, this);
-    _server.set_application_instance_information_callback(
+    _one_server.set_soft_stop_callback(soft_stop_callback, this);
+    _one_server.set_allocated_callback(allocated_callback, this);
+    _one_server.set_metadata_callback(metadata_callback, this);
+    _one_server.set_host_information_callback(host_information_callback, this);
+    _one_server.set_application_instance_information_callback(
         application_instance_information_callback, this);
 
-    return (_server.status() == OneServerWrapper::Status::waiting_for_client);
+    return (_one_server.status() == OneServerWrapper::Status::waiting_for_client);
 }
 
 void Game::shutdown() {
     const std::lock_guard<std::mutex> lock(_game);
-    _server.shutdown();
+    _one_server.shutdown();
 }
 
 void Game::alter_game_state() {
@@ -61,7 +68,7 @@ void Game::alter_game_state() {
     // The server will only be able to send game message and react to the agent message
     // only after it is ready. Trying to send a message while an agent is not connected
     // and not ready will return an error.
-    if (_server.status() != OneServerWrapper::Status::ready) {
+    if (_one_server.status() != OneServerWrapper::Status::ready) {
         return;
     }
 
@@ -91,13 +98,13 @@ void Game::alter_game_state() {
         case MatchmakingStatus::none:
             L_INFO("application instance status none");
             _matchmaking_status = MatchmakingStatus::starting;
-            _server.set_application_instance_status(
+            _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::starting);
             break;
         case MatchmakingStatus::starting:
             L_INFO("application instance status starting");
             _matchmaking_status = MatchmakingStatus::online;
-            _server.set_application_instance_status(
+            _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::online);
             break;
         case MatchmakingStatus::allocated:
@@ -105,7 +112,7 @@ void Game::alter_game_state() {
             // Fake ending an allocated match and going back to online.
             if (_players == 0) {
                 _matchmaking_status = MatchmakingStatus::online;
-                _server.set_application_instance_status(
+                _one_server.set_application_instance_status(
                     OneServerWrapper::ApplicationInstanceStatus::online);
             }
             break;
@@ -119,7 +126,7 @@ void Game::alter_game_state() {
 
 void Game::update() {
     const std::lock_guard<std::mutex> lock(_game);
-    _server.update();
+    _one_server.update();
 }
 
 void Game::update_arcus_server_game_state() {
@@ -132,7 +139,7 @@ void Game::update_arcus_server_game_state() {
     game_state.mode = _mode;
     game_state.version = _version;
 
-    _server.set_game_state(game_state);
+    _one_server.set_game_state(game_state);
 }
 
 void Game::set_player_count(int count) {
@@ -141,19 +148,19 @@ void Game::set_player_count(int count) {
     update_arcus_server_game_state();
 }
 
-int Game::soft_stop_call_count() const {
+int Game::soft_stop_receive_count() const {
     const std::lock_guard<std::mutex> lock(_game);
-    return _soft_stop_call_count;
+    return _soft_stop_receive_count;
 }
 
-int Game::allocated_call_count() const {
+int Game::allocated_receive_count() const {
     const std::lock_guard<std::mutex> lock(_game);
-    return _allocated_call_count;
+    return _allocated_receive_count;
 }
 
-int Game::metadata_call_count() const {
+int Game::metadata_receive_count() const {
     const std::lock_guard<std::mutex> lock(_game);
-    return _metadata_call_count;
+    return _metadata_receive_count;
 }
 
 int Game::host_information_receive_count() const {
@@ -174,7 +181,7 @@ void Game::soft_stop_callback(int timeout, void *userdata) {
         L_ERROR("null userdata");
         return;
     }
-    game->_soft_stop_call_count++;
+    game->_soft_stop_receive_count++;
 }
 
 void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
@@ -187,10 +194,10 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
         L_ERROR("null userdata");
         return;
     }
-    game->_allocated_call_count++;
+    game->_allocated_receive_count++;
 
     game->_matchmaking_status = MatchmakingStatus::allocated;
-    game->_server.set_application_instance_status(
+    game->_one_server.set_application_instance_status(
         OneServerWrapper::ApplicationInstanceStatus::allocated);
 }
 
@@ -204,7 +211,7 @@ void Game::metadata_callback(const OneServerWrapper::MetaDataData &data, void *u
         L_ERROR("null game");
         return;
     }
-    game->_metadata_call_count++;
+    game->_metadata_receive_count++;
 }
 
 void Game::host_information_callback(const OneServerWrapper::HostInformationData &data,
@@ -235,4 +242,4 @@ void Game::application_instance_information_callback(
     game->_application_instance_information_receive_count++;
 }
 
-}  // namespace game
+}  // namespace one_integration

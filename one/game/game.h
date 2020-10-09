@@ -6,7 +6,7 @@
 #include <string>
 #include <mutex>
 
-namespace game {
+namespace one_integration {
 
 ///
 /// A fake Game server. It owns a OneServerWrapper member that encapsulates
@@ -18,7 +18,7 @@ namespace game {
 ///
 class Game final {
 public:
-    Game(unsigned int port);
+    Game();
     Game(const Game &) = delete;
     Game &operator=(const Game &) = delete;
     ~Game();
@@ -26,8 +26,9 @@ public:
     //------------
     // Life cycle.
 
-    bool init(int max_players, const std::string &name, const std::string &map,
-              const std::string &mode, const std::string &version);
+    bool init(unsigned int port, int max_players, const std::string &name,
+              const std::string &map, const std::string &mode,
+              const std::string &version);
     void shutdown();
 
     void alter_game_state();
@@ -38,9 +39,9 @@ public:
     // Query how many times message game information has been requested from the
     // game by the One platform.
 
-    int soft_stop_call_count() const;
-    int allocated_call_count() const;
-    int metadata_call_count() const;
+    int soft_stop_receive_count() const;
+    int allocated_receive_count() const;
+    int metadata_receive_count() const;
     int host_information_receive_count() const;
     int application_instance_information_receive_count() const;
 
@@ -48,7 +49,7 @@ public:
     // minimum or removed. The game, as much as reasonable, should be tested as
     // a black box.
     OneServerWrapper &one_server_wrapper() {
-        return _server;
+        return _one_server;
     }
 
     // Exposed for testing purposes to avoid spamming std::error when testing for expected
@@ -75,14 +76,13 @@ private:
 
     void update_arcus_server_game_state();
 
-    OneServerWrapper _server;
+    OneServerWrapper _one_server;
 
-    // Todo: rename call -> receive here and elsewhere in codebase.
-    int _soft_stop_call_count;
-    int _allocated_call_count;
-    int _metadata_call_count;
-    int _host_information_receive_count;
+    int _soft_stop_receive_count;
+    int _allocated_receive_count;
+    int _metadata_receive_count;
     int _application_instance_information_receive_count;
+    int _host_information_receive_count;
 
     bool _quiet;
 
@@ -100,4 +100,4 @@ private:
     mutable std::mutex _game;
 };
 
-}  // namespace game
+}  // namespace one_integration

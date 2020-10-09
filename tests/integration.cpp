@@ -14,7 +14,7 @@
 #include <chrono>
 
 using namespace std::chrono;
-using namespace game;
+using namespace one_integration;
 using namespace i3d::one;
 
 // Todo: disabled. This test doesn't appear to test connection failure or add value.
@@ -22,8 +22,8 @@ TEST_CASE("Agent connection failure", "[.][integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19001;
 
-    Game game(port);
-    REQUIRE(game.init(16, "name", "map", "mode", "version"));
+    Game game;
+    REQUIRE(game.init(port, 16, "name", "map", "mode", "version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -39,8 +39,8 @@ TEST_CASE("long:Handshake timeout", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19003;
 
-    Game game(port);
-    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
+    Game game;
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
     REQUIRE(!is_error(agent.init(address, port)));
@@ -70,8 +70,8 @@ TEST_CASE("long:Reconnection", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19003;
 
-    Game game(port);
-    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
+    Game game;
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
     REQUIRE(!is_error(agent.init(address, port)));
@@ -91,7 +91,7 @@ TEST_CASE("long:Reconnection", "[integration]") {
     REQUIRE(agent.client().status() == Client::Status::connecting);
 
     // Restart the server and it should be waiting for client.
-    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -105,8 +105,8 @@ TEST_CASE("long:Maintain connection", "[integration]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19003;
 
-    Game game(port);
-    REQUIRE(game.init(16, "test game", "test map", "test mode", "test version"));
+    Game game;
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
 
     Agent agent;
     REQUIRE(!is_error(agent.init(address, port)));

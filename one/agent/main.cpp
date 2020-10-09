@@ -1,5 +1,6 @@
 #include <one/agent/agent.h>
 #include <one/arcus/array.h>
+#include <one/arcus/error.h>
 #include <one/game/log.h>
 
 #include <chrono>

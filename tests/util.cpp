@@ -38,12 +38,13 @@ bool wait_until(int timeout_ms, std::function<bool()> check) {
     return false;
 }
 
-void pump_updates(int count, int ms_per_loop, Agent &agent, game::Game &game) {
+void pump_updates(int count, int ms_per_loop, Agent &agent, one_integration::Game &game) {
     for_sleep(count, ms_per_loop, [&]() {
         game.update();
         agent.update();
         if (agent.client().status() == Client::Status::ready &&
-            game.one_server_wrapper().status() == game::OneServerWrapper::Status::ready)
+            game.one_server_wrapper().status() ==
+                one_integration::OneServerWrapper::Status::ready)
             return true;
         return false;
     });

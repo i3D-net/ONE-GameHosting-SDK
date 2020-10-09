@@ -16,7 +16,7 @@ typedef OneArray *OneArrayPtr;
 struct OneObject;
 typedef OneObject *OneObjectPtr;
 
-namespace game {
+namespace one_integration {
 
 ///
 /// OneServerWrapper encapsulates the integration for the One Arcus Server and
@@ -26,7 +26,7 @@ namespace game {
 ///
 class OneServerWrapper final {
 public:
-    OneServerWrapper(unsigned int port);
+    OneServerWrapper();
     OneServerWrapper(const OneServerWrapper &) = delete;
     OneServerWrapper &operator=(const OneServerWrapper &) = delete;
     ~OneServerWrapper();
@@ -35,6 +35,7 @@ public:
     // Life cycle.
 
     bool init();
+    bool listen(unsigned int port);  // Must be successful before calling update.
     void shutdown();
 
     // Must called often (e.g. each frame). Updates the Arcus Server, which
@@ -73,10 +74,6 @@ public:
     // Set the game state to the current value. The wrapper uses this to send
     // the current state to the One Platform, when requested to do so.
     void set_game_state(const GameState &);
-
-    // const GameState &game_state() const {
-    //     return _game_state;
-    // };
 
     // As defined in:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
@@ -170,7 +167,7 @@ private:
     static void host_information(void *userdata, void *information);
     static void application_instance_information(void *userdata, void *information);
 
-    // Ancillary function to show how to parse the message payloads.
+    // Parsing of message payloads.
     static bool extract_allocated_payload(OneArrayPtr array,
                                           AllocatedData &allocated_data);
     static bool extract_metadata_payload(OneArrayPtr array, MetaDataData &metadata);
@@ -179,14 +176,9 @@ private:
     static bool extract_application_instance_information_payload(
         OneObjectPtr object, ApplicationInstanceInformationData &information);
 
-    bool send_live_state();
-    bool send_application_instance_status(ApplicationInstanceStatus status);
-
     // The Arcus Server itself.
-    OneServerPtr _server;
-    const unsigned int _port;
-
     mutable std::mutex _wrapper;
+    OneServerPtr _server;
 
     //--------------------------------------------------------------------------
     // Callbacks.
@@ -208,4 +200,4 @@ private:
     void *_application_instance_information_userdata;
 };
 
-}  // namespace game
+}  // namespace one_integration

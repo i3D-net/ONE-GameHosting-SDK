@@ -52,11 +52,6 @@ public:
         return _client;
     }
 
-    int live_state_call_count() const {
-        const std::lock_guard<std::mutex> lock(_agent);
-        return _live_state_call_count;
-    }
-
     int host_information_send_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
         return _host_information_send_count;
@@ -65,6 +60,11 @@ public:
     int application_instance_information_send_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
         return _application_instance_information_send_count;
+    }
+
+    int live_state_receive_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _live_state_receive_count;
     }
 
     int application_instance_status_receive_count() const {
@@ -80,9 +80,9 @@ private:
 
     bool _quiet;
 
-    int _live_state_call_count;
     int _host_information_send_count;
     int _application_instance_information_send_count;
+    int _live_state_receive_count;
     int _application_instance_status_receive_count;
 
     mutable std::mutex _agent;
