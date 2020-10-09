@@ -260,7 +260,7 @@ TEST_CASE("two game on same process", "[concurrency]") {
         agent2.update();
     }
 
-    for_sleep(10, 0, [&]() {
+    for_sleep(20, 1, [&]() {
         game.alter_game_state();
         game.update();
 
@@ -337,7 +337,7 @@ TEST_CASE("multiple game on the same process", "[concurrency]") {
         agent3.update();
     }
 
-    for_sleep(10, 0, [&]() {
+    for_sleep(20, 1, [&]() {
         game.alter_game_state();
         game.update();
 
