@@ -8,7 +8,7 @@
 namespace one_integration {
 
 Game::Game()
-    : _one_server()
+    : _one_server()  // The One Arcus Server's default constructor is called.
     , _soft_stop_receive_count(0)
     , _allocated_receive_count(0)
     , _metadata_receive_count(0)
@@ -28,6 +28,10 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
                 const std::string &version) {
     const std::lock_guard<std::mutex> lock(_game);
 
+    //----------------------------------------------------------------------
+    // Init One Server and make it start listening for an incoming One Agent
+    // client connection.
+
     if (!_one_server.init()) {
         L_ERROR("failed to init one server");
         return false;
@@ -37,6 +41,9 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
         L_ERROR("failed to listen on one server");
         return false;
     }
+
+    //------------------------------------------------------------
+    // Set initial game state and register notification callbacks.
 
     _players = 0;  // Game starts with 0 active players.
     _max_players = max_players;
@@ -72,13 +79,13 @@ void Game::alter_game_state() {
         return;
     }
 
-    // This is mainly to emulate a very simple game change (i.e.: changing both the number
-    // of player and status.
-    // In a real life senario the game would use its own mecahnisms to get the number of
-    // players, current maps, etc...
+    //--------------------------------------------------------------------------
+    // Emulate a very simple game change. In a real integration the game would
+    // need to update its game state from its game mode, player and match
+    // systems.
 
-    // The number of player is arbitrarily changed to trigger player joined and left
-    // messages.
+    // The number of player is arbitrarily changed to trigger player joined and
+    // left messages.
     if (_max_players < _players + 1) {
         _players = 0;
     } else {
@@ -87,12 +94,13 @@ void Game::alter_game_state() {
 
     update_arcus_server_game_state();
 
-    // Updating the server status incrementally.
-    // First time it is set as starting.
-    // Second time it is set as online.
-    // Third time it is set as allocated.
-    // The progession order is the good one, but the timing is arbitrarily and might
-    // change depending on the game startup sequence.
+    //--------------------------------------------------------------------------
+    // Update game server status. The game server must notify One when it is
+    // finished initializing and ready to matchmake (online status). It may
+    // also need to transition to and from the allocated status in response to
+    // an allocated message from One.
+    // Below, states are transitioned in the correct order but not based on any
+    // real matchmaking as this is not a real game server.
 
     switch (_matchmaking_status) {
         case MatchmakingStatus::none:
@@ -181,6 +189,7 @@ void Game::soft_stop_callback(int timeout, void *userdata) {
         L_ERROR("null userdata");
         return;
     }
+    // A real game would schedule a graceful process shutdown here.
     game->_soft_stop_receive_count++;
 }
 
@@ -194,6 +203,9 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
         L_ERROR("null userdata");
         return;
     }
+    // A real game would use the given matchmaking here to host a match and
+    // set its Application Instance Status to allocated when ready to accept
+    // players.
     game->_allocated_receive_count++;
 
     game->_matchmaking_status = MatchmakingStatus::allocated;
@@ -211,6 +223,7 @@ void Game::metadata_callback(const OneServerWrapper::MetaDataData &data, void *u
         L_ERROR("null game");
         return;
     }
+    // A real game would apply the metadata here to the server.
     game->_metadata_receive_count++;
 }
 
@@ -225,6 +238,8 @@ void Game::host_information_callback(const OneServerWrapper::HostInformationData
         L_ERROR("null game");
         return;
     }
+    // A real game can read host fields here, for example to post server name
+    // information in the UI for the player to see.
     game->_host_information_receive_count++;
 }
 
@@ -239,6 +254,7 @@ void Game::application_instance_information_callback(
         L_ERROR("null game");
         return;
     }
+    // A real game could use information here for debugging or other purposes.
     game->_application_instance_information_receive_count++;
 }
 

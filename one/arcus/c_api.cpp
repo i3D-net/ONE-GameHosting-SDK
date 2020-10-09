@@ -1086,9 +1086,8 @@ OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, int *siz
     return one::array_val_string_size(array, pos, size);
 }
 
-OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
-                              int val_size) {
-    return one::array_val_string(array, pos, val, val_size);
+OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val, int size) {
+    return one::array_val_string(array, pos, val, size);
 }
 
 OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val) {

@@ -104,7 +104,8 @@ void OneServerWrapper::shutdown() {
         return;
     }
 
-    // Free all objects created via the One API.
+    // Free all objects created via the One API. This also shuts down the server
+    // first, ending any active connection to it.
     one_server_destroy(_server);
     _server = nullptr;
 }
@@ -113,7 +114,11 @@ void OneServerWrapper::update() {
     const std::lock_guard<std::mutex> lock(_wrapper);
     assert(_server != nullptr);
 
-    auto err = one_server_update(_server);
+    // Updates the server, which handles client connections, and services
+    // outgoing and incoming messages.
+    // Any registered callbacks will called during update, if the corresponding
+    // messages are received.
+    OneError err = one_server_update(_server);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return;
@@ -167,18 +172,31 @@ OneServerWrapper::Status OneServerWrapper::status() const {
 }
 
 void OneServerWrapper::set_game_state(const GameState &state) {
-    // Todo: example of additional addition object pairs to the live state.
+    // If the game wishes to send and coordinate the processing of additional
+    // game state to the One Platform, it can add that data here as an object
+    // with additional keys. Note that these key names must not conflict with
+    // the base key names of the Live State message.
+    // OneObjectPtr object;
+    // OneError err = one_object_create(&object);
+    // if (one_is_error(err)) {
+    //     L_ERROR(one_error_text(err));
+    // }
+    // one_object_set_val_int(object, "matchLength", 123);
 
-    auto err = one_server_set_live_state(
+    // The optional object may be passed here as the last variable.
+    OneError err = one_server_set_live_state(
         _server, state.players, state.max_players, state.name.c_str(), state.map.c_str(),
         state.mode.c_str(), state.version.c_str(), nullptr);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
     }
+
+    // If custom data was added, then make sure to destroy the object.
+    // one_object_destroy(object);
 }
 
 void OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus status) {
-    auto err = one_server_set_application_instance_status(
+    OneError err = one_server_set_application_instance_status(
         _server, (OneApplicationInstanceStatus)status);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
@@ -406,7 +424,6 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
     return true;
 }
 
-// Todo: can these extract_xxx functions be done within the API itself?
 bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
                                                 MetaDataData &metadata) {
     if (array == nullptr) {
@@ -456,7 +473,7 @@ bool OneServerWrapper::extract_host_information_payload(
         return false;
     }
 
-    auto err = one_object_val_int(object, "id", &information.id);
+    OneError err = one_object_val_int(object, "id", &information.id);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return false;
@@ -497,7 +514,7 @@ bool OneServerWrapper::extract_application_instance_information_payload(
         return false;
     }
 
-    auto err = one_object_val_int(object, "hostId", &information.host_id);
+    OneError err = one_object_val_int(object, "hostId", &information.host_id);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return false;
