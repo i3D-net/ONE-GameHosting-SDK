@@ -39,7 +39,6 @@
 #define ONE_EXPORT
 #define ONE_STDCALL
 
-//#include <cstddef>
 #include <one/arcus/c_error.h>
 
 #ifdef __cplusplus
