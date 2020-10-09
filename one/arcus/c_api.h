@@ -19,6 +19,21 @@
     3. If needed, use the Message API functions like one_message_val_int to read
     key/value pair details from the more complex messages.
     4. Properly cleanup the server as needed.
+
+    NOTE ON THREAD SAFETY:
+    > Working with server objects returned from one_server_create is thread safe.
+    > Other functions like one_allocator_set_alloc, or working with message
+    > object data instances like OneArrayPtr or OneObjectPtr are not thread safe
+    > as these should be called either in the game's main init/shutdown code path
+    > or while handling specific isolated functionality on a thread.
+    >
+    > Thread safe functions are identified in the function declaration comments.
+
+    NOTE ON MULTIPLE SERVERS:
+    > This Api is designed to allow for multiple game servers to be managed
+    > on a single process. Each game server would need its own One Arcus Server,
+    > created via one_server_create. Please check with One Documentation or
+    > customer support for backend support.
 */
 
 #define ONE_EXPORT
@@ -91,7 +106,7 @@ void one_allocator_set_free(void(callback)(void *));
 
 /// Creates a new Arcus Server. Each Game Server must have one corresponding
 /// Arcus Server. Listen, update, shutdown and destroy should be called to complete the
-/// life cycle.
+/// life cycle. Thread-safe.
 /// @param server A null server pointer, which will be set to a new server.
 /// \sa one_server_destroy
 /// \sa one_server_listen
@@ -100,28 +115,31 @@ void one_allocator_set_free(void(callback)(void *));
 OneError one_server_create(OneServerPtr *server);
 
 /// Destroys a server instance created via one_server_create. Destroy will
-/// shutdown the server first, if it is active.
+/// shutdown the server first, if it is active. Note although other server functions
+/// are thread safe, this one is not. A server must not be destroyed or interacted
+/// with on other threads.
 /// @param server A non-null server pointer.
 void one_server_destroy(OneServerPtr server);
 
 /// Closes the listen connection, if any and resets the server to creation state.
-/// @param server A non-null server pointer.
+/// @param server A non-null server pointer. Thread-safe.
 OneError one_server_shutdown(OneServerPtr server);
 
 /// Start listening on the given port. This should be called before
 /// update. Listening will fail and return an error if the port is already in
-/// use.
+/// use. Thread-safe.
 /// @param server A non-null server pointer.
+/// @param port The port to bind to.
 OneError one_server_listen(OneServerPtr server, unsigned int port);
 
 /// Update the server. This must be called frequently (e.g. each frame) to
 /// process incoming and outgoing communications. Incoming messages trigger
 /// their respective incoming callbacks during the call to update. If the a
 /// callback for a message is not set then the message is ignored.
-/// @param server A non-null server pointer.
+/// @param server A non-null server pointer. Thread-safe.
 OneError one_server_update(OneServerPtr server);
 
-/// Returns the status of the server
+/// Returns the status of the server. Thread-safe.
 /// @param server A non-null server pointer.
 /// @param status A pointer to a status enum value to be set.
 OneError one_server_status(OneServerPtr const server, OneServerStatus *status);
@@ -131,7 +149,7 @@ OneError one_server_status(OneServerPtr const server, OneServerStatus *status);
 ///@name Array main interface
 ///@{
 
-/// Creates a new array. Must be freed with one_array_destroy.
+/// Creates a new array. Must be freed with one_array_destroy. Thread-safe.
 /// @param array A null pointer to a OneArrayPtr, to be set with new array.
 OneError one_array_create(OneArrayPtr *array);
 
@@ -212,24 +230,25 @@ OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *resu
 /// pointer must be non-null and will have the return value set on it.
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
-/// @param key The key of the value to return.
+/// @param pos The index of the value to retrieve. Must be less than one_array_size.
+/// @param val A non-nil pointer to set the value on.
 OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val);
 OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val);
 /// Returns the number of characters in the string. This does not include a trailing null
 /// character.
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
-/// @param key The key of the value to return.
+/// @param pos The index of the value to retrieve. Must be less than one_array_size.
 /// @param size A non-null int pointer to set the size on.
 OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, int *size);
 /// Writes the key value to the given character buffer.
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
-/// @param key The key of the value to return.
+/// @param pos The index of the value to retrieve. Must be less than one_array_size.
+/// @param val A non-nil pointer to set the value on.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_array_val_string_size.
-OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
-                              int val_size);
+OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val, int size);
 OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
 OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
 
@@ -240,6 +259,9 @@ OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr 
 
 /// Allows setting a sub key/value pair on the array of the given type.
 /// @param array A valid object created via one_array_create.
+/// @param pos The position in the array to set the value in. Must be less than
+/// one_array_size.
+/// @param val The value to set.
 OneError one_array_set_val_bool(OneArrayPtr array, unsigned int pos, bool val);
 OneError one_array_set_val_int(OneArrayPtr array, unsigned int pos, int val);
 OneError one_array_set_val_string(OneArrayPtr array, unsigned int pos, const char *val);
@@ -252,7 +274,7 @@ OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObject
 ///@{
 
 /// Create a new object that can be used as a key value in a One protocol message.
-/// one_object_destroy must be called to free the object.
+/// one_object_destroy must be called to free the object. Thread-safe.
 /// @param object A pointer that will be set to point to the new OneObjectPtr.
 OneError one_object_create(OneObjectPtr *object);
 
@@ -291,6 +313,7 @@ OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *re
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
+/// @param val Non-nil pointer to set the value on.
 OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
 OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
 /// Returns the number of characters in the string. This does not include a trailing null
@@ -304,6 +327,7 @@ OneError one_object_val_string_size(OneObjectPtr object, const char *key, int *s
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
+/// @param val Non-nil pointer to set the value on.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_object_val_string_size.
 OneError one_object_val_string(OneObjectPtr object, const char *key, char *val, int size);
@@ -317,6 +341,8 @@ OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPt
 
 /// Allows setting a sub key/value pair on the object of the given type.
 /// @param object A valid object created via one_object_create.
+/// @param key The key of the value to return.
+/// @param val The value to set.
 OneError one_object_set_val_bool(OneObjectPtr object, const char *key, bool val);
 OneError one_object_set_val_int(OneObjectPtr object, const char *key, int val);
 OneError one_object_set_val_string(OneObjectPtr object, const char *key, const char *val);
@@ -335,7 +361,7 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
 /// Set the live game state information about the game server. This should be
 /// called at the least when the state changes, but it is safe to call more
 /// often if it is more convenient to do so - data is only sent out if there are
-/// changes from the previous call.
+/// changes from the previous call. Thread-safe.
 /// @param server A non-null server pointer.
 /// @param players Current player count.
 /// @param max_players Max player count allowed in current match.
@@ -350,7 +376,7 @@ OneError one_server_set_live_state(OneServerPtr server, int players, int max_pla
 
 /// This should be called at the least when the state changes, but it is safe to
 /// call more often if it is more convenient to do so - data is only sent out if
-/// there are changes from the previous call.
+/// there are changes from the previous call. Thread-safe.
 /// @param server A non-null server pointer.
 /// @param status The current status of the game server application instance.
 OneError one_server_set_application_instance_status(OneServerPtr server,
@@ -367,7 +393,7 @@ OneError one_server_set_application_instance_status(OneServerPtr server,
 /// Registers a callback to be called when a soft stop message is received. The
 /// process should stop at its earliest convenience. If the server process is
 /// still active after the given timeout (seconds), then One will terminate the
-/// process directly.
+/// process directly. Thread-safe.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
@@ -380,7 +406,7 @@ OneError one_server_set_soft_stop_callback(OneServerPtr server,
 /// The game server must read the given array data and be ready to accept
 /// players in the directed gameplay environment (e.g. map, mode), if specified
 /// and required by the game's One platform configuration.
-/// @param server Non-null server pointer.
+/// @param server Non-null server pointer. Thread-safe.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
@@ -388,7 +414,7 @@ OneError one_server_set_allocated_callback(OneServerPtr server,
                                            void (*callback)(void *data, void *array),
                                            void *data);
 
-/// Register the callback to be notified of a metadata.
+/// Register the callback to be notified of a metadata. Thread-safe.
 /// The `void *array` will be of type OneArrayPtr or the callback will error out.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
@@ -398,7 +424,7 @@ OneError one_server_set_metadata_callback(OneServerPtr server,
                                           void (*callback)(void *data, void *array),
                                           void *data);
 
-/// Register the callback to be notified of host_information.
+/// Register the callback to be notified of host_information. Thread-safe.
 /// The `void *object` will be of type OneObjectPtr or the callback will error out.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
@@ -408,6 +434,7 @@ OneError one_server_set_host_information_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
 
 /// Register the callback to be notified of a application_instance_information.
+/// Thread-safe.
 /// The `void *object` will be of type OneObjectPtr or the callback will error out.
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if

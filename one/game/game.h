@@ -8,7 +8,6 @@
 
 namespace one_integration {
 
-///
 /// A fake Game server. It owns a OneServerWrapper member that encapsulates
 /// the c_api.h of the arcus server.
 ///
@@ -16,6 +15,10 @@ namespace one_integration {
 /// - Facilitate automated and manual integration testing of the SDK
 /// - Illustrate an integration
 ///
+/// Please note that this particular class is a completely fake game, and its
+/// interface is not meant to represent those found in real games. Its public
+/// surface's main goal is to assist integration-style testing. See the use of
+/// its _one_server member variable for integration functionality.
 class Game final {
 public:
     Game();

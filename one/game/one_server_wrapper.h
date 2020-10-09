@@ -18,12 +18,14 @@ typedef OneObject *OneObjectPtr;
 
 namespace one_integration {
 
-///
 /// OneServerWrapper encapsulates the integration for the One Arcus Server and
 /// provides a game interface that hides the One Arcus Server API implementation
 /// from the game. Errors are handled directly in the implementation of the
 /// wrapper.
 ///
+/// This is provided as a potential copy-paste initial integration solution for
+/// users that would like to hide the c-api under a game-specific C++ class, and
+/// also as a complete example of an integration.
 class OneServerWrapper final {
 public:
     OneServerWrapper();
@@ -108,6 +110,7 @@ public:
         std::string max_players;  // Game max number of players.
         std::string map;          // Game map.
     };
+    // Allows the game server to be notified of an incoming Allocated message.
     void set_allocated_callback(
         std::function<void(const AllocatedData &data, void *userdata)> callback,
         void *userdata);
@@ -123,6 +126,7 @@ public:
         std::string mode;  // Game mode.
         std::string type;  // Game type.
     };
+    // Allows the game server to be notified of an incoming Metadata message.
     void set_metadata_callback(
         std::function<void(const MetaDataData &data, void *userdata)> callback,
         void *userdata);
@@ -138,6 +142,7 @@ public:
         std::string server_name;  // server name.
         // ... add members as needed.
     };
+    // Allows the game server to be notified of an incoming Host Information message.
     void set_host_information_callback(
         std::function<void(const HostInformationData &data, void *userdata)> callback,
         void *userdata);
@@ -153,6 +158,8 @@ public:
         int is_virtual;        // is virtual.
         // ... add members as needed.
     };
+    // Allows the game server to be notified of an incoming Application
+    // Instance Information message.
     void set_application_instance_information_callback(
         std::function<void(const ApplicationInstanceInformationData &data,
                            void *userdata)>
