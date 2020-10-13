@@ -35,7 +35,7 @@ void update_game(Game *game) {
 }
 
 void update_agent(Agent *agent) {
-    for_sleep(1000, 1, [&]() {
+    for_sleep(100, 1, [&]() {
         auto err = agent->update();
         if (one_is_error(err)) {
             L_ERROR(one_error_text(err));
@@ -119,7 +119,7 @@ TEST_CASE("long:single thread send information", "[concurrency]") {
 
     pump_updates(10, 1, agent, game);
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 40; ++i) {
         update_game_send_statistics(&game);
         update_agent(&agent);
     }
@@ -171,7 +171,7 @@ TEST_CASE("two thread send information", "[concurrency]") {
     t8.join();
 }
 
-TEST_CASE("long:multiple thread send information", "[concurrency]") {
+TEST_CASE("multiple thread send information", "[concurrency]") {
     const unsigned int port = 19313;
     const auto address = "127.0.0.1";
 

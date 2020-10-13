@@ -1,14 +1,30 @@
 #include <util.h>
 
-#include <one/game/one_server_wrapper.h>
-
 #include <chrono>
 #include <thread>
+
+#ifdef WINDOWS
+#include <Windows.h>
+#endif
+
+#include <one/game/one_server_wrapper.h>
 
 using namespace std::chrono;
 
 namespace i3d {
 namespace one {
+
+void start_high_resolution_sleep() {
+    #ifdef WINDOWS
+    timeBeginPeriod(1);
+    #endif
+}
+
+void end_high_resolution_sleep() {
+    #ifdef WINDOWS
+    timeEndPeriod(1);
+    #endif
+}
 
 void sleep(int ms) {
     std::this_thread::sleep_for(milliseconds(ms));
@@ -33,6 +49,8 @@ void for_sleep_duration(std::chrono::seconds duration_seconds, std::chrono::mill
 }
 
 void for_sleep(int count, int ms_per_loop, std::function<bool()> cb) {
+    ScopedHighResolutionSleepEnabler enabler;
+
     for (int i = 0; i < count; i++) {
         if (cb()) {
             break;
@@ -46,6 +64,8 @@ bool wait_until(int timeout_ms, std::function<bool()> check) {
     if (check()) {
         return true;
     }
+
+    ScopedHighResolutionSleepEnabler enabler;
     while (duration_cast<milliseconds>(steady_clock::now() - start).count() <
            timeout_ms) {
         std::this_thread::sleep_for(milliseconds(1));
