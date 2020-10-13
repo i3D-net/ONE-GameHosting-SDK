@@ -104,19 +104,19 @@ void Game::alter_game_state() {
 
     switch (_matchmaking_status) {
         case MatchmakingStatus::none:
-            L_INFO("application instance status none");
+            if (!_quiet) L_INFO("application instance status none");
             _matchmaking_status = MatchmakingStatus::starting;
             _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::starting);
             break;
         case MatchmakingStatus::starting:
-            L_INFO("application instance status starting");
+            if (!_quiet) L_INFO("application instance status starting");
             _matchmaking_status = MatchmakingStatus::online;
             _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::online);
             break;
         case MatchmakingStatus::allocated:
-            L_INFO("application instance status allocated");
+            if (!_quiet) L_INFO("application instance status allocated");
             // Fake ending an allocated match and going back to online.
             if (_players == 0) {
                 _matchmaking_status = MatchmakingStatus::online;
@@ -125,7 +125,7 @@ void Game::alter_game_state() {
             }
             break;
         case MatchmakingStatus::online:
-            L_INFO("application instance status online");
+            if (!_quiet) L_INFO("application instance status online");
             break;
         default:
             L_ERROR("invalid matchmaking status");
@@ -134,7 +134,7 @@ void Game::alter_game_state() {
 
 void Game::update() {
     const std::lock_guard<std::mutex> lock(_game);
-    _one_server.update();
+    _one_server.update(_quiet);
 }
 
 void Game::update_arcus_server_game_state() {
@@ -182,30 +182,38 @@ int Game::application_instance_information_receive_count() const {
 }
 
 void Game::soft_stop_callback(int timeout, void *userdata) {
-    L_INFO("soft stop called:");
-    L_INFO("\ttimeout:" + std::to_string(timeout));
     auto game = reinterpret_cast<Game *>(userdata);
     if (game == nullptr) {
         L_ERROR("null userdata");
         return;
     }
+
     // A real game would schedule a graceful process shutdown here.
+    if (!game->is_quiet()) {
+        L_INFO("soft stop called:");
+        L_INFO("\ttimeout:" + std::to_string(timeout));
+    }
+
     game->_soft_stop_receive_count++;
 }
 
 void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
                               void *userdata) {
-    L_INFO("allocated called:");
-    L_INFO("\tmax_players:" + data.max_players);
-    L_INFO("\tmap:" + data.map);
     auto game = reinterpret_cast<Game *>(userdata);
     if (game == nullptr) {
         L_ERROR("null userdata");
         return;
     }
+
     // A real game would use the given matchmaking here to host a match and
     // set its Application Instance Status to allocated when ready to accept
     // players.
+    if (!game->is_quiet()) {
+        L_INFO("allocated called:");
+        L_INFO("\tmax_players:" + data.max_players);
+        L_INFO("\tmap:" + data.map);
+    }
+
     game->_allocated_receive_count++;
 
     game->_matchmaking_status = MatchmakingStatus::allocated;
@@ -214,47 +222,58 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
 }
 
 void Game::metadata_callback(const OneServerWrapper::MetaDataData &data, void *userdata) {
-    L_INFO("meta data called:");
-    L_INFO("\tmap:" + data.map);
-    L_INFO("\tmode:" + data.mode);
-    L_INFO("\ttype:" + data.type);
     auto game = reinterpret_cast<Game *>(userdata);
     if (game == nullptr) {
         L_ERROR("null game");
         return;
     }
     // A real game would apply the metadata here to the server.
+    if (!game->is_quiet()) {
+        L_INFO("meta data called:");
+        L_INFO("\tmap:" + data.map);
+        L_INFO("\tmode:" + data.mode);
+        L_INFO("\ttype:" + data.type);
+    }
+
     game->_metadata_receive_count++;
 }
 
 void Game::host_information_callback(const OneServerWrapper::HostInformationData &data,
                                      void *userdata) {
-    L_INFO("host information called:");
-    L_INFO("\tid:" + std::to_string(data.id));
-    L_INFO("\tserver id:" + std::to_string(data.server_id));
-    L_INFO("\tserver name:" + data.server_name);
     auto game = reinterpret_cast<Game *>(userdata);
     if (game == nullptr) {
         L_ERROR("null game");
         return;
     }
+
     // A real game can read host fields here, for example to post server name
     // information in the UI for the player to see.
+    if (!game->is_quiet()) {
+        L_INFO("host information called:");
+        L_INFO("\tid:" + std::to_string(data.id));
+        L_INFO("\tserver id:" + std::to_string(data.server_id));
+        L_INFO("\tserver name:" + data.server_name);
+    }
+
     game->_host_information_receive_count++;
 }
 
 void Game::application_instance_information_callback(
     const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata) {
-    L_INFO("application instance information called:");
-    L_INFO("\tfleet id:" + data.fleet_id);
-    L_INFO("\thost id:" + std::to_string(data.host_id));
-    L_INFO("\tis virtual:" + std::to_string(data.is_virtual));
     auto game = reinterpret_cast<Game *>(userdata);
     if (game == nullptr) {
         L_ERROR("null game");
         return;
     }
+
     // A real game could use information here for debugging or other purposes.
+    if (!game->is_quiet()) {
+        L_INFO("application instance information called:");
+        L_INFO("\tfleet id:" + data.fleet_id);
+        L_INFO("\thost id:" + std::to_string(data.host_id));
+        L_INFO("\tis virtual:" + std::to_string(data.is_virtual));
+    }
+
     game->_application_instance_information_receive_count++;
 }
 

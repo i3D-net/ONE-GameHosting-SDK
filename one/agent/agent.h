@@ -27,6 +27,10 @@ public:
         _quiet = quiet;
     }
 
+    bool is_quiet() const {
+        return _quiet;
+    }
+
     // Update: process incomming message and outgoing messages.
     Error update();
 

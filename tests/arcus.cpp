@@ -362,10 +362,9 @@ TEST_CASE("message send and receive", "[arcus]") {
     REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_EMPTY);
 
     // Send a message from client to server.
-    err = objects.client_connection->add_outgoing([](Message &message) {
-        messages::prepare_soft_stop(1000, message);
-        return ONE_ERROR_NONE;
-    });
+    Message message;
+    messages::prepare_soft_stop(1000, message);
+    err = objects.client_connection->add_outgoing(message);
 
     const auto pump_messages = [&]() {
         for_sleep(10, 1, [&]() {
@@ -392,19 +391,17 @@ TEST_CASE("message send and receive", "[arcus]") {
 
     // Fill up the outgoing messages.
     for (unsigned int i = 0; i < queue_length; ++i) {
-        err = objects.client_connection->add_outgoing([](Message &message) {
-            messages::prepare_soft_stop(1000, message);
-            return ONE_ERROR_NONE;
-        });
+
+        Message message;
+        messages::prepare_soft_stop(1000, message);
+        err = objects.client_connection->add_outgoing(message);
         REQUIRE(!is_error(err));
     }
     // Add one more message, which should not fit in the outgoing message queue.
-    err = objects.client_connection->add_outgoing([](Message &message) {
-        Array array;
-        messages::prepare_allocated(array, message);
-        return ONE_ERROR_NONE;
-    });
-    REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_INSUFFICIENT_SPACE);
+    Array array;
+    messages::prepare_allocated(array, message);
+    err = objects.client_connection->add_outgoing(message);
+    REQUIRE(err == ONE_ERROR_CONNECTION_OUTGOING_QUEUE_INSUFFICIENT_SPACE);
 
     // Ensure server received the initial messages and not the dropped one.
     pump_messages();
@@ -444,13 +441,10 @@ TEST_CASE("message send bad json", "[arcus]") {
     REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_EMPTY);
 
     // Send a message from client to server.
-    err = objects.client_connection->add_outgoing([](Message &message) {
-        const std::string invalid_json = "{\"invalid_json\":true";
-        auto error =
-            message.init(Opcode::metadata, {invalid_json.c_str(), invalid_json.size()});
-        REQUIRE(error == ONE_ERROR_PAYLOAD_PARSE_FAILED);
-        return ONE_ERROR_NONE;
-    });
+    const std::string invalid_json = "{\"invalid_json\":true";
+    Message message;
+    err = message.init(Opcode::metadata, {invalid_json.c_str(), invalid_json.size()});
+    err = objects.client_connection->add_outgoing(message);
 
     const auto pump_messages = [&]() {
         for_sleep(10, 1, [&]() {

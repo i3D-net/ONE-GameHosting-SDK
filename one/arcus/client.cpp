@@ -18,7 +18,9 @@ namespace one {
 constexpr size_t connection_retry_delay_seconds = 5;
 
 Client::Client()
-    : _socket(nullptr)
+    : _server_address("")
+    , _server_port(0)
+    , _socket(nullptr)
     , _connection(nullptr)
     , _is_connected(false)
     , _last_connection_attempt_time(steady_clock::duration::zero())
@@ -96,6 +98,7 @@ Error Client::update() {
         return ONE_ERROR_CLIENT_NOT_INITIALIZED;
     }
     assert(_connection != nullptr);
+    assert(_socket != nullptr);
 
     // If not connected, attempt to connect at an interval.
     if (!_is_connected) {
@@ -109,6 +112,9 @@ Error Client::update() {
             if (is_error(error)) {
                 return error;
             }
+        } else {
+            // Not connected, wait until next connection attempt.
+            return ONE_ERROR_NONE;
         }
     }
 
@@ -124,6 +130,8 @@ Error Client::update() {
         _connection->shutdown();
         _socket->close();
         _is_connected = false;
+        _last_connection_attempt_time =
+            steady_clock::time_point(steady_clock::duration::zero());
         _socket->init();
         _connection->init(*_socket);
         return passthrough_err;
@@ -142,15 +150,9 @@ Error Client::update() {
         if (is_error(err)) return close_client(err);
         if (count == 0) break;
 
-        err = _connection->remove_incoming([this](const Message &message) {
-            auto err = process_incoming_message(message);
-            if (is_error(err)) return err;
-
-            return ONE_ERROR_NONE;
-        });
-        if (is_error(err)) {
-            return close_client(err);
-        }
+        err = _connection->remove_incoming(
+            [this](const Message &message) { return process_incoming_message(message); });
+        if (is_error(err)) return close_client(err);
     }
 
     return ONE_ERROR_NONE;
@@ -354,10 +356,7 @@ Error Client::process_outgoing_message(const Message &message) {
         return ONE_ERROR_SERVER_CONNECTION_NOT_READY;
     }
 
-    err = _connection->add_outgoing([&](Message &m) {
-        m = message;
-        return ONE_ERROR_NONE;
-    });
+    err = _connection->add_outgoing(message);
     if (is_error(err)) {
         return err;
     }

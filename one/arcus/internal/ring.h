@@ -11,12 +11,12 @@ class Ring final {
 public:
     Ring(size_t capacity)
         : _buffer(nullptr), _capacity(capacity), _last(0), _next(0), _size(0) {
-        assert(capacity > 0);
-        _buffer = new T[capacity];
+        assert(_capacity > 0);
+        _buffer = new T[_capacity];
     }
     ~Ring() {
         assert(_buffer);
-        delete _buffer;
+        delete[] _buffer;
         _buffer = nullptr;
     }
 
@@ -42,6 +42,14 @@ public:
         if (_size < _capacity) _size++;
     }
 
+    // Returns the last element, if any, or null if none.
+    T *peek() {
+        if (_size == 0) {
+            return nullptr;
+        }
+        return &_buffer[_last];
+    }
+
     // Pops the oldest pushed value. Asserts if size is zero.
     const T &pop() {
         assert(_size > 0);
@@ -58,7 +66,7 @@ public:
 private:
     T *_buffer;
 
-    size_t _capacity;
+    const size_t _capacity;
     size_t _size;
 
     unsigned int _last;  // The oldest pushed item that is not yet popped.

@@ -31,7 +31,7 @@ public:
     // given data pointer to the data. length must be <= size.
     void peek(size_t length, void **data);
 
-    // Drops the number of given bytes from the beginning of the stream, making
+    // Drops the number of given bytes from the beginning of the stream, freeing
     // capacity at the end. length must be less than size.
     void trim(size_t length);
 

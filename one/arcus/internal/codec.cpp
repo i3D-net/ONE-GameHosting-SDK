@@ -42,13 +42,14 @@ Error data_to_message(const void *data, const size_t data_size, size_t &read_dat
     auto err = data_to_header(data, header_size(), header);
     if (is_error(err)) return err;
 
-    if (payload_max_size() < header.length) {
+    if (header.length > payload_max_size()) {
         return ONE_ERROR_CODEC_EXPECTED_DATA_LENGTH_TOO_BIG;
     }
 
     const size_t total_message_size = header_size() + header.length;
-
     if (data_size < total_message_size) {
+        // The header has a payload length but the data isn't long enough -
+        // cannot read the entire payload.
         return ONE_ERROR_CODEC_DATA_LENGTH_TOO_SMALL_FOR_PAYLOAD;
     }
 
