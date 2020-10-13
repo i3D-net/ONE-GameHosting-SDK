@@ -9,25 +9,38 @@ TEST_CASE("ring", "[arcus]") {
     Ring<int> ring(capacity);
     REQUIRE(ring.capacity() == capacity);
 
-    ring.push(1);
+    REQUIRE(ring.peek() == nullptr);
+
+    int i = 1;
+    ring.push(i);
+    REQUIRE(*ring.peek() == 1);
     REQUIRE(ring.pop() == 1);
 
-    ring.push(1);
-    ring.push(2);
+    ring.push(i);
+    i = 2;
+    ring.push(i);
+
     REQUIRE(ring.pop() == 1);
     REQUIRE(ring.pop() == 2);
 
     // Do it again for first wrap-around test.
-    ring.push(1);
-    ring.push(2);
+    i = 1;
+    ring.push(i);
+    i = 2;
+    ring.push(i);
     REQUIRE(ring.pop() == 1);
     REQUIRE(ring.pop() == 2);
 
     // Overflow.
-    ring.push(1);
-    ring.push(2);
-    ring.push(3);
-    ring.push(4);
+    i = 1;
+    ring.push(i);
+    i = 2;
+    ring.push(i);
+    i = 3;
+    ring.push(i);
+    i = 4;
+    ring.push(i);
+    REQUIRE(*ring.peek() == 3);
     REQUIRE(ring.pop() == 3);
     REQUIRE(ring.pop() == 4);
 }

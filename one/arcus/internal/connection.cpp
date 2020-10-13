@@ -77,15 +77,11 @@ Connection::Status Connection::status() const {
     return _status;
 }
 
-Error Connection::add_outgoing(std::function<Error(Message &message)> modify_callback) {
-    assert(modify_callback);
-
+Error Connection::add_outgoing(const Message &message) {
     if (_outgoing_messages.size() == _outgoing_messages.capacity())
-        return ONE_ERROR_CONNECTION_QUEUE_INSUFFICIENT_SPACE;
+        return ONE_ERROR_CONNECTION_OUTGOING_QUEUE_INSUFFICIENT_SPACE;
 
-    auto message = new Message();
     _outgoing_messages.push(message);
-    modify_callback(*message);
     return ONE_ERROR_NONE;
 }
 
@@ -102,12 +98,10 @@ Error Connection::remove_incoming(
         return ONE_ERROR_CONNECTION_QUEUE_EMPTY;
     }
 
-    const Message *message = _incoming_messages.pop();
-    assert(message != nullptr);
-    read_callback(*message);
-    delete message;
+    const Message &message = _incoming_messages.pop();
+    auto err = read_callback(message);
 
-    return ONE_ERROR_NONE;
+    return err;
 }
 
 void Connection::initiate_handshake() {
@@ -120,7 +114,7 @@ Error Connection::process_health() {
         _status = Status::error;
         return ONE_ERROR_CONNECTION_HEALTH_TIMEOUT;
     }
-    auto sender = [this](std::function<Error(Message &)> cb) { return add_outgoing(cb); };
+    auto sender = [this](const Message &m) { return add_outgoing(m); };
     auto err = _health_checker.process_send(sender);
     if (is_error(err)) {
         _status = Status::error;
@@ -348,7 +342,13 @@ Error Connection::try_read_message_from_in_stream(codec::Header &header,
     // Attempt to read a message from it.
     size_t size_read = 0;
     auto err = codec::data_to_message(data, in_stream_size, size_read, header, message);
-    if (is_error(err)) return err;
+    if (is_error(err)) {
+        if (err == ONE_ERROR_CODEC_DATA_LENGTH_TOO_SMALL_FOR_PAYLOAD) {
+            // More reading is needed to be able to read the entire payload.
+            err = ONE_ERROR_CONNECTION_TRY_AGAIN;
+        }
+        return err;
+    }
     _in_stream.trim(size_read);
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
@@ -485,13 +485,12 @@ Error Connection::process_incoming_messages() {
                 continue;
             }
 
-            auto m = new Message(message);
-            if (m == nullptr) {
-                return ONE_ERROR_MESSAGE_ALLOCATION_FAILED;
+            if (_incoming_messages.size() == _incoming_messages.capacity()) {
+                return ONE_ERROR_CONNECTION_INCOMING_QUEUE_INSUFFICIENT_SPACE;
             }
 
             // Store in incoming queue for consumption.
-            _incoming_messages.push(m);
+            _incoming_messages.push(message);
         }
         if (is_error(err)) break;
     }
@@ -547,7 +546,6 @@ Error Connection::process_outgoing_messages() {
 #endif
 
     // Attempt to send all pending messages.
-    bool did_drop_messages = false;
     while (_outgoing_messages.size() > 0) {
         // Convert to data payload and add to outgoing buffer.
         auto message = _outgoing_messages.pop();
@@ -557,7 +555,7 @@ Error Connection::process_outgoing_messages() {
         static std::array<char, codec::header_size() + codec::payload_max_size()>
             out_message_buffer;
         err =
-            codec::message_to_data(packet_id, *message, message_size, out_message_buffer);
+            codec::message_to_data(packet_id, message, message_size, out_message_buffer);
         if (is_error(err)) return err;
 
         const size_t max_size = _out_stream.capacity() - _out_stream.size();

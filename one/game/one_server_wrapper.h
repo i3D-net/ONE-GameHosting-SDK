@@ -42,7 +42,7 @@ public:
 
     // Must called often (e.g. each frame). Updates the Arcus Server, which
     // processes incoming and outgoing messages.
-    void update();
+    void update(bool quiet);
 
     enum class Status {
         uninitialized = 0,

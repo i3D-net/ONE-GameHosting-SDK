@@ -23,7 +23,7 @@ public:
     HealthChecker(size_t send_interval_seconds, size_t receive_interval_seconds);
 
     // Updates internal timer and sends a adds a health message if needed.
-    Error process_send(std::function<Error(std::function<Error(Message &message)>)>);
+    Error process_send(std::function<Error(const Message &m)> sender);
 
     // Should be called whenever data is received from the client.
     void reset_receive_timer();

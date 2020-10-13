@@ -274,7 +274,11 @@ Error Socket::ready_for_send(float timeout, bool &is_ready) {
 }
 
 Error Socket::send(const void *data, size_t length, size_t &length_sent) {
+#if defined(WINDOWS)
     const auto result = ::send(_socket, (const char *)data, length, 0);
+#else
+    const auto result = ::send(_socket, (const char *)data, length, MSG_NOSIGNAL);
+#endif
     if (result >= 0) {
         length_sent = (size_t)result;
         return ONE_ERROR_NONE;

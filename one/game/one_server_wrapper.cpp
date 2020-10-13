@@ -110,7 +110,7 @@ void OneServerWrapper::shutdown() {
     _server = nullptr;
 }
 
-void OneServerWrapper::update() {
+void OneServerWrapper::update(bool quiet) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     assert(_server != nullptr);
 
@@ -120,7 +120,7 @@ void OneServerWrapper::update() {
     // messages are received.
     OneError err = one_server_update(_server);
     if (one_is_error(err)) {
-        L_ERROR(one_error_text(err));
+        if (!quiet) L_ERROR(one_error_text(err));
         return;
     }
 }
@@ -255,8 +255,6 @@ void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
     }
 
     // Leave userdata optional.
-
-    L_INFO("invoking soft stop callback");
     wrapper->_soft_stop_callback(timeout_seconds, wrapper->_soft_stop_userdata);
 }
 
@@ -287,7 +285,6 @@ void OneServerWrapper::allocated(void *userdata, void *allocated) {
         return;
     }
 
-    L_INFO("invoking allocated callback");
     wrapper->_allocated_callback(allocated_payload, wrapper->_allocated_userdata);
 }
 
@@ -317,7 +314,6 @@ void OneServerWrapper::metadata(void *userdata, void *metadata) {
         return;
     }
 
-    L_INFO("invoking meta data callback");
     wrapper->_metadata_callback(metadata_payload, wrapper->_metadata_userdata);
 }
 
@@ -347,7 +343,6 @@ void OneServerWrapper::host_information(void *userdata, void *information) {
         return;
     }
 
-    L_INFO("invoking host information callback");
     wrapper->_host_information_callback(information_payload,
                                         wrapper->_host_information_userdata);
 }

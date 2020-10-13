@@ -61,6 +61,12 @@ public:
         _quiet = quiet;
     }
 
+    // Exposed for testing purposes to avoid spamming std::error when testing for expected
+    // failures.
+    bool is_quiet() const {
+        return _quiet;
+    }
+
     int player_count() const {
         return _players;
     }

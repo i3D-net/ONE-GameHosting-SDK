@@ -84,7 +84,7 @@ public:
     // queued message. If the outgoing message queue is full, then the
     // call fails with ONE_ERROR_INSUFFICIENT_SPACE and the queue is not
     // modified.
-    Error add_outgoing(std::function<Error(Message &message)> modify_callback);
+    Error add_outgoing(const Message &message);
 
     // The number of incoming messages available for pop.
     Error incoming_count(unsigned int &count) const;
@@ -127,8 +127,8 @@ private:
     Accumulator _in_stream;
     Accumulator _out_stream;
 
-    Ring<Message *> _incoming_messages;
-    Ring<Message *> _outgoing_messages;
+    Ring<Message> _incoming_messages;
+    Ring<Message> _outgoing_messages;
 
     IntervalTimer _handshake_timer;
     HealthChecker _health_checker;

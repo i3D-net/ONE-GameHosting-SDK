@@ -316,10 +316,7 @@ Error Server::process_outgoing_message(const Message &message) {
         return ONE_ERROR_SERVER_CONNECTION_NOT_READY;
     }
 
-    err = _client_connection->add_outgoing([&](Message &m) {
-        m = message;
-        return ONE_ERROR_NONE;
-    });
+    err = _client_connection->add_outgoing(message);
     if (is_error(err)) {
         return err;
     }
@@ -365,15 +362,9 @@ Error Server::update_client_connection() {
 
         if (count == 0) break;
 
-        err = _client_connection->remove_incoming([this](const Message &message) {
-            auto err = process_incoming_message(message);
-            if (is_error(err)) return err;
-
-            return ONE_ERROR_NONE;
-        });
-        if (is_error(err)) {
-            return close_client(err);
-        }
+        err = _client_connection->remove_incoming(
+            [this](const Message &message) { return process_incoming_message(message); });
+        if (is_error(err)) return close_client(err);
     }
 
     return ONE_ERROR_NONE;

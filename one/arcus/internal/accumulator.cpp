@@ -12,7 +12,8 @@ Accumulator::Accumulator(size_t capacity) : _capacity(capacity), _size(0) {
 
 Accumulator::~Accumulator() {
     if (_buffer != nullptr) {
-        delete _buffer;
+        delete[] _buffer;
+        _buffer = nullptr;
     }
 }
 

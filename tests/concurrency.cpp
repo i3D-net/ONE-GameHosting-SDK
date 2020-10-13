@@ -210,7 +210,7 @@ TEST_CASE("long:multiple thread send information", "[concurrency]") {
     REQUIRE(0 < agent.live_state_receive_count());
     REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_send_count() == 1);
-    REQUIRE(agent.application_instance_status_receive_count() == 3);
+    REQUIRE(0 < agent.application_instance_status_receive_count());
 
     std::thread t9(shutdown, &game);
     std::thread t10(shutdown, &game);

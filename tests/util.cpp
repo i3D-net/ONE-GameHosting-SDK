@@ -14,6 +14,24 @@ void sleep(int ms) {
     std::this_thread::sleep_for(milliseconds(ms));
 }
 
+void for_sleep_duration(std::chrono::seconds duration_seconds, std::chrono::milliseconds ms_per_loop, std::function<bool ()> cb)
+{
+    const auto begin = std::chrono::steady_clock::now();
+
+    while (true) {
+        if (cb()) {
+            break;
+        }
+
+        sleep(ms_per_loop.count());
+        const auto current = std::chrono::steady_clock::now();
+
+        if (duration_seconds < std::chrono::duration_cast<std::chrono::seconds>(current - begin)) {
+            break;
+        }
+    }
+}
+
 void for_sleep(int count, int ms_per_loop, std::function<bool()> cb) {
     for (int i = 0; i < count; i++) {
         if (cb()) {
