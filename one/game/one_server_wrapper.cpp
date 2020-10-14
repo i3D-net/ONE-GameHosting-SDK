@@ -387,34 +387,34 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
     }
 
     // Optional - the game can require and read allocated keys to configure
-    // the server.
-    // auto callback = [&](const size_t total_number_of_keys, const std::string &key,
-    //                     const std::string &value) {
-    //     if (total_number_of_keys != 2) {
-    //         L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys)
-    //         +
-    //                 ") expected 2 instead");
-    //         return false;
-    //     }
+    // the server. This is to mirror the documentation example here:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#allocated
+    auto callback = [&](const size_t total_number_of_keys, const std::string &key,
+                        const std::string &value) {
+        if (total_number_of_keys != 2) {
+            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
+                    ") expected 2 instead");
+            return false;
+        }
 
-    //     if (key == "map") {
-    //         allocated_data.map = value;
-    //         return true;
-    //     }
+        if (key == "map") {
+            allocated_data.map = value;
+            return true;
+        }
 
-    //     if (key == "maxPlayers") {
-    //         allocated_data.max_players = value;
-    //         return true;
-    //     }
+        if (key == "maxPlayers") {
+            allocated_data.max_players = value;
+            return true;
+        }
 
-    //     L_ERROR("key(" + key + ") is not handled");
-    //     return false;
-    // };
+        L_ERROR("key(" + key + ") is not handled");
+        return false;
+    };
 
-    // if (!Parsing::extract_key_value_payload(array, callback)) {
-    //     L_ERROR("failed to extract key/value payload");
-    //     return false;
-    // }
+    if (!Parsing::extract_key_value_payload(array, callback)) {
+        L_ERROR("failed to extract key/value payload");
+        return false;
+    }
 
     return true;
 }
