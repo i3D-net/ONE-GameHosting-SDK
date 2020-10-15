@@ -90,8 +90,8 @@ private:
     int _soft_stop_receive_count;
     int _allocated_receive_count;
     int _metadata_receive_count;
-    int _application_instance_information_receive_count;
     int _host_information_receive_count;
+    int _application_instance_information_receive_count;
 
     bool _quiet;
 
@@ -105,6 +105,7 @@ private:
 
     enum class MatchmakingStatus { none, starting, online, allocated };
     MatchmakingStatus _matchmaking_status;
+    MatchmakingStatus _previous_matchmaking_status;
 
     mutable std::mutex _game;
 };
