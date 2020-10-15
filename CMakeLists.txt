@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(!WIN32)
   set(CMAKE_CXX_FLAGS -pthread)
+else()
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
 endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory

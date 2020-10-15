@@ -4,10 +4,10 @@ Setting up VSCode to allow building and testing of the SDK. This is not required
 
 ## Editor Extensions
 
-1. C/C++ VS2017 toolchain by Microsoft.
+1. C/C++ VS2017 toolchain by Microsoft. *Required*
 2. C++ Intellisense by austin.
-3. CMake by twxs.
-4. CMake Tools by Microsoft.
+3. CMake by twxs. *Required*
+4. CMake Tools by Microsoft. *Required*
     > In order to use CMake directly with `vscode`, see the [cmake tools]> (https://vector-of-bool.github.io/docs/vscode-cmake-tools/getting_started.html#cmake-tools-quick-start) online documentation.
 
 5. Clang-format by xaver.

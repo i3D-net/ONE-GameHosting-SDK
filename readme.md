@@ -5,6 +5,8 @@
 
 ---
 
+Todo: make build more prominent, perhaps as separate page here to make consistent. Perhaps make this page mostly a launching pad.
+
 Providing game servers with the ability to communicate over TCP with the i3D.net One Platform.
 
 - [Build](#Build) – How to build and test the repository.
@@ -48,6 +50,8 @@ The [tests](one/tests/readme.md) and [docs](one/docs/readme.md) folders serve th
 ## Build
 
 ### Requirements
+
+TODO: clearer steps about what must be done and how.
 
 1. C++ Toolchain:
     - Windows: [Visual Studio 2017, or build tools (without Editor)](https://visualstudio.microsoft.com/vs/older-downloads/)
