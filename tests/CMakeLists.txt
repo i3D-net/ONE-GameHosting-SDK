@@ -16,6 +16,7 @@ target_link_libraries(one_tests PRIVATE one_game)
 target_link_libraries(one_tests PRIVATE one_arcus)
 
 add_executable(${UNIT_TEST}
+    allocator.cpp
     accumulator.cpp
     agent.cpp
     array.cpp

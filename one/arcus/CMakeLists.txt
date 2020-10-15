@@ -1,4 +1,5 @@
 set(HEADER_FILES
+    allocator.h
     array.h
     client.h
     c_api.h
@@ -20,9 +21,11 @@ set(HEADER_FILES
     opcode.h
     object.h
     server.h
+    types.h
 )
 
 set(SOURCE_FILES
+    allocator.cpp
     array.cpp
     client.cpp
     c_api.cpp

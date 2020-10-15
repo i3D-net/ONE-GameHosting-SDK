@@ -15,8 +15,6 @@ class Message;
 class Object;
 class Socket;
 
-namespace callback {
-
 struct ServerCallbacks {
     std::function<void(void *, int)> _soft_stop;
     void *_soft_stop_userdata;
@@ -29,8 +27,6 @@ struct ServerCallbacks {
     std::function<void(void *, Object *)> _application_instance_information;
     void *_application_instance_information_data;
 };
-
-}  // namespace callback
 
 // An Arcus Server is designed for use by a Game. It allows an Arcus One Agent
 // to connect and communicate with the game.
@@ -157,7 +153,7 @@ private:
     ApplicationInstanceStatus _status;
     bool _should_send_status;
 
-    callback::ServerCallbacks _callbacks;
+    ServerCallbacks _callbacks;
 
     mutable std::mutex _server;
 };
