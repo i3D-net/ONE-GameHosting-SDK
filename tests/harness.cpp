@@ -18,6 +18,8 @@ Harness::Harness(const char *address, unsigned int port)
     _game.set_quiet(true);
     _agent.init(address, port);
     _agent.set_quiet(true);
+    set_game_callback_probability(100);
+    set_agent_callback_probability(100);
     set_game_update_probability(100);
     set_agent_update_probability(100);
 }
@@ -26,28 +28,28 @@ Harness::~Harness() {
     _game.shutdown();
 }
 
+void Harness::set_game_callback_probability(const int probability) {
+    if (!set_probability(probability, _game_callback_probability)) {
+        L_ERROR("failed to set game callback probability");
+    }
+}
+
+void Harness::set_agent_callback_probability(const int probability) {
+    if (!set_probability(probability, _agent_callback_probability)) {
+        L_ERROR("failed to set agent callback probability");
+    }
+}
+
 void Harness::set_game_update_probability(const int probability) {
-    if (probability < 0) {
-        return;
+    if (!set_probability(probability, _game_update_probability)) {
+        L_ERROR("failed to set game update probability");
     }
-
-    if (100 < probability) {
-        return;
-    }
-
-    _game_update_probability = probability;
 }
 
 void Harness::set_agent_update_probability(const int probability) {
-    if (probability < 0) {
-        return;
+    if (!set_probability(probability, _agent_update_probability)) {
+        L_ERROR("failed to set agent update probability");
     }
-
-    if (100 < probability) {
-        return;
-    }
-
-    _agent_update_probability = probability;
 }
 
 void Harness::set_before_game_update_callback(
@@ -66,13 +68,12 @@ void Harness::run(seconds duration, milliseconds sleep) {
 
         if (_game.one_server_wrapper().status() ==
             one_integration::OneServerWrapper::Status::ready) {
-
-            if (_before_game_update_callback != nullptr) {
+            if (_before_game_update_callback != nullptr && game_need_callback()) {
                 tally_game_error(
                     _before_game_update_callback(_game, random_percentage()));
             }
 
-            if (_before_agent_update_callback != nullptr) {
+            if (_before_agent_update_callback != nullptr && agent_need_callback()) {
                 tally_agent_error(
                     _before_agent_update_callback(_agent, random_percentage()));
             }
@@ -153,6 +154,35 @@ void Harness::log_error_tally(const std::array<long, ONE_ERROR_COUNT> &tally) co
     }
 }
 
+bool Harness::set_probability(int probability, int &output) {
+    if (probability < 0) {
+        return false;
+    }
+
+    if (100 < probability) {
+        return false;
+    }
+
+    output = probability;
+    return true;
+}
+
+bool Harness::game_need_callback() {
+    if (_game_callback_probability < random_percentage()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Harness::agent_need_callback() {
+    if (_agent_callback_probability < random_percentage()) {
+        return false;
+    }
+
+    return true;
+}
+
 bool Harness::game_need_update() {
     if (_game_update_probability < random_percentage()) {
         return false;
@@ -193,11 +223,13 @@ ChaosHarness::ChaosHarness(const char *address, unsigned int port)
 void ChaosHarness::set_random_game_callback(
     std::function<Error(one_integration::Game &, int)> callback) {
     _random_game_callback = callback;
+    set_before_game_update_callback(_random_game_callback);
 }
 
 void ChaosHarness::set_random_agent_callback(
     std::function<Error(Agent &, int)> callback) {
     _random_agent_callback = callback;
+    set_before_agent_update_callback(_random_agent_callback);
 }
 
 }  // namespace one

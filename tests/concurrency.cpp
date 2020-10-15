@@ -1,16 +1,15 @@
 #include <catch.hpp>
 #include <util.h>
 
+#include <iostream>
+#include <map>
+#include <thread>
+
 #include <one/agent/agent.h>
 #include <one/arcus/c_error.h>
 #include <one/game/log.h>
 #include <one/game/game.h>
 #include <one/game/one_server_wrapper.h>
-
-#include <iostream>
-#include <map>
-
-#include <thread>
 
 using namespace one_integration;
 using namespace i3d::one;
