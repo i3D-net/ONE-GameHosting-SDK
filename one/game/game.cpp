@@ -7,6 +7,28 @@
 
 namespace one_integration {
 
+// Provides example global allocation hooks used to override the allocations
+// made within the One Game Hosting SDK.
+namespace allocation {
+
+// For debub purposes.
+size_t _alloc_count = 0;
+size_t _free_count = 0;
+
+// A custom memory alloc example.
+void *alloc(size_t bytes) {
+    _alloc_count++;
+    return ::operator new(bytes);
+}
+
+// A custom memory free example.
+void free(void *p) {
+    _free_count++;
+    ::operator delete(p);
+}
+
+}  // namespace allocation
+
 Game::Game()
     : _one_server()  // The One Arcus Server's default constructor is called.
     , _soft_stop_receive_count(0)
@@ -32,7 +54,7 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
     // Init One Server and make it start listening for an incoming One Agent
     // client connection.
 
-    if (!_one_server.init()) {
+    if (!_one_server.init(allocation::alloc, allocation::free)) {
         L_ERROR("failed to init one server");
         return false;
     }
