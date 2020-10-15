@@ -18,8 +18,6 @@ class Message;
 class Object;
 class Socket;
 
-namespace callback {
-
 struct ClientCallbacks {
     std::function<void(void *, int, int, const std::string &, const std::string &,
                        const std::string &, const std::string &)>
@@ -29,8 +27,6 @@ struct ClientCallbacks {
     std::function<void(void *, int)> _application_instance_status;
     void *_application_instance_status_userdata;
 };
-
-}  // namespace callback
 
 // The Arcus Client is used by an Arcus One Agent to connect to an Arcus Server.
 class Client final {
@@ -103,7 +99,7 @@ private:
 
     steady_clock::time_point _last_connection_attempt_time;
 
-    callback::ClientCallbacks _callbacks;
+    ClientCallbacks _callbacks;
 
     mutable std::mutex _client;
 };
