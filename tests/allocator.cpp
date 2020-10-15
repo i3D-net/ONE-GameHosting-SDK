@@ -108,8 +108,7 @@ TEST_CASE("custom string", "[arcus]") {
         {
             String val("test");
             REQUIRE(val == "test");
-            REQUIRE(_allocated_size ==
-                    val.capacity() + 1);  // +1 for the null terminator.
+            REQUIRE(_allocated_size > 0);
         }
         REQUIRE(_last_freed == _last_allocated);
         // Unfortunately not easy to test the _last_freed value against the
