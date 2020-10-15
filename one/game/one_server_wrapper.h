@@ -36,7 +36,9 @@ public:
     //------------
     // Life cycle.
 
-    bool init();
+    // alloc and free are optional allocation override handlers. Both may be nullptr,
+    // otherwise both are required.
+    bool init(std::function<void *(size_t)> alloc, std::function<void(void *)> free);
     bool listen(unsigned int port);  // Must be successful before calling update.
     void shutdown();
 

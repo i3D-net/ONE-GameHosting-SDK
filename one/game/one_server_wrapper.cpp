@@ -10,6 +10,13 @@
 
 namespace one_integration {
 
+namespace {
+
+std::function<void *(size_t)> _alloc = nullptr;
+std::function<void(void *)> _free = nullptr;
+
+}  // namespace
+
 OneServerWrapper::OneServerWrapper()
     : _server(nullptr)
     , _soft_stop_callback(nullptr)
@@ -27,7 +34,8 @@ OneServerWrapper::~OneServerWrapper() {
     shutdown();
 }
 
-bool OneServerWrapper::init() {
+bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
+                            std::function<void(void *)> free) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     if (_server != nullptr) {
@@ -35,7 +43,23 @@ bool OneServerWrapper::init() {
         return false;
     }
 
-    // Todo: set custom allocator.
+    //----------------------
+    // Set custom allocator.
+
+    if (alloc && free) {
+        _alloc = alloc;
+        _free = free;
+        // Function wrapper to remove lambda capture and convert to c interface (unsigned
+        // int).
+        auto alloc_wrapper = [](unsigned int bytes) -> void * {
+            return _alloc(static_cast<size_t>(bytes));
+        };
+        // Function wrapper to remove lambda capture.
+        auto free_wrapper = [](void *p) -> void { _free(p); };
+
+        one_allocator_set_alloc(alloc_wrapper);
+        one_allocator_set_free(free_wrapper);
+    }
 
     //-----------------------
     // Create the one server.

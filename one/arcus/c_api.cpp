@@ -1,5 +1,6 @@
 #include <one/arcus/c_api.h>
 
+#include <one/arcus/allocator.h>
 #include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/message.h>
@@ -983,11 +984,15 @@ Error server_set_application_instance_information_callback(
 }
 
 void allocator_set_alloc(void *(callback)(unsigned int size)) {
-    // Todo: implement.
+    // Wrapper for size_t.
+    auto wrapper = [callback](size_t size) -> void * {
+        return callback(static_cast<unsigned int>(size));
+    };
+    allocator::set_alloc(wrapper);
 }
 
 void allocator_set_free(void(callback)(void *)) {
-    // Todo: implement.
+    allocator::set_free(callback);
 }
 
 }  // Unnamed namespace.
