@@ -8,10 +8,11 @@ project(OneGameHostingSDK
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(!WIN32)
-  set(CMAKE_CXX_FLAGS -pthread)
-else()
+if(WIN32)
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
+  add_definitions(-DWINDOWS)
+else()
+  set(CMAKE_CXX_FLAGS -pthread)
 endif()
 
 # Only do these if this is the main project, and not if it is included through add_subdirectory
@@ -25,10 +26,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   else()
     message(STATUS "Doxygen not found, not building docs")
   endif()
-endif()
-
-if(WIN32)
-  add_definitions(-DWINDOWS)
 endif()
 
 add_subdirectory(one/agent)

@@ -100,6 +100,9 @@ TEST_CASE("custom string", "[arcus]") {
         REQUIRE(_last_freed == nullptr);
     }
 
+    // Linux appears to do complete stack allocation for small strings, while
+    // windows appears to do both stack + a proxy.
+    #ifdef WINDOWS
     SECTION("overridden allocation") {
         ScopedAllocationSetter setter;
         {
@@ -116,4 +119,5 @@ TEST_CASE("custom string", "[arcus]") {
         // by functions like data or c_str refers to a different address
         // (possibly a duplicated stack value address for optimization).
     }
+    #endif
 }
