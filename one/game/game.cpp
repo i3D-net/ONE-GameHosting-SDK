@@ -39,7 +39,8 @@ Game::Game()
     , _quiet(false)
     , _players(0)
     , _max_players(0)
-    , _matchmaking_status(MatchmakingStatus::none) {}
+    , _matchmaking_status(MatchmakingStatus::none)
+    , _previous_matchmaking_status(MatchmakingStatus::none) {}
 
 Game::~Game() {
     _one_server.shutdown();
@@ -115,6 +116,9 @@ void Game::alter_game_state() {
     }
 
     update_arcus_server_game_state();
+    const bool new_matchmaking_status =
+        (_matchmaking_status != _previous_matchmaking_status);
+    _previous_matchmaking_status = _matchmaking_status;
 
     //--------------------------------------------------------------------------
     // Update game server status. The game server must notify One when it is
@@ -126,19 +130,25 @@ void Game::alter_game_state() {
 
     switch (_matchmaking_status) {
         case MatchmakingStatus::none:
-            if (!_quiet) L_INFO("application instance status none");
+            if (!_quiet) {
+                L_INFO("application instance status none");
+            }
             _matchmaking_status = MatchmakingStatus::starting;
             _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::starting);
             break;
         case MatchmakingStatus::starting:
-            if (!_quiet) L_INFO("application instance status starting");
+            if (!_quiet && new_matchmaking_status) {
+                L_INFO("application instance status starting");
+            }
             _matchmaking_status = MatchmakingStatus::online;
             _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::online);
             break;
         case MatchmakingStatus::allocated:
-            if (!_quiet) L_INFO("application instance status allocated");
+            if (!_quiet && new_matchmaking_status) {
+                L_INFO("application instance status allocated");
+            }
             // Fake ending an allocated match and going back to online.
             if (_players == 0) {
                 _matchmaking_status = MatchmakingStatus::online;
@@ -147,7 +157,9 @@ void Game::alter_game_state() {
             }
             break;
         case MatchmakingStatus::online:
-            if (!_quiet) L_INFO("application instance status online");
+            if (!_quiet && new_matchmaking_status) {
+                L_INFO("application instance status online");
+            }
             break;
         default:
             L_ERROR("invalid matchmaking status");
