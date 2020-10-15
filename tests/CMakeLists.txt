@@ -21,6 +21,7 @@ add_executable(${UNIT_TEST}
     agent.cpp
     array.cpp
     arcus.cpp
+    chaos.cpp
     codec.cpp
     concurrency.cpp
     endian.cpp

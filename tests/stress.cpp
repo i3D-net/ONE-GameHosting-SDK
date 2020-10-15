@@ -1,10 +1,10 @@
 #include <catch.hpp>
-#include <harness.h>
 #include <util.h>
 
-#include <one/game/log.h>
-
 #include <thread>
+
+#include <harness.h>
+#include <one/game/log.h>
 
 using namespace one_integration;
 using namespace i3d::one;
@@ -37,7 +37,7 @@ TEST_CASE("soak:test high usage over a long period", "[stress]") {
     REQUIRE(0 < game.soft_stop_receive_count());
     REQUIRE(0 < agent.live_state_receive_count());
 
-    L_INFO("long:test high usage over a long period");
+    L_INFO("soak:test high usage over a long period");
     L_INFO("Agent received: " + std::to_string(agent.live_state_receive_count()) +
            " live_state messages");
     L_INFO("Game received: " + std::to_string(game.soft_stop_receive_count()) +
@@ -79,7 +79,7 @@ TEST_CASE("soak:test very high usage over a long period", "[stress]") {
     REQUIRE(0 < game.soft_stop_receive_count());
     REQUIRE(0 < agent.live_state_receive_count());
 
-    L_INFO("long:test very high usage over a long period");
+    L_INFO("soak:test very high usage over a long period");
     L_INFO("Agent received: " + std::to_string(agent.live_state_receive_count()) +
            " live_state messages");
     L_INFO("Game received: " + std::to_string(game.soft_stop_receive_count()) +
@@ -119,7 +119,7 @@ TEST_CASE("soak:test high usage over a long period on multiple threads", "[stres
     REQUIRE(0 < game.soft_stop_receive_count());
     REQUIRE(0 < agent.live_state_receive_count());
 
-    L_INFO("long:test high usage over a long period on multiple threads");
+    L_INFO("soak:test high usage over a long period on multiple threads");
     L_INFO("Agent received: " + std::to_string(agent.live_state_receive_count()) +
            " live_state messages");
     L_INFO("Game received: " + std::to_string(game.soft_stop_receive_count()) +
@@ -172,7 +172,7 @@ TEST_CASE("soak:test very high usage over a very long period on multiple threads
     REQUIRE(0 < game.soft_stop_receive_count());
     REQUIRE(0 < agent.live_state_receive_count());
 
-    L_INFO("long:test very high usage over a very long period on multiple threads");
+    L_INFO("soak:test very high usage over a very long period on multiple threads");
     L_INFO("Agent received: " + std::to_string(agent.live_state_receive_count()) +
            " live_state messages");
     L_INFO("Game received: " + std::to_string(game.soft_stop_receive_count()) +

@@ -20,6 +20,17 @@ public:
     Harness &operator=(const Harness &) = delete;
     virtual ~Harness();
 
+    // This will set the probability to invoke the callback for the game at each run loop.
+    // A probability of 100 means the game will always be updated, a probability of 0
+    // means the game will never be updated. The probability must be in the interval: [0,
+    // 100].
+    void set_game_callback_probability(const int probability);
+    // This will set the probability to invoke the callback for the agent at each run
+    // loop. A probability of 100 means the agent will always be updated, a probability of
+    // 0 means the agent will never be updated. The probability must be in the interval:
+    // [0, 100].
+    void set_agent_callback_probability(const int probability);
+
     // This will set the probability to update the game at each run loop. A probability of
     // 100 means the game will always be updated, a probability of 0 means the game will
     // never be updated. The probability must be in the interval: [0, 100].
@@ -76,9 +87,17 @@ protected:
     // error types are only shown if there count is greater than 0 to avoid spamming.
     void log_error_tally(const std::array<long, Error::ONE_ERROR_COUNT> &tally) const;
 
+    bool set_probability(int probability, int &output);
+
 private:
+    bool game_need_callback();
+    bool agent_need_callback();
+
     bool game_need_update();
     bool agent_need_update();
+
+    int _game_callback_probability;
+    int _agent_callback_probability;
 
     int _game_update_probability;
     int _agent_update_probability;
