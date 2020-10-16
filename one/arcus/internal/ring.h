@@ -2,6 +2,8 @@
 
 #include <assert.h>
 
+#include <one/arcus/allocator.h>
+
 namespace i3d {
 namespace one {
 
@@ -12,11 +14,13 @@ public:
     Ring(size_t capacity)
         : _buffer(nullptr), _capacity(capacity), _last(0), _next(0), _size(0) {
         assert(_capacity > 0);
-        _buffer = new T[_capacity];
+        void *p = allocator::create_array<T>(_capacity);
+        assert(p);
+        _buffer = reinterpret_cast<T *>(p);
     }
     ~Ring() {
         assert(_buffer);
-        delete[] _buffer;
+        allocator::destroy_array<T>(_buffer);
         _buffer = nullptr;
     }
 

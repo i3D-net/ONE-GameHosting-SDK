@@ -110,4 +110,12 @@ private:
     mutable std::mutex _game;
 };
 
+namespace allocation {
+// Return number of calls to alloc made on the custom allocator.
+size_t alloc_count();
+
+// Returns number of calls to free made on the custom allocator.
+size_t free_count();
+}  // namespace allocation
+
 }  // namespace one_integration

@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include <one/arcus/allocator.h>
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/message.h>
 #include <one/arcus/internal/mutex.h>
@@ -66,7 +67,7 @@ Error Server::init() {
         return err;
     }
 
-    _listen_socket = new Socket();
+    _listen_socket = allocator::create<Socket>();
     if (_listen_socket == nullptr) {
         return ONE_ERROR_SERVER_SOCKET_ALLOCATION_FAILED;
     }
@@ -77,14 +78,15 @@ Error Server::init() {
         return err;
     }
 
-    _client_socket = new Socket();
+    _client_socket = allocator::create<Socket>();
     if (_client_socket == nullptr) {
         shutdown();
         return ONE_ERROR_SERVER_SOCKET_ALLOCATION_FAILED;
     }
 
-    _client_connection =
-        new Connection(Connection::max_message_default, Connection::max_message_default);
+    const auto max_incoming = Connection::max_message_default;
+    const auto max_outgoing = Connection::max_message_default;
+    _client_connection = allocator::create<Connection>(max_incoming, max_outgoing);
     if (_client_connection == nullptr) {
         shutdown();
         return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
@@ -97,17 +99,17 @@ Error Server::shutdown() {
     const std::lock_guard<std::mutex> lock(_server);
 
     if (_client_connection != nullptr) {
-        delete _client_connection;
+        allocator::destroy<Connection>(_client_connection);
         _client_connection = nullptr;
     }
 
     if (_listen_socket != nullptr) {
-        delete _listen_socket;
+        allocator::destroy<Socket>(_listen_socket);
         _listen_socket = nullptr;
     }
 
     if (_client_socket != nullptr) {
-        delete _client_socket;
+        allocator::destroy<Socket>(_client_socket);
         _client_socket = nullptr;
     }
 

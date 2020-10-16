@@ -15,6 +15,14 @@ namespace allocation {
 size_t _alloc_count = 0;
 size_t _free_count = 0;
 
+size_t alloc_count() {
+    return _alloc_count;
+}
+
+size_t free_count() {
+    return _free_count;
+}
+
 // A custom memory alloc example.
 void *alloc(size_t bytes) {
     _alloc_count++;

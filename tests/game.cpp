@@ -18,6 +18,8 @@ TEST_CASE("life cycle", "[fake game]") {
     Game game;
     REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version"));
     game.shutdown();
+    REQUIRE(allocation::alloc_count() > 0);
+    REQUIRE(allocation::free_count() == allocation::alloc_count());
 }
 
 TEST_CASE("connection error handling", "[fake game]") {

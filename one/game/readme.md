@@ -20,8 +20,8 @@ Below, the main points of an integration are summarized, however the game_server
 Initialization:
 ```c++
 // Set custom allocator, if needed.
-// one_allocator_set_alloc ...
-// one_allocator_set_free
+// one_allocator_set_alloc(my_alloc);
+// one_allocator_set_free(my_free);
 
 OneServerPtr server;
 OneError err = one_server_create(&server);
