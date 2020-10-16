@@ -3,16 +3,20 @@
 #include <assert.h>
 #include <cstring>
 
+#include <one/arcus/allocator.h>
+
 namespace i3d {
 namespace one {
 
 Accumulator::Accumulator(size_t capacity) : _capacity(capacity), _size(0) {
-    _buffer = new char[capacity]();
+    void *p = allocator::alloc(sizeof(char) * capacity);
+    assert(p);
+    _buffer = reinterpret_cast<char *>(p);
 }
 
 Accumulator::~Accumulator() {
     if (_buffer != nullptr) {
-        delete[] _buffer;
+        allocator::free(_buffer);
         _buffer = nullptr;
     }
 }

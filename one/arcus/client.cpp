@@ -1,5 +1,6 @@
 #include <one/arcus/client.h>
 
+#include <one/arcus/allocator.h>
 #include <one/arcus/internal/connection.h>
 #include <one/arcus/internal/message.h>
 #include <one/arcus/opcode.h>
@@ -49,7 +50,7 @@ Error Client::init(const char *address, unsigned int port) {
         return err;
     }
 
-    _socket = new Socket();
+    _socket = allocator::create<Socket>();
     if (_socket == nullptr) {
         shutdown();
         return ONE_ERROR_VALIDATION_SOCKET_IS_NULLPTR;
@@ -61,8 +62,9 @@ Error Client::init(const char *address, unsigned int port) {
         return err;
     }
 
-    _connection =
-        new Connection(Connection::max_message_default, Connection::max_message_default);
+    const auto max_incoming = Connection::max_message_default;
+    const auto max_outgoing = Connection::max_message_default;
+    _connection = allocator::create<Connection>(max_incoming, max_outgoing);
     _connection->init(*_socket);
     if (_connection == nullptr) {
         shutdown();
@@ -78,12 +80,12 @@ void Client::shutdown() {
     _is_connected = false;
 
     if (_socket != nullptr) {
-        delete _socket;
+        allocator::destroy<Socket>(_socket);
         _socket = nullptr;
     }
 
     if (_connection != nullptr) {
-        delete _connection;
+        allocator::destroy<Connection>(_connection);
         _connection = nullptr;
     }
 

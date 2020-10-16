@@ -9,13 +9,13 @@ namespace {
 // Simple wrapper around an int value to allow confirmation of allocator
 // behavior.
 struct IntWrapper {
-    IntWrapper(int val_in, bool &destruct_flag_in)
-        : val(val_in), destruct_flag(destruct_flag_in) {}
+    IntWrapper(int val_in, size_t &destruct_counter_in)
+        : val(val_in), destruct_counter(destruct_counter_in) {}
     ~IntWrapper() {
-        destruct_flag = true;
+        destruct_counter++;
     }
     int val;
-    bool &destruct_flag;
+    size_t &destruct_counter;
 };
 
 size_t _allocated_size = 0;
@@ -76,8 +76,8 @@ TEST_CASE("allocator basics", "[arcus]") {
     SECTION("Create/Destroy (new/delete equivalents)") {
         ScopedAllocationSetter setter;
 
-        bool destruct_flag = false;
-        IntWrapper *p = allocator::create<IntWrapper>(1, destruct_flag);
+        size_t destruct_counter = false;
+        IntWrapper *p = allocator::create<IntWrapper>(1, destruct_counter);
         REQUIRE(p != nullptr);
         REQUIRE(_allocated_size == expected_size);
         REQUIRE(p->val == 1);
@@ -85,7 +85,21 @@ TEST_CASE("allocator basics", "[arcus]") {
         allocator::destroy(p);
         REQUIRE(_last_freed == _last_allocated);
         REQUIRE(_last_freed == p);
-        REQUIRE(destruct_flag == true);
+        REQUIRE(destruct_counter == 1);
+    }
+
+    SECTION("Array") {
+        ScopedAllocationSetter setter;
+        const size_t count = 10;
+        size_t destruct_counter = 0;
+        IntWrapper *array =
+            allocator::create_array<IntWrapper>(count, 1, destruct_counter);
+        REQUIRE(array != nullptr);
+        for (auto i = 0; i < count; i++) {
+            REQUIRE(array[i].val == 1);
+        }
+        allocator::destroy_array<IntWrapper>(array);
+        REQUIRE(destruct_counter == count);
     }
 }
 

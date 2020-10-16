@@ -40,7 +40,9 @@ void reset_overrides() {
 
 void *alloc(size_t bytes) {
     assert(_alloc);
-    return _alloc(bytes);
+    void *p = _alloc(bytes);
+    assert(p != nullptr);
+    return p;
 }
 
 void free(void *p) {

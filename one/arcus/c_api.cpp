@@ -21,7 +21,7 @@ OneError array_create(OneArrayPtr *array) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
 
-    auto a = new Array();
+    auto a = allocator::create<Array>();
     if (a == nullptr) {
         return ONE_ERROR_ARRAY_ALLOCATION_FAILED;
     }
@@ -36,7 +36,7 @@ void array_destroy(OneArrayPtr array) {
     }
 
     auto a = (Array *)(array);
-    delete a;
+    allocator::destroy<Array>(a);
 }
 
 OneError array_copy(OneArrayPtr source, OneArrayPtr destination) {
@@ -428,7 +428,7 @@ OneError object_create(OneObjectPtr *object) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
     }
 
-    auto o = new Object();
+    auto o = allocator::create<Object>();
     if (o == nullptr) {
         return ONE_ERROR_OBJECT_ALLOCATION_FAILED;
     }
@@ -443,7 +443,7 @@ void object_destroy(OneObjectPtr object) {
     }
 
     auto o = reinterpret_cast<Object *>(object);
-    delete o;
+    allocator::destroy<Object>(o);
 }
 
 OneError object_copy(OneObjectPtr source, OneObjectPtr destination) {
@@ -800,14 +800,14 @@ Error server_create(OneServerPtr *server) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
-    auto s = new Server();
+    auto s = allocator::create<Server>();
     if (s == nullptr) {
         return ONE_ERROR_SERVER_ALLOCATION_FAILED;
     }
 
     auto err = s->init();
     if (is_error(err)) {
-        delete s;
+        allocator::destroy<Server>(s);
         return err;
     }
 
@@ -821,7 +821,7 @@ void server_destroy(OneServerPtr server) {
     }
 
     auto s = (Server *)(server);
-    delete s;
+    allocator::destroy<Server>(s);
 }
 
 Error server_update(OneServerPtr server) {

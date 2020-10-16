@@ -1,5 +1,6 @@
 #pragma once
 
+#include <assert.h>
 #include <functional>
 
 namespace i3d {
@@ -38,6 +39,54 @@ template <class T>
 void destroy(T *p) noexcept {
     p->~T();
     free(p);
+}
+
+// Allocates an array using the function set by set_alloc. Each array element
+// has its constructor called, with the same arguments. The returned memory must
+// be deleted via destroy_array.
+template <class T, class... Args>
+T *create_array(size_t count, Args &&...args) {
+    // Allocate additional space to store the array length.
+    size_t padding = sizeof(size_t);
+    auto data = alloc(sizeof(T) * count + padding);
+
+    // The padding will be at the front of the data. Set it to the array length.
+    size_t *start = reinterpret_cast<size_t *>(data);
+    *start = count;
+
+    // The actual array elements start directly after the padding.
+    auto p = reinterpret_cast<T *>(start + 1);
+    auto element = p;
+    for (auto i = 0; i < count; i++) {
+        ::new (element) T(std::forward<Args>(args)...);
+        element++;
+    }
+
+    return p;
+}
+
+// Deallocates an array using the function set by set_free. Each array element
+// has its destructor called. The destroyed memory must have been allocated via
+// create_array.
+template <class T>
+void destroy_array(T *p) noexcept {
+    assert(p);
+
+    // The buffer allocated will start before the array length preceding the
+    // array elements (p).
+    size_t *start = (reinterpret_cast<size_t *>(p) - 1);
+    // The array length is first.
+    size_t count = *start;
+
+    // Call destructors.
+    T *element = reinterpret_cast<T *>(p);
+    for (auto i = 0; i < count; i++) {
+        element->~T();
+        element++;
+    }
+
+    // Free the original buffer including array length.
+    free(start);
 }
 
 }  // namespace allocator
