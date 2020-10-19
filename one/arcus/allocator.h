@@ -16,6 +16,10 @@ void set_alloc(std::function<void *(size_t)>);
 // namespace. Default is ::operator delete.
 void set_free(std::function<void(void *)>);
 
+// Override realloc, which is used by the realloc function in this
+// namespace. Default is ::operator delete.
+void set_realloc(std::function<void *(void *, size_t)>);
+
 // Sets the allocators back to the default.
 void reset_overrides();
 
@@ -24,6 +28,9 @@ void *alloc(size_t);
 
 // Use the function set by set_free to free memory.
 void free(void *);
+
+// Reallocate existing memory with new size. Must match standard c behavior.
+void *realloc(void *p, size_t s);
 
 // Equivalent to the new operator, but using the function set by set_alloc.
 template <class T, class... Args>

@@ -995,6 +995,14 @@ void allocator_set_free(void(callback)(void *)) {
     allocator::set_free(callback);
 }
 
+void allocator_set_realloc(void *(callback(void *, unsigned int size))) {
+    // Wrapper for size_t.
+    auto wrapper = [callback](void *p, size_t size) -> void * {
+        return callback(p, static_cast<unsigned int>(size));
+    };
+    allocator::set_realloc(wrapper);
+}
+
 }  // Unnamed namespace.
 }  // namespace one
 }  // namespace i3d
@@ -1286,6 +1294,10 @@ void one_allocator_set_alloc(void *(callback)(unsigned int size)) {
 
 void one_allocator_set_free(void(callback)(void *)) {
     one::allocator_set_free(callback);
+}
+
+void one_allocator_set_realloc(void *(callback(void *, unsigned int size))) {
+    one::allocator_set_realloc(callback);
 }
 
 };  // extern "C"

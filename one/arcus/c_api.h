@@ -86,14 +86,25 @@ typedef OneObject *OneObjectPtr;
 ///@name Environment.
 ///@{
 
-/// Provide custom memory alloc.
-/// Must be set at init time, before using any other APIs. If this is called,
-/// then one_allocator_set_free must also be called.
+/// Optional custom memory alloc override.
+/// If set, must be set at init time, before using any other APIs. If this is called,
+/// then one_allocator_set_free must also be called. If this is called, then
+/// one_allocator_set_free and one_allocator_set_realloc must also be called.
+/// @param callback A function that takes a size in bytes of memory to allocate.
+/// @sa one_allocator_set_free
+/// @sa one_allocator_set_realloc
 void one_allocator_set_alloc(void *(callback)(unsigned int size));
 
-/// Provide custom memory free.
-/// Must be set at init time, before using any other APIs.
+/// Optional custom memory free override.
+/// If set, must be set at init time, before using any other APIs.
+/// @param callback An existing pointer p to free.
 void one_allocator_set_free(void(callback)(void *));
+
+/// Optional custom memory realloc override.
+/// If set, must be set at init time, before using any other APIs.
+/// @param callback A function taking an existing pointer and a new size. See
+/// the standard c realloc requirements for behavior.
+void one_allocator_set_realloc(void *(callback(void *, unsigned int size)));
 
 //------------------------------------------------------------------------------
 ///@}

@@ -19,6 +19,8 @@ struct IntWrapper {
 };
 
 size_t _allocated_size = 0;
+size_t _alloc_count = 0;
+size_t _free_count = 0;
 void *_last_allocated = nullptr;
 void *_last_freed = nullptr;
 
@@ -28,6 +30,7 @@ void init_allocator() {
     _last_allocated = nullptr;
     _last_freed = nullptr;
     auto alloc = [](size_t bytes) -> void * {
+        _alloc_count++;
         _allocated_size += bytes;
         _last_allocated = ::operator new(bytes);
         return _last_allocated;
@@ -35,6 +38,7 @@ void init_allocator() {
     allocator::set_alloc(alloc);
 
     auto free = [](void *p) {
+        _free_count++;
         _last_freed = p;
         ::operator delete(p);
     };
@@ -71,6 +75,7 @@ TEST_CASE("allocator basics", "[arcus]") {
         allocator::free(p);
         REQUIRE(_last_freed == _last_allocated);
         REQUIRE(_last_freed == p);
+        REQUIRE(_alloc_count == _free_count);
     }
 
     SECTION("Create/Destroy (new/delete equivalents)") {
@@ -86,6 +91,7 @@ TEST_CASE("allocator basics", "[arcus]") {
         REQUIRE(_last_freed == _last_allocated);
         REQUIRE(_last_freed == p);
         REQUIRE(destruct_counter == 1);
+        REQUIRE(_alloc_count == _free_count);
     }
 
     SECTION("Array") {
@@ -100,6 +106,7 @@ TEST_CASE("allocator basics", "[arcus]") {
         }
         allocator::destroy_array<IntWrapper>(array);
         REQUIRE(destruct_counter == count);
+        REQUIRE(_alloc_count == _free_count);
     }
 }
 

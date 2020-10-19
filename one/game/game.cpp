@@ -11,8 +11,8 @@ namespace one_integration {
 // made within the One Game Hosting SDK.
 namespace allocation {
 
-// For debub purposes.
-size_t _alloc_count = 0;
+// For debug purposes.
+size_t _alloc_count = 0;  // Including calls to realloc with a null ptr.
 size_t _free_count = 0;
 
 size_t alloc_count() {
@@ -26,13 +26,25 @@ size_t free_count() {
 // A custom memory alloc example.
 void *alloc(size_t bytes) {
     _alloc_count++;
-    return ::operator new(bytes);
+    return std::malloc(bytes);
 }
 
 // A custom memory free example.
 void free(void *p) {
-    _free_count++;
-    ::operator delete(p);
+    // For counting purposes, exclude calls to deleting a nullptr. Passing it on
+    // anyway to delete just as an example that it is safe to do so, although
+    // there is no need to.
+    if (p != nullptr) {
+        _free_count++;
+    }
+    std::free(p);
+}
+
+void *realloc(void *p, size_t bytes) {
+    if (p == nullptr) {
+        _alloc_count++;
+    }
+    return std::realloc(p, bytes);
 }
 
 }  // namespace allocation
@@ -63,7 +75,7 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
     // Init One Server and make it start listening for an incoming One Agent
     // client connection.
 
-    if (!_one_server.init(allocation::alloc, allocation::free)) {
+    if (!_one_server.init(allocation::alloc, allocation::free, allocation::realloc)) {
         L_ERROR("failed to init one server");
         return false;
     }

@@ -642,17 +642,26 @@ RAPIDJSON_NAMESPACE_END
 ///////////////////////////////////////////////////////////////////////////////
 // malloc/realloc/free
 
+// i3d::one change
+#include <one/arcus/allocator.h>
+
 #ifndef RAPIDJSON_MALLOC
 ///! customization point for global \c malloc
-#define RAPIDJSON_MALLOC(size) std::malloc(size)
+// i3d::one change
+//#define RAPIDJSON_MALLOC(size) std::malloc(size)
+#define RAPIDJSON_MALLOC(size) i3d::one::allocator::alloc(size)
 #endif
 #ifndef RAPIDJSON_REALLOC
 ///! customization point for global \c realloc
-#define RAPIDJSON_REALLOC(ptr, new_size) std::realloc(ptr, new_size)
+// i3d::one change
+//#define RAPIDJSON_REALLOC(ptr, new_size) std::realloc(ptr, new_size)
+#define RAPIDJSON_REALLOC(ptr, new_size) i3d::one::allocator::realloc(ptr, new_size)
 #endif
 #ifndef RAPIDJSON_FREE
 ///! customization point for global \c free
-#define RAPIDJSON_FREE(ptr) std::free(ptr)
+// i3d::one change
+//#define RAPIDJSON_FREE(ptr) std::free(ptr)
+#define RAPIDJSON_FREE(ptr) i3d::one::allocator::free(ptr)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -660,11 +669,15 @@ RAPIDJSON_NAMESPACE_END
 
 #ifndef RAPIDJSON_NEW
 ///! customization point for global \c new
-#define RAPIDJSON_NEW(TypeName) new TypeName
+// i3d::one change
+//#define RAPIDJSON_NEW(TypeName) new TypeName
+#define RAPIDJSON_NEW(TypeName) i3d::one::allocator::create<TypeName>
 #endif
 #ifndef RAPIDJSON_DELETE
 ///! customization point for global \c delete
-#define RAPIDJSON_DELETE(x) delete x
+// i3d::one change
+//#define RAPIDJSON_DELETE(x) delete x
+#define RAPIDJSON_DELETE(x) i3d::one::allocator::destroy(x)
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
