@@ -122,7 +122,9 @@ TEST_CASE("custom string", "[arcus]") {
         {
             String val("test");
             REQUIRE(val == "test");
-            REQUIRE(_allocated_size > 0);
+            // Cannot assume any memory will be allocated intenrally by a string.
+            // The compiler may optimize by moving allocation to the stack.
+            // REQUIRE(_allocated_size > 0);
         }
         REQUIRE(_last_freed == _last_allocated);
         // Unfortunately not easy to test the _last_freed value against the
