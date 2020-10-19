@@ -8,8 +8,7 @@
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
 #include <one/arcus/opcode.h>
-
-#include <string>
+#include <one/arcus/types.h>
 
 using namespace i3d::one;
 
@@ -76,7 +75,7 @@ TEST_CASE("payload unit tests", "[payload]") {
     // Test getters.
     bool bool_val = false;
     int int_val = 0;
-    std::string string_val = "";
+    String string_val = "";
     Array array_val;
     Object object_val;
 
@@ -153,9 +152,9 @@ TEST_CASE("payload unit tests", "[payload]") {
     p.clear();
     REQUIRE(p.is_empty());
 
-    const std::string json = "{\"A\":1}";
+    const String json = "{\"A\":1}";
     REQUIRE(!is_error(p.from_json({json.c_str(), json.size()})));
-    const std::string result = p.to_json();
+    const String result = p.to_json();
     REQUIRE(json == result);
 
     p.clear();
@@ -171,7 +170,7 @@ TEST_CASE("payload unit tests", "[payload]") {
 TEST_CASE("message unit tests", "[message]") {
     Message m;
     REQUIRE(m.code() == Opcode::invalid);
-    const std::string json = "{\"timeout\":1000}";
+    const String json = "{\"timeout\":1000}";
     REQUIRE(!is_error(m.init(Opcode::soft_stop, {json.c_str(), json.size()})));
     REQUIRE(m.code() == Opcode::soft_stop);
     auto p = m.payload();
@@ -228,10 +227,10 @@ TEST_CASE("message prepare", "[message]") {
         m.reset();
         const int players = 1;
         const int max_players = 16;
-        const std::string name = "test name";
-        const std::string map = "test map";
-        const std::string mode = "test mode";
-        const std::string version = "test version";
+        const String name = "test name";
+        const String map = "test map";
+        const String mode = "test mode";
+        const String version = "test version";
 
         REQUIRE(!is_error(messages::prepare_live_state(players, max_players, name.c_str(),
                                                        map.c_str(), mode.c_str(),
@@ -245,7 +244,7 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(int_val == players);
         REQUIRE(!is_error(p.val_int("maxPlayers", int_val)));
         REQUIRE(int_val == max_players);
-        std::string val;
+        String val;
         REQUIRE(!is_error(p.val_string("name", val)));
         REQUIRE(val == name);
         REQUIRE(!is_error(p.val_string("map", val)));

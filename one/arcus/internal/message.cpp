@@ -225,8 +225,8 @@ Error metadata(const Message &message, std::function<void(void *, Array *)> call
 
 Error live_state(
     const Message &message,
-    std::function<void(void *, int, int, const std::string &, const std::string &,
-                       const std::string &, const std::string &)>
+    std::function<void(void *, int, int, const String &, const String &,
+                       const String &, const String &)>
         callback,
     void *data) {
     if (callback == nullptr) {

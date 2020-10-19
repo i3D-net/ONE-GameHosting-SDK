@@ -1,8 +1,10 @@
 #include <one/agent/agent.h>
 
+#include <stdlib.h>
+
+#include <one/agent/log.h>
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
-#include <one/game/log.h>
 
 namespace i3d {
 namespace one {
@@ -22,20 +24,23 @@ Error Agent::init(const char *addr, unsigned int port) {
     }
 
     err = _client.set_live_state_callback(
-        [this](void *, int players, int max_players, const std::string &name,
-               const std::string &map, const std::string &mode,
-               const std::string &version) {
+        [this](void *, int players, int max_players, const String &name,
+               const String &map, const String &mode, const String &version) {
             ++_live_state_receive_count;
             if (_quiet) {
                 return;
             }
-            L_INFO("live state event response received:");
-            L_INFO("\tplayers:" + std::to_string(players));
-            L_INFO("\tmax_players:" + std::to_string(max_players));
-            L_INFO("\tname:" + name);
-            L_INFO("\tmap:" + map);
-            L_INFO("\tmode:" + mode);
-            L_INFO("\tversion:" + version);
+            log_info("live state event response received:");
+            OStringStream stream;
+            stream << "\tplayers:" << players;
+            log_info(stream.str());
+            stream.clear();
+            stream << "\tmax_players:" + max_players;
+            log_info(stream.str());
+            log_info("\tname:" + name);
+            log_info("\tmap:" + map);
+            log_info("\tmode:" + mode);
+            log_info("\tversion:" + version);
         },
         nullptr);
     if (is_error(err)) {
@@ -48,8 +53,9 @@ Error Agent::init(const char *addr, unsigned int port) {
             if (_quiet) {
                 return;
             }
-            L_INFO("application instance set status request received:");
-            L_INFO("\tstatus:" + std::to_string(status));
+            log_info("application instance set status request received:");
+            OStringStream stream;
+            stream << "\tstatus:" << status;
         },
         nullptr);
     if (is_error(err)) {
@@ -125,8 +131,8 @@ Error Agent::send_metadata(Array &array) {
 }
 
 Error Agent::set_live_state_callback(
-    std::function<void(void *, int, int, const std::string &, const std::string &,
-                       const std::string &, const std::string &)>
+    std::function<void(void *, int, int, const String &, const String &, const String &,
+                       const String &)>
         callback,
     void *data) {
     const std::lock_guard<std::mutex> lock(_agent);

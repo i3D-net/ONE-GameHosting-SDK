@@ -42,6 +42,7 @@ set(SOURCE_FILES
     message.cpp
     object.cpp
     server.cpp
+    types.cpp
 )
 
 add_library(one_arcus ${SOURCE_FILES} ${HEADER_FILES})

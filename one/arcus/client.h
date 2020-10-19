@@ -1,11 +1,11 @@
 #pragma once
 
-#include <one/arcus/error.h>
-
 #include <chrono>
 #include <functional>
 #include <mutex>
-#include <string>
+
+#include <one/arcus/error.h>
+#include <one/arcus/types.h>
 
 using namespace std::chrono;
 
@@ -19,8 +19,8 @@ class Object;
 class Socket;
 
 struct ClientCallbacks {
-    std::function<void(void *, int, int, const std::string &, const std::string &,
-                       const std::string &, const std::string &)>
+    std::function<void(void *, int, int, const String &, const String &,
+                       const String &, const String &)>
         _live_state;
     void *_live_state_userdata;
 
@@ -41,7 +41,7 @@ public:
     Error update();
 
     enum class Status { uninitialized, connecting, handshake, ready, error };
-    static std::string status_to_string(Status status);
+    static String status_to_string(Status status);
 
     Status status() const;
 
@@ -64,8 +64,8 @@ public:
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     Error set_live_state_callback(
-        std::function<void(void *, int, int, const std::string &, const std::string &,
-                           const std::string &, const std::string &)>
+        std::function<void(void *, int, int, const String &, const String &,
+                           const String &, const String &)>
             callback,
         void *data);
 
@@ -90,7 +90,7 @@ private:
 
     Error connect();
 
-    std::string _server_address;
+    String _server_address;
     unsigned int _server_port;
 
     Socket *_socket;

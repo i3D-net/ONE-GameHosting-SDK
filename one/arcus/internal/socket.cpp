@@ -162,7 +162,7 @@ Error Socket::bind(unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::address(std::string &ip, unsigned int &port) const {
+Error Socket::address(String &ip, unsigned int &port) const {
     sockaddr_in addr;
     socklen_t addr_size = sizeof(addr);
 
@@ -170,7 +170,7 @@ Error Socket::address(std::string &ip, unsigned int &port) const {
     if (result != 0) return ONE_ERROR_SOCKET_ADDRESS_FAILED;
 
     assert(addr_size == sizeof(addr));
-    ip = std::string(inet_ntoa(addr.sin_addr));
+    ip = String(inet_ntoa(addr.sin_addr));
     port = (unsigned int)(ntohs(addr.sin_port));
     return ONE_ERROR_NONE;
 }
@@ -187,7 +187,7 @@ Error Socket::listen(int queueLength) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::accept(Socket &client, std::string &ip, unsigned int &port) {
+Error Socket::accept(Socket &client, String &ip, unsigned int &port) {
     assert(_socket != INVALID_SOCKET);
     if (client.is_initialized() == true) {
         return ONE_ERROR_SOCKET_ACCEPT_UNINITIALIZED;
@@ -207,7 +207,7 @@ Error Socket::accept(Socket &client, std::string &ip, unsigned int &port) {
 
     client._socket = socket;
     struct sockaddr_in *s = (struct sockaddr_in *)&addr;
-    ip = std::string(inet_ntoa(s->sin_addr));
+    ip = String(inet_ntoa(s->sin_addr));
     port = (unsigned int)ntohs(s->sin_port);
 
     return ONE_ERROR_NONE;

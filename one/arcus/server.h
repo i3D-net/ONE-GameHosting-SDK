@@ -1,10 +1,10 @@
 #pragma once
 
-#include <one/arcus/error.h>
-
 #include <functional>
 #include <mutex>
-#include <string>
+
+#include <one/arcus/error.h>
+#include <one/arcus/types.h>
 
 namespace i3d {
 namespace one {
@@ -52,7 +52,7 @@ public:
         error
     };
     Status status() const;
-    static std::string status_to_string(Status status);
+    static String status_to_string(Status status);
 
     Error listen(unsigned int port);
 
@@ -116,10 +116,10 @@ private:
 
         int players;          // Game number of players.
         int max_players;      // Game max number of players.
-        std::string name;     // Server name.
-        std::string map;      // Game map.
-        std::string mode;     // Game mode.
-        std::string version;  // Game version.
+        String name;     // Server name.
+        String map;      // Game map.
+        String mode;     // Game mode.
+        String version;  // Game version.
 
         Object *additional_data;  // Optional extra fields.
     };

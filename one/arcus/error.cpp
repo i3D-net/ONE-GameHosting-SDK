@@ -1,14 +1,14 @@
 #include <one/arcus/error.h>
 
-#include <unordered_map>
-#include <string>
+#include <one/arcus/allocator.h>
+#include <one/arcus/types.h>
 
 namespace i3d {
 namespace one {
 
 #define ERROR_MAP_PAIR(e) e, #e
 const char *error_text(OneError err) {
-    static std::unordered_map<OneError, std::string> lookup = {
+    static ONE_UNORDERED_MAP(OneError, String) lookup = {
         {ERROR_MAP_PAIR(ONE_ERROR_NONE)},
         {ERROR_MAP_PAIR(ONE_ERROR_ARRAY_ALLOCATION_FAILED)},
         {ERROR_MAP_PAIR(ONE_ERROR_ARRAY_POSITION_OUT_OF_BOUNDS)},

@@ -55,7 +55,7 @@ void Array::push_back_int(int val) {
     _doc.PushBack(val, _doc.GetAllocator());
 }
 
-void Array::push_back_string(const std::string &val) {
+void Array::push_back_string(const String &val) {
     _doc.PushBack(rapidjson::Value(val.c_str(), _doc.GetAllocator()).Move(),
                   _doc.GetAllocator());
 }
@@ -156,7 +156,7 @@ Error Array::val_string_size(unsigned int pos, size_t &size) const {
     return ONE_ERROR_NONE;
 }
 
-Error Array::val_string(unsigned int pos, std::string &val) const {
+Error Array::val_string(unsigned int pos, String &val) const {
     if (_doc.Size() <= pos) {
         return ONE_ERROR_ARRAY_POSITION_OUT_OF_BOUNDS;
     }
@@ -230,7 +230,7 @@ Error Array::set_val_int(unsigned int pos, int val) {
     return ONE_ERROR_NONE;
 }
 
-Error Array::set_val_string(unsigned int pos, const std::string &val) {
+Error Array::set_val_string(unsigned int pos, const String &val) {
     if (_doc.Size() <= pos) {
         return ONE_ERROR_ARRAY_POSITION_OUT_OF_BOUNDS;
     }

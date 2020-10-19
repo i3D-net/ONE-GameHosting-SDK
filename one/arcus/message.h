@@ -1,14 +1,13 @@
 #pragma once
 
+#include <functional>
+#include <utility>
+
 #include <one/arcus/error.h>
 #include <one/arcus/internal/platform.h>
 #include <one/arcus/internal/rapidjson/document.h>
 #include <one/arcus/opcode.h>
-
-#include <functional>
-#include <string>
-#include <utility>
-
+#include <one/arcus/types.h>
 namespace i3d {
 namespace one {
 
@@ -24,7 +23,7 @@ public:
     ~Payload() = default;
 
     Error from_json(std::pair<const char *, size_t> data);
-    std::string to_json() const;
+    String to_json() const;
 
     const rapidjson::Value &get() const {
         return _doc;
@@ -42,7 +41,7 @@ public:
     // Getters.
     Error val_bool(const char *key, bool &val) const;
     Error val_int(const char *key, int &val) const;
-    Error val_string(const char *key, std::string &val) const;
+    Error val_string(const char *key, String &val) const;
     Error val_array(const char *key, Array &val) const;
     Error val_object(const char *key, Object &val) const;
     Error val_root_object(Object &val) const;
@@ -50,7 +49,7 @@ public:
     // Setters.
     Error set_val_bool(const char *key, bool val);
     Error set_val_int(const char *key, int val);
-    Error set_val_string(const char *key, const std::string &val);
+    Error set_val_string(const char *key, const String &val);
     Error set_val_array(const char *key, const Array &val);
     Error set_val_object(const char *key, const Object &val);
     Error set_val_root_object(const Object &val);

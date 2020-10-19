@@ -122,7 +122,7 @@ Error Client::update() {
 
     auto close_client = [this](const Error passthrough_err) -> Error {
 #ifdef ONE_ARCUS_CLIENT_LOGGING
-        std::string ip;
+        String ip;
         unsigned int port;
         _socket->address(ip, port);
         std::cout << "ip: " << ip << ", port: " << port << ", closing client"
@@ -160,7 +160,7 @@ Error Client::update() {
     return ONE_ERROR_NONE;
 }
 
-std::string Client::status_to_string(Status status) {
+String Client::status_to_string(Status status) {
     switch (status) {
         case Status::uninitialized:
             return "uninitialized";
@@ -265,8 +265,8 @@ Error Client::send_application_instance_information(Object &data) {
 }
 
 Error Client::set_live_state_callback(
-    std::function<void(void *, int, int, const std::string &, const std::string &,
-                       const std::string &, const std::string &)>
+    std::function<void(void *, int, int, const String &, const String &,
+                       const String &, const String &)>
         callback,
     void *userdata) {
     const std::lock_guard<std::mutex> lock(_client);

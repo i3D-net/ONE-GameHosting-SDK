@@ -172,7 +172,7 @@ Error Object::val_string_size(const char *key, size_t &size) const {
     return ONE_ERROR_NONE;
 }
 
-Error Object::val_string(const char *key, std::string &val) const {
+Error Object::val_string(const char *key, String &val) const {
     if (key == nullptr) {
         return ONE_ERROR_OBJECT_KEY_IS_NULLPTR;
     }
@@ -274,7 +274,7 @@ Error Object::set_val_int(const char *key, int val) {
     return ONE_ERROR_NONE;
 }
 
-Error Object::set_val_string(const char *key, const std::string &val) {
+Error Object::set_val_string(const char *key, const String &val) {
     if (key == nullptr) {
         return ONE_ERROR_OBJECT_KEY_IS_NULLPTR;
     }
