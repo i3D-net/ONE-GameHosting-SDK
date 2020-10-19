@@ -44,7 +44,8 @@ TEST_CASE("long:Handshake timeout", "[integration]") {
 
     Agent agent;
     REQUIRE(!is_error(agent.init(address, port)));
-    // Update agent and game one time to initiate the connection.
+    game.update();
+    // Update agent and game one time to the connection.
     REQUIRE(!is_error(agent.update()));
     game.update();
     REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::handshake);

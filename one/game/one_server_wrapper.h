@@ -38,7 +38,8 @@ public:
 
     // alloc and free are optional allocation override handlers. Both may be nullptr,
     // otherwise both are required.
-    bool init(std::function<void *(size_t)> alloc, std::function<void(void *)> free);
+    bool init(std::function<void *(size_t)> alloc, std::function<void(void *)> free,
+              std::function<void *(void *, size_t)> realloc);
     bool listen(unsigned int port);  // Must be successful before calling update.
     void shutdown();
 

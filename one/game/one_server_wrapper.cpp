@@ -12,8 +12,10 @@ namespace one_integration {
 
 namespace {
 
+// Local cached memory function overrides, to assist in override pattern.
 std::function<void *(size_t)> _alloc = nullptr;
 std::function<void(void *)> _free = nullptr;
+std::function<void *(void *, size_t)> _realloc = nullptr;
 
 }  // namespace
 
@@ -35,7 +37,8 @@ OneServerWrapper::~OneServerWrapper() {
 }
 
 bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
-                            std::function<void(void *)> free) {
+                            std::function<void(void *)> free,
+                            std::function<void *(void *, size_t)> realloc) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     if (_server != nullptr) {
@@ -46,19 +49,25 @@ bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
     //----------------------
     // Set custom allocator.
 
-    if (alloc && free) {
+    if (alloc && free && realloc) {
+        // Cache off the overrides so that they can be called within the lambdas
+        // because lambdas with captures may not be passed to the c api.
         _alloc = alloc;
         _free = free;
-        // Function wrapper to remove lambda capture and convert to c interface (unsigned
+        _realloc = realloc;
+        // Functions wrapper to remove lambda capture and convert to c interface (unsigned
         // int).
         auto alloc_wrapper = [](unsigned int bytes) -> void * {
             return _alloc(static_cast<size_t>(bytes));
         };
-        // Function wrapper to remove lambda capture.
         auto free_wrapper = [](void *p) -> void { _free(p); };
+        auto realloc_wrapper = [](void *p, unsigned int bytes) -> void * {
+            return _realloc(p, static_cast<size_t>(bytes));
+        };
 
         one_allocator_set_alloc(alloc_wrapper);
         one_allocator_set_free(free_wrapper);
+        one_allocator_set_realloc(realloc_wrapper);
     }
 
     //-----------------------
