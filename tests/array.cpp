@@ -4,10 +4,9 @@
 #include <one/arcus/c_api.h>
 #include <one/arcus/error.h>
 #include <one/arcus/array.h>
-#include <one/arcus/object.h>
 #include <one/arcus/internal/rapidjson/document.h>
-
-#include <string>
+#include <one/arcus/object.h>
+#include <one/arcus/types.h>
 
 using namespace i3d::one;
 
@@ -16,7 +15,7 @@ TEST_CASE("array unit tests", "[array]") {
 
     const bool boolean = true;
     const int integer = 1;
-    const std::string string = "tata";
+    const String string = "tata";
     const Array array;
     const Object object;
 
@@ -93,7 +92,7 @@ TEST_CASE("array unit tests", "[array]") {
     // Checking getters.
     bool val_boolean = false;
     int val_integer = 2;
-    std::string val_string = "tete";
+    String val_string = "tete";
     Array val_array(b);
     Object val_object;
     size_t val_size = 0;
@@ -193,7 +192,7 @@ TEST_CASE("array c_api", "[array]") {
     int size = 0;
     bool val_bool = false;
     int val_int = 0;
-    std::string val_string = "";
+    String val_string = "";
     Array array;
     Object object;
     Array val_array;
@@ -244,7 +243,7 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(is_error(one_array_val_int(a, pos, nullptr)));
     REQUIRE(is_error(one_array_val_string_size(nullptr, pos, &size)));
     REQUIRE(is_error(one_array_val_string_size(a, pos, nullptr)));
-    std::string val;
+    String val;
     val.reserve(size);
     REQUIRE(is_error(one_array_val_string(nullptr, pos, &val[0], size)));
     REQUIRE(is_error(one_array_val_string(a, pos, nullptr, size)));
@@ -271,7 +270,7 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(!is_error(one_array_capacity(a, &capacity)));
     REQUIRE(capacity == 5);
 
-    const std::string string_value = "string";
+    const String string_value = "string";
     const size_t string_value_size = string_value.size();
     REQUIRE(!is_error(one_array_push_back_bool(a, true)));
     REQUIRE(!is_error(one_array_push_back_int(a, 1)));
@@ -302,7 +301,7 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(is_error(one_array_val_string(a, 2, val_string_bis, string_value_size - 1)));
     REQUIRE(!is_error(one_array_val_string(a, 2, val_string_bis, string_value_size)));
     REQUIRE(!is_error(one_array_val_string(a, 2, val_string_bis, val_string_bis_size)));
-    REQUIRE(std::string(val_string_bis, string_value_size) == string_value);
+    REQUIRE(String(val_string_bis, string_value_size) == string_value);
     REQUIRE(!is_error(one_array_val_array(a, 3, (OneArray *)&val_array)));
     REQUIRE(val_array.get() == array.get());
     REQUIRE(!is_error(one_array_val_object(a, 4, (OneObject *)&val_object)));

@@ -6,7 +6,6 @@
 #include <one/arcus/object.h>
 
 #include <functional>
-#include <string>
 
 namespace i3d {
 namespace one {
@@ -28,10 +27,10 @@ struct MetaDataRequest {
 struct LiveStateResponse {
     int _players;
     int _max_players;
-    std::string _name;
-    std::string _map;
-    std::string _mode;
-    std::string _version;
+    String _name;
+    String _map;
+    String _mode;
+    String _version;
 
     // Need a clean way to pass the user defined fields.
 };
@@ -76,8 +75,8 @@ Error metadata(const Message &message, std::function<void(void *, Array *)> call
 
 Error live_state(
     const Message &message,
-    std::function<void(void *, int, int, const std::string &, const std::string &,
-                       const std::string &, const std::string &)>
+    std::function<void(void *, int, int, const String &, const String &,
+                       const String &, const String &)>
         callback,
     void *data);
 

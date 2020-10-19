@@ -1,10 +1,12 @@
-#include <one/agent/agent.h>
-#include <one/arcus/array.h>
-#include <one/arcus/error.h>
-#include <one/game/log.h>
-
 #include <chrono>
 #include <thread>
+
+#include <one/arcus/array.h>
+#include <one/arcus/error.h>
+#include <one/arcus/types.h>
+
+#include <one/agent/agent.h>
+#include <one/agent/log.h>
 
 using namespace std::chrono;
 using namespace i3d::one;
@@ -21,27 +23,27 @@ int main(int argc, char **argv) {
         port = strtol(argv[1], nullptr, 10);
 
         if (port <= 0) {
-            L_ERROR("invalid port provided");
+            log_error("invalid port provided");
             return 1;
         }
     }
 
-    const std::string address = "127.0.0.1";
+    const String address = "127.0.0.1";
 
     Agent agent;
     auto err = agent.init(address.c_str(), port);
     if (is_error(err)) {
-        L_ERROR("failed to init agent.");
+        log_error("failed to init agent.");
         return 1;
     }
 
-    L_INFO("agent is initialized.");
-    L_INFO("-----------------------");
-    L_INFO("running update loop.");
+    log_info("agent is initialized.");
+    log_info("-----------------------");
+    log_info("running update loop.");
 
     auto log_status = [](Client::Status status) {
-        std::string status_str = Client::status_to_string(status);
-        L_INFO("status: " + status_str);
+        String status_str = Client::status_to_string(status);
+        log_info("status: " + status_str);
     };
     auto status = agent.client().status();
     log_status(status);
@@ -54,14 +56,14 @@ int main(int argc, char **argv) {
             bool shouldSend = std::rand() / ((RAND_MAX + 1u) / 50) == 0;
             if (shouldSend) {
                 Array array;
-                L_INFO("sending allocated");
+                log_info("sending allocated");
                 agent.send_allocated(array);
             }
         }
 
         err = agent.update();
         if (is_error(err)) {
-            L_INFO(error_text(err));
+            log_info(error_text(err));
             continue;
         }
 
@@ -72,7 +74,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    L_INFO("-----------------------");
-    L_INFO("agent has been shutdown");
+    log_info("-----------------------");
+    log_info("agent has been shutdown");
     return 0;
 }

@@ -7,9 +7,9 @@
 #include <one/arcus/object.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/server.h>
+#include <one/arcus/types.h>
 
 #include <utility>
-#include <string>
 #include <cstring>
 
 namespace i3d {
@@ -146,7 +146,7 @@ OneError array_push_back_string(OneArrayPtr array, const char *val) {
     }
 
     auto a = (Array *)array;
-    a->push_back_string(std::string(val));
+    a->push_back_string(String(val));
     return ONE_ERROR_NONE;
 }
 
@@ -326,7 +326,7 @@ OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val, size_t
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
-    std::string s(val);
+    String s(val);
     err = a->val_string(pos, s);
     if (is_error(err)) {
         return err;
@@ -670,7 +670,7 @@ OneError object_val_string(OneObjectPtr object, const char *key, char *val, size
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
-    std::string s;
+    String s;
     err = o->val_string(key, s);
     if (is_error(err)) {
         return err;
@@ -756,7 +756,7 @@ OneError object_set_val_string(OneObjectPtr object, const char *key, const char 
     }
 
     auto o = (Object *)object;
-    return o->set_val_string(key, std::string(val));
+    return o->set_val_string(key, String(val));
 }
 
 OneError object_set_val_array(OneObjectPtr object, const char *key, OneArrayPtr val) {

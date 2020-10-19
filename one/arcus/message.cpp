@@ -29,11 +29,11 @@ Error Payload::from_json(std::pair<const char *, size_t> data) {
     return ONE_ERROR_NONE;
 }
 
-std::string Payload::to_json() const {
+String Payload::to_json() const {
     rapidjson::StringBuffer buffer;
     rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
     _doc.Accept(writer);
-    return std::string(buffer.GetString(), buffer.GetSize());
+    return String(buffer.GetString(), buffer.GetSize());
 }
 
 bool Payload::is_empty() const {
@@ -144,7 +144,7 @@ Error Payload::val_int(const char *key, int &val) const {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::val_string(const char *key, std::string &val) const {
+Error Payload::val_string(const char *key, String &val) const {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -253,7 +253,7 @@ Error Payload::set_val_int(const char *key, int val) {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::set_val_string(const char *key, const std::string &val) {
+Error Payload::set_val_string(const char *key, const String &val) {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }

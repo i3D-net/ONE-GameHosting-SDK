@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #if defined(WINDOWS)
     #include <winsock2.h>
 #else
@@ -12,6 +10,7 @@ const int INVALID_SOCKET = -1;
 #endif
 
 #include <one/arcus/error.h>
+#include <one/arcus/types.h>
 
 namespace i3d {
 namespace one {
@@ -69,7 +68,7 @@ public:
     Error bind(unsigned int port);
 
     // Returns the address of this socket.
-    Error address(std::string &ip, unsigned int &port) const;
+    Error address(String &ip, unsigned int &port) const;
 
     // A decent default for the listen queue length for production. Ensure
     // the listen socket is serviced by accept to keep the queue free.
@@ -82,7 +81,7 @@ public:
     // Process incoming listen connections. Returns < 0 if an error occurred
     // during processing. If a new client connection was accepted, then the
     // given client socket's IsInitialized will be true.
-    Error accept(Socket &client, std::string &ip, unsigned int &port);
+    Error accept(Socket &client, String &ip, unsigned int &port);
 
     //--------
     // Client.

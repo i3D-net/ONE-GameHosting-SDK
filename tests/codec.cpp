@@ -8,9 +8,9 @@
 #include <one/arcus/internal/message.h>
 #include <one/arcus/message.h>
 #include <one/arcus/opcode.h>
+#include <one/arcus/types.h>
 
 #include <array>
-#include <string>
 
 using namespace i3d::one;
 
@@ -78,14 +78,14 @@ TEST_CASE("header", "[codec]") {
 
 TEST_CASE("payload", "[codec]") {
     Payload payload;
-    std::string json = "{}";
+    String json = "{}";
     REQUIRE(!is_error(payload.from_json({json.c_str(), json.size()})));
 
     std::array<char, codec::payload_max_size()> data;
     size_t payload_length = 0;
     REQUIRE(!is_error(codec::payload_to_data(payload, payload_length, data)));
     REQUIRE(payload_length == 0);
-    REQUIRE(std::string(data.data(), payload_length) == "");
+    REQUIRE(String(data.data(), payload_length) == "");
     Payload new_payload;
     REQUIRE(!is_error(codec::data_to_payload(data.data(), payload_length, new_payload)));
     REQUIRE(payload.get() == new_payload.get());
@@ -94,7 +94,7 @@ TEST_CASE("payload", "[codec]") {
     REQUIRE(!is_error(payload.from_json({json.c_str(), json.size()})));
     REQUIRE(!is_error(codec::payload_to_data(payload, payload_length, data)));
     REQUIRE(payload_length == json.size());
-    REQUIRE(std::string(data.data(), payload_length) == json);
+    REQUIRE(String(data.data(), payload_length) == json);
 
     json =
         "{\"TableHeight\":{\"tag\":\"00181130\",\"value\":163.253006,\"vr\":\"DS\"},"
@@ -108,7 +108,7 @@ TEST_CASE("payload", "[codec]") {
     REQUIRE(!is_error(payload.from_json({json.c_str(), json.size()})));
     REQUIRE(!is_error(codec::payload_to_data(payload, payload_length, data)));
     REQUIRE(payload_length == json.size());
-    REQUIRE(std::string(data.data(), payload_length) == json);
+    REQUIRE(String(data.data(), payload_length) == json);
     REQUIRE(!is_error(codec::data_to_payload(data.data(), payload_length, new_payload)));
     REQUIRE(payload.get() == new_payload.get());
 }
@@ -232,23 +232,22 @@ TEST_CASE("message", "[codec]") {
         int max_players = 0;
         REQUIRE(!is_error(message.payload().val_int("maxPlayers", max_players)));
         REQUIRE(max_players == 16);
-        std::string name;
+        String name;
         REQUIRE(!is_error(message.payload().val_string("name", name)));
         REQUIRE(name == "name test");
-        std::string map;
+        String map;
         REQUIRE(!is_error(message.payload().val_string("map", map)));
         REQUIRE(map == "map test");
-        std::string mode;
+        String mode;
         REQUIRE(!is_error(message.payload().val_string("mode", mode)));
         REQUIRE(mode == "mode test");
-        std::string version;
+        String version;
         REQUIRE(!is_error(message.payload().val_string("version", version)));
         REQUIRE(version == "version test");
     }
 
     {  // application instance set status request
-        REQUIRE(!is_error(
-            messages::prepare_application_instance_status(4, message)));
+        REQUIRE(!is_error(messages::prepare_application_instance_status(4, message)));
         data_length = 0;
         data_read = 0;
         header = {0};

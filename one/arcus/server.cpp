@@ -118,7 +118,7 @@ Error Server::shutdown() {
     return ONE_ERROR_NONE;
 }
 
-std::string Server::status_to_string(Status status) {
+String Server::status_to_string(Status status) {
     switch (status) {
         case Status::uninitialized:
             return "uninitialized";
@@ -203,7 +203,7 @@ Error Server::update_listen_socket() {
         return ONE_ERROR_NONE;
     }
 
-    std::string client_ip;
+    String client_ip;
     unsigned int client_port;
     Socket incoming_client;
     err = _listen_socket->accept(incoming_client, client_ip, client_port);
@@ -335,7 +335,7 @@ Error Server::update_client_connection() {
         _is_waiting_for_client = true;
 
 #ifdef ONE_ARCUS_SERVER_LOGGING
-        std::string ip;
+        String ip;
         unsigned int port;
         _client_socket->address(ip, port);
         std::cout << "ip: " << ip << ", port: " << port << ", closing client"
@@ -476,7 +476,7 @@ Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
 Error Server::send_live_state() {
     // Todo: cache message.
     Message message;
-    // Todo: std::string.
+    // Todo: String.
     auto err = messages::prepare_live_state(
         _game_state.players, _game_state.max_players, _game_state.name.c_str(),
         _game_state.map.c_str(), _game_state.mode.c_str(), _game_state.version.c_str(),

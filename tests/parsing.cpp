@@ -1,10 +1,13 @@
 #include <catch.hpp>
 #include <util.h>
 
+#include <string>
+
 #include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/object.h>
 #include <one/game/parsing.h>
+#include <one/arcus/types.h>
 
 using namespace one_integration;
 using namespace i3d::one;
@@ -17,13 +20,13 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
         Object map;
         auto err = map.set_val_string("key", "map");
         REQUIRE(!is_error(err));
-        err = map.set_val_string("value", map_str);
+        err = map.set_val_string("value", to_one_string(map_str));
         REQUIRE(!is_error(err));
 
         Object max_players;
         err = max_players.set_val_string("key", "maxPlayers");
         REQUIRE(!is_error(err));
-        err = max_players.set_val_string("value", max_players_str);
+        err = max_players.set_val_string("value", to_one_string(max_players_str));
         REQUIRE(!is_error(err));
 
         Array data;
@@ -71,19 +74,19 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
         Object map;
         auto err = map.set_val_string("key", "map");
         REQUIRE(!is_error(err));
-        err = map.set_val_string("value", map_str);
+        err = map.set_val_string("value", map_str.c_str());
         REQUIRE(!is_error(err));
 
         Object mode;
         err = mode.set_val_string("key", "mode");
         REQUIRE(!is_error(err));
-        err = mode.set_val_string("value", mode_str);
+        err = mode.set_val_string("value", mode_str.c_str());
         REQUIRE(!is_error(err));
 
         Object type;
         err = type.set_val_string("key", "type");
         REQUIRE(!is_error(err));
-        err = type.set_val_string("value", type_str);
+        err = type.set_val_string("value", type_str.c_str());
         REQUIRE(!is_error(err));
 
         Array data;

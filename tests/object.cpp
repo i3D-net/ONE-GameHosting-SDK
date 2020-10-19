@@ -7,8 +7,7 @@
 #include <one/arcus/message.h>
 #include <one/arcus/internal/rapidjson/document.h>
 #include <one/arcus/object.h>
-
-#include <string>
+#include <one/arcus/types.h>
 
 using namespace i3d::one;
 
@@ -18,7 +17,7 @@ TEST_CASE("object unit tests", "[object]") {
 
     const bool boolean = true;
     const int integer = 1;
-    const std::string string = "string";
+    const String string = "string";
     const Array array;
     const Object object;
 
@@ -109,7 +108,7 @@ TEST_CASE("object unit tests", "[object]") {
     // Check getters.
     bool val_boolean = false;
     int val_integer = 1;
-    std::string val_string = "";
+    String val_string = "";
     Array val_array;
     Object val_object;
 
@@ -192,7 +191,7 @@ TEST_CASE("object c_api", "[object]") {
     const char *key = {"key"};
     bool val_bool = false;
     int val_int = 1;
-    std::string val_string = "";
+    String val_string = "";
     Array array;
     Object object;
     Array val_array;
@@ -264,7 +263,7 @@ TEST_CASE("object c_api", "[object]") {
     REQUIRE(is_error(one_object_set_val_object(o, nullptr, o_ptr)));
     REQUIRE(is_error(one_object_set_val_object(o, key, nullptr)));
 
-    const std::string string_value = "toto";
+    const String string_value = "toto";
     const size_t string_value_size = string_value.size();
 
     REQUIRE(!is_error(one_object_set_val_bool(o, "bool", false)));
@@ -301,7 +300,7 @@ TEST_CASE("object c_api", "[object]") {
         one_object_val_string(o, "string", val_string_bis, val_string_bis_size)));
     REQUIRE(!is_error(
         one_object_val_string(o, "string", val_string_bis, val_string_bis_size)));
-    REQUIRE(std::string(val_string_bis, string_value_size) == string_value);
+    REQUIRE(String(val_string_bis, string_value_size) == string_value);
     REQUIRE(!is_error(one_object_val_array(o, "array", (OneArray *)&val_array)));
     REQUIRE(val_array.get() == array.get());
     REQUIRE(!is_error(one_object_val_object(o, "object", (OneObject *)&val_object)));

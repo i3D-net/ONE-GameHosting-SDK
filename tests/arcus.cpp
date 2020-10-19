@@ -1,6 +1,9 @@
 #include <catch.hpp>
 #include <util.h>
 
+#include <functional>
+#include <utility>
+
 #include <one/arcus/array.h>
 #include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/connection.h>
@@ -10,10 +13,7 @@
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
 #include <one/arcus/opcode.h>
-
-#include <functional>
-#include <string>
-#include <utility>
+#include <one/arcus/types.h>
 
 using namespace i3d::one;
 
@@ -50,7 +50,7 @@ TEST_CASE("opcode current version validation", "[arcus]") {
 
 TEST_CASE("message handling", "[arcus]") {
     Message m;
-    const std::string payload = "{\"timeout\":1000}";
+    const String payload = "{\"timeout\":1000}";
     REQUIRE(!is_error(m.init(Opcode::soft_stop, {payload.c_str(), payload.size()})));
     REQUIRE(m.code() == Opcode::soft_stop);
     REQUIRE(m.payload().is_empty() == false);
@@ -85,7 +85,7 @@ void listen(Socket &server, unsigned int &port) {
     REQUIRE(!is_error(server.init()));
     REQUIRE(!is_error(server.bind(0)));
 
-    std::string server_ip;
+    String server_ip;
     REQUIRE(!is_error(server.address(server_ip, port)));
     REQUIRE(server_ip.length() > 0);
     REQUIRE(port != 0);
@@ -101,7 +101,7 @@ void connect(Socket &client, unsigned int port) {
 void accept(Socket &server, Socket &in_client) {
     // Accept client on server.
     wait_ready_for_read(server);
-    std::string client_ip;
+    String client_ip;
     unsigned int client_port;
     REQUIRE(!is_error(server.accept(in_client, client_ip, client_port)));
     REQUIRE(client_ip.length() > 0);
@@ -129,7 +129,7 @@ TEST_CASE("connection", "[arcus]") {
 
     // Confirm no incoming connections.
     Socket in_client;
-    std::string client_ip;
+    String client_ip;
     unsigned int client_port;
     REQUIRE(!is_error(server.accept(in_client, client_ip, client_port)));
     REQUIRE(in_client.is_initialized() == false);
@@ -441,7 +441,7 @@ TEST_CASE("message send bad json", "[arcus]") {
     REQUIRE(err == ONE_ERROR_CONNECTION_QUEUE_EMPTY);
 
     // Send a message from client to server.
-    const std::string invalid_json = "{\"invalid_json\":true";
+    const String invalid_json = "{\"invalid_json\":true";
     Message message;
     err = message.init(Opcode::metadata, {invalid_json.c_str(), invalid_json.size()});
     err = objects.client_connection->add_outgoing(message);

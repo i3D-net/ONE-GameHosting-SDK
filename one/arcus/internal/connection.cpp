@@ -1,9 +1,7 @@
 #include <one/arcus/internal/connection.h>
 
 #include <assert.h>
-#include <array>
 #include <cstring>
-#include <string>
 
 #include <one/arcus/message.h>
 #include <one/arcus/internal/codec.h>
@@ -30,7 +28,7 @@ namespace {
 
 void log(const Socket &socket, std::function<void(std::ostringstream &)> cb) {
     // Get socket info to help identify the connection.
-    std::string ip;
+    String ip;
     unsigned int port;
     socket.address(ip, port);
     std::ostringstream stream;

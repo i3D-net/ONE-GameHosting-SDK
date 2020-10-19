@@ -1,10 +1,11 @@
 #pragma once
 
-#include <one/arcus/client.h>
-#include <one/arcus/error.h>
-
 #include <functional>
 #include <mutex>
+
+#include <one/arcus/client.h>
+#include <one/arcus/error.h>
+#include <one/arcus/types.h>
 
 namespace i3d {
 namespace one {
@@ -40,9 +41,8 @@ public:
 
     // Set live_state callback.
     Error set_live_state_callback(
-        std::function<void(void *, int players, int max_players, const std::string &name,
-                           const std::string &map, const std::string &mode,
-                           const std::string &version)>,
+        std::function<void(void *, int players, int max_players, const String &name,
+                           const String &map, const String &mode, const String &version)>,
         void *data);
 
     // Set application instance set status callback
