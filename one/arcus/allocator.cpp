@@ -20,7 +20,7 @@ void default_free(void *p) {
 }
 
 void *default_realloc(void *p, size_t bytes) {
-    return std::realloc;
+    return std::realloc(p, bytes);
 }
 
 }  // namespace

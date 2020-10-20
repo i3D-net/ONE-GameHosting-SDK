@@ -15,13 +15,19 @@ using namespace one_integration;
 using namespace i3d::one;
 
 TEST_CASE("life cycle", "[fake game]") {
+    // Some allocations are global, e.g. the error static string lookup, and
+    // will not be freed during shutdown.
+    // Comparing before and after to avoid previous tests allocation pollution.
+    auto alloc_before = allocation::alloc_count();
+    auto free_before = allocation::free_count();
     Game game;
     REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version"));
     game.shutdown();
     REQUIRE(allocation::alloc_count() > 0);
-    // Some allocations are global, e.g. the error static string lookup, and
-    // will not be freed during shutdown.
-    REQUIRE(allocation::alloc_count() >= allocation::free_count());
+    auto alloc_after = allocation::alloc_count();
+    auto free_after = allocation::free_count();
+    REQUIRE((alloc_after - alloc_before) >= (free_after - free_before));
+    int titi = 0;
 }
 
 TEST_CASE("connection error handling", "[fake game]") {
