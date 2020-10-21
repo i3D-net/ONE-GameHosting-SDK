@@ -548,20 +548,30 @@ Error Connection::process_outgoing_messages() {
         // Convert to data payload and add to outgoing buffer.
         auto message = _outgoing_messages.pop();
 
+        auto fail = [&](OneError err) {
+            _status = Status::error;
+            return err;
+        };
+
         size_t message_size = 0;
         static uint32_t packet_id = 1;
         static std::array<char, codec::header_size() + codec::payload_max_size()>
             out_message_buffer;
         err =
             codec::message_to_data(packet_id, message, message_size, out_message_buffer);
-        if (is_error(err)) return err;
+
+#ifdef ONE_ARCUS_CONNECTION_LOGGING
+        const auto message_code = (int)message.code();
+#endif
+        if (is_error(err)) {
+            return fail(err);
+        }
 
         const size_t max_size = _out_stream.capacity() - _out_stream.size();
 
         // If it doesn't fit, then put the the connection into an error state.
         if (message_size > max_size) {
-            _status = Status::error;
-            return ONE_ERROR_CONNECTION_OUT_MESSAGE_TOO_BIG_FOR_STREAM;
+            return fail(ONE_ERROR_CONNECTION_OUT_MESSAGE_TOO_BIG_FOR_STREAM);
         }
 
         _out_stream.put(out_message_buffer.data(), message_size);
@@ -572,13 +582,12 @@ Error Connection::process_outgoing_messages() {
         err = send_pending_data();
         if (err == ONE_ERROR_CONNECTION_TRY_AGAIN) return ONE_ERROR_NONE;
         if (is_error(err)) {
-            _status = Status::error;
-            return err;
+            return fail(err);
         }
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
         log(*_socket, [&](std::ostringstream &stream) {
-            stream << "connection sent message opcode: " << (int)message->code();
+            stream << "connection sent message opcode: " << message_code;
         });
 #endif
     }

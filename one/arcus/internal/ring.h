@@ -55,7 +55,7 @@ public:
     }
 
     // Pops the oldest pushed value. Asserts if size is zero.
-    const T &pop() {
+    T &pop() {
         assert(_size > 0);
         // Cache the current last before incrementing so that the new
         // last can be error checked against the front of the ring, before
