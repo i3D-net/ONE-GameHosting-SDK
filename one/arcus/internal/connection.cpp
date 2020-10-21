@@ -561,10 +561,6 @@ Error Connection::process_outgoing_messages() {
         err =
             codec::message_to_data(packet_id, message, message_size, out_message_buffer);
 
-#ifdef ONE_ARCUS_CONNECTION_LOGGING
-        const auto message_code = (int)message.code();
-#endif
-        message.reset();
         if (is_error(err)) {
             return fail(err);
         }
@@ -589,7 +585,8 @@ Error Connection::process_outgoing_messages() {
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
         log(*_socket, [&](std::ostringstream &stream) {
-            stream << "connection sent message opcode: " << message_code;
+            stream << "connection sent message opcode: " << (int)message.code();
+            ;
         });
 #endif
     }
