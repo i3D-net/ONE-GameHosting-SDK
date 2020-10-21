@@ -39,7 +39,7 @@ constexpr size_t stream_receive_buffer_size() {
 class Connection final {
 public:
     // A default that can be used for production.
-    static constexpr size_t max_message_default = 1024;
+    static constexpr size_t max_message_default = 64;
     static constexpr int handshake_timeout_seconds = 1;
 
     // Connection must be given an active socket. Socket errors encountered
