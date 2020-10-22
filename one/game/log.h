@@ -2,12 +2,33 @@
 
 #include <string>
 
-#define L_INFO(message) one_integration::log_info(message)
-#define L_ERROR(message) one_integration::log_error(message)
+#define L_INFO(message) one_integration::LogCentral::log_info(message)
+#define L_ERROR(message) one_integration::LogCentral::log_error(message)
 
 namespace one_integration {
 
-void log_info(const std::string &message);
-void log_error(const std::string &message);
+class LogCentral {
+public:
+    // Try to log info in file _log_file first, if unable to log into a file it logs in std::cout.
+    static void log_info(const std::string &message);
+    // Try to log info in file _log_file first, if unable to log into a file it logs in std::cerr.
+    static void log_error(const std::string &message);
+
+    // Log message in std::cout.
+    static void log_console_info(const std::string &message);
+    // Log message in std::cerr.
+    static void log_console_error(const std::string &message);
+
+    // Log message into a file with `INFO :` prefix.
+    static bool log_file_info(const std::string &file_name, const std::string message);
+    // Log message into a file with `ERROR:` prefix.
+    static bool log_file_error(const std::string &file_name, const std::string message);
+
+    // Set the target log file used by `log_info` and `log_error`.
+    static void set_log_file(const std::string &log_file);
+
+private:
+    static std::string _log_file;
+};
 
 }  // namespace one_integration

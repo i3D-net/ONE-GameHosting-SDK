@@ -16,13 +16,24 @@ int main(int argc, char **argv) {
     const unsigned int default_port = 19001;
     unsigned int port = default_port;
 
-    if (argc == 2) {
+    if (2 <= argc) {
         port = strtol(argv[1], nullptr, 10);
 
         if (port <= 0) {
             L_ERROR("invalid port provided");
             return 1;
         }
+    }
+
+    if (3 <= argc) {
+        LogCentral::set_log_file(argv[2]);
+    }
+
+    if (4 < argc) {
+        L_ERROR("invalid number of arguments provided. Maxmium of 2 arguments are supported.");
+        L_ERROR("\t first argument: an integer defining the port number to binds to.");
+        L_ERROR("\t second argument: a string defining the log filename to use instead of logging into std::cout and std::cerr.");
+        return -1;
     }
 
     Game game;
