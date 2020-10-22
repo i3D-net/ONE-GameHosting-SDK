@@ -182,3 +182,40 @@ TEST_CASE("soak:test very high usage over a very long period on multiple threads
     stress.log_game_error_tally();
     REQUIRE(true);
 }
+
+TEST_CASE("soak-days:test normal load over many days", "[stress]") {
+    const auto address = "127.0.0.1";
+    const unsigned int port = 18000;
+    StressHarness stress(address, port);
+    stress.set_game_callback_probability(5);
+    stress.set_agent_callback_probability(5);
+    stress.set_game_update_probability(100);
+    stress.set_agent_update_probability(100);
+
+    stress.set_stress_game_callback([](Game &game, int) {
+        game.alter_game_state();
+        return ONE_ERROR_NONE;
+    });
+
+    stress.set_stress_agent_callback(
+        [](Agent &agent, int random) { return agent.send_soft_stop(random); });
+
+    const seconds day = seconds(86400);
+    stress.run(2 * day, milliseconds(200));
+
+    auto &agent = stress.agent();
+    auto &game = stress.game();
+
+    REQUIRE(0 < game.soft_stop_receive_count());
+    REQUIRE(0 < agent.live_state_receive_count());
+
+    L_INFO("soak-days:test normal load over many days");
+    L_INFO("Agent received: " + std::to_string(agent.live_state_receive_count()) +
+           " live_state messages");
+    L_INFO("Game received: " + std::to_string(game.soft_stop_receive_count()) +
+           " soft_stop messages");
+
+    stress.log_agent_error_tally();
+    stress.log_game_error_tally();
+    REQUIRE(true);
+}

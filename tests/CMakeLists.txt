@@ -61,6 +61,6 @@ if (RUN_TEST_AFTER_BUILD)
         POST_BUILD
         // -d yes is for showing durations of test
         // the exclude filter avoids running long tests for each build
-        COMMAND ${UNIT_TEST} ~long:* ~soak:*
+        COMMAND ${UNIT_TEST} ~long:* ~soak:* ~soak-days:*
     )
 endif()
