@@ -77,8 +77,6 @@ Error data_to_message(const void *data, const size_t data_size, size_t &read_dat
 Error message_to_data(const uint32_t packet_id, const Message &message,
                       size_t &data_length,
                       std::array<char, header_size() + payload_max_size()> &data) {
-    // Todo: handle byte order to a specific order for wire
-
     std::array<char, payload_max_size()> payload_data;
     size_t payload_length = 0;
     auto err = payload_to_data(message.payload(), payload_length, payload_data);
@@ -148,8 +146,6 @@ Error header_to_data(const Header &header, std::array<char, header_size()> &data
 }
 
 Error data_to_payload(const void *data, size_t length, Payload &payload) {
-    // Todo: handle byte order to a specific order for wire
-
     if (payload_max_size() < length) {
         return ONE_ERROR_CODEC_INVALID_MESSAGE_PAYLOAD_SIZE_TOO_BIG;
     }
@@ -167,8 +163,6 @@ Error data_to_payload(const void *data, size_t length, Payload &payload) {
 
 Error payload_to_data(const Payload &payload, size_t &payload_length,
                       std::array<char, payload_max_size()> &data) {
-    // Todo: handle byte order to a specific order for wire
-
     if (payload.is_empty()) {
         payload_length = 0;
         return ONE_ERROR_NONE;

@@ -48,8 +48,6 @@ public:
     //-------------------
     // Outgoing Messages.
 
-    // Todo: update functions to match complete list from One API v2.
-
     Error send_soft_stop(int timeout);
     Error send_allocated(Array &data);
     Error send_metadata(Array &data);

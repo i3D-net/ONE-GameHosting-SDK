@@ -66,8 +66,16 @@ Error Agent::init(const char *addr, unsigned int port) {
 }
 
 Error Agent::send_host_information() {
-    // Todo: set fake agent host information.
+    // see
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information
+    // for more details
     Object object;
+
+    // For example mirroring the host information example payload
+    // object.set_val_int("id", 0);
+    // object.set_val_int("serverId", 0);
+    // ...
+
     auto err = _client.send_host_information(object);
     if (is_error(err)) return err;
     _host_information_send_count++;
@@ -75,8 +83,16 @@ Error Agent::send_host_information() {
 }
 
 Error Agent::send_application_instance_information() {
-    // Todo: set fake info.
+    // see
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information
+    // for more details
     Object object;
+
+    // For example mirroring the applicationinstance information example payload
+    // object.set_val_string("fleetId", "");
+    // object.set_val_int("hostId", 0);
+    // ...
+
     auto err = _client.send_application_instance_information(object);
     if (is_error(err)) return err;
     _application_instance_information_send_count++;
