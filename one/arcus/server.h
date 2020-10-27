@@ -74,8 +74,6 @@ public:
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
 
-    // Todo: update functions to match complete list from One API v2.
-
     // set the callback for when a soft_stop message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.

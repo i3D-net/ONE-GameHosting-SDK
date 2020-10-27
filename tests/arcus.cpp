@@ -2,6 +2,7 @@
 #include <util.h>
 
 #include <functional>
+#include <iostream>
 #include <utility>
 
 #include <one/arcus/array.h>
@@ -276,14 +277,15 @@ TEST_CASE("handshake early hello", "[arcus]") {
     auto result = objects.out_client.send(&hello, codec::hello_size(), sent);
     REQUIRE(!is_error(result));
     REQUIRE(sent == codec::hello_size());
-    auto did_fail = false;
+    auto err = ONE_ERROR_NONE;
+
     for (int i = 0; i < 5; i++) {
-        did_fail = is_error(objects.server_connection->update());  // Todo Error type.
-        if (did_fail) break;
+        err = objects.server_connection->update();
+        if (is_error(err)) break;
         sleep(10);
     }
-    REQUIRE(did_fail);
-    // todo get error reason
+    REQUIRE(is_error(err));
+    std::cout << "failed as expected with error: " << error_text(err) << std::endl;
 
     shutdown_client_server_test(objects);
 }
