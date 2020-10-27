@@ -2,7 +2,6 @@
 #include <util.h>
 
 #include <functional>
-#include <iostream>
 #include <utility>
 
 #include <one/arcus/array.h>
@@ -285,7 +284,6 @@ TEST_CASE("handshake early hello", "[arcus]") {
         sleep(10);
     }
     REQUIRE(is_error(err));
-    std::cout << "failed as expected with error: " << error_text(err) << std::endl;
 
     shutdown_client_server_test(objects);
 }
