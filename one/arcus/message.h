@@ -58,8 +58,6 @@ private:
     rapidjson::Document _doc;
 };
 
-// Todo: would a simple struct be better for now? Consider memory pooling both
-// for arcus message and for rapidjson internal data.
 class Message final {
 public:
     Message();
