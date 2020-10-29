@@ -19,11 +19,11 @@ void LogCentral::log_error(const std::string &message) {
 }
 
 void LogCentral::log_console_error(const std::string &message) {
-    std::cout << message << std::endl;
+    std::cout << timestamp() << " " << message << std::endl;
 }
 
 void LogCentral::log_console_info(const std::string &message) {
-    std::cerr << message << std::endl;
+    std::cerr << timestamp() << " " << message << std::endl;
 }
 
 bool LogCentral::log_file_info(const std::string &filename, const std::string message) {
