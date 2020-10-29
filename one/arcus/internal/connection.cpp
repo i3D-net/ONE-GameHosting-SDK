@@ -17,7 +17,6 @@
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
     #include <functional>
     #include <iostream>
-    #include <sstream>
 #endif
 
 namespace i3d {
@@ -26,12 +25,12 @@ namespace one {
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
 namespace {
 
-void log(const Socket &socket, std::function<void(std::ostringstream &)> cb) {
+void log(const Socket &socket, std::function<void(OStringStream &)> cb) {
     // Get socket info to help identify the connection.
     String ip;
     unsigned int port;
     socket.address(ip, port);
-    std::ostringstream stream;
+    OStringStream stream;
 
     // Write it to the stream, then allow caller to add more.
     stream << "ip: " << ip << ", port: " << port << ". ";
@@ -135,7 +134,7 @@ Error Connection::update() {
     }
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
-    log(*_socket, [&](std::ostringstream &stream) { stream << "connection update"; });
+    log(*_socket, [&](OStringStream &stream) { stream << "connection update"; });
 #endif
 
     // Return if socket has no activity or has an error.
@@ -148,7 +147,7 @@ Error Connection::update() {
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
     log(*_socket,
-        [](std::ostringstream &stream) { stream << "connection processing messages"; });
+        [](OStringStream &stream) { stream << "connection processing messages"; });
 #endif
 
     // The server mostly replies to client request, so send outgoing messages
@@ -303,7 +302,7 @@ Error Connection::try_read_data_into_in_stream() {
     }
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
-    log(*_socket, [&](std::ostringstream &stream) {
+    log(*_socket, [&](OStringStream &stream) {
         stream << "connection received data: " << received;
     });
 #endif
@@ -317,7 +316,7 @@ Error Connection::try_read_data_into_in_stream() {
     _in_stream.put(buffer.data(), received);
     if (_in_stream.size() < codec::header_size()) {
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
-        log(*_socket, [&](std::ostringstream &stream) {
+        log(*_socket, [&](OStringStream &stream) {
             stream << "stream size smaller than header size: " << _in_stream.size();
         });
 #endif
@@ -351,7 +350,7 @@ Error Connection::try_read_message_from_in_stream(codec::Header &header,
     _in_stream.trim(size_read);
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
-    log(*_socket, [&](std::ostringstream &stream) {
+    log(*_socket, [&](OStringStream &stream) {
         stream << "connection read message opcode: " << (int)message.code();
     });
 #endif
@@ -525,9 +524,8 @@ Error Connection::process_outgoing_messages() {
         _out_stream.trim(size);
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
-        log(*_socket, [&](std::ostringstream &stream) {
-            stream << "connection sent data: " << sent;
-        });
+        log(*_socket,
+            [&](OStringStream &stream) { stream << "connection sent data: " << sent; });
 #endif
 
         return ONE_ERROR_NONE;
@@ -539,7 +537,7 @@ Error Connection::process_outgoing_messages() {
     if (is_error(err)) return err;
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
-    log(*_socket, [&](std::ostringstream &stream) {
+    log(*_socket, [&](OStringStream &stream) {
         stream << "processing outgoing messages: " << _outgoing_messages.size();
     });
 #endif
@@ -584,7 +582,7 @@ Error Connection::process_outgoing_messages() {
         }
 
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
-        log(*_socket, [&](std::ostringstream &stream) {
+        log(*_socket, [&](OStringStream &stream) {
             stream << "connection sent message opcode: " << (int)message.code();
             ;
         });

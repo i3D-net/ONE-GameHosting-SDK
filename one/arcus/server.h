@@ -4,6 +4,7 @@
 #include <mutex>
 
 #include <one/arcus/error.h>
+#include <one/arcus/logger.h>
 #include <one/arcus/types.h>
 
 namespace i3d {
@@ -33,6 +34,7 @@ struct ServerCallbacks {
 class Server final {
 public:
     Server();
+    Server(const Logger &);
     Server(const Server &) = delete;
     Server &operator=(const Server &) = delete;
     ~Server();
@@ -153,6 +155,8 @@ private:
     bool _should_send_status;
 
     ServerCallbacks _callbacks;
+
+    Logger _logger;
 
     mutable std::mutex _server;
 };

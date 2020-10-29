@@ -795,12 +795,17 @@ OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPt
     return o->set_val_object(key, *v);
 }
 
-Error server_create(OneServerPtr *server) {
+Error server_create(OneLogFn logFn, OneServerPtr *server) {
     if (server == nullptr) {
         return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
     }
 
-    auto s = allocator::create<Server>();
+    auto logFnLambda = [logFn](LogLevel level, const String &message) {
+        logFn(static_cast<OneLogLevel>(level), message.c_str());
+    };
+    Logger logger(logFnLambda);
+
+    auto s = allocator::create<Server>(logger);
     if (s == nullptr) {
         return ONE_ERROR_SERVER_ALLOCATION_FAILED;
     }
@@ -1222,8 +1227,8 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
     return one::object_set_val_object(object, key, val);
 }
 
-OneError one_server_create(OneServerPtr *server) {
-    return one::server_create(server);
+OneError one_server_create(OneLogFn logFn, OneServerPtr *server) {
+    return one::server_create(logFn, server);
 }
 
 void one_server_destroy(OneServerPtr server) {

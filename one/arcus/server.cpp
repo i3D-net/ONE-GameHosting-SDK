@@ -10,7 +10,7 @@
 #include <one/arcus/opcode.h>
 #include <one/arcus/message.h>
 
-//#define ONE_ARCUS_SERVER_LOGGING
+#define ONE_ARCUS_SERVER_LOGGING
 
 namespace i3d {
 namespace one {
@@ -49,6 +49,10 @@ Server::Server()
     , _status(ApplicationInstanceStatus::starting)
     , _should_send_status(false)
     , _callbacks({0}) {}
+
+Server::Server(const Logger &logger) : Server() {
+    _logger = logger;
+}
 
 Server::~Server() {
     shutdown();
@@ -242,6 +246,10 @@ Error Server::process_incoming_message(const Message &message) {
     // an outgoing message in response to an incoming message).
     const ReverseLockGuard<std::mutex> reverse_lock(_server);
 
+#ifdef ONE_ARCUS_SERVER_LOGGING
+    _logger.Log(LogLevel::Info, message.payload().to_json());
+#endif
+
     switch (message.code()) {
         case Opcode::soft_stop:
             if (_callbacks._soft_stop == nullptr) {
@@ -335,7 +343,9 @@ void Server::close_client_connection() {
     String ip;
     unsigned int port;
     _client_socket->address(ip, port);
-    std::cout << "ip: " << ip << ", port: " << port << ", closing client" << std::endl;
+    OStringStream stream;
+    stream << "closing client ip: " << ip << ", port: " << std::to_string(port);
+    _logger.Log(LogLevel::Info, stream.str());
 #endif
 }
 
@@ -360,11 +370,11 @@ Error Server::update_client_connection() {
         err = _client_connection->incoming_count(count);
         if (is_error(err)) return fail(err);
 
+        if (count == 0) break;
+
 #ifdef ONE_ARCUS_SERVER_LOGGING
         std::cout << "server processing incoming: " << count << std::endl;
 #endif
-
-        if (count == 0) break;
 
         err = _client_connection->remove_incoming(
             [this](const Message &message) { return process_incoming_message(message); });

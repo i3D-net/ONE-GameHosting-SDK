@@ -114,15 +114,24 @@ void one_allocator_set_realloc(void *(callback(void *, unsigned int size)));
 /// messages from an Arcus Client.
 ///@{
 
+/// Logging level that is passed to the optional log callback function.
+/// \sa one_server_create
+typedef enum OneLogLevel { ONE_LOG_LEVEL_INFO = 0, ONE_LOG_LEVEL_ERROR } OneLogLevel;
+
+/// Log callback function to gain visibility of one server internal activity.
+/// \sa one_server_create
+typedef void (*OneLogFn)(OneLogLevel level, const char *message);
+
 /// Creates a new Arcus Server. Each Game Server must have one corresponding
 /// Arcus Server. Listen, update, shutdown and destroy should be called to complete the
 /// life cycle. Thread-safe.
+/// @param logger Optional log callback function. Can be null.
 /// @param server A null server pointer, which will be set to a new server.
 /// \sa one_server_destroy
 /// \sa one_server_listen
 /// \sa one_server_update
 /// \sa one_server_status
-OneError one_server_create(OneServerPtr *server);
+OneError one_server_create(OneLogFn logFn, OneServerPtr *server);
 
 /// Destroys a server instance created via one_server_create. Destroy will
 /// shutdown the server first, if it is active. Note although other server functions
