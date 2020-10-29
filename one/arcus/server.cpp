@@ -477,7 +477,6 @@ Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
 }
 
 Error Server::send_live_state() {
-    // Todo: cache message.
     Message message;
     auto err = messages::prepare_live_state(
         _game_state.players, _game_state.max_players, _game_state.name.c_str(),
@@ -497,7 +496,6 @@ Error Server::send_live_state() {
 }
 
 Error Server::send_application_instance_status() {
-    // Todo: cache message.
     Message message;
     OneError err = messages::prepare_application_instance_status((int)_status, message);
     if (is_error(err)) {
