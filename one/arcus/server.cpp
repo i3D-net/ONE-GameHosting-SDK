@@ -326,37 +326,39 @@ Error Server::process_outgoing_message(const Message &message) {
     return ONE_ERROR_NONE;
 }
 
+void Server::close_client_connection() {
+    _client_connection->shutdown();
+    _client_socket->close();
+    _is_waiting_for_client = true;
+
+#ifdef ONE_ARCUS_SERVER_LOGGING
+    String ip;
+    unsigned int port;
+    _client_socket->address(ip, port);
+    std::cout << "ip: " << ip << ", port: " << port << ", closing client" << std::endl;
+#endif
+}
+
 Error Server::update_client_connection() {
     // If any errors are encountered while updating the connection, then close
     // the connection and socket. The client is expected to reconnect.
-    auto close_client = [this](const Error passthrough_err) -> Error {
-        _client_connection->shutdown();
-        _client_socket->close();
-        _is_waiting_for_client = true;
-
-#ifdef ONE_ARCUS_SERVER_LOGGING
-        String ip;
-        unsigned int port;
-        _client_socket->address(ip, port);
-        std::cout << "ip: " << ip << ", port: " << port << ", closing client"
-                  << std::endl;
-#endif
-
+    auto fail = [this](const Error passthrough_err) -> Error {
+        close_client_connection();
         return passthrough_err;
     };
 
-    // Updating the connection will send pending outgoing messages and gather incoming
-    // messages for reading.
+    // Updating the connection will send pending outgoing messages and gather
+    // incoming messages for reading.
     auto err = _client_connection->update();
     if (is_error(err)) {
-        return close_client(err);
+        return fail(err);
     }
 
     // Read pending incoming messages.
     while (true) {
         unsigned int count = 0;
         err = _client_connection->incoming_count(count);
-        if (is_error(err)) return close_client(err);
+        if (is_error(err)) return fail(err);
 
 #ifdef ONE_ARCUS_SERVER_LOGGING
         std::cout << "server processing incoming: " << count << std::endl;
@@ -366,7 +368,7 @@ Error Server::update_client_connection() {
 
         err = _client_connection->remove_incoming(
             [this](const Message &message) { return process_incoming_message(message); });
-        if (is_error(err)) return close_client(err);
+        if (is_error(err)) return fail(err);
     }
 
     return ONE_ERROR_NONE;
@@ -384,7 +386,6 @@ Error Server::update() {
 
     auto err = update_listen_socket();
     if (is_error(err)) {
-        // Todo: put listening in update loop and close/recover here...
         return err;
     }
 
@@ -398,6 +399,7 @@ Error Server::update() {
             if (_client_connection->status() == Connection::Status::ready) {
                 err = send_live_state();
                 if (is_error(err)) {
+                    close_client_connection();
                     return err;
                 }
                 _game_state_was_set = false;
@@ -410,6 +412,7 @@ Error Server::update() {
     if (_should_send_status) {
         err = send_application_instance_status();
         if (is_error(err)) {
+            close_client_connection();
             return err;
         }
         _should_send_status = false;
@@ -476,7 +479,6 @@ Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
 Error Server::send_live_state() {
     // Todo: cache message.
     Message message;
-    // Todo: String.
     auto err = messages::prepare_live_state(
         _game_state.players, _game_state.max_players, _game_state.name.c_str(),
         _game_state.map.c_str(), _game_state.mode.c_str(), _game_state.version.c_str(),
@@ -497,7 +499,6 @@ Error Server::send_live_state() {
 Error Server::send_application_instance_status() {
     // Todo: cache message.
     Message message;
-    // Todo: std string.
     OneError err = messages::prepare_application_instance_status((int)_status, message);
     if (is_error(err)) {
         return err;

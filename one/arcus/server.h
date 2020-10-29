@@ -112,12 +112,12 @@ private:
     struct GameState {
         GameState() : players(0), max_players(0), name(), map(), mode(), version() {}
 
-        int players;          // Game number of players.
-        int max_players;      // Game max number of players.
-        String name;     // Server name.
-        String map;      // Game map.
-        String mode;     // Game mode.
-        String version;  // Game version.
+        int players;      // Game number of players.
+        int max_players;  // Game max number of players.
+        String name;      // Server name.
+        String map;       // Game map.
+        String mode;      // Game mode.
+        String version;   // Game version.
 
         Object *additional_data;  // Optional extra fields.
     };
@@ -127,6 +127,7 @@ private:
     bool is_initialized() const;
     Error update_client_connection();
     Error update_listen_socket();
+    void close_client_connection();
 
     Error process_incoming_message(const Message &message);
     // The server must have an active and ready listen connection in order to
