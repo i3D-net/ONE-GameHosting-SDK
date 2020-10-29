@@ -6,13 +6,13 @@
 namespace one_integration {
 
 void LogCentral::log_info(const std::string &message) {
-    if (!log_file_info(_log_file, message)) {
+    if (!log_file_info(_log_filename, message)) {
         log_console_info(message);
     }
 }
 
 void LogCentral::log_error(const std::string &message) {
-    if (!log_file_error(_log_file, message)) {
+    if (!log_file_error(_log_filename, message)) {
         log_console_error(message);
     }
 }
@@ -25,13 +25,13 @@ void LogCentral::log_console_info(const std::string &message) {
     std::cerr << message << std::endl;
 }
 
-bool LogCentral::log_file_info(const std::string &file_name, const std::string message) {
-    if (_log_file.empty()) {
+bool LogCentral::log_file_info(const std::string &filename, const std::string message) {
+    if (_log_filename.empty()) {
         return false;
     }
 
     std::ofstream file;
-    file.open(file_name, std::ios_base::app);
+    file.open(filename, std::ios_base::app);
 
     if (!file.is_open()) {
         return false;
@@ -42,13 +42,13 @@ bool LogCentral::log_file_info(const std::string &file_name, const std::string m
     return true;
 }
 
-bool LogCentral::log_file_error(const std::string &file_name, const std::string message) {
-    if (_log_file.empty()) {
+bool LogCentral::log_file_error(const std::string &filename, const std::string message) {
+    if (_log_filename.empty()) {
         return false;
     }
 
     std::ofstream file;
-    file.open(file_name, std::ios_base::app);
+    file.open(filename, std::ios_base::app);
 
     if (!file.is_open()) {
         return false;
@@ -59,10 +59,10 @@ bool LogCentral::log_file_error(const std::string &file_name, const std::string 
     return true;
 }
 
-void LogCentral::set_log_file(const std::string &log_file) {
-    _log_file = log_file;
+void LogCentral::set_log_filename(const std::string &log_file) {
+    _log_filename = log_file;
 }
 
-std::string LogCentral::_log_file = "";
+std::string LogCentral::_log_filename = "";
 
 }  // namespace one_integration

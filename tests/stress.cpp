@@ -34,8 +34,8 @@ TEST_CASE("soak:test high usage over a long period", "[stress]") {
     auto &agent = stress.agent();
     auto &game = stress.game();
 
-    REQUIRE(0 < game.soft_stop_receive_count());
-    REQUIRE(0 < agent.live_state_receive_count());
+    REQUIRE(game.soft_stop_receive_count() > 0);
+    REQUIRE(agent.live_state_receive_count() > 0);
 
     L_INFO("soak:test high usage over a long period");
     L_INFO("Agent received: " + std::to_string(agent.live_state_receive_count()) +

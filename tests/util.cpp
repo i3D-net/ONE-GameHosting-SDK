@@ -4,7 +4,7 @@
 #include <thread>
 
 #ifdef WINDOWS
-#include <Windows.h>
+    #include <Windows.h>
 #endif
 
 #include <one/game/one_server_wrapper.h>
@@ -15,23 +15,23 @@ namespace i3d {
 namespace one {
 
 void start_high_resolution_sleep() {
-    #ifdef WINDOWS
+#ifdef WINDOWS
     timeBeginPeriod(1);
-    #endif
+#endif
 }
 
 void end_high_resolution_sleep() {
-    #ifdef WINDOWS
+#ifdef WINDOWS
     timeEndPeriod(1);
-    #endif
+#endif
 }
 
 void sleep(int ms) {
     std::this_thread::sleep_for(milliseconds(ms));
 }
 
-void for_sleep_duration(std::chrono::seconds duration_seconds, std::chrono::milliseconds ms_per_loop, std::function<bool ()> cb)
-{
+void for_sleep_duration(std::chrono::seconds duration_seconds,
+                        std::chrono::milliseconds ms_per_loop, std::function<bool()> cb) {
     const auto begin = std::chrono::steady_clock::now();
 
     while (true) {
@@ -42,7 +42,8 @@ void for_sleep_duration(std::chrono::seconds duration_seconds, std::chrono::mill
         sleep(ms_per_loop.count());
         const auto current = std::chrono::steady_clock::now();
 
-        if (duration_seconds < std::chrono::duration_cast<std::chrono::seconds>(current - begin)) {
+        if (duration_seconds <
+            std::chrono::duration_cast<std::chrono::seconds>(current - begin)) {
             break;
         }
     }
