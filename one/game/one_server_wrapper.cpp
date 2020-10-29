@@ -420,7 +420,7 @@ void OneServerWrapper::application_instance_information(void *userdata,
     auto object = reinterpret_cast<OneObjectPtr>(information);
     ApplicationInstanceInformationData information_payload;
     if (!extract_application_instance_information_payload(object, information_payload)) {
-        L_ERROR("failed to extract host information payload");
+        L_ERROR("failed to extract host application instance information payload");
         return;
     }
 
