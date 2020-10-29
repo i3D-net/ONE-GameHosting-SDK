@@ -13,20 +13,21 @@ void sleep(int ms) {
 }
 
 int main(int argc, char **argv) {
-    const unsigned int default_port = 19001;
-    unsigned int port = default_port;
-
-    if (argc >= 2) {
-        port = strtol(argv[1], nullptr, 10);
-    }
-
+    // Init log first for visibility.
     if (argc >= 3) {
         LogCentral::set_log_filename(argv[2]);
     }
+    L_INFO("----------------------");
+    L_INFO("game startup")
 
-    if (port <= 0) {
-        L_ERROR("invalid port provided");
-        return 1;
+    const unsigned int default_port = 19001;
+    unsigned int port = default_port;
+    if (argc >= 2) {
+        port = strtol(argv[1], nullptr, 10);
+        if (port <= 0) {
+            L_ERROR("invalid port provided");
+            return 1;
+        }
     }
 
     if (argc > 4) {
@@ -47,7 +48,6 @@ int main(int argc, char **argv) {
     }
 
     L_INFO("game is initialized.");
-    L_INFO("----------------------");
     L_INFO("running update loop.");
 
     auto log_status = [](OneServerWrapper::Status status) {

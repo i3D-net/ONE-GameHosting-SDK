@@ -26,7 +26,7 @@ void LogCentral::log_console_info(const std::string &message) {
 }
 
 bool LogCentral::log_file_info(const std::string &filename, const std::string message) {
-    if (_log_filename.empty()) {
+    if (filename.empty()) {
         return false;
     }
 
@@ -43,7 +43,7 @@ bool LogCentral::log_file_info(const std::string &filename, const std::string me
 }
 
 bool LogCentral::log_file_error(const std::string &filename, const std::string message) {
-    if (_log_filename.empty()) {
+    if (filename.empty()) {
         return false;
     }
 
