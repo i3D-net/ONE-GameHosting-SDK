@@ -106,9 +106,9 @@ Delete the ./build folder and run the above build commands.
 As noted above, short tests are all run at the end of the cmake build, by default. Long test may be run in an IDE by running all tests, or by navigating to the /build/tests/Debug folder and running the process directly.
 
 Exclude long and soak tests:
-`tests.exe ~long: ~soak:`
+`tests.exe ~long:* ~soak:*`
 
 Run only long tests:
-`tests.exe long:`
+`tests.exe long:*`
 
 Use the `tests.exe -?` option for all commands.
