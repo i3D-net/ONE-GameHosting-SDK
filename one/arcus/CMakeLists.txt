@@ -18,6 +18,7 @@ set(HEADER_FILES
     internal/time.h
     internal/version.h
     message.h
+    logger.h
     opcode.h
     object.h
     server.h

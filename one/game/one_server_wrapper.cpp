@@ -1,21 +1,38 @@
 #include <one/game/one_server_wrapper.h>
 
+#include <assert.h>
+#include <string>
+#include <cstring>
+
 #include <one/arcus/c_api.h>
 #include <one/arcus/c_error.h>
 #include <one/game/log.h>
 #include <one/game/parsing.h>
 
-#include <assert.h>
-#include <cstring>
-
 namespace one_integration {
-
 namespace {
 
 // Local cached memory function overrides, to assist in override pattern.
 std::function<void *(size_t)> _alloc = nullptr;
 std::function<void(void *)> _free = nullptr;
 std::function<void *(void *, size_t)> _realloc = nullptr;
+
+// Logger to pass into One.
+void log(OneLogLevel level, const char *message) {
+    switch (level) {
+        case ONE_LOG_LEVEL_INFO: {
+            L_INFO(std::string("ONELOG: ") + message);
+            break;
+        }
+        case ONE_LOG_LEVEL_ERROR: {
+            L_ERROR(std::string("ONELOG: ") + message);
+            break;
+        }
+        default: {
+            L_ERROR(std::string("ONELOG: unknown log level: ") + message);
+        }
+    }
+}
 
 }  // namespace
 
@@ -74,7 +91,7 @@ bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
     // Create the one server.
 
     // Each game server must have one corresponding arcus server.
-    OneError err = one_server_create(&_server);
+    OneError err = one_server_create(log, &_server);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return false;

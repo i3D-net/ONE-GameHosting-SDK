@@ -30,8 +30,6 @@ public:
     static void set_log_filename(const std::string &log_filename);
 
 private:
-    static std::string timestamp();
-
     static std::string _log_filename;
 };
 
