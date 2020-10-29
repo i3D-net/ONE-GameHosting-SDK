@@ -18,7 +18,7 @@ int main(int argc, char **argv) {
         LogCentral::set_log_filename(argv[2]);
     }
     L_INFO("----------------------");
-    L_INFO("game startup")
+    L_INFO("game startup");
 
     const unsigned int default_port = 19001;
     unsigned int port = default_port;
