@@ -1,6 +1,7 @@
 #include <one/game/game.h>
 
 #include <assert.h>
+#include <ctime>
 #include <string>
 
 #include <one/arcus/types.h>
@@ -71,6 +72,7 @@ Game::Game()
     , _mode()
     , _version()
     , _exit_time(steady_clock::duration::zero())
+    , _is_exit_time_enabled(false)
     , _matchmaking_status(MatchmakingStatus::none)
     , _previous_matchmaking_status(MatchmakingStatus::none) {}
 
@@ -82,6 +84,8 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
                 const std::string &map, const std::string &mode,
                 const std::string &version) {
     const std::lock_guard<std::mutex> lock(_game);
+
+    std::srand(std::time(nullptr));
 
     //----------------------------------------------------------------------
     // Init One Server and make it start listening for an incoming One Agent
@@ -187,6 +191,15 @@ void Game::alter_game_state() {
 
 void Game::update() {
     const std::lock_guard<std::mutex> lock(_game);
+
+    if (_is_exit_time_enabled) {
+        const auto time_zero = steady_clock::time_point(steady_clock::duration::zero());
+        if (_exit_time != time_zero && steady_clock::now() > _exit_time) {
+            L_INFO("ending process as a delayed response to a soft stop request");
+            exit(0);
+        }
+    }
+
     _one_server.update(_quiet);
 }
 
@@ -283,10 +296,17 @@ void Game::soft_stop_callback(int timeout, void *userdata) {
 
     // A real game would schedule a graceful process shutdown here.
     if (!game->is_quiet()) {
-        L_INFO("soft stop called:");
+        L_INFO("soft stop called");
         L_INFO("\ttimeout:" + std::to_string(timeout));
     }
 
+    if (game->_is_exit_time_enabled) {
+        auto delay_seconds = std::rand() % (2 * timeout);
+        game->_exit_time = steady_clock::now() + seconds(delay_seconds);
+        L_INFO((std::ostringstream()
+                << "will shut down process in seconds: " << delay_seconds)
+                   .str());
+    }
     game->_soft_stop_receive_count++;
 }
 

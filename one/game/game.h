@@ -64,6 +64,14 @@ public:
         _quiet = quiet;
     }
 
+    // Exposed for fake game executable to enable exiting the process when a
+    // soft stop message is received from the One platform. If enabled, the
+    // process will end at a random time from the time of message receipt up
+    // to 2x the given timeout.
+    void set_process_exit_enabled(bool enabled) {
+        _is_exit_time_enabled = enabled;
+    }
+
     // Exposed for testing purposes to avoid spamming std::error when testing for expected
     // failures.
     bool is_quiet() const {
@@ -124,6 +132,7 @@ private:
     // A planned time to exit the process, configured as a response to a
     // soft_stop message from the one platform.
     steady_clock::time_point _exit_time;
+    bool _is_exit_time_enabled;
 
     // These states match the expectation of the one platform. Allocated is
     // optional but this example uses it to respond to the allocated message
