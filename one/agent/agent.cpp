@@ -35,7 +35,7 @@ Error Agent::init(const char *addr, unsigned int port) {
             stream << "\tplayers:" << players;
             log_info(stream.str());
             stream.clear();
-            stream << "\tmax_players:" + max_players;
+            stream << "\tmax_players:" << max_players;
             log_info(stream.str());
             log_info("\tname:" + name);
             log_info("\tmap:" + map);

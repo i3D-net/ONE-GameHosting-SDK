@@ -108,10 +108,10 @@ public:
     // The current values are matching the payload shown in the documentation at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#allocated-request
     struct AllocatedData {
-        AllocatedData() : max_players(), map() {}
+        AllocatedData() : players(0), duration(0) {}
 
-        std::string max_players;  // Game max number of players.
-        std::string map;          // Game map.
+        int players;   // The number of players.
+        int duration;  // The duration.
     };
     // Allows the game server to be notified of an incoming Allocated message.
     void set_allocated_callback(

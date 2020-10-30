@@ -14,19 +14,19 @@ using namespace i3d::one;
 
 TEST_CASE("ancillary message payload parsing", "[parsing]") {
     {  // Allocated payload.
-        const std::string map_str = "islands_large";
-        const std::string max_players_str = "16";
+        const std::string players_str = "16";
+        const std::string duration_str = "600";
 
         Object map;
-        auto err = map.set_val_string("key", "map");
+        auto err = map.set_val_string("key", "players");
         REQUIRE(!is_error(err));
-        err = map.set_val_string("value", to_one_string(map_str));
+        err = map.set_val_string("value", to_one_string(players_str));
         REQUIRE(!is_error(err));
 
         Object max_players;
-        err = max_players.set_val_string("key", "maxPlayers");
+        err = max_players.set_val_string("key", "duration");
         REQUIRE(!is_error(err));
-        err = max_players.set_val_string("value", to_one_string(max_players_str));
+        err = max_players.set_val_string("value", to_one_string(duration_str));
         REQUIRE(!is_error(err));
 
         Array data;
@@ -41,13 +41,13 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
                 return false;
             }
 
-            if (key == "map") {
-                allocated.map = value;
+            if (key == "players") {
+                allocated.players = std::stoi(value);
                 return true;
             }
 
-            if (key == "maxPlayers") {
-                allocated.max_players = value;
+            if (key == "duration") {
+                allocated.duration = std::stoi(value);
                 return true;
             }
 
@@ -60,8 +60,8 @@ TEST_CASE("ancillary message payload parsing", "[parsing]") {
         REQUIRE(!Parsing::extract_key_value_payload(ptr, callback));
         data.push_back_object(max_players);
         REQUIRE(Parsing::extract_key_value_payload(ptr, callback));
-        REQUIRE(allocated.map == map_str);
-        REQUIRE(allocated.max_players == max_players_str);
+        REQUIRE(allocated.players == std::stoi(players_str));
+        REQUIRE(allocated.duration == std::stoi(duration_str));
         data.push_back_object(max_players);
         REQUIRE(!Parsing::extract_key_value_payload(ptr, callback));
     }
