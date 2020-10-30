@@ -17,6 +17,9 @@ void sleep(int ms) {
 }
 
 int main(int argc, char **argv) {
+    log_info("-----------------------");
+    log_info("agent startup");
+
     const int default_port = 19001;
     int port = default_port;
 
@@ -39,7 +42,6 @@ int main(int argc, char **argv) {
     }
 
     log_info("agent is initialized.");
-    log_info("-----------------------");
     log_info("running update loop.");
 
     auto log_status = [](Client::Status status) {
@@ -49,10 +51,25 @@ int main(int argc, char **argv) {
     auto status = agent.client().status();
     log_status(status);
 
+    // Soft stop behavior.
+    const auto time_zero = steady_clock::time_point(steady_clock::duration::zero());
+    steady_clock::time_point time_to_send_soft_stop = time_zero;
+    bool did_send_soft_stop = false;
+
     while (true) {
         sleep(100);
 
         if (agent.client().status() == Client::Status::ready) {
+            // Trigger a soft stop when game enters ready state.
+            if (time_to_send_soft_stop == time_zero) {
+                time_to_send_soft_stop = steady_clock::now() + seconds(10);
+            } else if (!did_send_soft_stop) {
+                if (steady_clock::now() > time_to_send_soft_stop) {
+                    agent.send_soft_stop(5);
+                    did_send_soft_stop = true;
+                }
+            }
+
             // Randomly tell the game server to become allocated.
             bool shouldSend = std::rand() / ((RAND_MAX + 1u) / 50) == 0;
             if (shouldSend) {
@@ -70,6 +87,9 @@ int main(int argc, char **argv) {
                 log_info("sending allocated");
                 agent.send_allocated(array);
             }
+        } else {
+            time_to_send_soft_stop = time_zero;
+            did_send_soft_stop = false;
         }
 
         err = agent.update();

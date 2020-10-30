@@ -28,7 +28,9 @@ void log(OneLogLevel level, const char *message) {
             L_ERROR(std::string("ONELOG: ") + message);
             break;
         }
-        default: { L_ERROR(std::string("ONELOG: unknown log level: ") + message); }
+        default: {
+            L_ERROR(std::string("ONELOG: unknown log level: ") + message);
+        }
     }
 }
 
@@ -553,18 +555,20 @@ bool OneServerWrapper::extract_application_instance_information_payload(
             information.fleet_id = value;
             return true;
         })) {
-        L_ERROR("failed to extract fleetId key");
+        L_ERROR("failed to extract fleetId");
         return false;
     }
 
     OneError err = one_object_val_int(object, "hostId", &information.host_id);
     if (one_is_error(err)) {
+        L_ERROR("failed to extract hostId");
         L_ERROR(one_error_text(err));
         return false;
     }
 
-    err = one_object_val_int(object, "isVirtual", &information.is_virtual);
+    err = one_object_val_bool(object, "isVirtual", &information.is_virtual);
     if (one_is_error(err)) {
+        L_ERROR("failed to extract isVirtual");
         L_ERROR(one_error_text(err));
         return false;
     }

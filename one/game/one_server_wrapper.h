@@ -103,9 +103,9 @@ public:
     void set_soft_stop_callback(std::function<void(int timeout, void *userdata)> callback,
                                 void *userdata);
 
-    // The allocation request has a optional body containing a JSON object with key value
-    // pairs for meta data this keys and values are definable by the customer.
-    // The current values are matching the payload shown in the documentation at:
+    // The allocation request has a optional JSON body. The keys and values are definable
+    // by the customer. The current values are matching the payload shown in the
+    // documentation at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#allocated-request
     struct AllocatedData {
         AllocatedData() : players(0), duration(0) {}
@@ -118,15 +118,15 @@ public:
         std::function<void(const AllocatedData &data, void *userdata)> callback,
         void *userdata);
 
-    // The meta data request has a optional body containing a JSON object with key value
-    // pairs for meta data this keys and values are definable by the customer.
+    // Game metadata. Contains an optional JSON body with key value
+    // pairs for meta data. The keys and values are definable by the customer.
     // The current values are matching the payload shown in the documentation at:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#meta-data-request
     struct MetaDataData {
         MetaDataData() : map(), mode(), type() {}
 
-        std::string map;   // Game map.
-        std::string mode;  // Game mode.
+        std::string map;
+        std::string mode;
         std::string type;  // Game type.
     };
     // Allows the game server to be notified of an incoming Metadata message.
@@ -140,9 +140,9 @@ public:
     struct HostInformationData {
         HostInformationData() : id(0), server_id(0), server_name() {}
 
-        int id;                   // id.
-        int server_id;            // server id.
-        std::string server_name;  // server name.
+        int id;
+        int server_id;
+        std::string server_name;
         // ... add members as needed.
     };
     // Allows the game server to be notified of an incoming Host Information message.
@@ -156,9 +156,9 @@ public:
     struct ApplicationInstanceInformationData {
         ApplicationInstanceInformationData() : fleet_id(), host_id(0), is_virtual(0) {}
 
-        std::string fleet_id;  // fleet id.
-        int host_id;           // host id.
-        int is_virtual;        // is virtual.
+        std::string fleet_id;
+        int host_id;
+        bool is_virtual;
         // ... add members as needed.
     };
     // Allows the game server to be notified of an incoming Application
