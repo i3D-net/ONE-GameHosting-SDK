@@ -113,15 +113,6 @@ private:
     //-----------------------------------
     // Simulated game behavior and state.
 
-    // Example match configuration extracted from the allocated message received
-    // from the one platform.
-    int _max_players;
-    std::chrono::seconds _match_duration;
-    bool _player_joining_match;
-    bool _player_playing_match;
-    bool _player_leaving_match;
-    steady_clock::time_point _match_start_time;
-
     // Current game state.
     int _players;
     std::string _name;
@@ -140,6 +131,19 @@ private:
     enum class MatchmakingStatus { none, starting, online, allocated };
     MatchmakingStatus _matchmaking_status;
     MatchmakingStatus _previous_matchmaking_status;
+
+    // Example match configuration extracted from the allocated message received
+    // from the one platform.
+    int _max_players;
+    std::chrono::seconds _match_duration;
+    steady_clock::time_point _match_start_time;
+
+    // This states are using internally for match simulation purpose. They are unrelated
+    // to the one platform.
+    enum class MatchStatus { none, joining, playing, leaving };
+    MatchStatus _match_status;
+
+    void set_match_status(MatchStatus status);
 };
 
 namespace allocation {
