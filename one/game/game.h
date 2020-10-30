@@ -33,8 +33,8 @@ public:
     // Life cycle.
 
     bool init(unsigned int port, int max_players, const std::string &name,
-              const std::string &map, const std::string &mode,
-              const std::string &version);
+              const std::string &map, const std::string &mode, const std::string &version,
+              seconds delay);
     void shutdown();
 
     void alter_game_state();
@@ -94,7 +94,13 @@ private:
     static void application_instance_information_callback(
         const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata);
 
+    // This update the game startup matchmaking status: none -> stating -> delay ->
+    // online.
+    void update_startup();
+    // This update the game startup match status: joining -> playing -> delay -> leaving.
+    // It is only happening when the matchmaking status is set to allocated.
     void update_match();
+    // This update the game state: number of players, maps, etc...
     void update_arcus_server_game_state();
 
     OneServerWrapper _one_server;
@@ -131,6 +137,10 @@ private:
     enum class MatchmakingStatus { none, starting, online, allocated };
     MatchmakingStatus _matchmaking_status;
     MatchmakingStatus _previous_matchmaking_status;
+
+    // This delay is to simulate a delay between the starting & online state.
+    std::chrono::seconds _transition_delay;
+    steady_clock::time_point _started_time;
 
     // Example match configuration extracted from the allocated message received
     // from the one platform.

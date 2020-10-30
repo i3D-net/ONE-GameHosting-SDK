@@ -30,19 +30,30 @@ int main(int argc, char **argv) {
         }
     }
 
+    seconds delay(0);
+
+    if (argc >= 4) {
+        unsigned int second_delay = strtol(argv[3], nullptr, 10);
+        delay = seconds(second_delay);
+    }
+
     if (argc > 4) {
         L_ERROR(
-            "invalid number of arguments provided. Maxmium of 2 arguments are "
+            "invalid number of arguments provided. Maxmium of 3 arguments are "
             "supported.");
         L_ERROR("\t first argument: an integer defining the port number to binds to.");
         L_ERROR(
             "\t second argument: a string defining the log filename to use instead of "
-            "logging into std::cout and std::cerr.");
+            "logging into std::cout.");
+        L_ERROR(
+            "\t third argument: an integer defining transition delay in seconds between "
+            "starting and online.");
         return -1;
     }
 
     Game game;
-    if (!game.init(port, 16, "test game", "test map", "test mode", "test version")) {
+    if (!game.init(port, 16, "test game", "test map", "test mode", "test version",
+                   delay)) {
         L_ERROR("failed to init game");
         return 1;
     }

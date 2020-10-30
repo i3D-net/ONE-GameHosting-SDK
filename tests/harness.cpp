@@ -14,7 +14,8 @@ Harness::Harness(const char *address, unsigned int port)
     , _rd()
     , _re(_rd())
     , _uniform_dist(0, 100) {
-    _game.init(port, 16, "test name", "test map", "test mode", "test version");
+    _game.init(port, 16, "test name", "test map", "test mode", "test version",
+               seconds(0));
     _game.set_quiet(true);
     _agent.init(address, port);
     _agent.set_quiet(true);

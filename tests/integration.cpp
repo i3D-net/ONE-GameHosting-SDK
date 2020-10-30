@@ -23,7 +23,7 @@ TEST_CASE("Agent connection failure", "[.][integration]") {
     const unsigned int port = 19001;
 
     Game game;
-    REQUIRE(game.init(port, 16, "name", "map", "mode", "version"));
+    REQUIRE(game.init(port, 16, "name", "map", "mode", "version", seconds(0)));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -40,7 +40,8 @@ TEST_CASE("long:Handshake timeout", "[integration]") {
     const unsigned int port = 19003;
 
     Game game;
-    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version",
+                      seconds(0)));
 
     Agent agent;
     REQUIRE(!is_error(agent.init(address, port)));
@@ -76,7 +77,8 @@ TEST_CASE("long:Reconnection", "[integration]") {
     const unsigned int port = 19003;
 
     Game game;
-    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version",
+                      seconds(0)));
 
     Agent agent;
     REQUIRE(!is_error(agent.init(address, port)));
@@ -96,7 +98,8 @@ TEST_CASE("long:Reconnection", "[integration]") {
     REQUIRE(agent.client().status() == Client::Status::connecting);
 
     // Restart the server and it should be waiting for client.
-    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version",
+                      seconds(0)));
     REQUIRE(game.one_server_wrapper().status() ==
             OneServerWrapper::Status::waiting_for_client);
 
@@ -111,7 +114,8 @@ TEST_CASE("long:Maintain connection", "[integration]") {
     const unsigned int port = 19003;
 
     Game game;
-    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version"));
+    REQUIRE(game.init(port, 16, "test game", "test map", "test mode", "test version",
+                      seconds(0)));
 
     Agent agent;
     REQUIRE(!is_error(agent.init(address, port)));
