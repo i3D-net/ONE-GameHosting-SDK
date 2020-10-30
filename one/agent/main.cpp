@@ -3,6 +3,7 @@
 
 #include <one/arcus/array.h>
 #include <one/arcus/error.h>
+#include <one/arcus/object.h>
 #include <one/arcus/types.h>
 
 #include <one/agent/agent.h>
@@ -56,6 +57,16 @@ int main(int argc, char **argv) {
             bool shouldSend = std::rand() / ((RAND_MAX + 1u) / 50) == 0;
             if (shouldSend) {
                 Array array;
+                Object players;
+                players.set_val_string("key", "players");
+                players.set_val_string("value", "16");
+                Object duration;
+                duration.set_val_string("key", "duration");
+                duration.set_val_string("value", "20");
+
+                array.push_back_object(players);
+                array.push_back_object(duration);
+
                 log_info("sending allocated");
                 agent.send_allocated(array);
             }

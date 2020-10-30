@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string>
 
+#include <one/arcus/types.h>
 #include <one/game/log.h>
 
 namespace one_integration {
@@ -51,14 +52,25 @@ void *realloc(void *p, size_t bytes) {
 
 Game::Game()
     : _one_server()  // The One Arcus Server's default constructor is called.
+    , _game()
     , _soft_stop_receive_count(0)
     , _allocated_receive_count(0)
     , _metadata_receive_count(0)
     , _host_information_receive_count(0)
     , _application_instance_information_receive_count(0)
     , _quiet(false)
-    , _players(0)
     , _max_players(0)
+    , _match_duration(0)
+    , _player_joining_match(false)
+    , _player_playing_match(false)
+    , _player_leaving_match(false)
+    , _match_start_time(steady_clock::duration::zero())
+    , _players(0)
+    , _name()
+    , _map()
+    , _mode()
+    , _version()
+    , _exit_time(steady_clock::duration::zero())
     , _matchmaking_status(MatchmakingStatus::none)
     , _previous_matchmaking_status(MatchmakingStatus::none) {}
 
@@ -127,14 +139,7 @@ void Game::alter_game_state() {
     // need to update its game state from its game mode, player and match
     // systems.
 
-    // The number of player is arbitrarily changed to trigger player joined and
-    // left messages.
-    if (_max_players < _players + 1) {
-        _players = 0;
-    } else {
-        _players += 1;
-    }
-
+    update_match();
     update_arcus_server_game_state();
     const bool new_matchmaking_status =
         (_matchmaking_status != _previous_matchmaking_status);
@@ -165,20 +170,14 @@ void Game::alter_game_state() {
             _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::online);
             break;
-        case MatchmakingStatus::allocated:
-            if (!_quiet && new_matchmaking_status) {
-                L_INFO("application instance status allocated");
-            }
-            // Fake ending an allocated match and going back to online.
-            if (_players == 0) {
-                _matchmaking_status = MatchmakingStatus::online;
-                _one_server.set_application_instance_status(
-                    OneServerWrapper::ApplicationInstanceStatus::online);
-            }
-            break;
         case MatchmakingStatus::online:
             if (!_quiet && new_matchmaking_status) {
                 L_INFO("application instance status online");
+            }
+            break;
+        case MatchmakingStatus::allocated:
+            if (!_quiet && new_matchmaking_status) {
+                L_INFO("application instance status allocated");
             }
             break;
         default:
@@ -189,6 +188,46 @@ void Game::alter_game_state() {
 void Game::update() {
     const std::lock_guard<std::mutex> lock(_game);
     _one_server.update(_quiet);
+}
+
+void Game::update_match() {
+    if (_matchmaking_status != MatchmakingStatus::allocated) {
+        return;
+    }
+
+    if (_player_joining_match) {
+        if (_players == _max_players) {
+            L_INFO("maximum number of player reached");
+            _player_joining_match = false;
+            _player_playing_match = true;
+            _match_start_time = steady_clock::now();
+            return;
+        }
+
+        ++_players;
+        return;
+    }
+
+    if (_player_playing_match) {
+        steady_clock::time_point current = steady_clock::now();
+        if (_match_duration < current - _match_start_time) {
+            L_INFO("match duration has elapsed");
+            _player_playing_match = false;
+            _player_leaving_match = true;
+        }
+        return;
+    }
+
+    if (_player_leaving_match) {
+        if (_players == 0) {
+            L_INFO("all player have left.");
+            _player_leaving_match = false;
+            _matchmaking_status = MatchmakingStatus::online;
+            return;
+        }
+
+        --_players;
+    }
 }
 
 void Game::update_arcus_server_game_state() {
@@ -202,12 +241,6 @@ void Game::update_arcus_server_game_state() {
     game_state.version = _version;
 
     _one_server.set_game_state(game_state);
-}
-
-void Game::set_player_count(int count) {
-    if (count == _players) return;
-    _players = count;
-    update_arcus_server_game_state();
 }
 
 int Game::soft_stop_receive_count() const {
@@ -235,6 +268,12 @@ int Game::application_instance_information_receive_count() const {
     return _application_instance_information_receive_count;
 }
 
+void Game::set_player_count(int count) {
+    if (count == _players) return;
+    _players = count;
+    update_arcus_server_game_state();
+}
+
 void Game::soft_stop_callback(int timeout, void *userdata) {
     auto game = reinterpret_cast<Game *>(userdata);
     if (game == nullptr) {
@@ -259,16 +298,40 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
         return;
     }
 
+    switch (game->_matchmaking_status) {
+        case MatchmakingStatus::online:
+            L_INFO("game is ready to process allocated messsage.");
+            break;
+        case MatchmakingStatus::allocated:
+            L_INFO("game is already allocated: skipping allocated message.");
+            return;
+        case MatchmakingStatus::none:
+        case MatchmakingStatus::starting:
+        default:
+            L_INFO("game is not ready to process allocated: skipping allocated message.");
+            return;
+    }
+
     // A real game would use the given matchmaking here to host a match and
     // set its Application Instance Status to allocated when ready to accept
     // players.
     if (!game->is_quiet()) {
         L_INFO("allocated called:");
-        L_INFO("\tmax_players:" + data.max_players);
-        L_INFO("\tmap:" + data.map);
+        i3d::one::OStringStream stream;
+        stream << "\tplayers:" << data.players;
+        L_INFO(stream.str().c_str());
+        stream.clear();
+        stream << "\tduration:" << data.duration;
+        L_INFO(stream.str().c_str());
     }
 
     game->_allocated_receive_count++;
+
+    game->_max_players = data.players;
+    game->_match_duration = seconds(data.duration);
+    game->_player_joining_match = true;
+    game->_player_playing_match = false;
+    game->_player_leaving_match = false;
 
     game->_matchmaking_status = MatchmakingStatus::allocated;
     game->_one_server.set_application_instance_status(

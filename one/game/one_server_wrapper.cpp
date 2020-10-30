@@ -28,9 +28,7 @@ void log(OneLogLevel level, const char *message) {
             L_ERROR(std::string("ONELOG: ") + message);
             break;
         }
-        default: {
-            L_ERROR(std::string("ONELOG: unknown log level: ") + message);
-        }
+        default: { L_ERROR(std::string("ONELOG: unknown log level: ") + message); }
     }
 }
 
@@ -447,13 +445,13 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
             return false;
         }
 
-        if (key == "map") {
-            allocated_data.map = value;
+        if (key == "players") {
+            allocated_data.players = std::stoi(value);
             return true;
         }
 
-        if (key == "maxPlayers") {
-            allocated_data.max_players = value;
+        if (key == "duration") {
+            allocated_data.duration = std::stoi(value);
             return true;
         }
 
