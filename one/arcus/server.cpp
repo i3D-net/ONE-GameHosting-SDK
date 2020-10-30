@@ -245,11 +245,10 @@ Error Server::process_incoming_message(const Message &message) {
     const ReverseLockGuard<std::mutex> reverse_lock(_server);
 
 #ifdef ONE_ARCUS_SERVER_LOGGING
-    _logger.Log(
-        LogLevel::Info,
-        (OStringStream() << "incoming opcode: " << static_cast<int>(message.code())
-                         << ", payload: " << message.payload().to_json())
-            .str());
+    OStringStream stream;
+    stream << "incoming opcode: " << static_cast<int>(message.code())
+           << ", payload: " << message.payload().to_json();
+    _logger.Log(LogLevel::Info, stream.str());
 #endif
 
     switch (message.code()) {
@@ -296,11 +295,10 @@ Error Server::process_incoming_message(const Message &message) {
 
 Error Server::process_outgoing_message(const Message &message) {
 #ifdef ONE_ARCUS_SERVER_LOGGING
-    _logger.Log(
-        LogLevel::Info,
-        (OStringStream() << "outgoing opcode: " << static_cast<int>(message.code())
-                         << ", payload: " << message.payload().to_json())
-            .str());
+    OStringStream stream;
+    stream << "outgoing opcode: " << static_cast<int>(message.code())
+           << ", payload: " << message.payload().to_json();
+    _logger.Log(LogLevel::Info, stream.str());
 #endif
 
     Error err = ONE_ERROR_NONE;
@@ -383,9 +381,9 @@ Error Server::update_client_connection() {
         if (count == 0) break;
 
 #ifdef ONE_ARCUS_SERVER_LOGGING
-        _logger.Log(
-            LogLevel::Info,
-            (OStringStream() << "server processing incoming messages: " << count).str());
+        OStringStream stream;
+        stream << "server processing incoming messages: " << count;
+        _logger.Log(LogLevel::Info, stream.str());
 #endif
 
         err = _client_connection->remove_incoming(
