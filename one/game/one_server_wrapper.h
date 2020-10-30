@@ -127,7 +127,7 @@ public:
 
         std::string map;
         std::string mode;
-        std::string type;  // Game type.
+        std::string type;  // Game type example, e.g. solo vs squads.
     };
     // Allows the game server to be notified of an incoming Metadata message.
     void set_metadata_callback(
