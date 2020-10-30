@@ -60,7 +60,6 @@ Game::Game()
     , _host_information_receive_count(0)
     , _application_instance_information_receive_count(0)
     , _quiet(false)
-    , _max_players(0)
     , _players(0)
     , _name()
     , _map()
@@ -70,6 +69,9 @@ Game::Game()
     , _is_exit_time_enabled(false)
     , _matchmaking_status(MatchmakingStatus::none)
     , _previous_matchmaking_status(MatchmakingStatus::none)
+    , _transition_delay(0)
+    , _started_time(steady_clock::duration::zero())
+    , _max_players(0)
     , _match_duration(0)
     , _match_start_time(steady_clock::duration::zero())
     , _match_status(MatchStatus::none) {}
@@ -80,7 +82,7 @@ Game::~Game() {
 
 bool Game::init(unsigned int port, int max_players, const std::string &name,
                 const std::string &map, const std::string &mode,
-                const std::string &version) {
+                const std::string &version, seconds delay) {
     const std::lock_guard<std::mutex> lock(_game);
 
     std::srand(std::time(nullptr));
@@ -110,6 +112,8 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
     _version = version;
 
     update_arcus_server_game_state();
+
+    _transition_delay = delay;
 
     _one_server.set_soft_stop_callback(soft_stop_callback, this);
     _one_server.set_allocated_callback(allocated_callback, this);
@@ -141,6 +145,7 @@ void Game::alter_game_state() {
     // need to update its game state from its game mode, player and match
     // systems.
 
+    update_startup();
     update_match();
     update_arcus_server_game_state();
     const bool new_matchmaking_status =
@@ -160,7 +165,6 @@ void Game::alter_game_state() {
             if (!_quiet) {
                 L_INFO("application instance status none");
             }
-            _matchmaking_status = MatchmakingStatus::starting;
             _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::starting);
             break;
@@ -168,7 +172,6 @@ void Game::alter_game_state() {
             if (!_quiet && new_matchmaking_status) {
                 L_INFO("application instance status starting");
             }
-            _matchmaking_status = MatchmakingStatus::online;
             _one_server.set_application_instance_status(
                 OneServerWrapper::ApplicationInstanceStatus::online);
             break;
@@ -203,6 +206,27 @@ void Game::update() {
     }
 
     _one_server.update(_quiet);
+}
+
+void Game::update_startup() {
+    switch (_matchmaking_status) {
+        case MatchmakingStatus::none:
+            L_INFO("start transition delay started");
+            _matchmaking_status = MatchmakingStatus::starting;
+            _started_time = steady_clock::now();
+            return;
+        case MatchmakingStatus::starting:
+            if (_transition_delay < steady_clock::now() - _started_time) {
+                L_INFO("starting transition delay has elapsed");
+                _matchmaking_status = MatchmakingStatus::online;
+            }
+            return;
+        case MatchmakingStatus::online:
+        case MatchmakingStatus::allocated:
+            return;
+        default:
+            L_ERROR("invalid matchmaking status");
+    }
 }
 
 void Game::update_match() {
