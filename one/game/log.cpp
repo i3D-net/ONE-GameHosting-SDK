@@ -30,11 +30,11 @@ void LogCentral::log_error(const std::string &message) {
     }
 }
 
-void LogCentral::log_console_error(const std::string &message) {
+void LogCentral::log_console_info(const std::string &message) {
     std::cout << timestamp() << " GAME  INFO : " << message << std::endl;
 }
 
-void LogCentral::log_console_info(const std::string &message) {
+void LogCentral::log_console_error(const std::string &message) {
     std::cout << timestamp() << " GAME  ERROR: " << message << std::endl;
 }
 

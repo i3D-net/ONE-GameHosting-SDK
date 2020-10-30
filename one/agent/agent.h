@@ -84,9 +84,9 @@ private:
 
     bool _quiet;
 
+    int _live_state_receive_count;
     int _host_information_send_count;
     int _application_instance_information_send_count;
-    int _live_state_receive_count;
     int _application_instance_status_receive_count;
 
     mutable std::mutex _agent;

@@ -28,9 +28,7 @@ void log(OneLogLevel level, const char *message) {
             L_ERROR(std::string("ONELOG: ") + message);
             break;
         }
-        default: {
-            L_ERROR(std::string("ONELOG: unknown log level: ") + message);
-        }
+        default: { L_ERROR(std::string("ONELOG: unknown log level: ") + message); }
     }
 }
 
@@ -420,7 +418,7 @@ void OneServerWrapper::application_instance_information(void *userdata,
     auto object = reinterpret_cast<OneObjectPtr>(information);
     ApplicationInstanceInformationData information_payload;
     if (!extract_application_instance_information_payload(object, information_payload)) {
-        L_ERROR("failed to extract host information payload");
+        L_ERROR("failed to extract host application instance information payload");
         return;
     }
 
@@ -447,13 +445,13 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
             return false;
         }
 
-        if (key == "map") {
-            allocated_data.map = value;
+        if (key == "players") {
+            allocated_data.players = std::stoi(value);
             return true;
         }
 
-        if (key == "maxPlayers") {
-            allocated_data.max_players = value;
+        if (key == "duration") {
+            allocated_data.duration = std::stoi(value);
             return true;
         }
 

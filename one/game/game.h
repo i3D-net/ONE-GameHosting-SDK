@@ -2,9 +2,12 @@
 
 #include <one/game/one_server_wrapper.h>
 
+#include <chrono>
 #include <functional>
 #include <string>
 #include <mutex>
+
+using namespace std::chrono;
 
 namespace one_integration {
 
@@ -83,9 +86,12 @@ private:
     static void application_instance_information_callback(
         const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata);
 
+    void update_match();
     void update_arcus_server_game_state();
 
     OneServerWrapper _one_server;
+
+    mutable std::mutex _game;
 
     int _soft_stop_receive_count;
     int _allocated_receive_count;
@@ -93,21 +99,38 @@ private:
     int _host_information_receive_count;
     int _application_instance_information_receive_count;
 
+    // Log level.
     bool _quiet;
 
-    // Fake game state.
-    int _players;
+    //-----------------------------------
+    // Simulated game behavior and state.
+
+    // Example match configuration extracted from the allocated message received
+    // from the one platform.
     int _max_players;
+    std::chrono::seconds _match_duration;
+    bool _player_joining_match;
+    bool _player_playing_match;
+    bool _player_leaving_match;
+    steady_clock::time_point _match_start_time;
+
+    // Current game state.
+    int _players;
     std::string _name;
     std::string _map;
     std::string _mode;
     std::string _version;
 
+    // A planned time to exit the process, configured as a response to a
+    // soft_stop message from the one platform.
+    steady_clock::time_point _exit_time;
+
+    // These states match the expectation of the one platform. Allocated is
+    // optional but this example uses it to respond to the allocated message
+    // as a matchmaking request.
     enum class MatchmakingStatus { none, starting, online, allocated };
     MatchmakingStatus _matchmaking_status;
     MatchmakingStatus _previous_matchmaking_status;
-
-    mutable std::mutex _game;
 };
 
 namespace allocation {

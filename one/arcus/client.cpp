@@ -10,7 +10,7 @@
 //#define ONE_ARCUS_CLIENT_LOGGING
 
 #ifdef ONE_ARCUS_CLIENT_LOGGING
-    #include <iostream>
+#include <iostream>
 #endif
 
 namespace i3d {
@@ -265,8 +265,8 @@ Error Client::send_application_instance_information(Object &data) {
 }
 
 Error Client::set_live_state_callback(
-    std::function<void(void *, int, int, const String &, const String &,
-                       const String &, const String &)>
+    std::function<void(void *, int, int, const String &, const String &, const String &,
+                       const String &)>
         callback,
     void *userdata) {
     const std::lock_guard<std::mutex> lock(_client);
@@ -339,6 +339,24 @@ Error Client::process_outgoing_message(const Message &message) {
         case Opcode::metadata: {
             params::MetaDataRequest params;
             err = validation::metadata(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::host_information: {
+            params::HostInformationResponse params;
+            err = validation::host_information(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::application_instance_information: {
+            params::ApplicationInstanceInformationResponse params;
+            err = validation::application_instance_information(message, params);
             if (is_error(err)) {
                 return err;
             }
