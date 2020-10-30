@@ -46,6 +46,8 @@ int main(int argc, char **argv) {
         L_ERROR("failed to init game");
         return 1;
     }
+    // Have the process exit when a soft stop is received, after some delay.
+    game.set_process_exit_enabled(true);
 
     L_INFO("game is initialized.");
     L_INFO("running update loop.");
