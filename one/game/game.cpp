@@ -61,11 +61,6 @@ Game::Game()
     , _application_instance_information_receive_count(0)
     , _quiet(false)
     , _max_players(0)
-    , _match_duration(0)
-    , _player_joining_match(false)
-    , _player_playing_match(false)
-    , _player_leaving_match(false)
-    , _match_start_time(steady_clock::duration::zero())
     , _players(0)
     , _name()
     , _map()
@@ -74,7 +69,10 @@ Game::Game()
     , _exit_time(steady_clock::duration::zero())
     , _is_exit_time_enabled(false)
     , _matchmaking_status(MatchmakingStatus::none)
-    , _previous_matchmaking_status(MatchmakingStatus::none) {}
+    , _previous_matchmaking_status(MatchmakingStatus::none)
+    , _match_duration(0)
+    , _match_start_time(steady_clock::duration::zero())
+    , _match_status(MatchStatus::none) {}
 
 Game::~Game() {
     _one_server.shutdown();
@@ -178,11 +176,15 @@ void Game::alter_game_state() {
             if (!_quiet && new_matchmaking_status) {
                 L_INFO("application instance status online");
             }
+            _one_server.set_application_instance_status(
+                OneServerWrapper::ApplicationInstanceStatus::online);
             break;
         case MatchmakingStatus::allocated:
             if (!_quiet && new_matchmaking_status) {
                 L_INFO("application instance status allocated");
             }
+            _one_server.set_application_instance_status(
+                OneServerWrapper::ApplicationInstanceStatus::allocated);
             break;
         default:
             L_ERROR("invalid matchmaking status");
@@ -204,42 +206,37 @@ void Game::update() {
 }
 
 void Game::update_match() {
-    if (_matchmaking_status != MatchmakingStatus::allocated) {
-        return;
-    }
-
-    if (_player_joining_match) {
-        if (_players == _max_players) {
-            L_INFO("maximum number of player reached");
-            _player_joining_match = false;
-            _player_playing_match = true;
-            _match_start_time = steady_clock::now();
+    switch (_match_status) {
+        case MatchStatus::none:
             return;
-        }
+        case MatchStatus::joining:
+            if (_players == _max_players) {
+                L_INFO("maximum number of player reached");
+                _match_start_time = steady_clock::now();
+                set_match_status(MatchStatus::playing);
+                return;
+            }
 
-        ++_players;
-        return;
-    }
-
-    if (_player_playing_match) {
-        steady_clock::time_point current = steady_clock::now();
-        if (_match_duration < current - _match_start_time) {
-            L_INFO("match duration has elapsed");
-            _player_playing_match = false;
-            _player_leaving_match = true;
-        }
-        return;
-    }
-
-    if (_player_leaving_match) {
-        if (_players == 0) {
-            L_INFO("all player have left.");
-            _player_leaving_match = false;
-            _matchmaking_status = MatchmakingStatus::online;
+            ++_players;
             return;
-        }
+        case MatchStatus::playing:
+            if (_match_duration < steady_clock::now() - _match_start_time) {
+                L_INFO("match duration has elapsed");
+                set_match_status(MatchStatus::leaving);
+            }
+            return;
+        case MatchStatus::leaving:
+            if (_players == 0) {
+                L_INFO("all player have left.");
+                set_match_status(MatchStatus::none);
+                _matchmaking_status = MatchmakingStatus::online;
+                return;
+            }
 
-        --_players;
+            --_players;
+            return;
+        default:
+            return;
     }
 }
 
@@ -254,6 +251,20 @@ void Game::update_arcus_server_game_state() {
     game_state.version = _version;
 
     _one_server.set_game_state(game_state);
+}
+
+void Game::set_match_status(MatchStatus status) {
+    switch (status) {
+        case MatchStatus::none:
+            _players = 0;
+            _max_players = 0;
+            _match_duration = seconds(0);
+            break;
+        default:
+            break;
+    }
+
+    _match_status = status;
 }
 
 int Game::soft_stop_receive_count() const {
@@ -349,13 +360,9 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
 
     game->_max_players = data.players;
     game->_match_duration = seconds(data.duration);
-    game->_player_joining_match = true;
-    game->_player_playing_match = false;
-    game->_player_leaving_match = false;
+    game->set_match_status(MatchStatus::joining);
 
     game->_matchmaking_status = MatchmakingStatus::allocated;
-    game->_one_server.set_application_instance_status(
-        OneServerWrapper::ApplicationInstanceStatus::allocated);
 }
 
 void Game::metadata_callback(const OneServerWrapper::MetaDataData &data, void *userdata) {
