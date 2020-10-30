@@ -303,9 +303,9 @@ void Game::soft_stop_callback(int timeout, void *userdata) {
     if (game->_is_exit_time_enabled) {
         auto delay_seconds = std::rand() % (2 * timeout);
         game->_exit_time = steady_clock::now() + seconds(delay_seconds);
-        L_INFO((std::ostringstream()
-                << "will shut down process in seconds: " << delay_seconds)
-                   .str());
+        i3d::one::OStringStream stream;
+        stream << "will shut down process in seconds: " << delay_seconds;
+        L_INFO(stream.str().c_str());
     }
     game->_soft_stop_receive_count++;
 }
