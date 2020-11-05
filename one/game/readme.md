@@ -13,9 +13,11 @@ The `game::OneServerWrapper` class, located in one_server_wrapper.h/.cpp, encaps
 
 The integration is intended to be as simple as possible, but please let us know if you have any suggestions for improvement.
 
-Below, the main points of an integration are summarized, however the game_server_wrapper.cpp may be referenced for a complete example.
+Below, the main points of an integration are summarized, however the one_server_wrapper.cpp may be referenced for a complete example.
 
 ### 1. Initialize, update and shutdown the One Game Hosting Arcus Server
+
+The aforementioned one_server_wrapper.cpp file handles all of the following however they are described here to illustrate the main usage pattern of c_api.h.
 
 Initialization:
 ```c++

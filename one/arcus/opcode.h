@@ -15,7 +15,7 @@ enum class Opcode {
     live_state = 0x20,
     host_information = 0x50,
     application_instance_information = 0x70,
-    application_instance_status = 0x71,
+    application_instance_status = 0x71
 };
 
 // To finalize when the list of supported opcode is confirmed.

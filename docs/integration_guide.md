@@ -4,7 +4,9 @@ The goal of the integration is for the game server to host an Arcus Server over 
 
 ## Adding the library to the Game
 
-The one/arcus folder must be copied to the project and configured for building. See one/game/CMakeLists.txt for CMake reference.
+The one/arcus folder must be copied to the project and configured for building. Alternatively to integrate binaries and headers:
+1. Build the repository.
+2. Copy the static lib found in build/one/arcus/one_arcus.lib/a.
 
 ## Using the Arcus Server API
 
@@ -12,18 +14,8 @@ The following headers must be included in the game server:
 - c_api.h
 - c_error.h
 
-To start, an integration must create an Arcus Server that corresponds with the Game Server:
-
-```c++
-    OneError err = one_server_create(&_server);
-```
-
-Afterwards, the server must:
-- have its message callbacks configured
-- be instructed to listen (for Arcus Client connections)
-- be updated each frame
-- send game state to the server
-- cleanup when the game server goes away
+For C++ game engines, the additional C++ code in one/game is intended to be used
+to wrap the c api and provide easy-to-use C++ interfaces for the game engine.
 
 The One Server Wrapper, defined in one/game/one_server_wrapper.cpp, is the core of this sample. It is a C++ header/cpp wrapper around the One API that:
 
@@ -31,11 +23,11 @@ The One Server Wrapper, defined in one/game/one_server_wrapper.cpp, is the core 
 - contains in-source code comments explaining the motivation and purpose of the API calls from the user's perspective
 - can be directly copied and used as a head-start for developers integrating the library into their own engines
 
-See the [Fake Game readme](../one/game/readme.md) for more a detailed explanation on the integration goals and approach.
+See the [Fake Game readme](../one/game/readme.md) for more a detailed explanation.
 
 ## Testing and Deploying
 
-While developing the integration, the Game Server may be tested by building and running the [Fake Agent](../one/agent/readme.md).
+While developing the integration, the Game Server may be tested by building and running the [Fake Agent](../one/agent/readme.md). The fake agent can connect to a running instance of the game server, to test the basics of the integration without needing to deploy to the remote one platform.
 
 Once the integration is complete, the Game Server must be deployed to the One Platform for final testing. This consists of the following steps:
 1. [Setup](https://www.i3d.net/docs/one/odp/Platform-Overview/) an application on the One Platform.

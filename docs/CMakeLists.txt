@@ -7,16 +7,19 @@ set(DOXYGEN_PROJECT_NAME "i3D.net Game Hosting SDK")
 set(DOXYGEN_SHOW_FILES YES)
 
 doxygen_add_docs(docs
-    "${PROJECT_SOURCE_DIR}/docs/mainpage.md"
+    "${PROJECT_SOURCE_DIR}/docs/build.md"
     "${PROJECT_SOURCE_DIR}/docs/integration_guide.md"
+    "${PROJECT_SOURCE_DIR}/docs/mainpage.md"
     "${PROJECT_SOURCE_DIR}/docs/vscode.md"
-    "${PROJECT_SOURCE_DIR}/readme.md"
     "${PROJECT_SOURCE_DIR}/one/agent/readme.md"
     "${PROJECT_SOURCE_DIR}/one/arcus/c_api.h"
     "${PROJECT_SOURCE_DIR}/one/arcus/c_error.h"
-    "${PROJECT_SOURCE_DIR}/one/game/one_server_wrapper.h"
+    "${PROJECT_SOURCE_DIR}/one/arcus/readme.md"
     "${PROJECT_SOURCE_DIR}/one/game/one_server_wrapper.cpp"
+    "${PROJECT_SOURCE_DIR}/one/game/one_server_wrapper.h"
     "${PROJECT_SOURCE_DIR}/one/game/readme.md"
+    "${PROJECT_SOURCE_DIR}/one/tests/readme.md"
+    "${PROJECT_SOURCE_DIR}/readme.md"
 )
 
 add_custom_target(doc_doxygen ALL

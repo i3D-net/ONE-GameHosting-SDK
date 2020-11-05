@@ -446,58 +446,6 @@ void object_destroy(OneObjectPtr object) {
     allocator::destroy<Object>(o);
 }
 
-OneError object_copy(OneObjectPtr source, OneObjectPtr destination) {
-    if (source == nullptr) {
-        return ONE_ERROR_VALIDATION_SOURCE_IS_NULLPTR;
-    }
-
-    if (destination == nullptr) {
-        return ONE_ERROR_VALIDATION_DESTINATION_IS_NULLPTR;
-    }
-
-    auto s = (Object *)source;
-    auto d = (Object *)destination;
-    *d = *s;
-    return ONE_ERROR_NONE;
-}
-
-OneError object_clear(OneObjectPtr object) {
-    if (object == nullptr) {
-        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
-    }
-
-    auto o = (Object *)object;
-    o->clear();
-    return ONE_ERROR_NONE;
-}
-
-OneError object_is_empty(OneObjectPtr object, bool *empty) {
-    if (object == nullptr) {
-        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
-    }
-
-    if (empty == nullptr) {
-        return ONE_ERROR_VALIDATION_EMPTY_IS_NULLPTR;
-    }
-
-    auto o = (Object *)object;
-    *empty = o->is_empty();
-    return ONE_ERROR_NONE;
-}
-
-OneError object_remove_key(OneObjectPtr object, const char *key) {
-    if (object == nullptr) {
-        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
-    }
-
-    if (key == nullptr) {
-        return ONE_ERROR_VALIDATION_KEY_IS_NULLPTR;
-    }
-
-    auto o = (Object *)object;
-    return o->remove_key(key);
-}
-
 OneError object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
@@ -988,7 +936,7 @@ Error server_set_application_instance_information_callback(
     return ONE_ERROR_NONE;
 }
 
-void allocator_set_alloc(void *(callback)(unsigned int size)) {
+void allocator_set_alloc(void *(*callback)(unsigned int size)) {
     // Wrapper for size_t.
     auto wrapper = [callback](size_t size) -> void * {
         return callback(static_cast<unsigned int>(size));
@@ -1000,7 +948,7 @@ void allocator_set_free(void(callback)(void *)) {
     allocator::set_free(callback);
 }
 
-void allocator_set_realloc(void *(callback(void *, unsigned int size))) {
+void allocator_set_realloc(void *(*callback)(void *, unsigned int size)) {
     // Wrapper for size_t.
     auto wrapper = [callback](void *p, size_t size) -> void * {
         return callback(p, static_cast<unsigned int>(size));
@@ -1144,22 +1092,6 @@ void one_object_destroy(OneObjectPtr object) {
     one::object_destroy(object);
 }
 
-OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination) {
-    return one::object_copy(source, destination);
-}
-
-OneError one_object_clear(OneObjectPtr object) {
-    return one::object_clear(object);
-}
-
-OneError one_object_is_empty(OneObjectPtr object, bool *empty) {
-    return one::object_is_empty(object, empty);
-}
-
-OneError one_object_remove_key(OneObjectPtr object, const char *key) {
-    return one::object_remove_key(object, key);
-}
-
 OneError one_object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {
     return one::object_is_val_bool(object, key, result);
 }
@@ -1293,15 +1225,15 @@ OneError one_server_set_application_instance_information_callback(
                                                                      data);
 }
 
-void one_allocator_set_alloc(void *(callback)(unsigned int size)) {
+void one_allocator_set_alloc(void *(*callback)(unsigned int size)) {
     one::allocator_set_alloc(callback);
 }
 
-void one_allocator_set_free(void(callback)(void *)) {
+void one_allocator_set_free(void (*callback)(void *)) {
     one::allocator_set_free(callback);
 }
 
-void one_allocator_set_realloc(void *(callback(void *, unsigned int size))) {
+void one_allocator_set_realloc(void *(*callback)(void *, unsigned int size)) {
     one::allocator_set_realloc(callback);
 }
 
