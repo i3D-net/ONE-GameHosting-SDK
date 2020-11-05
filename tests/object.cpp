@@ -202,13 +202,6 @@ TEST_CASE("object c_api", "[object]") {
 
     // Checking nullptr.
     REQUIRE(is_error(one_object_create(nullptr)));
-    REQUIRE(is_error(one_object_copy(nullptr, o)));
-    REQUIRE(is_error(one_object_copy(o, nullptr)));
-    REQUIRE(is_error(one_object_clear(nullptr)));
-    REQUIRE(is_error(one_object_is_empty(nullptr, &val_bool)));
-    REQUIRE(is_error(one_object_is_empty(o, nullptr)));
-    REQUIRE(is_error(one_object_remove_key(nullptr, key)));
-    REQUIRE(is_error(one_object_remove_key(o, nullptr)));
 
     bool result = false;
 

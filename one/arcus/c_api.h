@@ -93,18 +93,18 @@ typedef OneObject *OneObjectPtr;
 /// @param callback A function that takes a size in bytes of memory to allocate.
 /// @sa one_allocator_set_free
 /// @sa one_allocator_set_realloc
-void one_allocator_set_alloc(void *(callback)(unsigned int size));
+void one_allocator_set_alloc(void *(*callback)(unsigned int size));
 
 /// Optional custom memory free override.
 /// If set, must be set at init time, before using any other APIs.
 /// @param callback An existing pointer p to free.
-void one_allocator_set_free(void(callback)(void *));
+void one_allocator_set_free(void (*callback)(void *));
 
 /// Optional custom memory realloc override.
 /// If set, must be set at init time, before using any other APIs.
 /// @param callback A function taking an existing pointer and a new size. See
 /// the standard c realloc requirements for behavior.
-void one_allocator_set_realloc(void *(callback(void *, unsigned int size)));
+void one_allocator_set_realloc(void *(*callback)(void *, unsigned int size));
 
 //------------------------------------------------------------------------------
 ///@}
@@ -119,13 +119,15 @@ void one_allocator_set_realloc(void *(callback(void *, unsigned int size)));
 typedef enum OneLogLevel { ONE_LOG_LEVEL_INFO = 0, ONE_LOG_LEVEL_ERROR } OneLogLevel;
 
 /// Log callback function to gain visibility of one server internal activity.
+/// @param level The severity of the logged information.
+/// @param message The actual message.
 /// \sa one_server_create
 typedef void (*OneLogFn)(OneLogLevel level, const char *message);
 
 /// Creates a new Arcus Server. Each Game Server must have one corresponding
 /// Arcus Server. Listen, update, shutdown and destroy should be called to complete the
 /// life cycle. Thread-safe.
-/// @param logger Optional log callback function. Can be null.
+/// @param logFn Optional log callback function. Can be null.
 /// @param server A null server pointer, which will be set to a new server.
 /// \sa one_server_destroy
 /// \sa one_server_listen
@@ -300,11 +302,6 @@ OneError one_object_create(OneObjectPtr *object);
 /// Must be called to free an object created by one_object_create.
 /// @param object A non-null object pointer created via one_object_create.
 void one_object_destroy(OneObjectPtr object);
-
-OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination);
-OneError one_object_clear(OneObjectPtr object);
-OneError one_object_is_empty(OneObjectPtr object, bool *empty);
-OneError one_object_remove_key(OneObjectPtr object, const char *key);
 
 //------------------------------------------------------------------------------
 ///@}

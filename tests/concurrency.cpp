@@ -251,30 +251,31 @@ TEST_CASE("two game on same process", "[concurrency]") {
     REQUIRE(agent2.application_instance_information_send_count() == 0);
     REQUIRE(agent2.application_instance_status_receive_count() == 0);
 
-    while (game.one_server_wrapper().status() != OneServerWrapper::Status::ready &&
-           game2.one_server_wrapper().status() != OneServerWrapper::Status::ready) {
+    wait_until (200, [&]() {
         game.update();
         game2.update();
         agent.update();
         agent2.update();
-    }
+        return game.one_server_wrapper().status() == OneServerWrapper::Status::ready &&
+           game2.one_server_wrapper().status() == OneServerWrapper::Status::ready;
+    });
 
-    for_sleep(20, 1, [&]() {
+    for_sleep(50, 1, [&]() {
         game.alter_game_state();
         game.update();
+        agent.update();
 
         game2.alter_game_state();
         game2.update();
-
-        agent.update();
         agent2.update();
+
         return false;
     });
 
     REQUIRE(agent.live_state_receive_count() > 0);
     REQUIRE(agent.host_information_send_count() > 0);
     REQUIRE(agent.application_instance_information_send_count() > 0);
-    REQUIRE(0 < agent.application_instance_status_receive_count());
+    REQUIRE(agent.application_instance_status_receive_count() > 0);
 
     REQUIRE(0 < agent2.live_state_receive_count());
     REQUIRE(agent2.host_information_send_count() == 1);
@@ -326,17 +327,19 @@ TEST_CASE("multiple game on the same process", "[concurrency]") {
     REQUIRE(agent3.application_instance_information_send_count() == 0);
     REQUIRE(agent3.application_instance_status_receive_count() == 0);
 
-    while (game.one_server_wrapper().status() != OneServerWrapper::Status::ready &&
-           game2.one_server_wrapper().status() != OneServerWrapper::Status::ready) {
+    wait_until (200, [&]() {
         game.update();
         game2.update();
         game3.update();
         agent.update();
         agent2.update();
         agent3.update();
-    }
+        return game.one_server_wrapper().status() == OneServerWrapper::Status::ready &&
+           game2.one_server_wrapper().status() == OneServerWrapper::Status::ready &&
+           game3.one_server_wrapper().status() == OneServerWrapper::Status::ready;
+    });
 
-    for_sleep(20, 1, [&]() {
+    for_sleep(50, 1, [&]() {
         game.alter_game_state();
         game.update();
 
@@ -352,17 +355,17 @@ TEST_CASE("multiple game on the same process", "[concurrency]") {
         return false;
     });
 
-    REQUIRE(0 < agent.live_state_receive_count());
+    REQUIRE(agent.live_state_receive_count() > 0);
     REQUIRE(agent.host_information_send_count() == 1);
     REQUIRE(agent.application_instance_information_send_count() > 0);
-    REQUIRE(0 < agent.application_instance_status_receive_count());
+    REQUIRE(agent.application_instance_status_receive_count() > 0);
 
-    REQUIRE(0 < agent2.live_state_receive_count());
+    REQUIRE(agent2.live_state_receive_count() > 0);
     REQUIRE(agent2.host_information_send_count() == 1);
     REQUIRE(agent2.application_instance_information_send_count() == 1);
-    REQUIRE(0 < agent2.application_instance_status_receive_count());
+    REQUIRE(agent2.application_instance_status_receive_count() > 0);
 
-    REQUIRE(0 < agent3.live_state_receive_count());
+    REQUIRE(agent3.live_state_receive_count() > 0);
     REQUIRE(agent3.host_information_send_count() == 1);
     REQUIRE(agent3.application_instance_information_send_count() == 1);
     REQUIRE(0 < agent3.application_instance_status_receive_count());
