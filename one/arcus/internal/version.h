@@ -1,10 +1,10 @@
 #pragma once
 
 #define ONE_NAME "OneGameHostingSDK"
-#define ONE_VERSION "1.0.0"
+#define ONE_VERSION "0.9.0"
 // clang-format off
-#define ONE_VERSION_MAJOR 1
-#define ONE_VERSION_MINOR 0
+#define ONE_VERSION_MAJOR 0
+#define ONE_VERSION_MINOR 9
 #define ONE_VERSION_PATCH 0
 // clang-format on
 
