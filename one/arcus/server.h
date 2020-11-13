@@ -56,11 +56,16 @@ public:
     Status status() const;
     static String status_to_string(Status status);
 
+    // Listen must be called to initiate allowing incoming connections, after init.
     Error listen(unsigned int port);
 
     // Process pending received and outgoing messages. Any incoming messages are
     // validated according to the Arcus API version standard, and callbacks, if
     // set, are called. Messages without callbacks set are dropped and ignored.
+    //
+    // If a connection to a client fails, then the server waits for a new connection.
+    // If a new client connects while an existing client is connected, then
+    // the existing client is closed.
     Error update();
 
     //------------------------------------------------------------------------------

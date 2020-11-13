@@ -218,10 +218,9 @@ Error Server::update_listen_socket() {
         return ONE_ERROR_NONE;
     }
 
-    // If a client is already connected, then close the incoming connection.
+    // If a client is already connected, then override the existing connection.
     if (_client_socket->is_initialized()) {
-        incoming_client.close();
-        return ONE_ERROR_NONE;
+        close_client_connection();
     }
 
     // Client accepted, add it.
@@ -414,7 +413,9 @@ Error Server::update() {
         return ONE_ERROR_NONE;
     }
 
-    if (_game_state_was_set) {
+    const bool was_ready = (_client_connection->status() == Connection::Status::ready);
+
+    if (was_ready && _game_state_was_set) {
         if (game_states_changed(_game_state, _last_sent_game_state)) {
             if (_client_connection->status() == Connection::Status::ready) {
                 err = send_live_state();
@@ -429,7 +430,7 @@ Error Server::update() {
             _game_state_was_set = false;
         }
     }
-    if (_should_send_status) {
+    if (was_ready && _should_send_status) {
         err = send_application_instance_status();
         if (is_error(err)) {
             close_client_connection();
@@ -437,8 +438,6 @@ Error Server::update() {
         }
         _should_send_status = false;
     }
-
-    const bool was_ready = (_client_connection->status() == Connection::Status::ready);
 
     err = update_client_connection();
     if (is_error(err)) {
