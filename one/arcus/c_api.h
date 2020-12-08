@@ -215,7 +215,7 @@ OneError one_array_capacity(OneArrayPtr array, int *capacity);
 /// must have sufficient free space, that is the capacity must be greater than
 /// the size.
 /// @param array A pointer that will be set to point to the new OneArrayPtr.
-/// @param val The value to add as as new element.
+/// @param val The value to add as new element.
 OneError one_array_push_back_bool(OneArrayPtr array, bool val);
 OneError one_array_push_back_int(OneArrayPtr array, int val);
 OneError one_array_push_back_string(OneArrayPtr array, const char *val);
@@ -252,7 +252,7 @@ OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *resu
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
 /// @param pos The index of the value to retrieve. Must be less than one_array_size.
-/// @param val A non-nil pointer to set the value on.
+/// @param val A non-null pointer to set the value on.
 OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val);
 OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val);
 /// Returns the number of characters in the string. This does not include a trailing null
@@ -266,7 +266,7 @@ OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, int *siz
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
 /// @param pos The index of the value to retrieve. Must be less than one_array_size.
-/// @param val A non-nil pointer to set the value on.
+/// @param val A non-null pointer to set the value on.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_array_val_string_size.
 OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val, int size);
@@ -329,7 +329,7 @@ OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *re
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
-/// @param val Non-nil pointer to set the value on.
+/// @param val Non-null pointer to set the value on.
 OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
 OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
 /// Returns the number of characters in the string. This does not include a trailing null
@@ -343,7 +343,7 @@ OneError one_object_val_string_size(OneObjectPtr object, const char *key, int *s
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
-/// @param val Non-nil pointer to set the value on.
+/// @param val Non-null pointer to set the value on.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_object_val_string_size.
 OneError one_object_val_string(OneObjectPtr object, const char *key, char *val, int size);
