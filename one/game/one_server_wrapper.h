@@ -77,7 +77,7 @@ public:
         // and passed to the c_api. See the cpp file for an example.
     };
     // Set the game state to the current value. The wrapper uses this to send
-    // the current state to the One Platform, when requested to do so.
+    // the current state to the ONE Platform, when requested to do so.
     void set_game_state(const GameState &);
 
     // As defined in:

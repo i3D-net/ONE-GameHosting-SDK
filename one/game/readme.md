@@ -1,13 +1,13 @@
 
 # Fake Game
 
-This folder contains a fake game that uses the One Game Hosting SDK server API. The code here can be used both as a reference for how real game servers can integrate and use the Arcus library, or as a way to test the library for correctness.
+This folder contains a fake game that uses the ONE Game Hosting SDK server API. The code here can be used both as a reference for how real game servers can integrate and use the Arcus library, or as a way to test the library for correctness.
 
 ## Dependencies
 
 A game integration requires the Arcus Server library located in one/server.
 
-## One Server Wrapper
+## ONE Arcus Server Wrapper
 
 The `game::OneServerWrapper` class, located in one_server_wrapper.h/.cpp, encapsulates the Arcus library's `c_api.h` calls within the game. The parsing.h/cpp files are utilities helping to read and write from key/value data in the Arcus messages.
 
@@ -15,7 +15,7 @@ The integration is intended to be as simple as possible, but please let us know 
 
 Below, the main points of an integration are summarized, however the one_server_wrapper.cpp may be referenced for a complete example.
 
-### 1. Initialize, update and shutdown the One Game Hosting Arcus Server
+### 1. Initialize, update and shutdown the ONE Game Hosting Arcus Server
 
 The aforementioned one_server_wrapper.cpp file handles all of the following however they are described here to illustrate the main usage pattern of c_api.h.
 
@@ -31,7 +31,7 @@ if (one_is_error(err)) {
     // handle error...
 }
 
-// Set callbacks for incoming messages from the One platform:
+// Set callbacks for incoming messages from the ONE platform:
 OneError err one_server_set_soft_stop_callback(server, soft_stop, this)
 if (one_is_error(err)) {
     // handle error...
