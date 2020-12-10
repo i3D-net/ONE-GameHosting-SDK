@@ -11,11 +11,11 @@ The one/arcus folder must be copied to the project and configured for building. 
 ## Using the Arcus Server API
 
 The following headers must be included in the game server:
-- c_api.h
-- c_error.h
+- one/arcus/c_api.h
+- one/arcus/c_error.h
 
 For C++ game engines, the additional C++ code in one/game is intended to be used
-to wrap the c api and provide easy-to-use C++ interfaces for the game engine.
+to wrap the C API and provide easy-to-use C++ interfaces for the game engine.
 
 The One Server Wrapper, defined in one/game/one_server_wrapper.cpp, is the core of this sample. It is a C++ header/cpp wrapper around the One API that:
 
