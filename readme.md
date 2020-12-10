@@ -42,4 +42,4 @@ The SDK is made up of code to be integrated into the Game Server plus additional
 2. [Game](one/game/readme.md) is a fake Game used in testing, development and as a guide and reference for integration of the [Arcus C API](one/arcus/c_api.h) into a Game Server.
 3. [Agent](one/agent/readme.md) is a fake One Agent Client used for testing and development. It simulates the behavior of a One Agent that connects to and handles all communication between the Game Server and the One Platform.
 
-The [tests](one/tests/readme.md) and [docs](one/docs/readme.md) folders serve their respective purposes.
+The [tests](tests/readme.md) and [docs](docs/readme.md) folders serve their respective purposes.

@@ -68,7 +68,7 @@ bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
 
     if (alloc && free && realloc) {
         // Cache off the overrides so that they can be called within the lambdas
-        // because lambdas with captures may not be passed to the c api.
+        // because lambdas with captures may not be passed to the C API.
         _alloc = alloc;
         _free = free;
         _realloc = realloc;

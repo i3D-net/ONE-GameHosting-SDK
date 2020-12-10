@@ -3,7 +3,7 @@
 Prebuilt binaries are currently not supplied. The integration code is very lightweight. Integrations have two options:
 
 1. Copy the code in one/arcus directly into the game engine and build directly as part of the regular build.
-2. Or build the repository with the following instructions, and then headers and binaries may be copied as needed. Binaries will be output into the build folder, e.g. build/one/arcus/release/one_arcus.lib.
+2. Or build the repository with the following instructions, and then copy required headers and binaries. Binaries will be output into the build folder, e.g. the build/one/arcus/release/one_arcus.lib.
 
 Building the repository in either case is recommended as it will also create a fake agent executable to aid testing of your game server without deploying to the remote one platform.
 
@@ -28,12 +28,12 @@ Optional
 ## Steps
 
 Build scripts for both platforms can be run from the root:
-- build_release_windows.bat
-- build_release_linux.sh
+- build_release_windows_XX.bat
+- build_release_linux_XX.sh
 
-There are also debug versions. Run the one for your platform and you should see build succeed and tests run successfully. Build output is put into the build folder.
+Where XX is 32 or 64 for toolchain and architecture. There are also matching debug versions of each script.
 
-That's it!
+Running the script builds, runs tests and outputs results to the build folder.
 
 ## Clean
 
@@ -41,17 +41,15 @@ Run either script in the root:
 - clean_windows.bat
 - clean_linux.sh
 
+Cleaning is required to switch from 32 to 64 bit builds or vice versa.
+
 ## IDE
 
 To load the repository in Visual Studio, first build and then open the generated solution file located at build/OneGameHostingSDK.sln.
 
-For working on the SDK in VSCode, IDE tips are located [here](docs/vscode.md).
+For working on the SDK in Visual Studio Code, IDE tips are located [here](docs/vscode.md).
 
-## Build details
-
-The `-S` and `-B` options require CMake 3.13 or newer. Older version must cd into the build folder and run `cmake ..`.
-
-A subset of tests will run as part of the build process.
+## Documentation Build
 
 The doxygen documentation is built automatically if CMake is able to find the doxygen installed on your system.
 
@@ -64,4 +62,3 @@ Some bash scripts in the root can be used to run longer tests:
 - run_tests_debug_soak.sh
 
 Use the `build/tests/debug/tests.exe -?` option for all commands.
-
