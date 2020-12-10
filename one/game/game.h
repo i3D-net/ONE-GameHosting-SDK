@@ -43,7 +43,7 @@ public:
 
     //--------------------------------------------------------------------------
     // Query how many times message game information has been requested from the
-    // game by the One platform.
+    // game by the ONE platform.
 
     int soft_stop_receive_count() const;
     int allocated_receive_count() const;
@@ -65,7 +65,7 @@ public:
     }
 
     // Exposed for fake game executable to enable exiting the process when a
-    // soft stop message is received from the One platform. If enabled, the
+    // soft stop message is received from the ONE Platform. If enabled, the
     // process will end at a random time from the time of message receipt up
     // to 2x the given timeout.
     void set_process_exit_enabled(bool enabled) {
@@ -127,11 +127,11 @@ private:
     std::string _version;
 
     // A planned time to exit the process, configured as a response to a
-    // soft_stop message from the one platform.
+    // soft_stop message from the ONE Platform.
     steady_clock::time_point _exit_time;
     bool _is_exit_time_enabled;
 
-    // These states match the expectation of the one platform. Allocated is
+    // These states match the expectation of the ONE Platform. Allocated is
     // optional but this example uses it to respond to the allocated message
     // as a matchmaking request.
     enum class MatchmakingStatus { none, starting, online, allocated };
@@ -143,13 +143,13 @@ private:
     steady_clock::time_point _started_time;
 
     // Example match configuration extracted from the allocated message received
-    // from the one platform.
+    // from the ONE Platform.
     int _max_players;
     std::chrono::seconds _match_duration;
     steady_clock::time_point _match_start_time;
 
     // This states are using internally for match simulation purpose. They are unrelated
-    // to the one platform.
+    // to the ONE Platform.
     enum class MatchStatus { none, joining, playing, leaving };
     MatchStatus _match_status;
 

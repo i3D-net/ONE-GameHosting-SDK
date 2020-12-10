@@ -1,4 +1,4 @@
-# One Game Hosting SDK Tests
+# ONE Game Hosting SDK Tests
 
 All tests for the SDK are contained and managed here.
 

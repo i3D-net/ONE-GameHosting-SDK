@@ -5,7 +5,7 @@ Prebuilt binaries are currently not supplied. The integration code is very light
 1. Copy the code in one/arcus directly into the game engine and build directly as part of the regular build.
 2. Or build the repository with the following instructions, and then copy required headers and binaries. Binaries will be output into the build folder, e.g. the build/one/arcus/release/one_arcus.lib.
 
-Building the repository in either case is recommended as it will also create a fake agent executable to aid testing of your game server without deploying to the remote one platform.
+Building the repository in either case is recommended as it will also create a fake agent executable to aid testing of your game server without deploying to the remote ONE Platform.
 
 ## Requirements
 

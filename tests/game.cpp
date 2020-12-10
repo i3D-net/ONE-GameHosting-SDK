@@ -180,7 +180,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     // live state.
     auto &wrapper = game.one_server_wrapper();
     {
-        // Agent should already receive one game state update when the connection
+        // Agent should already receive game state update when the connection
         // is established.
         REQUIRE(agent.live_state_receive_count() == 1);
         game.set_player_count(game.player_count() + 1);

@@ -5,8 +5,8 @@
 /** @file c_api.h
     @brief The C API for Arcus Server.
 
-    This is the externally facing interface for the One Game Hosting SDK, exposing
-    management an Arcus Server to allow communication with the One Platform.
+    This is the externally facing interface for the ONE Game Hosting SDK, exposing
+    management an Arcus Server to allow communication with the ONE Platform.
 
     It is a C API for ABI compatibility and widespread language binding support.
 
@@ -109,7 +109,7 @@ void one_allocator_set_realloc(void *(*callback)(void *, unsigned int size));
 //------------------------------------------------------------------------------
 ///@}
 ///@name Server interface.
-/// The Server is the main object of the C API. One server should be created
+/// The Server is the main object of the C API. A single server should be created
 /// per "game server". The server needs to be updated often to send and receive
 /// messages from an Arcus Client.
 ///@{
@@ -118,7 +118,8 @@ void one_allocator_set_realloc(void *(*callback)(void *, unsigned int size));
 /// \sa one_server_create
 typedef enum OneLogLevel { ONE_LOG_LEVEL_INFO = 0, ONE_LOG_LEVEL_ERROR } OneLogLevel;
 
-/// Log callback function to gain visibility of one server internal activity.
+/// Log callback function to allow the integration to handle internal ONE Server
+/// logs with its own logger.
 /// @param level The severity of the logged information.
 /// @param message The actual message.
 /// \sa one_server_create
@@ -421,7 +422,7 @@ OneError one_server_set_soft_stop_callback(OneServerPtr server,
 /// Register the callback to be called when an allocated message is received.
 /// The game server must read the given array data and be ready to accept
 /// players in the directed gameplay environment (e.g. map, mode), if specified
-/// and required by the game's One platform configuration.
+/// and required by the game's ONE Platform configuration.
 /// @param server Non-null server pointer. Thread-safe.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.

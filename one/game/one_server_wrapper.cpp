@@ -154,7 +154,7 @@ void OneServerWrapper::shutdown() {
         return;
     }
 
-    // Free all objects created via the One API. This also shuts down the server
+    // Free all objects created via the ONE API. This also shuts down the server
     // first, ending any active connection to it.
     one_server_destroy(_server);
     _server = nullptr;
@@ -223,7 +223,7 @@ OneServerWrapper::Status OneServerWrapper::status() const {
 
 void OneServerWrapper::set_game_state(const GameState &state) {
     // If the game wishes to send and coordinate the processing of additional
-    // game state to the One Platform, it can add that data here as an object
+    // game state to the ONE Platform, it can add that data here as an object
     // with additional keys. Note that these key names must not conflict with
     // the base key names of the Live State message.
     // OneObjectPtr object;

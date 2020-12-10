@@ -10,7 +10,7 @@
 namespace one_integration {
 
 // Provides example global allocation hooks used to override the allocations
-// made within the One Game Hosting SDK.
+// made within the ONE Game Hosting SDK.
 namespace allocation {
 
 // For debug purposes.

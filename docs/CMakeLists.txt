@@ -12,6 +12,7 @@ doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/docs/build.md"
     "${PROJECT_SOURCE_DIR}/docs/integration_guide.md"
     "${PROJECT_SOURCE_DIR}/docs/mainpage.md"
+    "${PROJECT_SOURCE_DIR}/docs/readme.md"
     "${PROJECT_SOURCE_DIR}/docs/vscode.md"
     "${PROJECT_SOURCE_DIR}/one/agent/readme.md"
     "${PROJECT_SOURCE_DIR}/one/arcus/c_api.h"
