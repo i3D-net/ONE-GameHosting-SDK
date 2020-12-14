@@ -339,7 +339,7 @@ TEST_CASE("multiple game on the same process", "[concurrency]") {
            game3.one_server_wrapper().status() == OneServerWrapper::Status::ready;
     });
 
-    for_sleep(50, 1, [&]() {
+    for_sleep(100, 1, [&]() {
         game.alter_game_state();
         game.update();
 
