@@ -27,13 +27,11 @@ Optional
 
 ## Steps
 
-Build scripts for both platforms can be run from the root:
-- build_release_windows_XX.bat
-- build_release_linux_XX.sh
+Build scripts for both platforms can be found and run in the root.
 
-Where XX is 32 or 64 for toolchain and architecture. There are also matching debug versions of each script.
+For example build_release_windows_32_mt.bat will configure and build on windows a release, 32 bit, multi-threaded (MT option in MSVC) library. The architecture must match the program using the library, and on Windows, the code generation option (MT or MD) must also match the host game server's settings.
 
-Running the script builds, runs tests and outputs results to the build folder.
+Running a build script will build the source, runs tests and outputs results to the build folder.
 
 ## Clean
 
@@ -41,7 +39,7 @@ Run either script in the root:
 - clean_windows.bat
 - clean_linux.sh
 
-Cleaning is required to switch from 32 to 64 bit builds or vice versa.
+Cleaning is required to switch from 32 to 64 bit, or MT/MD builds builds.
 
 ## IDE
 
