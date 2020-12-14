@@ -8,7 +8,16 @@ project(OneGameHostingSDK
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+option(BUILD_MSVC_MT "Use Multi Threaded toolchain option instead of default Mult Threaded DLL" OFF)
+
 if(WIN32)
+  if(BUILD_MSVC_MT)
+      add_compile_options(
+          $<$<CONFIG:>:/MT>
+          $<$<CONFIG:Debug>:/MTd>
+          $<$<CONFIG:Release>:/MT>
+      )
+  endif()
   SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP${N}")
   add_definitions(-DWINDOWS)
 else()
