@@ -46,7 +46,14 @@ set(SOURCE_FILES
     types.cpp
 )
 
-add_library(one_arcus ${SOURCE_FILES} ${HEADER_FILES})
+option(SHARED_ARCUS_LIB "Build the Arcus library as a shared library" OFF)
+if(SHARED_ARCUS_LIB)
+    message("Configuring arcus as shared library")
+    add_library(one_arcus SHARED ${SOURCE_FILES} ${HEADER_FILES})
+else()
+    message("Configuring arcus as static library")
+    add_library(one_arcus ${SOURCE_FILES} ${HEADER_FILES})
+endif()
 
 include_directories(${PROJECT_SOURCE_DIR})
 

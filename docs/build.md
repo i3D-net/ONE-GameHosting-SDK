@@ -27,11 +27,16 @@ Optional
 
 ## Steps
 
-Build scripts for both platforms can be found and run in the root.
+Build scripts for both platforms can be found in the tools folder. The build scripts naming follows the following convention:
 
-For example build_release_windows_32_mt.bat will configure and build on windows a release, 32 bit, multi-threaded (MT option in MSVC) library. The architecture must match the program using the library, and on Windows, the code generation option (MT or MD) must also match the host game server's settings.
+`build_<debug_or_release>_<platform>_<shared_or_static_library>_<architecture>`
+Windows will also have a trailing `mt` or `mtdll` for the code generation CRT configuration (Multi Threaded vs Multi Threaded DLL).
 
-Running a build script will build the source, runs tests and outputs results to the build folder.
+For example build_release_windows_32_dll_mt.bat will configure and build on windows a release, 32 bit, multi-threaded (MT option in MSVC) dll library.
+
+Running a build script will build the source, run tests and output results to the build folder.
+
+A clean is needed in most cases when building with different settings.
 
 ## Clean
 
@@ -39,7 +44,7 @@ Run either script in the root:
 - clean_windows.bat
 - clean_linux.sh
 
-Cleaning is required to switch from 32 to 64 bit, or MT/MD builds builds.
+Cleaning is not required when changing between debug and release builds with other settings being equal.
 
 ## IDE
 

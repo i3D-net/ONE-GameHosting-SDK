@@ -8,7 +8,7 @@ project(OneGameHostingSDK
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(BUILD_MSVC_MT "Use Multi Threaded toolchain option instead of default Mult Threaded DLL" OFF)
+option(BUILD_MSVC_MT "Use Multi Threaded toolchain option instead of default Multi Threaded DLL" OFF)
 
 if(WIN32)
   if(BUILD_MSVC_MT)
