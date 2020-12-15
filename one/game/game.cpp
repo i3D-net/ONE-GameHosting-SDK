@@ -3,8 +3,8 @@
 #include <assert.h>
 #include <ctime>
 #include <string>
+#include <sstream>
 
-#include <one/arcus/types.h>
 #include <one/game/log.h>
 
 namespace one_integration {
@@ -338,7 +338,7 @@ void Game::soft_stop_callback(int timeout, void *userdata) {
     if (game->_is_exit_time_enabled) {
         auto delay_seconds = std::rand() % (2 * timeout);
         game->_exit_time = steady_clock::now() + seconds(delay_seconds);
-        i3d::one::OStringStream stream;
+        std::ostringstream stream;
         stream << "will shut down process in seconds: " << delay_seconds;
         L_INFO(stream.str().c_str());
     }
@@ -372,7 +372,7 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
     // players.
     if (!game->is_quiet()) {
         L_INFO("allocated called:");
-        i3d::one::OStringStream stream;
+        std::ostringstream stream;
         stream << "\tplayers:" << data.players;
         L_INFO(stream.str().c_str());
         stream.clear();

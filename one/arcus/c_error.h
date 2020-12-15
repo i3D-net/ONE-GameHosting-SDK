@@ -1,5 +1,16 @@
 #pragma once
 
+// Symbol export management, same code defined in each public header.
+#ifdef WINDOWS
+    #ifndef ONE_EXPORT
+        #define ONE_EXPORT __declspec(dllexport)
+    #endif
+#else
+    #ifndef ONE_EXPORT
+        #define ONE_EXPORT __attribute__((visibility("default")))
+    #endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -133,12 +144,12 @@ typedef enum OneError {
     ONE_ERROR_COUNT  // For testing purpose. Must remain in the last position.
 } OneError;
 
-bool one_is_error(OneError err);
+ONE_EXPORT bool one_is_error(OneError err);
 
 // Given a OneError, returns a string matching the symbol name, e.g.
 // error_text(ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) will return
 // "ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER".
-const char *one_error_text(OneError);
+ONE_EXPORT const char *one_error_text(OneError);
 
 #ifdef __cplusplus
 };

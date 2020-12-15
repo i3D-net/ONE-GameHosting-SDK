@@ -30,9 +30,8 @@ The documentation for the entire ONE Platform can be found [here](https://www.i3
 
 The below are not provided or part of current goals. Please [add an issue](https://github.com/i3D-net/ONE-GameHosting-SDK/issues) for change requests!
 
-1. Explicit preparation of headers + static (.lib, .o) and shared (.dll, .so) binaries for the Arcus library. Static libraries are currently output by the build tools.
-2. Unity or Unreal engine support beyond usage of the [C API](one/arcus/c_api.h) to create in a custom integration.
-3. Testing on CentOS or other Linux distros other than Ubuntu 18.04.
+1. Unity or Unreal engine support beyond usage of the [C API](one/arcus/c_api.h) to create in a custom integration.
+2. Testing on Linux distros other than Ubuntu 18.04.
 
 ### Layout
 

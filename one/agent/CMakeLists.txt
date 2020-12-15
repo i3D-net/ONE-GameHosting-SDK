@@ -1,3 +1,9 @@
+# Agent executable should not build in shared library mode as it uses
+# unexported Arcus library symbols.
+if(SHARED_ARCUS_LIB)
+    return()
+endif()
+
 add_executable(agent main.cpp)
 target_compile_features(agent PRIVATE cxx_std_11)
 

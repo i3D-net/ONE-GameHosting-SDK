@@ -36,8 +36,18 @@
     > customer support for backend support.
 */
 
-#define ONE_EXPORT
-#define ONE_STDCALL
+//#define ONE_STDCALL
+
+// Symbol export management, same code defined in each public header.
+#ifdef WINDOWS
+    #ifndef ONE_EXPORT
+        #define ONE_EXPORT __declspec(dllexport)
+    #endif
+#else
+    #ifndef ONE_EXPORT
+        #define ONE_EXPORT __attribute__((visibility("default")))
+    #endif
+#endif
 
 #include <one/arcus/c_error.h>
 
@@ -93,18 +103,18 @@ typedef OneObject *OneObjectPtr;
 /// @param callback A function that takes a size in bytes of memory to allocate.
 /// @sa one_allocator_set_free
 /// @sa one_allocator_set_realloc
-void one_allocator_set_alloc(void *(*callback)(unsigned int size));
+ONE_EXPORT void one_allocator_set_alloc(void *(*callback)(unsigned int size));
 
 /// Optional custom memory free override.
 /// If set, must be set at init time, before using any other APIs.
 /// @param callback An existing pointer p to free.
-void one_allocator_set_free(void (*callback)(void *));
+ONE_EXPORT void one_allocator_set_free(void (*callback)(void *));
 
 /// Optional custom memory realloc override.
 /// If set, must be set at init time, before using any other APIs.
 /// @param callback A function taking an existing pointer and a new size. See
 /// the standard c realloc requirements for behavior.
-void one_allocator_set_realloc(void *(*callback)(void *, unsigned int size));
+ONE_EXPORT void one_allocator_set_realloc(void *(*callback)(void *, unsigned int size));
 
 //------------------------------------------------------------------------------
 ///@}
@@ -134,37 +144,37 @@ typedef void (*OneLogFn)(OneLogLevel level, const char *message);
 /// \sa one_server_listen
 /// \sa one_server_update
 /// \sa one_server_status
-OneError one_server_create(OneLogFn logFn, OneServerPtr *server);
+ONE_EXPORT OneError one_server_create(OneLogFn logFn, OneServerPtr *server);
 
 /// Destroys a server instance created via one_server_create. Destroy will
 /// shutdown the server first, if it is active. Note although other server functions
 /// are thread safe, this one is not. A server must not be destroyed or interacted
 /// with on other threads.
 /// @param server A non-null server pointer.
-void one_server_destroy(OneServerPtr server);
+ONE_EXPORT void one_server_destroy(OneServerPtr server);
 
 /// Closes the listen connection, if any and resets the server to creation state.
 /// @param server A non-null server pointer. Thread-safe.
-OneError one_server_shutdown(OneServerPtr server);
+ONE_EXPORT OneError one_server_shutdown(OneServerPtr server);
 
 /// Start listening on the given port. This should be called before
 /// update. Listening will fail and return an error if the port is already in
 /// use. Thread-safe.
 /// @param server A non-null server pointer.
 /// @param port The port to bind to.
-OneError one_server_listen(OneServerPtr server, unsigned int port);
+ONE_EXPORT OneError one_server_listen(OneServerPtr server, unsigned int port);
 
 /// Update the server. This must be called frequently (e.g. each frame) to
 /// process incoming and outgoing communications. Incoming messages trigger
 /// their respective incoming callbacks during the call to update. If the a
 /// callback for a message is not set then the message is ignored.
 /// @param server A non-null server pointer. Thread-safe.
-OneError one_server_update(OneServerPtr server);
+ONE_EXPORT OneError one_server_update(OneServerPtr server);
 
 /// Returns the status of the server. Thread-safe.
 /// @param server A non-null server pointer.
 /// @param status A pointer to a status enum value to be set.
-OneError one_server_status(OneServerPtr const server, OneServerStatus *status);
+ONE_EXPORT OneError one_server_status(OneServerPtr const server, OneServerStatus *status);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -173,39 +183,39 @@ OneError one_server_status(OneServerPtr const server, OneServerStatus *status);
 
 /// Creates a new array. Must be freed with one_array_destroy. Thread-safe.
 /// @param array A null pointer to a OneArrayPtr, to be set with new array.
-OneError one_array_create(OneArrayPtr *array);
+ONE_EXPORT OneError one_array_create(OneArrayPtr *array);
 
 /// Destroys array.
 /// @param array A non-null OneArrayPtr, to be deleted.
-void one_array_destroy(OneArrayPtr array);
+ONE_EXPORT void one_array_destroy(OneArrayPtr array);
 
 /// Makes a copy of the array. The destination must have been created via
 /// one_array_create.
-OneError one_array_copy(OneArrayPtr source, OneArrayPtr destination);
+ONE_EXPORT OneError one_array_copy(OneArrayPtr source, OneArrayPtr destination);
 
 /// Clears the array to an empty initialized state.
 /// @param array A non-null OneArrayPtr.
-OneError one_array_clear(OneArrayPtr array);
+ONE_EXPORT OneError one_array_clear(OneArrayPtr array);
 
 /// Reserves array space.
 /// @param array A non-null OneArrayPtr  .
 /// @param size Number of total elements the array should contain.
-OneError one_array_reserve(OneArrayPtr array, int size);
+ONE_EXPORT OneError one_array_reserve(OneArrayPtr array, int size);
 
 /// Sets the given value to true if the array is empty.
 /// @param array A non-null OneArrayPtr.
 /// @param empty A non-null bool pointer to set the result on.
-OneError one_array_is_empty(OneArrayPtr array, bool *empty);
+ONE_EXPORT OneError one_array_is_empty(OneArrayPtr array, bool *empty);
 
 /// Returns the number of elements pushed to the array.
 /// @param array A non-null OneArrayPtr.
 /// @param size A non-null int pointer to set the result on.
-OneError one_array_size(OneArrayPtr array, int *size);
+ONE_EXPORT OneError one_array_size(OneArrayPtr array, int *size);
 
 /// Returns the total size, allocated via one_array_reserve, of the array.
 /// @param array A non-null OneArrayPtr.
 /// @param capacity A non-null int pointer to set the result on.
-OneError one_array_capacity(OneArrayPtr array, int *capacity);
+ONE_EXPORT OneError one_array_capacity(OneArrayPtr array, int *capacity);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -217,15 +227,15 @@ OneError one_array_capacity(OneArrayPtr array, int *capacity);
 /// the size.
 /// @param array A pointer that will be set to point to the new OneArrayPtr.
 /// @param val The value to add as new element.
-OneError one_array_push_back_bool(OneArrayPtr array, bool val);
-OneError one_array_push_back_int(OneArrayPtr array, int val);
-OneError one_array_push_back_string(OneArrayPtr array, const char *val);
-OneError one_array_push_back_array(OneArrayPtr array, OneArrayPtr val);
-OneError one_array_push_back_object(OneArrayPtr array, OneObjectPtr val);
+ONE_EXPORT OneError one_array_push_back_bool(OneArrayPtr array, bool val);
+ONE_EXPORT OneError one_array_push_back_int(OneArrayPtr array, int val);
+ONE_EXPORT OneError one_array_push_back_string(OneArrayPtr array, const char *val);
+ONE_EXPORT OneError one_array_push_back_array(OneArrayPtr array, OneArrayPtr val);
+ONE_EXPORT OneError one_array_push_back_object(OneArrayPtr array, OneObjectPtr val);
 
 /// Removes last element of the array, if any.
 /// @param array A pointer that will be set to point to the new OneArrayPtr.
-OneError one_array_pop_back(OneArrayPtr array);
+ONE_EXPORT OneError one_array_pop_back(OneArrayPtr array);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -237,11 +247,16 @@ OneError one_array_pop_back(OneArrayPtr array);
 /// @param pos The element index to inspect.
 /// @param result A non-null bool pointer to set the result to.
 /// @return May return ONE_ERROR_ARRAY_* or ONE_ERROR_NONE.
-OneError one_array_is_val_bool(OneArrayPtr array, unsigned int pos, bool *result);
-OneError one_array_is_val_int(OneArrayPtr array, unsigned int pos, bool *result);
-OneError one_array_is_val_string(OneArrayPtr array, unsigned int pos, bool *result);
-OneError one_array_is_val_array(OneArrayPtr array, unsigned int pos, bool *result);
-OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *result);
+ONE_EXPORT OneError one_array_is_val_bool(OneArrayPtr array, unsigned int pos,
+                                          bool *result);
+ONE_EXPORT OneError one_array_is_val_int(OneArrayPtr array, unsigned int pos,
+                                         bool *result);
+ONE_EXPORT OneError one_array_is_val_string(OneArrayPtr array, unsigned int pos,
+                                            bool *result);
+ONE_EXPORT OneError one_array_is_val_array(OneArrayPtr array, unsigned int pos,
+                                           bool *result);
+ONE_EXPORT OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos,
+                                            bool *result);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -254,15 +269,16 @@ OneError one_array_is_val_object(OneArrayPtr array, unsigned int pos, bool *resu
 /// @param array A valid array created via one_array_create.
 /// @param pos The index of the value to retrieve. Must be less than one_array_size.
 /// @param val A non-null pointer to set the value on.
-OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val);
-OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val);
+ONE_EXPORT OneError one_array_val_bool(OneArrayPtr array, unsigned int pos, bool *val);
+ONE_EXPORT OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val);
 /// Returns the number of characters in the string. This does not include a trailing null
 /// character.
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
 /// @param pos The index of the value to retrieve. Must be less than one_array_size.
 /// @param size A non-null int pointer to set the size on.
-OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, int *size);
+ONE_EXPORT OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos,
+                                              int *size);
 /// Writes the key value to the given character buffer.
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
@@ -270,9 +286,12 @@ OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, int *siz
 /// @param val A non-null pointer to set the value on.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_array_val_string_size.
-OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val, int size);
-OneError one_array_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
-OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
+ONE_EXPORT OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
+                                         int size);
+ONE_EXPORT OneError one_array_val_array(OneArrayPtr array, unsigned int pos,
+                                        OneArrayPtr val);
+ONE_EXPORT OneError one_array_val_object(OneArrayPtr array, unsigned int pos,
+                                         OneObjectPtr val);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -284,11 +303,14 @@ OneError one_array_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr 
 /// @param pos The position in the array to set the value in. Must be less than
 /// one_array_size.
 /// @param val The value to set.
-OneError one_array_set_val_bool(OneArrayPtr array, unsigned int pos, bool val);
-OneError one_array_set_val_int(OneArrayPtr array, unsigned int pos, int val);
-OneError one_array_set_val_string(OneArrayPtr array, unsigned int pos, const char *val);
-OneError one_array_set_val_array(OneArrayPtr array, unsigned int pos, OneArrayPtr val);
-OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObjectPtr val);
+ONE_EXPORT OneError one_array_set_val_bool(OneArrayPtr array, unsigned int pos, bool val);
+ONE_EXPORT OneError one_array_set_val_int(OneArrayPtr array, unsigned int pos, int val);
+ONE_EXPORT OneError one_array_set_val_string(OneArrayPtr array, unsigned int pos,
+                                             const char *val);
+ONE_EXPORT OneError one_array_set_val_array(OneArrayPtr array, unsigned int pos,
+                                            OneArrayPtr val);
+ONE_EXPORT OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos,
+                                             OneObjectPtr val);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -298,11 +320,11 @@ OneError one_array_set_val_object(OneArrayPtr array, unsigned int pos, OneObject
 /// Create a new object that can be used as a key value in a One protocol message.
 /// one_object_destroy must be called to free the object. Thread-safe.
 /// @param object A pointer that will be set to point to the new OneObjectPtr.
-OneError one_object_create(OneObjectPtr *object);
+ONE_EXPORT OneError one_object_create(OneObjectPtr *object);
 
 /// Must be called to free an object created by one_object_create.
 /// @param object A non-null object pointer created via one_object_create.
-void one_object_destroy(OneObjectPtr object);
+ONE_EXPORT void one_object_destroy(OneObjectPtr object);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -314,11 +336,16 @@ void one_object_destroy(OneObjectPtr object);
 /// @param key The key to lookup.
 /// @param result A non-null bool pointer to set the result to.
 /// @return May return ONE_ERROR_OBJECT_* or ONE_ERROR_NONE.
-OneError one_object_is_val_bool(OneObjectPtr object, const char *key, bool *result);
-OneError one_object_is_val_int(OneObjectPtr object, const char *key, bool *result);
-OneError one_object_is_val_string(OneObjectPtr object, const char *key, bool *result);
-OneError one_object_is_val_array(OneObjectPtr object, const char *key, bool *result);
-OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *result);
+ONE_EXPORT OneError one_object_is_val_bool(OneObjectPtr object, const char *key,
+                                           bool *result);
+ONE_EXPORT OneError one_object_is_val_int(OneObjectPtr object, const char *key,
+                                          bool *result);
+ONE_EXPORT OneError one_object_is_val_string(OneObjectPtr object, const char *key,
+                                             bool *result);
+ONE_EXPORT OneError one_object_is_val_array(OneObjectPtr object, const char *key,
+                                            bool *result);
+ONE_EXPORT OneError one_object_is_val_object(OneObjectPtr object, const char *key,
+                                             bool *result);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -331,15 +358,16 @@ OneError one_object_is_val_object(OneObjectPtr object, const char *key, bool *re
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
 /// @param val Non-null pointer to set the value on.
-OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
-OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
+ONE_EXPORT OneError one_object_val_bool(OneObjectPtr object, const char *key, bool *val);
+ONE_EXPORT OneError one_object_val_int(OneObjectPtr object, const char *key, int *val);
 /// Returns the number of characters in the string. This does not include a trailing null
 /// character.
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
 /// @param size A non-null int pointer to set the size on.
-OneError one_object_val_string_size(OneObjectPtr object, const char *key, int *size);
+ONE_EXPORT OneError one_object_val_string_size(OneObjectPtr object, const char *key,
+                                               int *size);
 /// Writes the key value to the given character buffer.
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param object A valid object created via one_object_create.
@@ -347,9 +375,12 @@ OneError one_object_val_string_size(OneObjectPtr object, const char *key, int *s
 /// @param val Non-null pointer to set the value on.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_object_val_string_size.
-OneError one_object_val_string(OneObjectPtr object, const char *key, char *val, int size);
-OneError one_object_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
-OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPtr val);
+ONE_EXPORT OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
+                                          int size);
+ONE_EXPORT OneError one_object_val_array(OneObjectPtr object, const char *key,
+                                         OneArrayPtr val);
+ONE_EXPORT OneError one_object_val_object(OneObjectPtr object, const char *key,
+                                          OneObjectPtr val);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -360,12 +391,15 @@ OneError one_object_val_object(OneObjectPtr object, const char *key, OneObjectPt
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
 /// @param val The value to set.
-OneError one_object_set_val_bool(OneObjectPtr object, const char *key, bool val);
-OneError one_object_set_val_int(OneObjectPtr object, const char *key, int val);
-OneError one_object_set_val_string(OneObjectPtr object, const char *key, const char *val);
-OneError one_object_set_val_array(OneObjectPtr object, const char *key, OneArrayPtr val);
-OneError one_object_set_val_object(OneObjectPtr object, const char *key,
-                                   OneObjectPtr val);
+ONE_EXPORT OneError one_object_set_val_bool(OneObjectPtr object, const char *key,
+                                            bool val);
+ONE_EXPORT OneError one_object_set_val_int(OneObjectPtr object, const char *key, int val);
+ONE_EXPORT OneError one_object_set_val_string(OneObjectPtr object, const char *key,
+                                              const char *val);
+ONE_EXPORT OneError one_object_set_val_array(OneObjectPtr object, const char *key,
+                                             OneArrayPtr val);
+ONE_EXPORT OneError one_object_set_val_object(OneObjectPtr object, const char *key,
+                                              OneObjectPtr val);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -387,17 +421,19 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
 /// @param mode Actively hosted game mode.
 /// @param version The version of the game software.
 /// @param additional_data Any key/value pairs set on this object will be added.
-OneError one_server_set_live_state(OneServerPtr server, int players, int max_players,
-                                   const char *name, const char *map, const char *mode,
-                                   const char *version, OneObjectPtr additional_data);
+ONE_EXPORT OneError one_server_set_live_state(OneServerPtr server, int players,
+                                              int max_players, const char *name,
+                                              const char *map, const char *mode,
+                                              const char *version,
+                                              OneObjectPtr additional_data);
 
 /// This should be called at the least when the state changes, but it is safe to
 /// call more often if it is more convenient to do so - data is only sent out if
 /// there are changes from the previous call. Thread-safe.
 /// @param server A non-null server pointer.
 /// @param status The current status of the game server application instance.
-OneError one_server_set_application_instance_status(OneServerPtr server,
-                                                    OneApplicationInstanceStatus status);
+ONE_EXPORT OneError one_server_set_application_instance_status(
+    OneServerPtr server, OneApplicationInstanceStatus status);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -415,9 +451,8 @@ OneError one_server_set_application_instance_status(OneServerPtr server,
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_soft_stop_callback(OneServerPtr server,
-                                           void (*callback)(void *data, int timeout),
-                                           void *data);
+ONE_EXPORT OneError one_server_set_soft_stop_callback(
+    OneServerPtr server, void (*callback)(void *data, int timeout), void *data);
 
 /// Register the callback to be called when an allocated message is received.
 /// The game server must read the given array data and be ready to accept
@@ -427,9 +462,8 @@ OneError one_server_set_soft_stop_callback(OneServerPtr server,
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_allocated_callback(OneServerPtr server,
-                                           void (*callback)(void *data, void *array),
-                                           void *data);
+ONE_EXPORT OneError one_server_set_allocated_callback(
+    OneServerPtr server, void (*callback)(void *data, void *array), void *data);
 
 /// Register the callback to be notified of a metadata. Thread-safe.
 /// The `void *array` will be of type OneArrayPtr or the callback will error out.
@@ -437,9 +471,8 @@ OneError one_server_set_allocated_callback(OneServerPtr server,
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_metadata_callback(OneServerPtr server,
-                                          void (*callback)(void *data, void *array),
-                                          void *data);
+ONE_EXPORT OneError one_server_set_metadata_callback(
+    OneServerPtr server, void (*callback)(void *data, void *array), void *data);
 
 /// Register the callback to be notified of host_information. Thread-safe.
 /// The `void *object` will be of type OneObjectPtr or the callback will error out.
@@ -447,7 +480,7 @@ OneError one_server_set_metadata_callback(OneServerPtr server,
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_host_information_callback(
+ONE_EXPORT OneError one_server_set_host_information_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
 
 /// Register the callback to be notified of a application_instance_information.
@@ -457,7 +490,7 @@ OneError one_server_set_host_information_callback(
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
 /// @param data Optional user data that will be passed back to the callback.
-OneError one_server_set_application_instance_information_callback(
+ONE_EXPORT OneError one_server_set_application_instance_information_callback(
     OneServerPtr server, void (*callback)(void *data, void *object), void *data);
 
 ///@}
