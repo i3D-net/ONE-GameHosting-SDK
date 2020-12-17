@@ -11,6 +11,28 @@
 
 using namespace i3d::one;
 
+TEST_CASE("key scope test", "[object]") {
+    OneObjectPtr ptr;
+    REQUIRE(!one_is_error(one_object_create(&ptr)));
+    for (int i = 0; i < 10000; i++) {
+        // Add the key vals but scoped so that the memory for the keys are freed.
+        {
+            REQUIRE(
+                !one_is_error(one_object_set_val_int(ptr, std::string("q").c_str(), 2)));
+            REQUIRE(
+                !one_is_error(one_object_set_val_int(ptr, std::string("w").c_str(), 3)));
+        }
+        int val;
+        {
+            REQUIRE(
+                !one_is_error(one_object_val_int(ptr, std::string("q").c_str(), &val)));
+            REQUIRE(
+                !one_is_error(one_object_val_int(ptr, std::string("w").c_str(), &val)));
+        }
+    }
+    one_object_destroy(ptr);
+}
+
 TEST_CASE("object unit tests", "[object]") {
     Object o;
     REQUIRE(o.is_empty());

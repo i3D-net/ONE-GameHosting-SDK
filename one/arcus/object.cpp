@@ -241,7 +241,8 @@ Error Object::set_val_bool(const char *key, bool val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        _doc.AddMember(rapidjson::StringRef(key), val, _doc.GetAllocator());
+        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), val,
+                       _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }
 
@@ -261,7 +262,9 @@ Error Object::set_val_int(const char *key, int val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        _doc.AddMember(rapidjson::StringRef(key), val, _doc.GetAllocator());
+        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), val,
+                       _doc.GetAllocator());
+
         return ONE_ERROR_NONE;
     }
 
@@ -281,8 +284,9 @@ Error Object::set_val_string(const char *key, const String &val) {
 
     const auto &member = _doc.FindMember(key);
     if (member == _doc.MemberEnd()) {
-        rapidjson::Value value(rapidjson::StringRef(val.c_str()), _doc.GetAllocator());
-        _doc.AddMember(rapidjson::StringRef(key), value, _doc.GetAllocator());
+        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(),
+                       rapidjson::Value(val.c_str(), _doc.GetAllocator()).Move(),
+                       _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }
 
@@ -304,7 +308,8 @@ Error Object::set_val_array(const char *key, const Array &val) {
     if (member == _doc.MemberEnd()) {
         rapidjson::Value value;
         value.CopyFrom(val.get(), _doc.GetAllocator());
-        _doc.AddMember(rapidjson::StringRef(key), value, _doc.GetAllocator());
+        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), value,
+                       _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }
 
@@ -326,7 +331,8 @@ Error Object::set_val_object(const char *key, const Object &val) {
     if (member == _doc.MemberEnd()) {
         rapidjson::Value value;
         value.CopyFrom(val.get(), _doc.GetAllocator());
-        _doc.AddMember(rapidjson::StringRef(key), value, _doc.GetAllocator());
+        _doc.AddMember(rapidjson::Value(key, _doc.GetAllocator()).Move(), value,
+                       _doc.GetAllocator());
         return ONE_ERROR_NONE;
     }
 
