@@ -14,7 +14,7 @@ using namespace i3d::one;
 TEST_CASE("key scope test", "[object]") {
     OneObjectPtr ptr;
     REQUIRE(!one_is_error(one_object_create(&ptr)));
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 500; i++) {
         // Add the key vals but scoped so that the memory for the keys are freed.
         {
             REQUIRE(
