@@ -141,6 +141,14 @@ typedef void (*OneLogFn)(OneLogLevel level, const char *message);
 /// Arcus Server. Listen, update, shutdown and destroy should be called to complete the
 /// life cycle. Thread-safe. A pointer to the OneServerPtr is passed in and the
 /// pointer will be set to newly created OneServerPtr.
+/// Use Example:
+///     OneServerPtr server;
+///     auto err = one_server_create(null, &server);
+///     if (one_is_error(err)) {
+///         myLogger.log(one_error_text(err));
+///     }
+///     // Use the server, e.g. one_server_update, send/receive messages.
+///     one_server_destroy(server);
 /// @param logFn Optional log callback function. Can be null.
 /// @param server A null server pointer, which will be set to a new server.
 /// \sa one_server_destroy
@@ -169,7 +177,7 @@ ONE_EXPORT OneError one_server_listen(OneServerPtr server, unsigned int port);
 
 /// Update the server. This must be called frequently (e.g. each frame) to
 /// process incoming and outgoing communications. Incoming messages trigger
-/// their respective incoming callbacks during the call to update. If the a
+/// their respective incoming callbacks during the call to update. If the
 /// callback for a message is not set then the message is ignored.
 /// @param server A non-null server pointer. Thread-safe.
 ONE_EXPORT OneError one_server_update(OneServerPtr server);
