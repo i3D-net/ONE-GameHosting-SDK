@@ -77,22 +77,24 @@ typedef enum OneApplicationInstanceStatus {
 } OneeApplicationInstanceStatus;
 
 //------------------------------------------------------------------------------
-// Opaque types.
+///@name Opaque types.
+/// The API uses the pointer handles to represent internal objects.
+///@{
 
-// A One Arcus Server, that can be hosted and communicate with an incoming Arcus
-// connection.
+/// Opaque type and handle to a One Arcus Server.
 struct OneServer;
 typedef OneServer *OneServerPtr;
 
-// Optional Array value that may be present within a One protocol Message.
+/// Opaque type and handle to a One Array value used in messages.
 struct OneArray;
 typedef OneArray *OneArrayPtr;
 
-// Optional Object value that may be present within a One protocol Message.
+// Opaque type and handle to a One Object value used in messages.
 struct OneObject;
 typedef OneObject *OneObjectPtr;
 
 //------------------------------------------------------------------------------
+///@}
 ///@name Environment.
 ///@{
 
@@ -137,7 +139,8 @@ typedef void (*OneLogFn)(OneLogLevel level, const char *message);
 
 /// Creates a new Arcus Server. Each Game Server must have one corresponding
 /// Arcus Server. Listen, update, shutdown and destroy should be called to complete the
-/// life cycle. Thread-safe.
+/// life cycle. Thread-safe. A pointer to the OneServerPtr is passed in and the
+/// pointer will be set to newly created OneServerPtr.
 /// @param logFn Optional log callback function. Can be null.
 /// @param server A null server pointer, which will be set to a new server.
 /// \sa one_server_destroy
@@ -171,7 +174,8 @@ ONE_EXPORT OneError one_server_listen(OneServerPtr server, unsigned int port);
 /// @param server A non-null server pointer. Thread-safe.
 ONE_EXPORT OneError one_server_update(OneServerPtr server);
 
-/// Returns the status of the server. Thread-safe.
+/// Obtains the status of the server. Thread-safe. The passed in pointer is set
+/// to the status value.
 /// @param server A non-null server pointer.
 /// @param status A pointer to a status enum value to be set.
 ONE_EXPORT OneError one_server_status(OneServerPtr const server, OneServerStatus *status);

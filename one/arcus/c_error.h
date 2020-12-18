@@ -1,5 +1,9 @@
 #pragma once
 
+/** @file c_error.h
+    @brief The C API error values and utilities.
+**/
+
 // Symbol export management, same code defined in each public header.
 #ifdef WINDOWS
     #ifndef ONE_EXPORT
@@ -17,7 +21,7 @@ extern "C" {
 
 // Note - when adding errors:
 //    1. Never change an existing number mapping.
-//    2. Add the new error symbol the string function in error.cpp.
+//    2. Add the new error symbol to the string function in error.cpp.
 typedef enum OneError {
     ONE_ERROR_NONE = 0,
     ONE_ERROR_ARRAY_ALLOCATION_FAILED,
