@@ -34,11 +34,11 @@ struct ServerCallbacks {
 class Server final {
 public:
     Server();
-    Server(const Logger &);
     Server(const Server &) = delete;
     Server &operator=(const Server &) = delete;
     ~Server();
 
+    void set_logger(const Logger &);
     Error init();
 
     Error shutdown();

@@ -14,15 +14,16 @@ enum class LogLevel { Info = 0, Error };
 class Logger final {
 public:
     Logger() : _logFn(nullptr) {}
-    Logger(std::function<void(LogLevel, const String &)> logFn) : _logFn(logFn) {}
+    Logger(std::function<void(void *userdata, LogLevel, const String &)> logFn, void *userdata) : _logFn(logFn), _userdata(userdata) {}
 
     void Log(LogLevel level, const String &message) const {
         if (_logFn == nullptr) return;
-        _logFn(level, message);
+        _logFn(_userdata, level, message);
     };
 
 private:
-    std::function<void(LogLevel, const String &)> _logFn;
+    std::function<void(void *, LogLevel, const String &)> _logFn;
+    void *_userdata;
 };
 
 }  // namespace one
