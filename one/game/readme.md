@@ -31,6 +31,12 @@ if (one_is_error(err)) {
     // handle error...
 }
 
+// Optional - set custom logger.
+OneError err = one_server_set_logger(server, myLogFn, &myLogger);
+if (one_is_error(err)) {
+    // handle error...
+}
+
 // Set callbacks for incoming messages from the ONE platform:
 OneError err one_server_set_soft_stop_callback(server, soft_stop, this)
 if (one_is_error(err)) {

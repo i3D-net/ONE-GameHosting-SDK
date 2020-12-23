@@ -28,9 +28,10 @@ if(SHARED_ARCUS_LIB)
     )
 else()
     set(SOURCE_TEST_FILES
-        allocator.cpp
         accumulator.cpp
+        allocator.cpp
         agent.cpp
+        api.cpp
         array.cpp
         arcus.cpp
         chaos.cpp

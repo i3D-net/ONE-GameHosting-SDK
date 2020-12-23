@@ -18,7 +18,10 @@ std::function<void(void *)> _free = nullptr;
 std::function<void *(void *, size_t)> _realloc = nullptr;
 
 // Logger to pass into One.
-void log(OneLogLevel level, const char *message) {
+void log(void *userdata, OneLogLevel level, const char *message) {
+    // userdata not used in this wrapper, but could point to instance of a logger
+    // instead of a global logger.
+
     switch (level) {
         case ONE_LOG_LEVEL_INFO: {
             L_INFO(std::string("ONELOG: ") + message);
@@ -91,7 +94,14 @@ bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
     // Create the one server.
 
     // Each game server must have one corresponding arcus server.
-    OneError err = one_server_create(log, &_server);
+    OneError err = one_server_create(&_server);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return false;
+    }
+
+    // Set custom logger - optional.
+    err = one_server_set_logger(_server, log, nullptr); // null userdata as global log is used.
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return false;

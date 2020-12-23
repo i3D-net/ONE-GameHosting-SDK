@@ -743,17 +743,12 @@ OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPt
     return o->set_val_object(key, *v);
 }
 
-Error server_create(OneLogFn logFn, OneServerPtr *server) {
+Error server_create(OneServerPtr *server) {
     if (server == nullptr) {
-        return ONE_ERROR_VALIDATION_MESSAGE_IS_NULLPTR;
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
-    auto logFnLambda = [logFn](LogLevel level, const String &message) {
-        logFn(static_cast<OneLogLevel>(level), message.c_str());
-    };
-    Logger logger(logFnLambda);
-
-    auto s = allocator::create<Server>(logger);
+    auto s = allocator::create<Server>();
     if (s == nullptr) {
         return ONE_ERROR_SERVER_ALLOCATION_FAILED;
     }
@@ -765,6 +760,21 @@ Error server_create(OneLogFn logFn, OneServerPtr *server) {
     }
 
     *server = (OneServerPtr)s;
+    return ONE_ERROR_NONE;
+}
+
+Error server_set_logger(OneServerPtr server, OneLogFn logFn, void *userdata) {
+    if (server == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    auto logFnLambda = [logFn](void *userdata, LogLevel level, const String &message) {
+        logFn(userdata, static_cast<OneLogLevel>(level), message.c_str());
+    };
+    Logger logger(logFnLambda, userdata);
+
+    auto s = (Server *)(server);
+    s->set_logger(logger);
     return ONE_ERROR_NONE;
 }
 
@@ -862,7 +872,7 @@ Error server_set_application_instance_status(OneServerPtr server,
 }
 
 Error server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *, int),
-                                    void *data) {
+                                    void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -872,12 +882,12 @@ Error server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    s->set_soft_stop_callback(callback, data);
+    s->set_soft_stop_callback(callback, userdata);
     return ONE_ERROR_NONE;
 }
 
 Error server_set_allocated_callback(OneServerPtr server, void (*callback)(void *, void *),
-                                    void *data) {
+                                    void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -887,12 +897,12 @@ Error server_set_allocated_callback(OneServerPtr server, void (*callback)(void *
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    s->set_allocated_callback(callback, data);
+    s->set_allocated_callback(callback, userdata);
     return ONE_ERROR_NONE;
 }
 
 Error server_set_metadata_callback(OneServerPtr server, void (*callback)(void *, void *),
-                                   void *data) {
+                                   void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -902,12 +912,12 @@ Error server_set_metadata_callback(OneServerPtr server, void (*callback)(void *,
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    s->set_metadata_callback(callback, data);
+    s->set_metadata_callback(callback, userdata);
     return ONE_ERROR_NONE;
 }
 
 Error server_set_host_information_callback(OneServerPtr server,
-                                           void (*callback)(void *, void *), void *data) {
+                                           void (*callback)(void *, void *), void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -917,12 +927,12 @@ Error server_set_host_information_callback(OneServerPtr server,
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    s->set_host_information_callback(callback, data);
+    s->set_host_information_callback(callback, userdata);
     return ONE_ERROR_NONE;
 }
 
 Error server_set_application_instance_information_callback(
-    OneServerPtr server, void (*callback)(void *, void *), void *data) {
+    OneServerPtr server, void (*callback)(void *, void *), void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -932,7 +942,7 @@ Error server_set_application_instance_information_callback(
         return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
     }
 
-    s->set_application_instance_information_callback(callback, data);
+    s->set_application_instance_information_callback(callback, userdata);
     return ONE_ERROR_NONE;
 }
 
@@ -1159,8 +1169,12 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
     return one::object_set_val_object(object, key, val);
 }
 
-OneError one_server_create(OneLogFn logFn, OneServerPtr *server) {
-    return one::server_create(logFn, server);
+OneError one_server_create(OneServerPtr *server) {
+    return one::server_create(server);
+}
+
+OneError one_server_set_logger(OneServerPtr server, OneLogFn logFn, void *userdata) {
+    return one::server_set_logger(server, logFn, userdata);
 }
 
 void one_server_destroy(OneServerPtr server) {
@@ -1196,33 +1210,33 @@ OneError one_server_set_application_instance_status(OneServerPtr server,
 }
 
 OneError one_server_set_soft_stop_callback(OneServerPtr server,
-                                           void (*callback)(void *data, int timeout),
-                                           void *data) {
-    return one::server_set_soft_stop_callback(server, callback, data);
+                                           void (*callback)(void *userdata, int timeout),
+                                           void *userdata) {
+    return one::server_set_soft_stop_callback(server, callback, userdata);
 }
 
 OneError one_server_set_allocated_callback(OneServerPtr server,
-                                           void (*callback)(void *data, void *array),
-                                           void *data) {
-    return one::server_set_allocated_callback(server, callback, data);
+                                           void (*callback)(void *userdata, void *array),
+                                           void *userdata) {
+    return one::server_set_allocated_callback(server, callback, userdata);
 }
 
 OneError one_server_set_metadata_callback(OneServerPtr server,
-                                          void (*callback)(void *data, void *array),
-                                          void *data) {
-    return one::server_set_metadata_callback(server, callback, data);
+                                          void (*callback)(void *userdata, void *array),
+                                          void *userdata) {
+    return one::server_set_metadata_callback(server, callback, userdata);
 }
 
 OneError one_server_set_host_information_callback(OneServerPtr server,
                                                   void (*callback)(void *, void *),
-                                                  void *data) {
-    return one::server_set_host_information_callback(server, callback, data);
+                                                  void *userdata) {
+    return one::server_set_host_information_callback(server, callback, userdata);
 }
 
 OneError one_server_set_application_instance_information_callback(
-    OneServerPtr server, void (*callback)(void *, void *), void *data) {
+    OneServerPtr server, void (*callback)(void *, void *), void *userdata) {
     return one::server_set_application_instance_information_callback(server, callback,
-                                                                     data);
+                                                                     userdata);
 }
 
 void one_allocator_set_alloc(void *(*callback)(unsigned int size)) {

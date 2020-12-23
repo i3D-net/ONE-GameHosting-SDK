@@ -48,12 +48,12 @@ Server::Server()
     , _should_send_status(false)
     , _callbacks({0}) {}
 
-Server::Server(const Logger &logger) : Server() {
-    _logger = logger;
-}
-
 Server::~Server() {
     shutdown();
+}
+
+void Server::set_logger(const Logger &logger) {
+    _logger = logger;
 }
 
 Error Server::init() {
@@ -98,6 +98,8 @@ Error Server::init() {
 }
 
 Error Server::shutdown() {
+    _logger.Log(LogLevel::Info, "server is shutting down");
+
     const std::lock_guard<std::mutex> lock(_server);
 
     if (_client_connection != nullptr) {
