@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <functional>
 #include <mutex>
 
@@ -7,8 +8,15 @@
 #include <one/arcus/logger.h>
 #include <one/arcus/types.h>
 
+using namespace std::chrono;
+
 namespace i3d {
 namespace one {
+
+namespace server {
+// Exposed for testing.
+void set_listen_retry_delay(size_t seconds);
+}
 
 class Array;
 class Connection;
@@ -39,7 +47,7 @@ public:
     ~Server();
 
     void set_logger(const Logger &);
-    Error init();
+    Error init(unsigned int listen_port);
 
     Error shutdown();
 
@@ -56,12 +64,12 @@ public:
     Status status() const;
     static String status_to_string(Status status);
 
-    // Listen must be called to initiate allowing incoming connections, after init.
-    Error listen(unsigned int port);
-
     // Process pending received and outgoing messages. Any incoming messages are
     // validated according to the Arcus API version standard, and callbacks, if
     // set, are called. Messages without callbacks set are dropped and ignored.
+    //
+    // If the server was unable to listen on the given port during init, it
+    // will periodically retry listening on the port during update.
     //
     // If a connection to a client fails, then the server waits for a new connection.
     // If a new client connects while an existing client is connected, then
@@ -132,6 +140,7 @@ private:
                                     Server::GameState &old_state);
 
     bool is_initialized() const;
+    Error listen();
     Error update_client_connection();
     Error update_listen_socket();
     void close_client_connection();
@@ -146,6 +155,9 @@ private:
     Error send_live_state();
     Error send_application_instance_status();
 
+    unsigned int _listen_port;
+    bool _is_listening;
+    steady_clock::time_point _last_listen_attempt_time;
     Socket *_listen_socket;
     Socket *_client_socket;
     Connection *_client_connection;

@@ -84,7 +84,6 @@ void wait_ready_for_send(Socket &socket) {
 void listen(Socket &server, unsigned int &port) {
     REQUIRE(!is_error(server.init()));
     REQUIRE(!is_error(server.bind(0)));
-
     String server_ip;
     REQUIRE(!is_error(server.address(server_ip, port)));
     REQUIRE(server_ip.length() > 0);

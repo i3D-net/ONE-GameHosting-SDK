@@ -26,7 +26,9 @@ Initialization:
 // one_allocator_set_free(my_free);
 
 OneServerPtr server;
-OneError err = one_server_create(&server);
+// The first parameter is an optional logger, second is port, third is a pointer
+// to the server, which will be set to the newly created server.
+OneError err = one_server_create(null, 12345, &server);
 if (one_is_error(err)) {
     // handle error...
 }
@@ -44,26 +46,23 @@ if (one_is_error(err)) {
 }
 // See the "Arcus incoming message handlers" section of c_api.h for more functions.
 
-err = one_server_listen(server, 12345);
-if (one_is_error(err)) {
-    // handle error...e.g. ONE_ERROR_SOCKET_BIND_FAILED.
-}
-```
-
 Update to service the connection and messages:
 ```c++
 OneError err = one_server_update(server);
 if (one_is_error(err)) {
     // handle error...
+    // Note that certain errors, such as ONE_ERROR_SOCKET_BIND_FAILED or
+    // ONE_ERROR_SERVER_RETRYING_LISTEN may be part of "normal" behavior, for
+    // example if a server restarts quickly and the port hasn't been recycled
+    // by the operating system yet.
 }
 
 ```
 
 Cleanup:
 ```c++
-one_server_shutdown(server);
-// Destroy also calls shutdown, so shutdown is only needed if there is a need
-// to disconnect the arcus server without clearing its memory.
+// Destroy clears the server memory, which also shuts down any active
+// connection.
 one_server_destroy(server);
 ```
 

@@ -10,13 +10,15 @@
 //#define ONE_ARCUS_CLIENT_LOGGING
 
 #ifdef ONE_ARCUS_CLIENT_LOGGING
-#include <iostream>
+    #include <iostream>
 #endif
 
 namespace i3d {
 namespace one {
 
+namespace {
 constexpr size_t connection_retry_delay_seconds = 5;
+}
 
 Client::Client()
     : _server_address("")

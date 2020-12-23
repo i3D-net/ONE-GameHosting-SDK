@@ -88,16 +88,13 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
     std::srand(std::time(nullptr));
 
     //----------------------------------------------------------------------
-    // Init One Server and make it start listening for an incoming One Agent
+    // Init One Server so it can start listening for an incoming One Agent
     // client connection.
 
-    if (!_one_server.init(allocation::alloc, allocation::free, allocation::realloc)) {
+    OneServerWrapper::AllocationHooks hooks(allocation::alloc, allocation::free,
+                                            allocation::realloc);
+    if (!_one_server.init(port, hooks)) {
         L_ERROR("failed to init one server");
-        return false;
-    }
-
-    if (!_one_server.listen(port)) {
-        L_ERROR("failed to listen on one server");
         return false;
     }
 

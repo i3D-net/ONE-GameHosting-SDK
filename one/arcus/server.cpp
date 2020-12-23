@@ -13,6 +13,18 @@
 namespace i3d {
 namespace one {
 
+namespace {
+size_t listen_retry_delay_seconds = 60;
+}
+
+namespace server {
+// For testing.
+void set_listen_retry_delay(size_t seconds) {
+    listen_retry_delay_seconds = seconds;
+}
+}
+
+
 bool Server::game_states_changed(Server::GameState &new_state,
                                  Server::GameState &old_state) {
     if (new_state.players != old_state.players) {
@@ -37,7 +49,10 @@ bool Server::game_states_changed(Server::GameState &new_state,
 }
 
 Server::Server()
-    : _listen_socket(nullptr)
+    : _listen_port(0)
+    , _is_listening(false)
+    , _last_listen_attempt_time(steady_clock::duration::zero())
+    , _listen_socket(nullptr)
     , _client_socket(nullptr)
     , _client_connection(nullptr)
     , _is_waiting_for_client(false)
@@ -56,8 +71,10 @@ void Server::set_logger(const Logger &logger) {
     _logger = logger;
 }
 
-Error Server::init() {
+Error Server::init(unsigned int listen_port) {
     const std::lock_guard<std::mutex> lock(_server);
+
+    _listen_port = listen_port;
 
     if (_listen_socket != nullptr || _client_socket != nullptr ||
         _client_connection != nullptr) {
@@ -92,6 +109,14 @@ Error Server::init() {
     if (_client_connection == nullptr) {
         shutdown();
         return ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR;
+    }
+
+    // Attempt to start listening at init time, but if port binding fails then
+    // update will try to listen again periodically, so punt the bind error
+    // to update calls since init has technically succeeded with this behavior.
+    err = listen();
+    if (is_error(err) && err != ONE_ERROR_SOCKET_BIND_FAILED) {
+        return err;
     }
 
     return ONE_ERROR_NONE;
@@ -165,9 +190,7 @@ Server::Status Server::status() const {
     }
 }
 
-Error Server::listen(unsigned int port) {
-    const std::lock_guard<std::mutex> lock(_server);
-
+Error Server::listen() {
     if (_listen_socket == nullptr) {
         return ONE_ERROR_SERVER_SOCKET_IS_NULLPTR;
     }
@@ -176,7 +199,18 @@ Error Server::listen(unsigned int port) {
         return ONE_ERROR_SERVER_SOCKET_NOT_INITIALIZED;
     }
 
-    auto err = _listen_socket->bind(port);
+    if (_is_listening) {
+        return ONE_ERROR_SERVER_ALREADY_LISTENING;
+    }
+
+    const auto now = steady_clock::now();
+    const size_t delta = duration_cast<seconds>(now - _last_listen_attempt_time).count();
+    if (delta <= listen_retry_delay_seconds) {
+        return ONE_ERROR_SERVER_RETRYING_LISTEN;
+    }
+    _last_listen_attempt_time = now;
+
+    auto err = _listen_socket->bind(_listen_port);
     if (is_error(err)) {
         return err;
     }
@@ -186,6 +220,7 @@ Error Server::listen(unsigned int port) {
         return err;
     }
 
+    _is_listening = true;
     _is_waiting_for_client = true;
 
     return ONE_ERROR_NONE;
@@ -197,6 +232,13 @@ bool Server::is_initialized() const {
 
 Error Server::update_listen_socket() {
     assert(_listen_socket != nullptr);
+
+    if (!_is_listening) {
+        auto err = listen();
+        if (is_error(err)) {
+            return err;
+        }
+    }
 
     bool is_ready;
     auto err = _listen_socket->ready_for_read(0.f, is_ready);
