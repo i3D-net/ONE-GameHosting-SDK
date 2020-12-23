@@ -18,4 +18,4 @@ The fake game can be run instead of your game server to ensure things are workin
 
 1. Build the repository.
 2. Run run_fake_game_release.sh (or debug, as needed).
-3. The server will listen, and accept an incoming agent connection.
+3. The server will listen and accept an incoming agent connection.

@@ -11,7 +11,7 @@
     It is a C API for ABI compatibility and widespread language binding support.
 
     The basic use pattern to support a game server integration is:
-    1. Create a server. Tell it to listen on a port and update it.
+    1. Create a server and update it.
     2. Use the outgoing and incoming message functions like
        one_server_send_live_state and one_server_set_allocated_callback
        to send and receive the supported Arcus Messages, which includes providing
@@ -142,12 +142,12 @@ typedef enum OneLogLevel { ONE_LOG_LEVEL_INFO = 0, ONE_LOG_LEVEL_ERROR } OneLogL
 ///     }
 ///     // Use the server, e.g. one_server_update, send/receive messages.
 ///     one_server_destroy(server);
+/// @param port The port to bind to and listen on for incoming Client connections.
 /// @param server A null server pointer, which will be set to a new server.
 /// \sa one_server_destroy
-/// \sa one_server_listen
 /// \sa one_server_update
 /// \sa one_server_status
-ONE_EXPORT OneError one_server_create(OneServerPtr *server);
+ONE_EXPORT OneError one_server_create(unsigned int port, OneServerPtr *server);
 
 /// Log callback function to allow the integration to handle internal ONE Server
 /// logs with its own logger.
@@ -156,8 +156,12 @@ ONE_EXPORT OneError one_server_create(OneServerPtr *server);
 /// \sa one_server_create
 typedef void (*OneLogFn)(void *userdata, OneLogLevel level, const char *message);
 
-/// @param logFn Optional log callback function. Can be null.
-ONE_EXPORT OneError one_server_set_logger(OneServerPtr server, OneLogFn, void *userdata);
+/// Sets a custom logger that can handle logs from inside of the server. By
+/// default the server will log to standard out.
+/// @param server A non-null server pointer.
+/// @param log_cb Optional log callback function. Can be null.
+/// @param userdata Optional user data that will be passed back to the callback.
+ONE_EXPORT OneError one_server_set_logger(OneServerPtr server, OneLogFn log_cb, void *userdata);
 
 /// Destroys a server instance created via one_server_create. Destroy will
 /// shutdown the server first, if it is active. Note although other server functions
@@ -166,21 +170,13 @@ ONE_EXPORT OneError one_server_set_logger(OneServerPtr server, OneLogFn, void *u
 /// @param server A non-null server pointer.
 ONE_EXPORT void one_server_destroy(OneServerPtr server);
 
-/// Closes the listen connection, if any and resets the server to creation state.
-/// @param server A non-null server pointer. Thread-safe.
-ONE_EXPORT OneError one_server_shutdown(OneServerPtr server);
-
-/// Start listening on the given port. This should be called before
-/// update. Listening will fail and return an error if the port is already in
-/// use. Thread-safe.
-/// @param server A non-null server pointer.
-/// @param port The port to bind to.
-ONE_EXPORT OneError one_server_listen(OneServerPtr server, unsigned int port);
-
 /// Update the server. This must be called frequently (e.g. each frame) to
 /// process incoming and outgoing communications. Incoming messages trigger
 /// their respective incoming callbacks during the call to update. If the
 /// callback for a message is not set then the message is ignored.
+/// If binding to the listen port fails then either ONE_ERROR_SOCKET_BIND_FAILED
+/// or ONE_ERROR_SERVER_RETRYING_LISTEN will be returned. The server in this
+/// case will periodically retry binding the listen port during update.
 /// @param server A non-null server pointer. Thread-safe.
 ONE_EXPORT OneError one_server_update(OneServerPtr server);
 
@@ -464,7 +460,7 @@ ONE_EXPORT OneError one_server_set_application_instance_status(
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
+/// @param userdata Optional user data that will be passed back to the callback.
 ONE_EXPORT OneError one_server_set_soft_stop_callback(
     OneServerPtr server, void (*callback)(void *userdata, int timeout), void *userdata);
 
@@ -475,7 +471,7 @@ ONE_EXPORT OneError one_server_set_soft_stop_callback(
 /// @param server Non-null server pointer. Thread-safe.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
+/// @param userdata Optional user data that will be passed back to the callback.
 ONE_EXPORT OneError one_server_set_allocated_callback(
     OneServerPtr server, void (*callback)(void *userdata, void *array), void *userdata);
 
@@ -484,7 +480,7 @@ ONE_EXPORT OneError one_server_set_allocated_callback(
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
+/// @param userdata Optional user data that will be passed back to the callback.
 ONE_EXPORT OneError one_server_set_metadata_callback(
     OneServerPtr server, void (*callback)(void *userdata, void *array), void *userdata);
 
@@ -493,7 +489,7 @@ ONE_EXPORT OneError one_server_set_metadata_callback(
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
+/// @param userdata Optional user data that will be passed back to the callback.
 ONE_EXPORT OneError one_server_set_host_information_callback(
     OneServerPtr server, void (*callback)(void *userdata, void *object), void *userdata);
 
@@ -503,7 +499,7 @@ ONE_EXPORT OneError one_server_set_host_information_callback(
 /// @param server Non-null server pointer.
 /// @param callback Callback to be called during a call to one_server_update, if
 ///                 the message is received from the Client.
-/// @param data Optional user data that will be passed back to the callback.
+/// @param userdata Optional user data that will be passed back to the callback.
 ONE_EXPORT OneError one_server_set_application_instance_information_callback(
     OneServerPtr server, void (*callback)(void *userdata, void *object), void *userdata);
 

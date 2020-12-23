@@ -743,7 +743,7 @@ OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPt
     return o->set_val_object(key, *v);
 }
 
-Error server_create(OneServerPtr *server) {
+Error server_create(unsigned int port, OneServerPtr *server) {
     if (server == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
@@ -753,7 +753,7 @@ Error server_create(OneServerPtr *server) {
         return ONE_ERROR_SERVER_ALLOCATION_FAILED;
     }
 
-    auto err = s->init();
+    auto err = s->init(port);
     if (is_error(err)) {
         allocator::destroy<Server>(s);
         return err;
@@ -763,15 +763,15 @@ Error server_create(OneServerPtr *server) {
     return ONE_ERROR_NONE;
 }
 
-Error server_set_logger(OneServerPtr server, OneLogFn logFn, void *userdata) {
+Error server_set_logger(OneServerPtr server, OneLogFn log_cb, void *userdata) {
     if (server == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
 
-    auto logFnLambda = [logFn](void *userdata, LogLevel level, const String &message) {
-        logFn(userdata, static_cast<OneLogLevel>(level), message.c_str());
+    auto wrapper = [log_cb](void *userdata, LogLevel level, const String &message) {
+        log_cb(userdata, static_cast<OneLogLevel>(level), message.c_str());
     };
-    Logger logger(logFnLambda, userdata);
+    Logger logger(wrapper, userdata);
 
     auto s = (Server *)(server);
     s->set_logger(logger);
@@ -808,24 +808,6 @@ Error server_status(OneServerPtr const server, OneServerStatus *status) {
 
     *status = static_cast<OneServerStatus>(s->status());
     return ONE_ERROR_NONE;
-}
-
-Error server_listen(OneServerPtr server, unsigned int port) {
-    auto s = (Server *)server;
-    if (s == nullptr) {
-        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
-    }
-
-    return s->listen(port);
-}
-
-Error server_shutdown(OneServerPtr server) {
-    auto s = (Server *)server;
-    if (s == nullptr) {
-        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
-    }
-
-    return s->shutdown();
 }
 
 Error server_set_live_state(OneServerPtr server, int players, int max_players,
@@ -1169,12 +1151,12 @@ OneError one_object_set_val_object(OneObjectPtr object, const char *key,
     return one::object_set_val_object(object, key, val);
 }
 
-OneError one_server_create(OneServerPtr *server) {
-    return one::server_create(server);
+OneError one_server_create(unsigned int port, OneServerPtr *server) {
+    return one::server_create(port, server);
 }
 
-OneError one_server_set_logger(OneServerPtr server, OneLogFn logFn, void *userdata) {
-    return one::server_set_logger(server, logFn, userdata);
+OneError one_server_set_logger(OneServerPtr server, OneLogFn log_cb, void *userdata) {
+    return one::server_set_logger(server, log_cb, userdata);
 }
 
 void one_server_destroy(OneServerPtr server) {
@@ -1187,14 +1169,6 @@ OneError one_server_update(OneServerPtr server) {
 
 OneError one_server_status(OneServerPtr const server, OneServerStatus *status) {
     return one::server_status(server, status);
-}
-
-OneError one_server_listen(OneServerPtr server, unsigned int port) {
-    return one::server_listen(server, port);
-}
-
-OneError one_server_shutdown(OneServerPtr server) {
-    return one::server_shutdown(server);
 }
 
 OneError one_server_set_live_state(OneServerPtr server, int players, int max_players,

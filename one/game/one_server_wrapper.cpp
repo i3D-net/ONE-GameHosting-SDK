@@ -56,9 +56,7 @@ OneServerWrapper::~OneServerWrapper() {
     shutdown();
 }
 
-bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
-                            std::function<void(void *)> free,
-                            std::function<void *(void *, size_t)> realloc) {
+bool OneServerWrapper::init(unsigned int port, const AllocationHooks &hooks) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     if (_server != nullptr) {
@@ -69,12 +67,12 @@ bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
     //----------------------
     // Set custom allocator.
 
-    if (alloc && free && realloc) {
+    if (hooks.alloc && hooks.free && hooks.realloc) {
         // Cache off the overrides so that they can be called within the lambdas
         // because lambdas with captures may not be passed to the C API.
-        _alloc = alloc;
-        _free = free;
-        _realloc = realloc;
+        _alloc = hooks.alloc;
+        _free = hooks.free;
+        _realloc = hooks.realloc;
         // Functions wrapper to remove lambda capture and convert to c interface (unsigned
         // int).
         auto alloc_wrapper = [](unsigned int bytes) -> void * {
@@ -94,7 +92,7 @@ bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
     // Create the one server.
 
     // Each game server must have one corresponding arcus server.
-    OneError err = one_server_create(&_server);
+    OneError err = one_server_create(port, &_server);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return false;
@@ -145,15 +143,6 @@ bool OneServerWrapper::init(std::function<void *(size_t)> alloc,
     }
 
     L_INFO("OneServerWrapper init complete");
-    return true;
-}
-
-bool OneServerWrapper::listen(unsigned int port) {
-    OneError err = one_server_listen(_server, port);
-    if (one_is_error(err)) {
-        L_ERROR(one_error_text(err));
-        return false;
-    }
     return true;
 }
 
