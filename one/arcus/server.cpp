@@ -2,7 +2,7 @@
 
 #include <one/arcus/allocator.h>
 #include <one/arcus/internal/connection.h>
-#include <one/arcus/internal/message.h>
+#include <one/arcus/internal/messages.h>
 #include <one/arcus/internal/mutex.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/opcode.h>
@@ -22,8 +22,7 @@ namespace server {
 void set_listen_retry_delay(size_t seconds) {
     listen_retry_delay_seconds = seconds;
 }
-}
-
+}  // namespace server
 
 bool Server::game_states_changed(Server::GameState &new_state,
                                  Server::GameState &old_state) {

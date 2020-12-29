@@ -10,7 +10,7 @@ set(HEADER_FILES
     internal/connection.h
     internal/endian.h
     internal/health.h
-    internal/message.h
+    internal/messages.h
     internal/mutex.h
     internal/platform.h
     internal/ring.h
@@ -37,7 +37,7 @@ set(SOURCE_FILES
     internal/connection.cpp
     internal/endian.cpp
     internal/health.cpp
-    internal/message.cpp
+    internal/messages.cpp
     internal/socket.cpp
     internal/time.cpp
     message.cpp

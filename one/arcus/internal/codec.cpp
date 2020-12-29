@@ -1,7 +1,7 @@
 #include <one/arcus/internal/codec.h>
 
 #include <one/arcus/internal/endian.h>
-#include <one/arcus/internal/message.h>
+#include <one/arcus/internal/messages.h>
 #include <one/arcus/message.h>
 
 #include <cstring>

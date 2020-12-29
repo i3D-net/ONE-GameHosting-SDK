@@ -2,7 +2,7 @@
 
 #include <one/arcus/allocator.h>
 #include <one/arcus/internal/connection.h>
-#include <one/arcus/internal/message.h>
+#include <one/arcus/internal/messages.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/internal/socket.h>
 #include <one/arcus/message.h>
