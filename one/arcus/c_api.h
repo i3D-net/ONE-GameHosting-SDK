@@ -293,7 +293,10 @@ ONE_EXPORT OneError one_array_val_string_size(OneArrayPtr array, unsigned int po
 /// @return May return of ONE_ERROR_ARRAY_*.
 /// @param array A valid array created via one_array_create.
 /// @param pos The index of the value to retrieve. Must be less than one_array_size.
-/// @param val A non-null pointer to set the value on.
+/// @param val A non-null pointer to set the value on. In the case of OneArrayPtr
+/// or OneObjectPtr, these objects must have been created previously via their
+/// respective creation functions and subsequently destroyed when no longer
+/// needed.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_array_val_string_size.
 ONE_EXPORT OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
@@ -382,7 +385,10 @@ ONE_EXPORT OneError one_object_val_string_size(OneObjectPtr object, const char *
 /// @return May return of ONE_ERROR_OBJECT_*.
 /// @param object A valid object created via one_object_create.
 /// @param key The key of the value to return.
-/// @param val Non-null pointer to set the value on.
+/// @param val Non-null pointer to set the value on. In the case of OneArrayPtr
+/// or OneObjectPtr, these objects must have been created previously via their
+/// respective creation functions and subsequently destroyed when no longer
+/// needed.
 /// @param size Size of the value buffer that can be written to. Must be equal
 /// to size obtained via one_object_val_string_size.
 ONE_EXPORT OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
