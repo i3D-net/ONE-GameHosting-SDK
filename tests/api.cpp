@@ -28,6 +28,7 @@ TEST_CASE("customer logger", "[capi]") {
     REQUIRE(_was_log_called);
 }
 
+#ifdef WINDOWS // On linux, listen may succeed even if already listened on.
 TEST_CASE("server port retry", "[capi]") {
     i3d::one::server::set_listen_retry_delay(1);
 
@@ -68,3 +69,4 @@ TEST_CASE("server port retry", "[capi]") {
         return !one_is_error(err);
     }));
 }
+#endif
