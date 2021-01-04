@@ -126,15 +126,14 @@ TEST_CASE("connection", "[arcus]") {
     unsigned int server_port;
     listen(server, server_port);
 
-    #ifdef WINDOWS // On linux, listen may succeed even if already listened on.
+#ifdef WINDOWS  // On linux, listen may succeed even if already listened on.
     // Confirm a second server listen on same port fails appropriately.
     {
-        Socket server;
-        REQUIRE(!is_error(server.init()));
-        REQUIRE(!is_error(server.bind(0)));
-        REQUIRE(server.listen(server_port) == ONE_ERROR_SOCKET_BIND_FAILED);
+        Socket server_b;
+        REQUIRE(!is_error(server_b.init()));
+        REQUIRE(server_b.bind(server_port) == ONE_ERROR_SOCKET_BIND_FAILED);
     }
-    #endif
+#endif
 
     // Confirm no incoming connections.
     Socket in_client;
