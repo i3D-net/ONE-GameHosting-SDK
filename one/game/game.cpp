@@ -208,13 +208,13 @@ void Game::update() {
 void Game::update_startup() {
     switch (_matchmaking_status) {
         case MatchmakingStatus::none:
-            L_INFO("start transition delay started");
+            L_INFO("matchmaking status: starting");
             _matchmaking_status = MatchmakingStatus::starting;
             _started_time = steady_clock::now();
             return;
         case MatchmakingStatus::starting:
             if (_transition_delay < steady_clock::now() - _started_time) {
-                L_INFO("starting transition delay has elapsed");
+                L_INFO("matchamking status: online");
                 _matchmaking_status = MatchmakingStatus::online;
             }
             return;
