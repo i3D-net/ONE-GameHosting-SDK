@@ -1,4 +1,4 @@
-﻿#include <one/arcus/internal/message.h>
+﻿#include <one/arcus/internal/messages.h>
 
 #include <one/arcus/opcode.h>
 #include <one/arcus/message.h>
@@ -223,12 +223,11 @@ Error metadata(const Message &message, std::function<void(void *, Array *)> call
     return ONE_ERROR_NONE;
 }
 
-Error live_state(
-    const Message &message,
-    std::function<void(void *, int, int, const String &, const String &,
-                       const String &, const String &)>
-        callback,
-    void *data) {
+Error live_state(const Message &message,
+                 std::function<void(void *, int, int, const String &, const String &,
+                                    const String &, const String &)>
+                     callback,
+                 void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }

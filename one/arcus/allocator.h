@@ -34,7 +34,7 @@ void *realloc(void *p, size_t s);
 
 // Equivalent to the new operator, but using the function set by set_alloc.
 template <class T, class... Args>
-T *create(Args &&...args) {
+T *create(Args &&... args) {
     auto data = alloc(sizeof(T));
     auto p = reinterpret_cast<T *>(data);
     ::new (p) T(std::forward<Args>(args)...);
@@ -52,7 +52,7 @@ void destroy(T *p) noexcept {
 // has its constructor called, with the same arguments. The returned memory must
 // be deleted via destroy_array.
 template <class T, class... Args>
-T *create_array(size_t count, Args &&...args) {
+T *create_array(size_t count, Args &&... args) {
     // Allocate additional space to store the array length.
     size_t padding = sizeof(size_t);
     auto data = alloc(sizeof(T) * count + padding);
