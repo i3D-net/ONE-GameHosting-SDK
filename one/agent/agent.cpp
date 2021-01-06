@@ -56,6 +56,7 @@ Error Agent::init(const char *addr, unsigned int port) {
             log_info("application instance set status request received:");
             OStringStream stream;
             stream << "\tstatus:" << status;
+            log_info(stream.str());
         },
         nullptr);
     if (is_error(err)) {
@@ -72,8 +73,8 @@ Error Agent::send_host_information() {
     Object object;
 
     // For example mirroring the host information example payload
-    // object.set_val_int("id", 0);
-    // object.set_val_int("serverId", 0);
+    object.set_val_int("id", 123456);
+    object.set_val_int("serverId", 8989);
     // ...
 
     auto err = _client.send_host_information(object);
@@ -89,8 +90,8 @@ Error Agent::send_application_instance_information() {
     Object object;
 
     // For example mirroring the applicationinstance information example payload
-    // object.set_val_string("fleetId", "");
-    // object.set_val_int("hostId", 0);
+    object.set_val_string("fleetId", "fleet_9876");
+    object.set_val_int("hostId", 87654);
     // ...
 
     auto err = _client.send_application_instance_information(object);
