@@ -5,7 +5,7 @@
 
 TEST_CASE("shared library c api", "[shared_lib]") {
     OneServerPtr server;
-    auto err = one_server_create(&server);
+    auto err = one_server_create(12345, &server);
     REQUIRE(!one_is_error(err));
     REQUIRE(server != nullptr);
     one_server_destroy(server);
