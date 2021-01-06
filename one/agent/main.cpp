@@ -56,6 +56,8 @@ int main(int argc, char **argv) {
     steady_clock::time_point time_to_send_soft_stop = time_zero;
     bool did_send_soft_stop = false;
 
+    int messages_counter = 0;
+
     while (true) {
         sleep(100);
 
@@ -73,23 +75,51 @@ int main(int argc, char **argv) {
             // Randomly tell the game server to become allocated.
             bool shouldSend = std::rand() / ((RAND_MAX + 1u) / 50) == 0;
             if (shouldSend) {
-                Array array;
-                Object players;
-                players.set_val_string("key", "players");
-                players.set_val_string("value", "16");
-                Object duration;
-                duration.set_val_string("key", "duration");
-                duration.set_val_string("value", "20");
+                switch (messages_counter) {
+                    case 0: {
+                        Array array;
+                        Object players;
+                        players.set_val_string("key", "players");
+                        players.set_val_string("value", "16");
+                        Object duration;
+                        duration.set_val_string("key", "duration");
+                        duration.set_val_string("value", "20");
 
-                array.push_back_object(players);
-                array.push_back_object(duration);
+                        array.push_back_object(players);
+                        array.push_back_object(duration);
 
-                log_info("sending allocated");
-                agent.send_allocated(array);
+                        log_info("sending allocated");
+                        agent.send_allocated(array);
+
+                        break;
+                    }
+                    default: {
+                        Array metadata;
+                        Array data;
+                        data.push_back_bool(false);
+                        data.push_back_int(123);
+                        data.push_back_string("Fake data");
+                        Object header;
+                        header.set_val_string("key", "Header");
+                        header.set_val_bool("valid", true);
+                        header.set_val_int("message_number", messages_counter + 1);
+                        header.set_val_array("data", data);
+
+                        metadata.push_back_object(header);
+
+                        log_info("sending metadata");
+                        agent.send_metadata(metadata);
+
+                        break;
+                    }
+                }
+
+                ++messages_counter;
             }
         } else {
             time_to_send_soft_stop = time_zero;
             did_send_soft_stop = false;
+            messages_counter = 0;
         }
 
         err = agent.update();
