@@ -36,18 +36,7 @@
     > customer support for backend support.
 */
 
-//#define ONE_STDCALL
-
-// Symbol export management, same code defined in each public header.
-#ifdef WINDOWS
-    #ifndef ONE_EXPORT
-        #define ONE_EXPORT __declspec(dllexport)
-    #endif
-#else
-    #ifndef ONE_EXPORT
-        #define ONE_EXPORT __attribute__((visibility("default")))
-    #endif
-#endif
+#include <one/arcus/platform.h>
 
 #include <one/arcus/c_error.h>
 

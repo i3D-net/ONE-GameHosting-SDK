@@ -1,6 +1,8 @@
 #pragma once
 
-#if defined(WINDOWS)
+#include <one/arcus/platform.h>
+
+#if defined(ONE_WINDOWS)
     #include <winsock2.h>
 #else
 typedef int SOCKET;

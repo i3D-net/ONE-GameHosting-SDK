@@ -4,6 +4,7 @@ set(HEADER_FILES
     client.h
     c_api.h
     c_error.h
+    platform.h
     error.h
     internal/accumulator.h
     internal/codec.h
@@ -12,7 +13,6 @@ set(HEADER_FILES
     internal/health.h
     internal/messages.h
     internal/mutex.h
-    internal/platform.h
     internal/ring.h
     internal/socket.h
     internal/time.h

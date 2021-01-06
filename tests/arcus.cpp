@@ -13,6 +13,7 @@
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
 #include <one/arcus/opcode.h>
+#include <one/arcus/platform.h>
 #include <one/arcus/types.h>
 
 using namespace i3d::one;
@@ -126,7 +127,7 @@ TEST_CASE("connection", "[arcus]") {
     unsigned int server_port;
     listen(server, server_port);
 
-#ifdef WINDOWS  // On linux, listen may succeed even if already listened on.
+#ifdef ONE_WINDOWS  // On linux, listen may succeed even if already listened on.
     // Confirm a second server listen on same port fails appropriately.
     {
         Socket server_b;
