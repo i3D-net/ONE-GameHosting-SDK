@@ -24,6 +24,8 @@ Optional
     - Ubuntu:
         1. `sudo apt-get update`
         2. `sudo apt-get install doxygen graphviz`
+2. For buiding Linux libraries on Windows:
+    - [Docker](https://www.docker.com/products/docker-desktop)
 
 ## Steps
 
@@ -45,6 +47,10 @@ Run either script in the root:
 - clean_linux.sh
 
 Cleaning is not required when changing between debug and release builds with other settings being equal.
+
+## Automated build
+
+__build_release_dlls.bat__ will build dll/so libraries for Windows and Linux, outputing them to a shared_lib_build folder in the root. Docker is required, see Requirements.
 
 ## IDE
 
