@@ -4,16 +4,7 @@
     @brief The C API error values and utilities.
 **/
 
-// Symbol export management, same code defined in each public header.
-#ifdef WINDOWS
-    #ifndef ONE_EXPORT
-        #define ONE_EXPORT __declspec(dllexport)
-    #endif
-#else
-    #ifndef ONE_EXPORT
-        #define ONE_EXPORT __attribute__((visibility("default")))
-    #endif
-#endif
+#include <one/arcus/platform.h>
 
 #ifdef __cplusplus
 extern "C" {

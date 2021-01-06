@@ -4,11 +4,12 @@
 #include <cstring>
 
 #include <one/arcus/message.h>
-#include <one/arcus/internal/codec.h>
 #include <one/arcus/opcode.h>
+#include <one/arcus/platform.h>
+#include <one/arcus/internal/codec.h>
 #include <one/arcus/internal/socket.h>
 
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
 #else
     #include <errno.h>
 #endif

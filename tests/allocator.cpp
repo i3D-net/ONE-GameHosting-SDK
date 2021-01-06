@@ -1,5 +1,6 @@
 #include <catch.hpp>
 #include <one/arcus/allocator.h>
+#include <one/arcus/platform.h>
 #include <one/arcus/types.h>
 
 using namespace i3d::one;
@@ -123,7 +124,7 @@ TEST_CASE("custom string", "[arcus]") {
 
 // Linux appears to do complete stack allocation for small strings, while
 // windows appears to do both stack + a proxy.
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     SECTION("overridden allocation") {
         ScopedAllocationSetter setter;
         {

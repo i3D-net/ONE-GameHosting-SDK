@@ -1,6 +1,7 @@
 #include <catch.hpp>
 #include <one/arcus/c_error.h>
 #include <one/arcus/c_api.h>
+#include <one/arcus/platform.h>
 #include <one/arcus/server.h>
 #include <tests/util.h>
 
@@ -28,7 +29,7 @@ TEST_CASE("customer logger", "[capi]") {
     REQUIRE(_was_log_called);
 }
 
-#ifdef WINDOWS // On linux, listen may succeed even if already listened on.
+#ifdef ONE_WINDOWS // On linux, listen may succeed even if already listened on.
 TEST_CASE("server port retry", "[capi]") {
     i3d::one::server::set_listen_retry_delay(1);
 

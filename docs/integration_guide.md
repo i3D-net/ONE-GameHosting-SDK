@@ -13,6 +13,7 @@ The one/arcus folder must be copied to the project and configured for building. 
 The following headers must be included in the game server:
 - one/arcus/c_api.h
 - one/arcus/c_error.h
+- one/arcus/platform.h
 
 For C++ game engines, the additional C++ code in one/game is intended to be used
 to wrap the C API and provide easy-to-use C++ interfaces for the game engine.

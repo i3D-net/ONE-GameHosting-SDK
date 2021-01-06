@@ -1,11 +1,12 @@
 #include <one/arcus/internal/socket.h>
+#include <one/arcus/platform.h>
 
 #include <assert.h>
 #include <chrono>
 #include <cstring>
 #include <thread>
 
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
 typedef int socklen_t;
 #else
     #include <arpa/inet.h>
@@ -17,13 +18,11 @@ typedef int socklen_t;
     #include <netinet/tcp.h>
 #endif
 
-#include <one/arcus/internal/platform.h>
-
 namespace i3d {
 namespace one {
 
 Error init_socket_system() {
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     WSADATA wsaData;
     const auto err = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (err < 0) return ONE_ERROR_SOCKET_SYSTEM_INIT_FAIL;
@@ -32,7 +31,7 @@ Error init_socket_system() {
 }
 
 Error shutdown_socket_system() {
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     const auto result = WSACleanup();
     if (result < 0) {
         return ONE_ERROR_SOCKET_SYSTEM_CLEANUP_FAIL;
@@ -42,7 +41,7 @@ Error shutdown_socket_system() {
 }
 
 constexpr bool is_error_try_again(int err) {
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     return err == WSATRY_AGAIN || err == WSAEWOULDBLOCK;
 #else
     return err == EAGAIN;
@@ -50,7 +49,7 @@ constexpr bool is_error_try_again(int err) {
 }
 
 inline int last_error() {
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     return WSAGetLastError();
 #else
     return errno;
@@ -73,7 +72,7 @@ Socket::~Socket() {
 }
 
 int set_non_blocking(SOCKET &system_socket, bool enable) {
-#if defined(WINDOWS)
+#if defined(ONE_WINDOWS)
     u_long as_long = (enable ? 1 : 0);
     return ioctlsocket(system_socket, FIONBIO, &as_long);
 #else
@@ -87,7 +86,7 @@ Error Socket::init() {
         return ONE_ERROR_SOCKET_CREATE_FAILED;
     }
 
-#ifndef WINDOWS
+#ifndef ONE_WINDOWS
     int enable = 1;
     if (setsockopt(_socket, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
         return ONE_ERROR_SOCKET_SOCKET_OPTIONS_FAILED;
@@ -122,7 +121,7 @@ Error Socket::close() {
         }
     }
 
-#if defined(WINDOWS)
+#if defined(ONE_WINDOWS)
     const int result = ::closesocket(_socket);
 #else
     const int result = ::close(_socket);
@@ -274,7 +273,7 @@ Error Socket::ready_for_send(float timeout, bool &is_ready) {
 }
 
 Error Socket::send(const void *data, size_t length, size_t &length_sent) {
-#if defined(WINDOWS)
+#if defined(ONE_WINDOWS)
     const auto result = ::send(_socket, (const char *)data, length, 0);
 #else
     const auto result = ::send(_socket, (const char *)data, length, MSG_NOSIGNAL);
@@ -292,7 +291,7 @@ Error Socket::send(const void *data, size_t length, size_t &length_sent) {
 
 Error Socket::available(size_t &length) {
     int result;
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     result = ioctlsocket(_socket, FIONREAD, (unsigned long *)&length);
 #else
     result = ioctl(_socket, FIONREAD, &length);

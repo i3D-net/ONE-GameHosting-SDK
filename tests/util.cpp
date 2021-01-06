@@ -3,7 +3,9 @@
 #include <chrono>
 #include <thread>
 
-#ifdef WINDOWS
+#include <one/arcus/platform.h>
+
+#ifdef ONE_WINDOWS
     #include <Windows.h>
 #endif
 
@@ -15,13 +17,13 @@ namespace i3d {
 namespace one {
 
 void start_high_resolution_sleep() {
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     timeBeginPeriod(1);
 #endif
 }
 
 void end_high_resolution_sleep() {
-#ifdef WINDOWS
+#ifdef ONE_WINDOWS
     timeEndPeriod(1);
 #endif
 }
