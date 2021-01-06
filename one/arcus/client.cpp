@@ -67,7 +67,6 @@ Error Client::init(const char *address, unsigned int port) {
     const auto max_incoming = Connection::max_message_default;
     const auto max_outgoing = Connection::max_message_default;
     _connection = allocator::create<Connection>(max_incoming, max_outgoing);
-    _connection->init(*_socket);
     if (_connection == nullptr) {
         shutdown();
         return ONE_ERROR_VALIDATION_CONNECTION_IS_NULLPTR;
@@ -137,7 +136,6 @@ Error Client::update() {
         _last_connection_attempt_time =
             steady_clock::time_point(steady_clock::duration::zero());
         _socket->init();
-        _connection->init(*_socket);
         return passthrough_err;
     };
 
@@ -402,6 +400,7 @@ Error Client::connect() {
         return err;
     }
 
+    _connection->init(*_socket);
     _is_connected = true;
     return ONE_ERROR_NONE;
 }

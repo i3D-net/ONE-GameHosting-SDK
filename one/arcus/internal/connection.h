@@ -50,8 +50,9 @@ public:
     Connection(size_t max_messages_in, size_t max_messages_out);
     ~Connection() = default;
 
-    // Init the connection with the given socket. Must be called after
-    // constructing, or after shutdown if re-using.
+    // Init the connection with the given socket. The given socket should be
+    // active. Must be called after construction and shutdown. Handshaking timers
+    // start when init is called.
     void init(Socket &socket);
 
     // Clears Connection to construction state. Erases all pending incoming
@@ -62,14 +63,16 @@ public:
     // handshaking process. Must be called from one side of the connection
     // only. Attempting to send a Message or any other data to other side of
     // the Connection before handshaking is complete results in an error.
-    void initiate_handshake();
+    // Must be called after init, before updating.
+    Error initiate_handshake();
 
     // Update process incoming and outgoing messges. It attempts to read
     // all incoming messages that are available. It attempts to send all
-    // queued outgoing messages.
+    // queued outgoing messages. Must be called after init.
     Error update();
 
     enum class Status {
+        uninitialized,
         handshake_not_started,
         handshake_hello_received,
         handshake_hello_scheduled,
@@ -83,10 +86,11 @@ public:
     // back in a modifier function that allows the caller to configure the
     // queued message. If the outgoing message queue is full, then the
     // call fails with ONE_ERROR_INSUFFICIENT_SPACE and the queue is not
-    // modified.
+    // modified. Must be called after init.
     Error add_outgoing(const Message &message);
 
-    // The number of incoming messages available for pop.
+    // The number of incoming messages available for pop. Must be called after
+    // init.
     Error incoming_count(unsigned int &count) const;
 
     // Removes a message from the incoming message queue, but before doing so
@@ -95,6 +99,7 @@ public:
     // zero and there is no message to pop.
     // Note that some messages are internally consumed and do not show up in
     // the incoming count or here.
+    // Must be called after init.
     Error remove_incoming(std::function<Error(const Message &message)> read_callback);
 
 private:

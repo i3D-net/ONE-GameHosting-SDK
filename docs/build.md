@@ -60,7 +60,7 @@ The doxygen documentation is built automatically if CMake is able to find the do
 
 As noted above, short tests are run at the end of the cmake build, by default.
 
-Some bash scripts in the root can be used to run longer tests:
+Run the following bash scripts from within the tools folder to run longer tests:
 - run_tests_debug_long.sh
 - run_tests_debug_soak.sh
 

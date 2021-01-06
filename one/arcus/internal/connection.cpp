@@ -44,7 +44,7 @@ void log(const Socket &socket, std::function<void(OStringStream &)> cb) {
 
 Connection::Connection(size_t max_messages_in, size_t max_messages_out)
     : _socket(nullptr)
-    , _status(Status::handshake_not_started)
+    , _status(Status::uninitialized)
     , _in_stream(connection::stream_receive_buffer_size())
     , _out_stream(connection::stream_send_buffer_size())
     , _incoming_messages(max_messages_in)
@@ -56,9 +56,11 @@ Connection::Connection(size_t max_messages_in, size_t max_messages_out)
 }
 
 void Connection::init(Socket &socket) {
+    assert(_status == Status::uninitialized);
     _socket = &socket;
     _handshake_timer.sync_now();
     _health_checker.reset_receive_timer();
+    _status = Status::handshake_not_started;
 }
 
 void Connection::shutdown() {
@@ -66,7 +68,7 @@ void Connection::shutdown() {
     _in_stream.clear();
     _outgoing_messages.clear();
     _incoming_messages.clear();
-    _status = Status::handshake_not_started;
+    _status = Status::uninitialized;
     _socket = nullptr;
 }
 
@@ -75,6 +77,8 @@ Connection::Status Connection::status() const {
 }
 
 Error Connection::add_outgoing(const Message &message) {
+    if (_status == Status::uninitialized) return ONE_ERROR_CONNECTION_UNINITIALIZED;
+
     if (_outgoing_messages.size() == _outgoing_messages.capacity())
         return ONE_ERROR_CONNECTION_OUTGOING_QUEUE_INSUFFICIENT_SPACE;
 
@@ -83,6 +87,8 @@ Error Connection::add_outgoing(const Message &message) {
 }
 
 Error Connection::incoming_count(unsigned int &count) const {
+    if (_status == Status::uninitialized) return ONE_ERROR_CONNECTION_UNINITIALIZED;
+
     count = static_cast<unsigned int>(_incoming_messages.size());
     return ONE_ERROR_NONE;
 }
@@ -90,6 +96,7 @@ Error Connection::incoming_count(unsigned int &count) const {
 Error Connection::remove_incoming(
     std::function<Error(const Message &message)> read_callback) {
     assert(read_callback);
+    if (_status == Status::uninitialized) return ONE_ERROR_CONNECTION_UNINITIALIZED;
 
     if (_incoming_messages.size() == 0) {
         return ONE_ERROR_CONNECTION_QUEUE_EMPTY;
@@ -102,9 +109,12 @@ Error Connection::remove_incoming(
     return err;
 }
 
-void Connection::initiate_handshake() {
+Error Connection::initiate_handshake() {
+    if (_status == Status::uninitialized) return ONE_ERROR_CONNECTION_UNINITIALIZED;
     assert(_status == Status::handshake_not_started);
     _status = Status::handshake_hello_scheduled;
+
+    return ONE_ERROR_NONE;
 }
 
 Error Connection::process_health() {
@@ -122,6 +132,7 @@ Error Connection::process_health() {
 }
 
 Error Connection::update() {
+    if (_status == Status::uninitialized) return ONE_ERROR_CONNECTION_UNINITIALIZED;
     if (_status == Status::error) return ONE_ERROR_CONNECTION_UPDATE_AFTER_ERROR;
 
     assert(_socket && _socket->is_initialized());
