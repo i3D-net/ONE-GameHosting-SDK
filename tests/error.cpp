@@ -9,18 +9,11 @@
 using namespace i3d::one;
 
 TEST_CASE("error string description", "[error]") {
-    std::string description;
-    int counter = 0;
-    for (; counter < ONE_ERROR_COUNT; ++counter) {
+    std::string description = error_text(ONE_ERROR_NONE);
 
-        description = error_text(static_cast<Error>(counter));
-
-        if (description == "") {
-            WARN("error( " << counter << " )does not have description set!");
-        }
-
-        REQUIRE(description != "");
+    if (description == "") {
+        WARN("error does not have description set!");
     }
 
-    REQUIRE(counter == ONE_ERROR_COUNT);
+    REQUIRE(description != "");
 }
