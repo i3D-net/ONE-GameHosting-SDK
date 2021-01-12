@@ -4,7 +4,7 @@
 #include <one/arcus/error.h>
 #include <one/game/game.h>
 
-#include <array>
+#include <unordered_map>
 #include <chrono>
 #include <functional>
 #include <mutex>
@@ -85,7 +85,7 @@ protected:
 
     // Display the error tally. It is always showing the `ONE_ERROR_NONE` count. All other
     // error types are only shown if there count is greater than 0 to avoid spamming.
-    void log_error_tally(const std::array<long, Error::ONE_ERROR_COUNT> &tally) const;
+    void log_error_tally(const std::unordered_map<OneError, size_t> &tally) const;
 
     bool set_probability(int probability, int &output);
 
@@ -108,8 +108,8 @@ private:
     std::function<Error(one_integration::Game &game, int random)>
         _before_game_update_callback;
     std::function<Error(Agent &agent, int random)> _before_agent_update_callback;
-    std::array<long, Error::ONE_ERROR_COUNT> _game_error_tally;
-    std::array<long, Error::ONE_ERROR_COUNT> _agent_error_tally;
+    std::unordered_map<OneError, size_t> _game_error_tally;
+    std::unordered_map<OneError, size_t> _agent_error_tally;
 
     std::random_device _rd;
     std::default_random_engine _re;

@@ -109,7 +109,12 @@ int Harness::random_percentage() {
 
 void Harness::tally_game_error(Error e) {
     const std::lock_guard<std::mutex> lock(_harness);
-    ++_game_error_tally[e];
+    auto it = _game_error_tally.find(static_cast<OneError>(e));
+    if (it == _game_error_tally.end()) {
+        _game_error_tally[e] = 0;
+        return;
+    }
+    it->second++;
 }
 
 void Harness::tally_agent_error(Error e) {
@@ -117,40 +122,40 @@ void Harness::tally_agent_error(Error e) {
     ++_agent_error_tally[e];
 }
 
-void Harness::log_error_tally(const std::array<long, ONE_ERROR_COUNT> &tally) const {
+void Harness::log_error_tally(const std::unordered_map<OneError, size_t> &tally) const {
     OneError err = ONE_ERROR_NONE;
-    unsigned int total = 0;
-    for (unsigned int i = 0; i < ONE_ERROR_COUNT; ++i) {
-        err = static_cast<OneError>(i);
-        total += tally[err];
+    size_t total = 0;
+    for (auto it = tally.begin(); it != tally.end(); ++it) {
+        total += it->second;
+    }
+
+    size_t num_error_none = 0;
+    const auto &it = tally.find(ONE_ERROR_NONE);
+    if (it != tally.end()) {
+        num_error_none = it->second;
     }
 
     if (total != 0) {
-        L_INFO("\tONE_ERROR_NONE: " + std::to_string(tally[ONE_ERROR_NONE]) + " (" +
-               std::to_string((static_cast<double>(tally[ONE_ERROR_NONE]) /
-                               static_cast<double>(total)) *
-                              100.0) +
+        L_INFO("\tONE_ERROR_NONE: " + std::to_string(num_error_none) + " (" +
+               std::to_string(
+                   (static_cast<double>(num_error_none) / static_cast<double>(total)) *
+                   100.0) +
                " %)");
     } else {
-        L_INFO("\tONE_ERROR_NONE: " + std::to_string(tally[ONE_ERROR_NONE]));
+        L_INFO("\tONE_ERROR_NONE: " + std::to_string(num_error_none));
     }
 
-    for (unsigned int i = 1; i < ONE_ERROR_COUNT; ++i) {
-        err = static_cast<OneError>(i);
-        if (tally[err] == 0) {
-            continue;
-        }
+    for (auto it = tally.begin(); it != tally.end(); ++it) {
+        const size_t num = it->second;
 
         if (total != 0) {
-            L_INFO("\t" + std::string(error_text(err)) + ": " +
-                   std::to_string(tally[err]) + " (" +
+            L_INFO("\t" + std::string(error_text(err)) + ": " + std::to_string(num) +
+                   " (" +
                    std::to_string(
-                       (static_cast<double>(tally[err]) / static_cast<double>(total)) *
-                       100.0) +
+                       (static_cast<double>(num) / static_cast<double>(total)) * 100.0) +
                    " %)");
         } else {
-            L_INFO("\t" + std::string(error_text(err)) + ": " +
-                   std::to_string(tally[err]));
+            L_INFO("\t" + std::string(error_text(err)) + ": " + std::to_string(num));
         }
     }
 }
