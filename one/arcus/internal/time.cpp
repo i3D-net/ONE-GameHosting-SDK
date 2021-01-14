@@ -3,7 +3,7 @@
 namespace i3d {
 namespace one {
 
-IntervalTimer::IntervalTimer(unsigned int seconds)
+IntervalTimer::IntervalTimer(long long seconds)
     : _interval(seconds), _last_trigger_time(steady_clock::duration::zero()) {}
 
 bool IntervalTimer::update() {

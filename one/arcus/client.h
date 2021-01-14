@@ -19,8 +19,8 @@ class Object;
 class Socket;
 
 struct ClientCallbacks {
-    std::function<void(void *, int, int, const String &, const String &,
-                       const String &, const String &)>
+    std::function<void(void *, int, int, const String &, const String &, const String &,
+                       const String &)>
         _live_state;
     void *_live_state_userdata;
 
@@ -88,18 +88,16 @@ private:
 
     Error connect();
 
+    mutable std::mutex _client;
+
     String _server_address;
     unsigned int _server_port;
 
     Socket *_socket;
     Connection *_connection;
     bool _is_connected;
-
-    steady_clock::time_point _last_connection_attempt_time;
-
     ClientCallbacks _callbacks;
-
-    mutable std::mutex _client;
+    steady_clock::time_point _last_connection_attempt_time;
 };
 
 }  // namespace one

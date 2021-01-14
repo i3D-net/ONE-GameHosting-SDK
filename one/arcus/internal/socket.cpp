@@ -141,7 +141,7 @@ Error Socket::bind(const char *ip, unsigned int port) {
     if (std::strlen(ip) == 0) {
         sin.sin_addr.s_addr = INADDR_ANY;
     } else {
-        sin.sin_addr.s_addr = inet_addr(ip);
+        inet_pton(AF_INET, ip, &(sin.sin_addr));
     }
     sin.sin_family = AF_INET;
     const int result = ::bind(_socket, (sockaddr *)&sin, sizeof(sin));
@@ -169,7 +169,10 @@ Error Socket::address(String &ip, unsigned int &port) const {
     if (result != 0) return ONE_ERROR_SOCKET_ADDRESS_FAILED;
 
     assert(addr_size == sizeof(addr));
-    ip = String(inet_ntoa(addr.sin_addr));
+    char str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(addr.sin_addr), str, INET_ADDRSTRLEN);
+    ip = str;
+
     port = (unsigned int)(ntohs(addr.sin_port));
     return ONE_ERROR_NONE;
 }
@@ -206,7 +209,9 @@ Error Socket::accept(Socket &client, String &ip, unsigned int &port) {
 
     client._socket = socket;
     struct sockaddr_in *s = (struct sockaddr_in *)&addr;
-    ip = String(inet_ntoa(s->sin_addr));
+    char str[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(s->sin_addr), str, INET_ADDRSTRLEN);
+    ip = str;
     port = (unsigned int)ntohs(s->sin_port);
 
     return ONE_ERROR_NONE;
@@ -220,7 +225,7 @@ Error Socket::connect(const char *ip, const unsigned int port) {
 
     sockaddr_in sin;
     sin.sin_port = htons(port);
-    sin.sin_addr.s_addr = inet_addr(ip);
+    inet_pton(AF_INET, ip, &(sin.sin_addr));
     sin.sin_family = AF_INET;
 
     int result = ::connect(_socket, (sockaddr *)&sin, sizeof(sin));

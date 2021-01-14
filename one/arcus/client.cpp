@@ -26,8 +26,8 @@ Client::Client()
     , _socket(nullptr)
     , _connection(nullptr)
     , _is_connected(false)
-    , _last_connection_attempt_time(steady_clock::duration::zero())
-    , _callbacks({0}) {}
+    , _callbacks({0})
+    , _last_connection_attempt_time(steady_clock::duration::zero()) {}
 
 Client::~Client() {
     shutdown();

@@ -30,7 +30,7 @@ bool Parsing::extract_key_value_payload(
         return false;
     }
 
-    int number_of_keys = 0;
+    unsigned number_of_keys = 0;
     err = one_array_size(array, &number_of_keys);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
@@ -77,7 +77,7 @@ bool Parsing::extract_key_value_pair(
         return false;
     }
 
-    int key_size = 0;
+    unsigned int key_size = 0;
     auto err = one_object_val_string_size(pair, "key", &key_size);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
@@ -100,7 +100,7 @@ bool Parsing::extract_key_value_pair(
     // Ensure that the string is `\0` terminated.
     _key[key_size] = '\0';
 
-    int value_size = 0;
+    unsigned int value_size = 0;
     err = one_object_val_string_size(pair, "value", &value_size);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
@@ -137,7 +137,7 @@ bool Parsing::extract_string(const OneObjectPtr object, const char *key,
         return false;
     }
 
-    int size = 0;
+    unsigned int size = 0;
     auto err = one_object_val_string_size(object, key, &size);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));

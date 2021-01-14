@@ -64,9 +64,9 @@ T *create_array(size_t count, Args &&... args) {
     // The actual array elements start directly after the padding.
     auto p = reinterpret_cast<T *>(start + 1);
     auto element = p;
-    for (auto i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; ++i) {
         ::new (element) T(std::forward<Args>(args)...);
-        element++;
+        ++element;
     }
 
     return p;
@@ -87,9 +87,9 @@ void destroy_array(T *p) noexcept {
 
     // Call destructors.
     T *element = reinterpret_cast<T *>(p);
-    for (auto i = 0; i < count; i++) {
+    for (size_t i = 0; i < count; ++i) {
         element->~T();
-        element++;
+        ++element;
     }
 
     // Free the original buffer including array length.

@@ -32,7 +32,7 @@ void Array::clear() {
 }
 
 void Array::reserve(size_t size) {
-    _doc.Reserve(size, _doc.GetAllocator());
+    _doc.Reserve(static_cast<rapidjson::SizeType>(size), _doc.GetAllocator());
 }
 
 bool Array::is_empty() const {

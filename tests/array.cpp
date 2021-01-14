@@ -189,7 +189,7 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(!is_error(one_array_create(&a)));
     REQUIRE(a != nullptr);
 
-    int size = 0;
+    unsigned int size = 0;
     bool val_bool = false;
     int val_int = 0;
     String val_string = "";
@@ -266,7 +266,7 @@ TEST_CASE("array c_api", "[array]") {
     size = 0;
     REQUIRE(!is_error(one_array_size(a, &size)));
     REQUIRE(size == 0);
-    int capacity = 0;
+    unsigned int capacity = 0;
     REQUIRE(!is_error(one_array_capacity(a, &capacity)));
     REQUIRE(capacity == 5);
 

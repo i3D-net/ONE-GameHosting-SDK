@@ -78,6 +78,7 @@ bool OneServerWrapper::init(unsigned int port, const AllocationHooks &hooks) {
         auto alloc_wrapper = [](unsigned int bytes) -> void * {
             return _alloc(static_cast<size_t>(bytes));
         };
+
         auto free_wrapper = [](void *p) -> void { _free(p); };
         auto realloc_wrapper = [](void *p, unsigned int bytes) -> void * {
             return _realloc(p, static_cast<size_t>(bytes));
@@ -99,7 +100,8 @@ bool OneServerWrapper::init(unsigned int port, const AllocationHooks &hooks) {
     }
 
     // Set custom logger - optional.
-    err = one_server_set_logger(_server, log, nullptr); // null userdata as global log is used.
+    err = one_server_set_logger(_server, log,
+                                nullptr);  // null userdata as global log is used.
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return false;

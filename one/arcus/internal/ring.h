@@ -12,7 +12,7 @@ template <typename T>
 class Ring final {
 public:
     Ring(size_t capacity)
-        : _buffer(nullptr), _capacity(capacity), _last(0), _next(0), _size(0) {
+        : _buffer(nullptr), _capacity(capacity), _size(0), _last(0), _next(0) {
         assert(_capacity > 0);
         void *p = allocator::create_array<T>(_capacity);
         assert(p);

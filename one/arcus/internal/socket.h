@@ -3,7 +3,14 @@
 #include <one/arcus/platform.h>
 
 #if defined(ONE_WINDOWS)
-    #include <winsock2.h>
+    #if defined(ONE_UNREAL_WINDOWS)
+#include <Windows/AllowWindowsPlatformTypes.h>
+    #endif
+#include <winsock2.h>
+#include <WS2tcpip.h>
+    #if defined(ONE_UNREAL_WINDOWS)
+#include <Windows/HideWindowsPlatformTypes.h>
+    #endif
 #else
 typedef int SOCKET;
     #ifndef INVALID_SOCKET

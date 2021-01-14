@@ -154,6 +154,7 @@ TEST_CASE("object unit tests", "[object]") {
     REQUIRE(!is_error(o.val_string_size("string", size)));
     REQUIRE(size == string.size());
     REQUIRE(!is_error(o.val_string("string", val_string)));
+
     REQUIRE(val_string == string);
     REQUIRE(is_error(o.val_array("string", val_array)));
     REQUIRE(is_error(o.val_object("string", val_object)));
@@ -209,7 +210,7 @@ TEST_CASE("object c_api", "[object]") {
     REQUIRE(!is_error(one_object_create(&o)));
     REQUIRE(o != nullptr);
 
-    int size = 0;
+    unsigned int size = 0;
     const char *key = {"key"};
     bool val_bool = false;
     int val_int = 1;
