@@ -5,12 +5,13 @@
 #include <one/arcus/error.h>
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
+#include <one/arcus/platform.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/server.h>
 #include <one/arcus/types.h>
 
 #include <utility>
-#include <cstring>
+#include <string>
 
 namespace i3d {
 namespace one {
@@ -64,7 +65,7 @@ OneError array_clear(OneArrayPtr array) {
     return ONE_ERROR_NONE;
 }
 
-OneError array_reserve(OneArrayPtr array, size_t size) {
+OneError array_reserve(OneArrayPtr array, unsigned int size) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -88,7 +89,7 @@ OneError array_is_empty(OneArrayPtr array, bool *empty) {
     return ONE_ERROR_NONE;
 }
 
-OneError array_size(OneArrayPtr array, int *size) {
+OneError array_size(OneArrayPtr array, unsigned int *size) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -98,11 +99,11 @@ OneError array_size(OneArrayPtr array, int *size) {
     }
 
     auto a = (Array *)array;
-    *size = a->size();
+    *size = static_cast<unsigned int>(a->size());
     return ONE_ERROR_NONE;
 }
 
-OneError array_capacity(OneArrayPtr array, int *capacity) {
+OneError array_capacity(OneArrayPtr array, unsigned int *capacity) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -112,7 +113,7 @@ OneError array_capacity(OneArrayPtr array, int *capacity) {
     }
 
     auto a = (Array *)array;
-    *capacity = static_cast<int>(a->capacity());
+    *capacity = static_cast<unsigned int>(a->capacity());
     return ONE_ERROR_NONE;
 }
 
@@ -285,7 +286,7 @@ OneError array_val_int(OneArrayPtr array, unsigned int pos, int *val) {
     return a->val_int(pos, *val);
 }
 
-OneError array_val_string_size(OneArrayPtr array, unsigned int pos, int *size) {
+OneError array_val_string_size(OneArrayPtr array, unsigned int pos, unsigned int *size) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -301,11 +302,12 @@ OneError array_val_string_size(OneArrayPtr array, unsigned int pos, int *size) {
         return err;
     }
 
-    *size = static_cast<int>(result);
+    *size = static_cast<unsigned int>(result);
     return ONE_ERROR_NONE;
 }
 
-OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val, size_t size) {
+OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val,
+                          unsigned int size) {
     if (array == nullptr) {
         return ONE_ERROR_VALIDATION_ARRAY_IS_NULLPTR;
     }
@@ -322,7 +324,7 @@ OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val, size_t
         return err;
     }
 
-    if (size < val_size) {
+    if (size < static_cast<unsigned int>(val_size)) {
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
@@ -332,7 +334,10 @@ OneError array_val_string(OneArrayPtr array, unsigned int pos, char *val, size_t
         return err;
     }
 
-    std::strncpy(val, s.c_str(), s.size());
+    for (size_t i = 0; i < val_size; ++i) {
+        val[i] = s[i];
+    }
+
     return ONE_ERROR_NONE;
 }
 
@@ -570,7 +575,8 @@ OneError object_val_int(OneObjectPtr object, const char *key, int *val) {
     return o->val_int(key, *val);
 }
 
-OneError object_val_string_size(OneObjectPtr object, const char *key, int *size) {
+OneError object_val_string_size(OneObjectPtr object, const char *key,
+                                unsigned int *size) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
     }
@@ -590,11 +596,12 @@ OneError object_val_string_size(OneObjectPtr object, const char *key, int *size)
         return err;
     }
 
-    *size = static_cast<int>(result);
+    *size = static_cast<unsigned int>(result);
     return ONE_ERROR_NONE;
 }
 
-OneError object_val_string(OneObjectPtr object, const char *key, char *val, size_t size) {
+OneError object_val_string(OneObjectPtr object, const char *key, char *val,
+                           unsigned int size) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
     }
@@ -614,7 +621,7 @@ OneError object_val_string(OneObjectPtr object, const char *key, char *val, size
         return err;
     }
 
-    if (size < val_size) {
+    if (size < static_cast<unsigned int>(val_size)) {
         return ONE_ERROR_VALIDATION_VAL_SIZE_IS_TOO_SMALL;
     }
 
@@ -624,7 +631,10 @@ OneError object_val_string(OneObjectPtr object, const char *key, char *val, size
         return err;
     }
 
-    std::strncpy(val, s.c_str(), s.size());
+    for (size_t i = 0; i < val_size; ++i) {
+        val[i] = s[i];
+    }
+
     return ONE_ERROR_NONE;
 }
 
@@ -899,7 +909,8 @@ Error server_set_metadata_callback(OneServerPtr server, void (*callback)(void *,
 }
 
 Error server_set_host_information_callback(OneServerPtr server,
-                                           void (*callback)(void *, void *), void *userdata) {
+                                           void (*callback)(void *, void *),
+                                           void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -972,7 +983,7 @@ OneError one_array_clear(OneArrayPtr array) {
     return one::array_clear(array);
 }
 
-OneError one_array_reserve(OneArrayPtr array, int size) {
+OneError one_array_reserve(OneArrayPtr array, unsigned int size) {
     return one::array_reserve(array, size);
 }
 
@@ -980,11 +991,11 @@ OneError one_array_is_empty(OneArrayPtr array, bool *empty) {
     return one::array_is_empty(array, empty);
 }
 
-OneError one_array_size(OneArrayPtr array, int *size) {
+OneError one_array_size(OneArrayPtr array, unsigned int *size) {
     return one::array_size(array, size);
 }
 
-OneError one_array_capacity(OneArrayPtr array, int *capacity) {
+OneError one_array_capacity(OneArrayPtr array, unsigned int *capacity) {
     return one::array_capacity(array, capacity);
 }
 
@@ -1040,11 +1051,13 @@ OneError one_array_val_int(OneArrayPtr array, unsigned int pos, int *val) {
     return one::array_val_int(array, pos, val);
 }
 
-OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos, int *size) {
+OneError one_array_val_string_size(OneArrayPtr array, unsigned int pos,
+                                   unsigned int *size) {
     return one::array_val_string_size(array, pos, size);
 }
 
-OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val, int size) {
+OneError one_array_val_string(OneArrayPtr array, unsigned int pos, char *val,
+                              unsigned int size) {
     return one::array_val_string(array, pos, val, size);
 }
 
@@ -1112,12 +1125,13 @@ OneError one_object_val_int(OneObjectPtr object, const char *key, int *val) {
     return one::object_val_int(object, key, val);
 }
 
-OneError one_object_val_string_size(OneObjectPtr object, const char *key, int *size) {
+OneError one_object_val_string_size(OneObjectPtr object, const char *key,
+                                    unsigned int *size) {
     return one::object_val_string_size(object, key, size);
 }
 
 OneError one_object_val_string(OneObjectPtr object, const char *key, char *val,
-                               int size) {
+                               unsigned int size) {
     return one::object_val_string(object, key, val, size);
 }
 

@@ -14,7 +14,7 @@ namespace i3d {
 namespace one {
 
 namespace codec {
-class Header;
+struct Header;
 }
 class Socket;
 class Message;

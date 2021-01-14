@@ -50,7 +50,6 @@ bool Server::game_states_changed(Server::GameState &new_state,
 Server::Server()
     : _listen_port(0)
     , _is_listening(false)
-    , _last_listen_attempt_time(steady_clock::duration::zero())
     , _listen_socket(nullptr)
     , _client_socket(nullptr)
     , _client_connection(nullptr)
@@ -60,7 +59,8 @@ Server::Server()
     , _game_state_was_set(false)
     , _status(ApplicationInstanceStatus::starting)
     , _should_send_status(false)
-    , _callbacks({0}) {}
+    , _callbacks({0})
+    , _last_listen_attempt_time(steady_clock::duration::zero()) {}
 
 Server::~Server() {
     shutdown();

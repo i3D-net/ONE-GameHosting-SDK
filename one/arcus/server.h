@@ -16,7 +16,7 @@ namespace one {
 namespace server {
 // Exposed for testing.
 void set_listen_retry_delay(size_t seconds);
-}
+}  // namespace server
 
 class Array;
 class Connection;
@@ -155,9 +155,12 @@ private:
     Error send_live_state();
     Error send_application_instance_status();
 
+    mutable std::mutex _server;
+
+    Logger _logger;
+
     unsigned int _listen_port;
     bool _is_listening;
-    steady_clock::time_point _last_listen_attempt_time;
     Socket *_listen_socket;
     Socket *_client_socket;
     Connection *_client_connection;
@@ -172,10 +175,7 @@ private:
     bool _should_send_status;
 
     ServerCallbacks _callbacks;
-
-    Logger _logger;
-
-    mutable std::mutex _server;
+    steady_clock::time_point _last_listen_attempt_time;
 };
 
 }  // namespace one

@@ -10,7 +10,7 @@ namespace one {
 // IntervalTimer is used to easily track if an interval in seconds has expired.
 class IntervalTimer final {
 public:
-    IntervalTimer(unsigned int seconds);
+    IntervalTimer(long long seconds);
     IntervalTimer() = delete;
     IntervalTimer(IntervalTimer &other) = delete;
 
@@ -23,7 +23,7 @@ public:
     void sync_now();
 
 private:
-    size_t _interval;
+    long long _interval;
     steady_clock::time_point _last_trigger_time;
 };
 
