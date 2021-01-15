@@ -22,13 +22,22 @@ int main(int argc, char **argv) {
 
     const int default_port = 19001;
     int port = default_port;
+    bool stressTest = false;
 
-    if (argc == 2) {
+    if (argc >= 2) {
         port = strtol(argv[1], nullptr, 10);
 
         if (port <= 0) {
             log_error("invalid port provided");
             return 1;
+        }
+
+        for (int i = 1; i < argc; i++)
+        {
+            if (strcmp(argv[i], "--stress") == 0) {
+                stressTest = true;
+                break;
+            }
         }
     }
 
@@ -59,62 +68,71 @@ int main(int argc, char **argv) {
     int messages_counter = 0;
 
     while (true) {
-        sleep(100);
+        sleep(stressTest ? 1 : 100);
 
         if (agent.client().status() == Client::Status::ready) {
-            // Trigger a soft stop when game enters ready state.
-            if (time_to_send_soft_stop == time_zero) {
-                time_to_send_soft_stop = steady_clock::now() + seconds(10);
-            } else if (!did_send_soft_stop) {
-                if (steady_clock::now() > time_to_send_soft_stop) {
-                    agent.send_soft_stop(5);
-                    did_send_soft_stop = true;
-                }
-            }
-
-            // Randomly tell the game server to become allocated.
-            bool shouldSend = std::rand() / ((RAND_MAX + 1u) / 50) == 0;
-            if (shouldSend) {
-                switch (messages_counter) {
-                    case 0: {
-                        Array array;
-                        Object players;
-                        players.set_val_string("key", "players");
-                        players.set_val_string("value", "16");
-                        Object duration;
-                        duration.set_val_string("key", "duration");
-                        duration.set_val_string("value", "20");
-
-                        array.push_back_object(players);
-                        array.push_back_object(duration);
-
-                        log_info("sending allocated");
-                        agent.send_allocated(array);
-
-                        break;
-                    }
-                    default: {
-                        Array metadata;
-                        Array data;
-                        data.push_back_bool(false);
-                        data.push_back_int(123);
-                        data.push_back_string("Fake data");
-                        Object header;
-                        header.set_val_string("key", "Header");
-                        header.set_val_bool("valid", true);
-                        header.set_val_int("message_number", messages_counter + 1);
-                        header.set_val_array("data", data);
-
-                        metadata.push_back_object(header);
-
-                        log_info("sending metadata");
-                        agent.send_metadata(metadata);
-
-                        break;
+            if (stressTest) {
+                Array metadata;
+                metadata.push_back_bool(false);
+                metadata.push_back_int(123);
+                metadata.push_back_string("Fake data");
+                
+                agent.send_metadata(metadata);
+            } else {
+                // Trigger a soft stop when game enters ready state.
+                if (time_to_send_soft_stop == time_zero) {
+                    time_to_send_soft_stop = steady_clock::now() + seconds(10);
+                } else if (!did_send_soft_stop) {
+                    if (steady_clock::now() > time_to_send_soft_stop) {
+                        agent.send_soft_stop(5);
+                        did_send_soft_stop = true;
                     }
                 }
 
-                ++messages_counter;
+                // Randomly tell the game server to become allocated.
+                bool shouldSend = std::rand() / ((RAND_MAX + 1u) / 50) == 0;
+                if (shouldSend) {
+                    switch (messages_counter) {
+                        case 0: {
+                            Array array;
+                            Object players;
+                            players.set_val_string("key", "players");
+                            players.set_val_string("value", "16");
+                            Object duration;
+                            duration.set_val_string("key", "duration");
+                            duration.set_val_string("value", "20");
+
+                            array.push_back_object(players);
+                            array.push_back_object(duration);
+
+                            log_info("sending allocated");
+                            agent.send_allocated(array);
+
+                            break;
+                        }
+                        default: {
+                            Array metadata;
+                            Array data;
+                            data.push_back_bool(false);
+                            data.push_back_int(123);
+                            data.push_back_string("Fake data");
+                            Object header;
+                            header.set_val_string("key", "Header");
+                            header.set_val_bool("valid", true);
+                            header.set_val_int("message_number", messages_counter + 1);
+                            header.set_val_array("data", data);
+
+                            metadata.push_back_object(header);
+
+                            log_info("sending metadata");
+                            agent.send_metadata(metadata);
+
+                            break;
+                        }
+                    }
+
+                    ++messages_counter;
+                }
             }
         } else {
             time_to_send_soft_stop = time_zero;
