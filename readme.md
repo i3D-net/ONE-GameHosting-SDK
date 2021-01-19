@@ -30,7 +30,7 @@ The documentation for the entire ONE Platform can be found [here](https://www.i3
 
 The below are not provided or part of current goals. Please [add an issue](https://github.com/i3D-net/ONE-GameHosting-SDK/issues) for change requests!
 
-1. Unity or Unreal engine support beyond usage of the [C API](one/arcus/c_api.h) to create in a custom integration.
+1. Unreal engine support beyond usage of the [C API](one/arcus/c_api.h) to create in a custom integration.
 2. Testing on Linux distros other than Ubuntu 18.04.
 
 ### Layout
@@ -42,3 +42,7 @@ The SDK is made up of code to be integrated into the Game Server plus additional
 3. [Agent](one/agent/readme.md) is a fake ONE Agent Client used for testing and development. It simulates the behavior of a ONE Agent that connects to and handles all communication between the Game Server and the ONE Platform.
 
 The [tests](tests/readme.md) and [docs](docs/readme.md) folders serve their respective purposes.
+
+## Unity plug-in
+
+Unity engine support is implemented as a plug-in which is available [here](https://github.com/i3D-net/ONE-GameHosting-SDK-Unity).
