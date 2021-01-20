@@ -5,7 +5,7 @@
 #include <one/arcus/error.h>
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/server.h>
 #include <one/arcus/types.h>

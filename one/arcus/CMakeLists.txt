@@ -4,7 +4,7 @@ set(HEADER_FILES
     client.h
     c_api.h
     c_error.h
-    platform.h
+    c_platform.h
     error.h
     internal/accumulator.h
     internal/codec.h

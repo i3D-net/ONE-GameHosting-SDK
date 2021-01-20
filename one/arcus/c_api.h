@@ -36,7 +36,7 @@
     > customer support for backend support.
 */
 
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 
 #include <one/arcus/c_error.h>
 

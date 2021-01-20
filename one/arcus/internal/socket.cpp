@@ -1,5 +1,5 @@
 #include <one/arcus/internal/socket.h>
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 
 #include <assert.h>
 #include <chrono>

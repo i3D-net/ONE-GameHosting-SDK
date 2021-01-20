@@ -1,7 +1,7 @@
 #include <catch.hpp>
 #include <one/arcus/c_error.h>
 #include <one/arcus/c_api.h>
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 #include <one/arcus/server.h>
 #include <tests/util.h>
 
@@ -9,7 +9,7 @@
 // Most of the api is indirectly tested via the integration tests, however
 // more detailed tests may be added here.
 
-char _userdata; // Arbitrary object to pass as userdata.
+char _userdata;  // Arbitrary object to pass as userdata.
 bool _was_log_called = false;
 
 // Custom logger endpoint.
@@ -29,7 +29,7 @@ TEST_CASE("customer logger", "[capi]") {
     REQUIRE(_was_log_called);
 }
 
-#ifdef ONE_WINDOWS // On linux, listen may succeed even if already listened on.
+#ifdef ONE_WINDOWS  // On linux, listen may succeed even if already listened on.
 TEST_CASE("server port retry", "[capi]") {
     i3d::one::server::set_listen_retry_delay(1);
 
@@ -53,9 +53,10 @@ TEST_CASE("server port retry", "[capi]") {
 
         // Second should complain of port issues.
         err = one_server_update(b);
-        bool hasListenError = (err == ONE_ERROR_SERVER_RETRYING_LISTEN || err == ONE_ERROR_SOCKET_BIND_FAILED);
+        bool hasListenError = (err == ONE_ERROR_SERVER_RETRYING_LISTEN ||
+                               err == ONE_ERROR_SOCKET_BIND_FAILED);
         REQUIRE(hasListenError);
-        
+
         return false;
     });
 

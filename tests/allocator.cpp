@@ -1,6 +1,6 @@
 #include <catch.hpp>
 #include <one/arcus/allocator.h>
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 #include <one/arcus/types.h>
 
 using namespace i3d::one;
