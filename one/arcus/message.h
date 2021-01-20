@@ -4,7 +4,7 @@
 #include <utility>
 
 #include <one/arcus/error.h>
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 #include <one/arcus/internal/rapidjson/document.h>
 #include <one/arcus/opcode.h>
 #include <one/arcus/types.h>

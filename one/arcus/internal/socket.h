@@ -1,15 +1,15 @@
 #pragma once
 
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 
 #if defined(ONE_WINDOWS)
     #if defined(ONE_UNREAL_WINDOWS)
-#include <Windows/AllowWindowsPlatformTypes.h>
+        #include <Windows/AllowWindowsPlatformTypes.h>
     #endif
-#include <winsock2.h>
-#include <WS2tcpip.h>
+    #include <winsock2.h>
+    #include <WS2tcpip.h>
     #if defined(ONE_UNREAL_WINDOWS)
-#include <Windows/HideWindowsPlatformTypes.h>
+        #include <Windows/HideWindowsPlatformTypes.h>
     #endif
 #else
 typedef int SOCKET;

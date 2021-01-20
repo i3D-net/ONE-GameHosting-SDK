@@ -4,7 +4,7 @@
     @brief The C API error values and utilities.
 **/
 
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 
 #ifdef __cplusplus
 extern "C" {

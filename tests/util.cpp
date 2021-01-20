@@ -3,7 +3,7 @@
 #include <chrono>
 #include <thread>
 
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 
 #ifdef ONE_WINDOWS
     #include <Windows.h>

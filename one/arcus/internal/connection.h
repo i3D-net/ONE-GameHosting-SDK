@@ -4,7 +4,7 @@
 #include <vector>
 
 #include <one/arcus/error.h>
-#include <one/arcus/platform.h>
+#include <one/arcus/c_platform.h>
 #include <one/arcus/internal/accumulator.h>
 #include <one/arcus/internal/health.h>
 #include <one/arcus/internal/ring.h>
