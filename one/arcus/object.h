@@ -6,6 +6,9 @@
 #include <one/arcus/error.h>
 #include <one/arcus/internal/rapidjson/document.h>
 #include <one/arcus/types.h>
+
+namespace rapidjson = RAPIDJSON_NAMESPACE;
+
 namespace i3d {
 namespace one {
 

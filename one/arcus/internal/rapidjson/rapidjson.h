@@ -115,7 +115,9 @@
     \see RAPIDJSON_NAMESPACE
 */
 #ifndef RAPIDJSON_NAMESPACE
-#define RAPIDJSON_NAMESPACE rapidjson
+// i3d::one change
+//#define RAPIDJSON_NAMESPACE rapidjson
+#define RAPIDJSON_NAMESPACE i3d_one_rapidjson
 #endif
 #ifndef RAPIDJSON_NAMESPACE_BEGIN
 #define RAPIDJSON_NAMESPACE_BEGIN namespace RAPIDJSON_NAMESPACE {
