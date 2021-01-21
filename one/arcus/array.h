@@ -7,6 +7,8 @@
 #include <functional>
 #include <utility>
 
+namespace rapidjson = RAPIDJSON_NAMESPACE;
+
 namespace i3d {
 namespace one {
 
