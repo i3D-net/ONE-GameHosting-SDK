@@ -67,14 +67,16 @@ Error Agent::init(const char *addr, unsigned int port) {
 }
 
 Error Agent::send_host_information() {
-    // see
+    // See
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information
-    // for more details
+    // for more details.
     Object object;
 
-    // For example mirroring the host information example payload
+    // For example mirroring the host information example payload.
+    // Only a small subset of the available key/value pairs are used for demonstration.
     object.set_val_int("id", 123456);
     object.set_val_int("serverId", 8989);
+    object.set_val_string("serverName", "server name 123456");
     // ...
 
     auto err = _client.send_host_information(object);
@@ -84,14 +86,16 @@ Error Agent::send_host_information() {
 }
 
 Error Agent::send_application_instance_information() {
-    // see
+    // See
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information
-    // for more details
+    // for more details.
     Object object;
 
-    // For example mirroring the applicationinstance information example payload
+    // For example mirroring the applicationinstance information example payload.
+    // Only a small subset of the available key/value pairs are used for demonstration.
     object.set_val_string("fleetId", "fleet_9876");
     object.set_val_int("hostId", 87654);
+    object.set_val_bool("isVirtual", false); // True if the host is a virtual machine.
     // ...
 
     auto err = _client.send_application_instance_information(object);
