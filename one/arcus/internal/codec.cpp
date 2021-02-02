@@ -38,7 +38,9 @@ Error data_to_message(const void *data, const size_t data_size, size_t &read_dat
         return ONE_ERROR_CODEC_DATA_LENGTH_TOO_SMALL_FOR_HEADER;
     }
 
-    header = {0};
+    // See: https://en.cppreference.com/w/cpp/language/value_initialization
+    // C++11 Value initialization
+    header = Header{};
     auto err = data_to_header(data, header_size(), header);
     if (is_error(err)) return err;
 
@@ -82,7 +84,9 @@ Error message_to_data(const uint32_t packet_id, const Message &message,
     auto err = payload_to_data(message.payload(), payload_length, payload_data);
     if (is_error(err)) return err;
 
-    Header header = {0};
+    // See: https://en.cppreference.com/w/cpp/language/value_initialization
+    // C++11 Value initialization
+    Header header{};
     header.opcode = static_cast<char>(message.code());
     header.packet_id = packet_id;
     header.length = payload_length;

@@ -47,6 +47,8 @@ bool Server::game_states_changed(Server::GameState &new_state,
     return false;
 }
 
+// See: https://en.cppreference.com/w/cpp/language/value_initialization
+// C++11 Value initialization
 Server::Server()
     : _listen_port(0)
     , _is_listening(false)
@@ -59,7 +61,7 @@ Server::Server()
     , _game_state_was_set(false)
     , _status(ApplicationInstanceStatus::starting)
     , _should_send_status(false)
-    , _callbacks({0})
+    , _callbacks{}
     , _last_listen_attempt_time(steady_clock::duration::zero()) {}
 
 Server::~Server() {
@@ -142,7 +144,8 @@ Error Server::shutdown() {
     }
 
     shutdown_socket_system();
-    _callbacks = {0};
+    ServerCallbacks cb{};
+    _callbacks = cb;
     return ONE_ERROR_NONE;
 }
 

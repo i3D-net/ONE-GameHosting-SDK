@@ -2,13 +2,8 @@
 
 #include <sstream>
 #include <string>
-#include <unordered_map>
 
 #include <one/arcus/allocator.h>
-
-#define ONE_UNORDERED_MAP(key_type, value_type)                   \
-    std::unordered_map<key_type, value_type, std::hash<key_type>, \
-                       std::equal_to<key_type>, StandardAllocator<value_type>>
 
 namespace i3d {
 namespace one {

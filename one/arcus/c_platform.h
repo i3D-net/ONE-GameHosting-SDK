@@ -1,10 +1,20 @@
 #pragma once
 
 #if defined(WINDOWS) || defined(PLATFORM_WINDOWS)
-    #define ONE_WINDOWS
-#else  // If WINDOWS, else LINUX
-    #define ONE_LINUX
-#endif  // Linux
+    #ifndef ONE_WINDOWS
+        #define ONE_WINDOWS
+    #endif
+
+    #undef ONE_LINUX
+#endif
+
+#if defined(PLATFORM_LINUX) || !defined(ONE_WINDOWS)
+    #ifndef ONE_LINUX
+        #define ONE_LINUX
+    #endif
+
+    #undef ONE_WINDOWS
+#endif
 
 #if defined(PLATFORM_WINDOWS)
     #define ONE_UNREAL_WINDOWS
@@ -18,7 +28,9 @@
     #ifndef ONE_EXPORT
         #define ONE_EXPORT __declspec(dllexport)
     #endif
-#else  // If WINDOWS, else LINUX
+#endif
+
+#ifdef ONE_LINUX
     #ifndef ONE_EXPORT
         #define ONE_EXPORT __attribute__((visibility("default")))
     #endif

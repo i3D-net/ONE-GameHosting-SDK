@@ -451,6 +451,21 @@ void object_destroy(OneObjectPtr object) {
     allocator::destroy<Object>(o);
 }
 
+OneError object_copy(OneObjectPtr source, OneObjectPtr destination) {
+    if (source == nullptr) {
+        return ONE_ERROR_VALIDATION_SOURCE_IS_NULLPTR;
+    }
+
+    if (destination == nullptr) {
+        return ONE_ERROR_VALIDATION_DESTINATION_IS_NULLPTR;
+    }
+
+    auto s = (Object *)source;
+    auto d = (Object *)destination;
+    *d = *s;
+    return ONE_ERROR_NONE;
+}
+
 OneError object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
@@ -1095,6 +1110,10 @@ OneError one_object_create(OneObjectPtr *object) {
 
 void one_object_destroy(OneObjectPtr object) {
     one::object_destroy(object);
+}
+
+OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination) {
+    return one::object_copy(source, destination);
 }
 
 OneError one_object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {

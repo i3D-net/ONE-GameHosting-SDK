@@ -188,6 +188,9 @@ TEST_CASE("array c_api", "[array]") {
     OneArrayPtr a = nullptr;
     REQUIRE(!is_error(one_array_create(&a)));
     REQUIRE(a != nullptr);
+    OneObjectPtr o = nullptr;
+    REQUIRE(!is_error(one_object_create(&o)));
+    REQUIRE(o != nullptr);
 
     unsigned int size = 0;
     bool val_bool = false;
@@ -202,6 +205,8 @@ TEST_CASE("array c_api", "[array]") {
     REQUIRE(is_error(one_array_create(nullptr)));
     REQUIRE(is_error(one_array_copy(nullptr, a)));
     REQUIRE(is_error(one_array_copy(a, nullptr)));
+    REQUIRE(is_error(one_object_copy(nullptr, o)));
+    REQUIRE(is_error(one_object_copy(o, nullptr)));
     REQUIRE(is_error(one_array_clear(nullptr)));
     REQUIRE(is_error(one_array_reserve(nullptr, size)));
     REQUIRE(is_error(one_array_is_empty(nullptr, &val_bool)));
