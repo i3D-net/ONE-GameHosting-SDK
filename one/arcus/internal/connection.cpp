@@ -222,7 +222,10 @@ Error Connection::try_receive_hello() {
     assert(_socket && _socket->is_initialized());
 
     // Read a hello packet from socket.
-    codec::Hello hello = {0};
+
+    // See: https://en.cppreference.com/w/cpp/language/value_initialization
+    // C++11 Value initialization
+    codec::Hello hello{};
     size_t received = 0;
     auto err = _socket->receive(&hello, codec::hello_size(), received);
     if (is_error(err)) {
@@ -258,7 +261,9 @@ Error Connection::try_receive_hello() {
 // handshake initiater, and the response codec::Header message with a
 // hello opcode sent in response. This is the response header.
 const codec::Header &hello_message() {
-    static codec::Header message = {0};
+    // See: https://en.cppreference.com/w/cpp/language/value_initialization
+    // C++11 Value initialization
+    static codec::Header message{};
     message.opcode = static_cast<char>(Opcode::hello);
     return message;
 }
@@ -374,7 +379,9 @@ Error Connection::try_receive_hello_message() {
     auto err = try_read_data_into_in_stream();
     if (is_error(err)) return err;
 
-    codec::Header header = {0};
+    // See: https://en.cppreference.com/w/cpp/language/value_initialization
+    // C++11 Value initialization
+    codec::Header header{};
     Message message;
     err = try_read_message_from_in_stream(header, message);
     if (is_error(err)) return err;
@@ -453,7 +460,9 @@ Error Connection::process_handshake() {
 Error Connection::process_incoming_messages() {
     assert(_socket && _socket->is_initialized());
 
-    codec::Header header = {0};
+    // See: https://en.cppreference.com/w/cpp/language/value_initialization
+    // C++11 Value initialization
+    codec::Header header{};
     Message message;
     auto err = ONE_ERROR_NONE;
 

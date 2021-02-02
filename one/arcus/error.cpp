@@ -1,7 +1,8 @@
 #include <one/arcus/error.h>
 
 #include <one/arcus/allocator.h>
-#include <one/arcus/types.h>
+
+#include <unordered_map>
 
 // Util that replaces the given symbol with a pair of it and its string
 // representation.
@@ -11,7 +12,7 @@ namespace i3d {
 namespace one {
 
 const char *error_text(OneError err) {
-    static ONE_UNORDERED_MAP(OneError, String) lookup = {
+    static std::unordered_map<OneError, const char *> lookup = {
         {ONE_SYMBOL_STRING_PAIR(ONE_ERROR_NONE)},
         {ONE_SYMBOL_STRING_PAIR(ONE_ERROR_ARRAY_ALLOCATION_FAILED)},
         {ONE_SYMBOL_STRING_PAIR(ONE_ERROR_ARRAY_POSITION_OUT_OF_BOUNDS)},
@@ -148,7 +149,7 @@ const char *error_text(OneError err) {
     if (it == lookup.end()) {
         return "";
     }
-    return it->second.c_str();
+    return it->second;
 }
 
 }  // namespace one

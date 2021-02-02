@@ -20,13 +20,15 @@ namespace {
 constexpr size_t connection_retry_delay_seconds = 5;
 }
 
+// See: https://en.cppreference.com/w/cpp/language/value_initialization
+// C++11 Value initialization
 Client::Client()
     : _server_address("")
     , _server_port(0)
     , _socket(nullptr)
     , _connection(nullptr)
     , _is_connected(false)
-    , _callbacks({0})
+    , _callbacks{}
     , _last_connection_attempt_time(steady_clock::duration::zero()) {}
 
 Client::~Client() {
@@ -91,7 +93,10 @@ void Client::shutdown() {
     }
 
     shutdown_socket_system();
-    _callbacks = {0};
+
+    // See: https://en.cppreference.com/w/cpp/language/value_initialization
+    // C++11 Value initialization
+    _callbacks = ClientCallbacks{};
 }
 
 Error Client::update() {

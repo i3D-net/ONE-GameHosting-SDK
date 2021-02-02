@@ -73,10 +73,21 @@ int main(int argc, char **argv) {
         if (agent.client().status() == Client::Status::ready) {
             if (stressTest) {
                 Array metadata;
-                metadata.push_back_bool(false);
-                metadata.push_back_int(123);
-                metadata.push_back_string("Fake data");
-                
+
+                Object map_object;
+                map_object.set_val_string("key", "map");
+                map_object.set_val_string("value", "fake map");
+                Object mode_object;
+                mode_object.set_val_string("key", "mode");
+                mode_object.set_val_string("value", "fake mode");
+                Object type_object;
+                type_object.set_val_string("key", "type");
+                type_object.set_val_string("value", "fake type");
+
+                metadata.push_back_object(map_object);
+                metadata.push_back_object(mode_object);
+                metadata.push_back_object(type_object);
+
                 agent.send_metadata(metadata);
             } else {
                 // Trigger a soft stop when game enters ready state.
@@ -112,17 +123,20 @@ int main(int argc, char **argv) {
                         }
                         default: {
                             Array metadata;
-                            Array data;
-                            data.push_back_bool(false);
-                            data.push_back_int(123);
-                            data.push_back_string("Fake data");
-                            Object header;
-                            header.set_val_string("key", "Header");
-                            header.set_val_bool("valid", true);
-                            header.set_val_int("message_number", messages_counter + 1);
-                            header.set_val_array("data", data);
 
-                            metadata.push_back_object(header);
+                            Object map_object;
+                            map_object.set_val_string("key", "map");
+                            map_object.set_val_string("value", "fake map");
+                            Object mode_object;
+                            mode_object.set_val_string("key", "mode");
+                            mode_object.set_val_string("value", "fake mode");
+                            Object type_object;
+                            type_object.set_val_string("key", "type");
+                            type_object.set_val_string("value", "fake type");
+
+                            metadata.push_back_object(map_object);
+                            metadata.push_back_object(mode_object);
+                            metadata.push_back_object(type_object);
 
                             log_info("sending metadata");
                             agent.send_metadata(metadata);

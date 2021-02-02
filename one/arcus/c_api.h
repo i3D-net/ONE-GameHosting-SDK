@@ -329,6 +329,10 @@ ONE_EXPORT OneError one_object_create(OneObjectPtr *object);
 /// @param object A non-null object pointer created via one_object_create.
 ONE_EXPORT void one_object_destroy(OneObjectPtr object);
 
+/// Makes a copy of the object. The destination must have been created via
+/// one_object_create.
+ONE_EXPORT OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination);
+
 //------------------------------------------------------------------------------
 ///@}
 ///@name Object Key Value type checkers
