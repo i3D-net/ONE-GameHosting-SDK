@@ -30,13 +30,13 @@ constexpr size_t key_max_size_null_terminated() {
 }
 
 // For more details, go the to tab schema and expand all:
-// https://www.i3d.net/docs/api/v3/game-publisher#/ApplicationInstance/updateApplicationInstanceGameEmptyAllocate
+// https://www.i3d.net/docs/api/v3/game-publisher#/ApplicationInstance/getApplicationInstanceMetadata
 constexpr size_t value_max_size() {
     return 2048;
 }
 
 // For more details, go the to tab schema and expand all:
-// https://www.i3d.net/docs/api/v3/game-publisher#/ApplicationInstance/updateApplicationInstanceGameEmptyAllocate
+// https://www.i3d.net/docs/api/v3/game-publisher#/ApplicationInstance/getApplicationInstanceMetadata
 constexpr size_t value_max_size_null_terminated() {
     return value_max_size() + 1;
 }
