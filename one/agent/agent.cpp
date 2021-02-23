@@ -31,12 +31,12 @@ Error Agent::init(const char *addr, unsigned int port) {
                 return;
             }
             log_info("live state event response received:");
-            OStringStream stream;
-            stream << "\tplayers:" << players;
-            log_info(stream.str());
-            stream.clear();
-            stream << "\tmax_players:" << max_players;
-            log_info(stream.str());
+            OStringStream stream_players;
+            stream_players << "\tplayers:" << players;
+            log_info(stream_players.str());
+            OStringStream stream_max_players;
+            stream_max_players << "\tmax_players:" << max_players;
+            log_info(stream_max_players.str());
             log_info("\tname:" + name);
             log_info("\tmap:" + map);
             log_info("\tmode:" + mode);
