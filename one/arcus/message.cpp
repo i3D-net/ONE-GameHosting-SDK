@@ -1,4 +1,4 @@
-﻿#include <one/arcus/message.h>
+#include <one/arcus/message.h>
 
 #include <one/arcus/array.h>
 #include <one/arcus/internal/rapidjson/stringbuffer.h>
