@@ -1,4 +1,4 @@
-﻿#include <one/arcus/internal/messages.h>
+#include <one/arcus/internal/messages.h>
 
 #include <one/arcus/opcode.h>
 #include <one/arcus/message.h>
