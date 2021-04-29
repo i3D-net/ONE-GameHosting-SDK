@@ -17,7 +17,7 @@ Commit: `b1b5cb812277f367387844aab46eb2d3b15d03cd`
 
 Do one of the following:
 
-1. Name the file after the corresponding component folder within the one folder. For example "tests/arcus.cpp" if adding a test for something within "one/arcus/..".
+1. Put the file in the corresponding component folder within the one folder. For example "tests/one/arcus/arcus.cpp" if adding a test for something within "one/arcus/..".
 2. Name the file after a header that is being tests, e.g. "ring.cpp" if testing "one/arcus/internal/ring.h".
 
 ### Integration Tests
@@ -27,4 +27,4 @@ Do one of the following:
 
 ### Utilities
 
-Test utilities go in tests/util.h.
+Test utilities go in `tests/one/arcus/util.h` and eventually in `tests/one/ping/util.h`.
