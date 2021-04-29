@@ -1,11 +1,11 @@
 #pragma once
 
-#define ONE_NAME "OneGameHostingSDK"
-#define ONE_VERSION "0.9.0"
+#define ONE_NAME "@PROJECT_NAME@"
+#define ONE_VERSION "@PROJECT_VERSION@"
 // clang-format off
-#define ONE_VERSION_MAJOR 0
-#define ONE_VERSION_MINOR 9
-#define ONE_VERSION_PATCH 0
+#define ONE_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define ONE_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define ONE_VERSION_PATCH @PROJECT_VERSION_PATCH@
 // clang-format on
 
 namespace i3d {
@@ -208,7 +208,7 @@ enum class ArcusVersion { V2 };
 struct arcus_protocol {
     static constexpr ArcusVersion current_version() {
         // clang-format off
-        return ArcusVersion::V2;
+        return ArcusVersion::@PROJECT_ARCUS_PROTOCOL_VERSION@;
         // clang-format on
     }
 };
