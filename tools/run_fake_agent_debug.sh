@@ -4,9 +4,9 @@ echo running fake agent debug
 
 cd ..
 
-if [ -d "build/one/fake/agent/debug" ]; then
-    cd build/one/fake/agent/debug
+if [ -d "build/one/agent/debug" ]; then
+    cd build/one/agent/debug
 else
-    cd build/one/fake/agent
+    cd build/one/agent
 fi
 ./agent

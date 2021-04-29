@@ -1,3 +1,0 @@
-[submodule "tests/curl"]
-	path = tests/curl
-	url = git@github.com:curl/curl.git

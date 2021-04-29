@@ -145,7 +145,7 @@ typedef enum OneError {
 ONE_EXPORT bool one_is_error(OneError err);
 
 // Given a OneError, returns a string matching the symbol name, e.g.
-// one_error_text(ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) will return
+// error_text(ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER) will return
 // "ONE_ERROR_CONNECTION_INVALID_MESSAGE_HEADER".
 ONE_EXPORT const char *one_error_text(OneError);
 
