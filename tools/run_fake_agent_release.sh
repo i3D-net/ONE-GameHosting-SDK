@@ -4,9 +4,9 @@ echo running fake agent release
 
 cd ..
 
-if [ -d "build/one/agent/release" ]; then
-    cd build/one/agent/release
+if [ -d "build/one/fake/agent/release" ]; then
+    cd build/one/fake/agent/release
 else
-    cd build/one/agent
+    cd build/one/fake/agent
 fi
 ./agent

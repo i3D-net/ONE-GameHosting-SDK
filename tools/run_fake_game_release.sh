@@ -4,9 +4,9 @@ echo running fake game release
 
 cd ..
 
-if [ -d "build/one/game/debug" ]; then
-    cd build/one/game/debug
+if [ -d "build/one/fake/game/debug" ]; then
+    cd build/one/fake/game/debug
 else
-    cd build/one/game
+    cd build/one/fake/game
 fi
 ./game
