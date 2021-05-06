@@ -10,7 +10,7 @@ namespace one {
 
 namespace validation {
 
-Error soft_stop(const Message &message, params::SoftStopRequest &params) {
+OneError soft_stop(const Message &message, params::SoftStopRequest &params) {
     const auto code = message.code();
 
     if (!is_opcode_supported(code)) {
@@ -30,7 +30,7 @@ Error soft_stop(const Message &message, params::SoftStopRequest &params) {
     return ONE_ERROR_NONE;
 }
 
-Error allocated(const Message &message, params::AllocatedRequest &params) {
+OneError allocated(const Message &message, params::AllocatedRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -49,7 +49,7 @@ Error allocated(const Message &message, params::AllocatedRequest &params) {
     return ONE_ERROR_NONE;
 }
 
-Error metadata(const Message &message, params::MetaDataRequest &params) {
+OneError metadata(const Message &message, params::MetaDataRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -68,7 +68,7 @@ Error metadata(const Message &message, params::MetaDataRequest &params) {
     return ONE_ERROR_NONE;
 }
 
-Error live_state(const Message &message, params::LiveStateResponse &params) {
+OneError live_state(const Message &message, params::LiveStateResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -112,7 +112,7 @@ Error live_state(const Message &message, params::LiveStateResponse &params) {
     return ONE_ERROR_NONE;
 }
 
-Error host_information(const Message &message, params::HostInformationResponse &params) {
+OneError host_information(const Message &message, params::HostInformationResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -131,7 +131,7 @@ Error host_information(const Message &message, params::HostInformationResponse &
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_information(
+OneError application_instance_information(
     const Message &message, params::ApplicationInstanceInformationResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
@@ -151,7 +151,7 @@ Error application_instance_information(
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_status(const Message &message,
+OneError application_instance_status(const Message &message,
                                   params::ApplicationInstanceSetStatusRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
@@ -175,7 +175,7 @@ Error application_instance_status(const Message &message,
 
 namespace invocation {
 
-Error soft_stop(const Message &message, std::function<void(void *, int)> callback,
+OneError soft_stop(const Message &message, std::function<void(void *, int)> callback,
                 void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
@@ -191,7 +191,7 @@ Error soft_stop(const Message &message, std::function<void(void *, int)> callbac
     return ONE_ERROR_NONE;
 }
 
-Error allocated(const Message &message, std::function<void(void *, Array *)> callback,
+OneError allocated(const Message &message, std::function<void(void *, Array *)> callback,
                 void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
@@ -207,7 +207,7 @@ Error allocated(const Message &message, std::function<void(void *, Array *)> cal
     return ONE_ERROR_NONE;
 }
 
-Error metadata(const Message &message, std::function<void(void *, Array *)> callback,
+OneError metadata(const Message &message, std::function<void(void *, Array *)> callback,
                void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
@@ -223,7 +223,7 @@ Error metadata(const Message &message, std::function<void(void *, Array *)> call
     return ONE_ERROR_NONE;
 }
 
-Error live_state(const Message &message,
+OneError live_state(const Message &message,
                  std::function<void(void *, int, int, const String &, const String &,
                                     const String &, const String &)>
                      callback,
@@ -243,7 +243,7 @@ Error live_state(const Message &message,
     return ONE_ERROR_NONE;
 }
 
-Error host_information(const Message &message,
+OneError host_information(const Message &message,
                        std::function<void(void *, Object *)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
@@ -259,7 +259,7 @@ Error host_information(const Message &message,
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_information(const Message &message,
+OneError application_instance_information(const Message &message,
                                        std::function<void(void *, Object *)> callback,
                                        void *data) {
     if (callback == nullptr) {
@@ -276,7 +276,7 @@ Error application_instance_information(const Message &message,
     return ONE_ERROR_NONE;
 }
 
-Error application_instance_status(const Message &message,
+OneError application_instance_status(const Message &message,
                                   std::function<void(void *, int)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;

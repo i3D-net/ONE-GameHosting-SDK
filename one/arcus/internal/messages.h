@@ -50,44 +50,44 @@ struct ApplicationInstanceSetStatusRequest {
 }  // namespace params
 
 namespace validation {
-Error soft_stop(const Message &message, params::SoftStopRequest &params);
-Error allocated(const Message &message, params::AllocatedRequest &params);
-Error metadata(const Message &message, params::MetaDataRequest &params);
-Error live_state(const Message &message, params::LiveStateResponse &params);
-Error host_information(const Message &message,
+OneError soft_stop(const Message &message, params::SoftStopRequest &params);
+OneError allocated(const Message &message, params::AllocatedRequest &params);
+OneError metadata(const Message &message, params::MetaDataRequest &params);
+OneError live_state(const Message &message, params::LiveStateResponse &params);
+OneError host_information(const Message &message,
                                 params::HostInformationResponse &params);
-Error application_instance_information(
+OneError application_instance_information(
     const Message &message, params::ApplicationInstanceInformationResponse &params);
-Error application_instance_status(
+OneError application_instance_status(
     const Message &message, params::ApplicationInstanceSetStatusRequest &params);
 }  // namespace validation
 
 namespace invocation {
 
-Error soft_stop(const Message &message, std::function<void(void *, int)> callback,
+OneError soft_stop(const Message &message, std::function<void(void *, int)> callback,
                 void *data);
 
-Error allocated(const Message &message, std::function<void(void *, Array *)> callback,
+OneError allocated(const Message &message, std::function<void(void *, Array *)> callback,
                 void *data);
 
-Error metadata(const Message &message, std::function<void(void *, Array *)> callback,
+OneError metadata(const Message &message, std::function<void(void *, Array *)> callback,
                void *data);
 
-Error live_state(
+OneError live_state(
     const Message &message,
     std::function<void(void *, int, int, const String &, const String &,
                        const String &, const String &)>
         callback,
     void *data);
 
-Error host_information(const Message &message,
+OneError host_information(const Message &message,
                                 std::function<void(void *, Object *)> callback,
                                 void *data);
 
-Error application_instance_information(
+OneError application_instance_information(
     const Message &message, std::function<void(void *, Object *)> callback, void *data);
 
-Error application_instance_status(const Message &message,
+OneError application_instance_status(const Message &message,
                                               std::function<void(void *, int)> callback,
                                               void *data);
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2...3.17.2)
 
-project(OneGameHostingSDK
+project(ONEGameHostingSDK
   VERSION 
   0.9.0 
   LANGUAGES CXX)
@@ -37,15 +37,22 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   endif()
 endif()
 
-add_subdirectory(one/agent)
 add_subdirectory(one/arcus)
-add_subdirectory(one/game)
+add_subdirectory(one/ping)
+add_subdirectory(one/fake/agent)
+add_subdirectory(one/fake/game)
+add_subdirectory(one/fake/ping)
 
 set(PROJECT_ARCUS_PROTOCOL_VERSION V2)
 
 configure_file(
-  "${PROJECT_SOURCE_DIR}/version.h.in"
+  "${PROJECT_SOURCE_DIR}/arcus-version.h.in"
   "${PROJECT_SOURCE_DIR}/one/arcus/internal/version.h"
+)
+
+configure_file(
+  "${PROJECT_SOURCE_DIR}/ping-version.h.in"
+  "${PROJECT_SOURCE_DIR}/one/ping/internal/version.h"
 )
 
 # Testing only available if this is the main app

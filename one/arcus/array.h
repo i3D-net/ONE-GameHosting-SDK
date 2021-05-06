@@ -22,7 +22,7 @@ public:
     Array &operator=(const Array &other);
     ~Array() = default;
 
-    Error set(const rapidjson::Value &array);
+    OneError set(const rapidjson::Value &array);
     const rapidjson::Value &get() const {
         return _doc;
     }
@@ -50,19 +50,19 @@ public:
     bool is_val_object(unsigned int pos) const;
 
     // Getters.
-    Error val_bool(unsigned int pos, bool &val) const;
-    Error val_int(unsigned int pos, int &val) const;
-    Error val_string_size(unsigned int pos, size_t &size) const;
-    Error val_string(unsigned int pos, String &val) const;
-    Error val_array(unsigned int pos, Array &val) const;
-    Error val_object(unsigned int pos, Object &val) const;
+    OneError val_bool(unsigned int pos, bool &val) const;
+    OneError val_int(unsigned int pos, int &val) const;
+    OneError val_string_size(unsigned int pos, size_t &size) const;
+    OneError val_string(unsigned int pos, String &val) const;
+    OneError val_array(unsigned int pos, Array &val) const;
+    OneError val_object(unsigned int pos, Object &val) const;
 
     // Setters.
-    Error set_val_bool(unsigned int pos, bool val);
-    Error set_val_int(unsigned int pos, int val);
-    Error set_val_string(unsigned int pos, const String &val);
-    Error set_val_array(unsigned int pos, const Array &val);
-    Error set_val_object(unsigned int pos, const Object &val);
+    OneError set_val_bool(unsigned int pos, bool val);
+    OneError set_val_int(unsigned int pos, int val);
+    OneError set_val_string(unsigned int pos, const String &val);
+    OneError set_val_array(unsigned int pos, const Array &val);
+    OneError set_val_object(unsigned int pos, const Object &val);
 
 private:
     rapidjson::Document _doc;

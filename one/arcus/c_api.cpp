@@ -3,6 +3,7 @@
 #include <one/arcus/allocator.h>
 #include <one/arcus/array.h>
 #include <one/arcus/error.h>
+#include <one/arcus/logger.h>
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
 #include <one/arcus/c_platform.h>
@@ -768,7 +769,7 @@ OneError object_set_val_object(OneObjectPtr object, const char *key, OneObjectPt
     return o->set_val_object(key, *v);
 }
 
-Error server_create(unsigned int port, OneServerPtr *server) {
+OneError server_create(unsigned int port, OneServerPtr *server) {
     if (server == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
@@ -788,7 +789,7 @@ Error server_create(unsigned int port, OneServerPtr *server) {
     return ONE_ERROR_NONE;
 }
 
-Error server_set_logger(OneServerPtr server, OneLogFn log_cb, void *userdata) {
+OneError server_set_logger(OneServerPtr server, OneLogFn log_cb, void *userdata) {
     if (server == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
     }
@@ -812,7 +813,7 @@ void server_destroy(OneServerPtr server) {
     allocator::destroy<Server>(s);
 }
 
-Error server_update(OneServerPtr server) {
+OneError server_update(OneServerPtr server) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -821,7 +822,7 @@ Error server_update(OneServerPtr server) {
     return s->update();
 }
 
-Error server_status(OneServerPtr const server, OneServerStatus *status) {
+OneError server_status(OneServerPtr const server, OneServerStatus *status) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -835,9 +836,9 @@ Error server_status(OneServerPtr const server, OneServerStatus *status) {
     return ONE_ERROR_NONE;
 }
 
-Error server_set_live_state(OneServerPtr server, int players, int max_players,
-                            const char *name, const char *map, const char *mode,
-                            const char *version, OneObjectPtr additional_data) {
+OneError server_set_live_state(OneServerPtr server, int players, int max_players,
+                               const char *name, const char *map, const char *mode,
+                               const char *version, OneObjectPtr additional_data) {
     auto s = reinterpret_cast<Server *>(server);
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -867,8 +868,8 @@ Error server_set_live_state(OneServerPtr server, int players, int max_players,
     return s->set_live_state(players, max_players, name, map, mode, version, object);
 }
 
-Error server_set_application_instance_status(OneServerPtr server,
-                                             OneApplicationInstanceStatus status) {
+OneError server_set_application_instance_status(OneServerPtr server,
+                                                OneApplicationInstanceStatus status) {
     auto s = reinterpret_cast<Server *>(server);
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -878,8 +879,8 @@ Error server_set_application_instance_status(OneServerPtr server,
         static_cast<Server::ApplicationInstanceStatus>(status));
 }
 
-Error server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *, int),
-                                    void *userdata) {
+OneError server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *, int),
+                                       void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -893,8 +894,8 @@ Error server_set_soft_stop_callback(OneServerPtr server, void (*callback)(void *
     return ONE_ERROR_NONE;
 }
 
-Error server_set_allocated_callback(OneServerPtr server, void (*callback)(void *, void *),
-                                    void *userdata) {
+OneError server_set_allocated_callback(OneServerPtr server,
+                                       void (*callback)(void *, void *), void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -908,8 +909,8 @@ Error server_set_allocated_callback(OneServerPtr server, void (*callback)(void *
     return ONE_ERROR_NONE;
 }
 
-Error server_set_metadata_callback(OneServerPtr server, void (*callback)(void *, void *),
-                                   void *userdata) {
+OneError server_set_metadata_callback(OneServerPtr server,
+                                      void (*callback)(void *, void *), void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -923,9 +924,9 @@ Error server_set_metadata_callback(OneServerPtr server, void (*callback)(void *,
     return ONE_ERROR_NONE;
 }
 
-Error server_set_host_information_callback(OneServerPtr server,
-                                           void (*callback)(void *, void *),
-                                           void *userdata) {
+OneError server_set_host_information_callback(OneServerPtr server,
+                                              void (*callback)(void *, void *),
+                                              void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {
         return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
@@ -939,7 +940,7 @@ Error server_set_host_information_callback(OneServerPtr server,
     return ONE_ERROR_NONE;
 }
 
-Error server_set_application_instance_information_callback(
+OneError server_set_application_instance_information_callback(
     OneServerPtr server, void (*callback)(void *, void *), void *userdata) {
     auto s = (Server *)server;
     if (s == nullptr) {

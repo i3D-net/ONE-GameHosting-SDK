@@ -64,12 +64,12 @@ public:
     // only. Attempting to send a Message or any other data to other side of
     // the Connection before handshaking is complete results in an error.
     // Must be called after init, before updating.
-    Error initiate_handshake();
+    OneError initiate_handshake();
 
     // Update process incoming and outgoing messges. It attempts to read
     // all incoming messages that are available. It attempts to send all
     // queued outgoing messages. Must be called after init.
-    Error update();
+    OneError update();
 
     enum class Status {
         uninitialized,
@@ -87,11 +87,11 @@ public:
     // queued message. If the outgoing message queue is full, then the
     // call fails with ONE_ERROR_INSUFFICIENT_SPACE and the queue is not
     // modified. Must be called after init.
-    Error add_outgoing(const Message &message);
+    OneError add_outgoing(const Message &message);
 
     // The number of incoming messages available for pop. Must be called after
     // init.
-    Error incoming_count(unsigned int &count) const;
+    OneError incoming_count(unsigned int &count) const;
 
     // Removes a message from the incoming message queue, but before doing so
     // passes the message into the given callback for reading.
@@ -100,31 +100,32 @@ public:
     // Note that some messages are internally consumed and do not show up in
     // the incoming count or here.
     // Must be called after init.
-    Error remove_incoming(std::function<Error(const Message &message)> read_callback);
+    OneError remove_incoming(
+        std::function<OneError(const Message &message)> read_callback);
 
 private:
     Connection() = delete;
 
-    Error process_handshake();
+    OneError process_handshake();
     // Reads all available incoming messages from the socket and stores them in
     // the incoming message queue.
-    Error process_incoming_messages();
+    OneError process_incoming_messages();
     // Sends all outgoing messages in the queue as long as the socket is ready
     // for sending.
-    Error process_outgoing_messages();
+    OneError process_outgoing_messages();
 
-    Error process_health();
+    OneError process_health();
 
     // Message helpers.
-    Error try_read_data_into_in_stream();
-    Error try_read_message_from_in_stream(codec::Header &header, Message &message);
+    OneError try_read_data_into_in_stream();
+    OneError try_read_message_from_in_stream(codec::Header &header, Message &message);
 
     // Handshake helpers.
-    Error ensure_nothing_received();
-    Error try_send_hello();  // The initial hello type.
-    Error try_receive_hello();
-    Error try_send_hello_message();  // Hello as a Message with opcode.
-    Error try_receive_hello_message();
+    OneError ensure_nothing_received();
+    OneError try_send_hello();  // The initial hello type.
+    OneError try_receive_hello();
+    OneError try_send_hello_message();  // Hello as a Message with opcode.
+    OneError try_receive_hello_message();
 
     Socket *_socket;
     Status _status;

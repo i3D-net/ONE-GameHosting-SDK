@@ -1,3 +1,5 @@
 build/
 .vscode/
 /b.bat
+.vs/
+CMakeLists.txt.user

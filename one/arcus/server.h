@@ -47,9 +47,9 @@ public:
     ~Server();
 
     void set_logger(const Logger &);
-    Error init(unsigned int listen_port);
+    OneError init(unsigned int listen_port);
 
-    Error shutdown();
+    OneError shutdown();
 
     // Note these MUST be kept in sync with the values in c_api.cpp, or
     // otherwise ensured to translate properly to the c-api values.
@@ -74,17 +74,17 @@ public:
     // If a connection to a client fails, then the server waits for a new connection.
     // If a new client connects while an existing client is connected, then
     // the existing client is closed.
-    Error update();
+    OneError update();
 
     //------------------------------------------------------------------------------
     // Property setters.
 
-    Error set_live_state(int players, int max_players, const char *name, const char *map,
+    OneError set_live_state(int players, int max_players, const char *name, const char *map,
                          const char *mode, const char *version, Object *additional_data);
 
     // Must match api standards.
     enum class ApplicationInstanceStatus { starting = 3, online = 4, allocated = 5 };
-    Error set_application_instance_status(ApplicationInstanceStatus status);
+    OneError set_application_instance_status(ApplicationInstanceStatus status);
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
@@ -93,34 +93,34 @@ public:
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_soft_stop_callback(std::function<void(void *, int)> callback, void *data);
+    OneError set_soft_stop_callback(std::function<void(void *, int)> callback, void *data);
 
     // set the callback for when a allocated message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_allocated_callback(std::function<void(void *, Array *)> callback,
+    OneError set_allocated_callback(std::function<void(void *, Array *)> callback,
                                  void *data);
 
     // set the callback for when a metadata message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_metadata_callback(std::function<void(void *, Array *)> callback,
+    OneError set_metadata_callback(std::function<void(void *, Array *)> callback,
                                 void *data);
 
     // set the callback for when a host_information message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_host_information_callback(std::function<void(void *, Object *)> callback,
+    OneError set_host_information_callback(std::function<void(void *, Object *)> callback,
                                         void *data);
 
     // set the callback for when a application_instance_information message in
     // received. The `void *data` is the user provided and will be passed as the first
     // argument of the callback when invoked. The `data` can be nullptr, the callback is
     // responsible to use the data properly.
-    Error set_application_instance_information_callback(
+    OneError set_application_instance_information_callback(
         std::function<void(void *, Object *)> callback, void *data);
 
 private:
@@ -140,20 +140,20 @@ private:
                                     Server::GameState &old_state);
 
     bool is_initialized() const;
-    Error listen();
-    Error update_client_connection();
-    Error update_listen_socket();
+    OneError listen();
+    OneError update_client_connection();
+    OneError update_listen_socket();
     void close_client_connection();
 
-    Error process_incoming_message(const Message &message);
+    OneError process_incoming_message(const Message &message);
     // The server must have an active and ready listen connection in order to
     // send outgoing messages. If not, either ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR or
     // ONE_ERROR_SERVER_CONNECTION_NOT_READY is returned and the message is
     // not sent.
-    Error process_outgoing_message(const Message &message);
+    OneError process_outgoing_message(const Message &message);
 
-    Error send_live_state();
-    Error send_application_instance_status();
+    OneError send_live_state();
+    OneError send_application_instance_status();
 
     mutable std::mutex _server;
 

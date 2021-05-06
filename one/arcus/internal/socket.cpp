@@ -21,7 +21,7 @@ typedef int socklen_t;
 namespace i3d {
 namespace one {
 
-Error init_socket_system() {
+OneError init_socket_system() {
 #ifdef ONE_WINDOWS
     WSADATA wsaData;
     const auto err = WSAStartup(MAKEWORD(2, 2), &wsaData);
@@ -30,7 +30,7 @@ Error init_socket_system() {
     return ONE_ERROR_NONE;
 }
 
-Error shutdown_socket_system() {
+OneError shutdown_socket_system() {
 #ifdef ONE_WINDOWS
     const auto result = WSACleanup();
     if (result < 0) {
@@ -80,7 +80,7 @@ int set_non_blocking(SOCKET &system_socket, bool enable) {
 #endif
 }
 
-Error Socket::init() {
+OneError Socket::init() {
     _socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (_socket == INVALID_SOCKET) {
         return ONE_ERROR_SOCKET_CREATE_FAILED;
@@ -109,7 +109,7 @@ Error Socket::init() {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::close() {
+OneError Socket::close() {
     if (_socket == INVALID_SOCKET) return ONE_ERROR_NONE;
 
     // Read until nothing to read.
@@ -133,7 +133,7 @@ Error Socket::close() {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::bind(const char *ip, unsigned int port) {
+OneError Socket::bind(const char *ip, unsigned int port) {
     assert(_socket != INVALID_SOCKET);
 
     sockaddr_in sin;
@@ -149,7 +149,7 @@ Error Socket::bind(const char *ip, unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::bind(unsigned int port) {
+OneError Socket::bind(unsigned int port) {
     assert(_socket != INVALID_SOCKET);
 
     sockaddr_in sin;
@@ -161,7 +161,7 @@ Error Socket::bind(unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::address(String &ip, unsigned int &port) const {
+OneError Socket::address(String &ip, unsigned int &port) const {
     sockaddr_in addr;
     socklen_t addr_size = sizeof(addr);
 
@@ -177,7 +177,7 @@ Error Socket::address(String &ip, unsigned int &port) const {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::listen(int queueLength) {
+OneError Socket::listen(int queueLength) {
     assert(_socket != INVALID_SOCKET);
 
     int result = set_non_blocking(_socket, true);
@@ -189,7 +189,7 @@ Error Socket::listen(int queueLength) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::accept(Socket &client, String &ip, unsigned int &port) {
+OneError Socket::accept(Socket &client, String &ip, unsigned int &port) {
     assert(_socket != INVALID_SOCKET);
     if (client.is_initialized() == true) {
         return ONE_ERROR_SOCKET_ACCEPT_UNINITIALIZED;
@@ -217,7 +217,7 @@ Error Socket::accept(Socket &client, String &ip, unsigned int &port) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::connect(const char *ip, const unsigned int port) {
+OneError Socket::connect(const char *ip, const unsigned int port) {
     assert(_socket != INVALID_SOCKET);
     if (std::strlen(ip) == 0) {
         return ONE_ERROR_SOCKET_CONNECT_UNINITIALIZED;
@@ -237,7 +237,7 @@ Error Socket::connect(const char *ip, const unsigned int port) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::ready_for_read(float timeout, bool &is_ready) {
+OneError Socket::ready_for_read(float timeout, bool &is_ready) {
     is_ready = false;
     if (is_initialized() == false) return ONE_ERROR_SOCKET_SELECT_UNINITIALIZED;
 
@@ -257,7 +257,7 @@ Error Socket::ready_for_read(float timeout, bool &is_ready) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::ready_for_send(float timeout, bool &is_ready) {
+OneError Socket::ready_for_send(float timeout, bool &is_ready) {
     is_ready = false;
     if (is_initialized() == false) return ONE_ERROR_SOCKET_SELECT_UNINITIALIZED;
 
@@ -277,7 +277,7 @@ Error Socket::ready_for_send(float timeout, bool &is_ready) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::send(const void *data, size_t length, size_t &length_sent) {
+OneError Socket::send(const void *data, size_t length, size_t &length_sent) {
 #if defined(ONE_WINDOWS)
     const auto result = ::send(_socket, (const char *)data, length, 0);
 #else
@@ -294,7 +294,7 @@ Error Socket::send(const void *data, size_t length, size_t &length_sent) {
     return ONE_ERROR_SOCKET_SEND_FAILED;
 }
 
-Error Socket::available(size_t &length) {
+OneError Socket::available(size_t &length) {
     int result;
 #ifdef ONE_WINDOWS
     result = ioctlsocket(_socket, FIONREAD, (unsigned long *)&length);
@@ -306,7 +306,7 @@ Error Socket::available(size_t &length) {
     return ONE_ERROR_NONE;
 }
 
-Error Socket::receive(void *data, size_t length, size_t &length_received) {
+OneError Socket::receive(void *data, size_t length, size_t &length_received) {
     const auto result = ::recv(_socket, (char *)data, length, 0);
     if (result >= 0) {
         length_received = (size_t)result;

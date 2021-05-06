@@ -25,7 +25,7 @@ public:
     Payload &operator=(const Payload &other);
     ~Payload() = default;
 
-    Error from_json(std::pair<const char *, size_t> data);
+    OneError from_json(std::pair<const char *, size_t> data);
     String to_json() const;
 
     const rapidjson::Value &get() const {
@@ -42,20 +42,20 @@ public:
     bool is_val_object(const char *key) const;
 
     // Getters.
-    Error val_bool(const char *key, bool &val) const;
-    Error val_int(const char *key, int &val) const;
-    Error val_string(const char *key, String &val) const;
-    Error val_array(const char *key, Array &val) const;
-    Error val_object(const char *key, Object &val) const;
-    Error val_root_object(Object &val) const;
+    OneError val_bool(const char *key, bool &val) const;
+    OneError val_int(const char *key, int &val) const;
+    OneError val_string(const char *key, String &val) const;
+    OneError val_array(const char *key, Array &val) const;
+    OneError val_object(const char *key, Object &val) const;
+    OneError val_root_object(Object &val) const;
 
     // Setters.
-    Error set_val_bool(const char *key, bool val);
-    Error set_val_int(const char *key, int val);
-    Error set_val_string(const char *key, const String &val);
-    Error set_val_array(const char *key, const Array &val);
-    Error set_val_object(const char *key, const Object &val);
-    Error set_val_root_object(const Object &val);
+    OneError set_val_bool(const char *key, bool val);
+    OneError set_val_int(const char *key, int val);
+    OneError set_val_string(const char *key, const String &val);
+    OneError set_val_array(const char *key, const Array &val);
+    OneError set_val_object(const char *key, const Object &val);
+    OneError set_val_root_object(const Object &val);
 
 private:
     rapidjson::Document _doc;
@@ -68,8 +68,8 @@ public:
     Message &operator=(const Message &other);
     ~Message() = default;
 
-    Error init(Opcode code, std::pair<const char *, size_t> data);
-    Error init(Opcode code, const Payload &payload);
+    OneError init(Opcode code, std::pair<const char *, size_t> data);
+    OneError init(Opcode code, const Payload &payload);
 
     void reset();
 
@@ -83,15 +83,15 @@ private:
 };
 
 namespace messages {
-Error prepare_soft_stop(int timeout, Message &message);
-Error prepare_allocated(const Array &array, Message &message);
-Error prepare_metadata(const Array &array, Message &message);
-Error prepare_live_state(int players, int max_players, const char *name, const char *map,
+OneError prepare_soft_stop(int timeout, Message &message);
+OneError prepare_allocated(const Array &array, Message &message);
+OneError prepare_metadata(const Array &array, Message &message);
+OneError prepare_live_state(int players, int max_players, const char *name, const char *map,
                          const char *mode, const char *version, Message &message);
-Error prepare_host_information(const Object &information, Message &message);
-Error prepare_application_instance_information(const Object &information,
+OneError prepare_host_information(const Object &information, Message &message);
+OneError prepare_application_instance_information(const Object &information,
                                                Message &message);
-Error prepare_application_instance_status(int status, Message &message);
+OneError prepare_application_instance_status(int status, Message &message);
 
 }  // namespace messages
 
