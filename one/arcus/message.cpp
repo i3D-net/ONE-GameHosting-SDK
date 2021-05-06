@@ -20,7 +20,7 @@ Payload &Payload::operator=(const Payload &other) {
     return *this;
 }
 
-Error Payload::from_json(std::pair<const char *, size_t> data) {
+OneError Payload::from_json(std::pair<const char *, size_t> data) {
     rapidjson::ParseResult ok = _doc.Parse(data.first, data.second);
     if (!ok) {
         return ONE_ERROR_PAYLOAD_PARSE_FAILED;
@@ -109,7 +109,7 @@ bool Payload::is_val_object(const char *key) const {
     return value->value.IsObject();
 }
 
-Error Payload::val_bool(const char *key, bool &val) const {
+OneError Payload::val_bool(const char *key, bool &val) const {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -127,7 +127,7 @@ Error Payload::val_bool(const char *key, bool &val) const {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::val_int(const char *key, int &val) const {
+OneError Payload::val_int(const char *key, int &val) const {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -144,7 +144,7 @@ Error Payload::val_int(const char *key, int &val) const {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::val_string(const char *key, String &val) const {
+OneError Payload::val_string(const char *key, String &val) const {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -162,7 +162,7 @@ Error Payload::val_string(const char *key, String &val) const {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::val_array(const char *key, Array &val) const {
+OneError Payload::val_array(const char *key, Array &val) const {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -180,7 +180,7 @@ Error Payload::val_array(const char *key, Array &val) const {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::val_object(const char *key, Object &val) const {
+OneError Payload::val_object(const char *key, Object &val) const {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -198,7 +198,7 @@ Error Payload::val_object(const char *key, Object &val) const {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::val_root_object(Object &val) const {
+OneError Payload::val_root_object(Object &val) const {
     if (!_doc.IsObject()) {
         return ONE_ERROR_PAYLOAD_WRONG_TYPE_IS_EXPECTING_OBJECT;
     }
@@ -207,7 +207,7 @@ Error Payload::val_root_object(Object &val) const {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::set_val_bool(const char *key, bool val) {
+OneError Payload::set_val_bool(const char *key, bool val) {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -230,7 +230,7 @@ Error Payload::set_val_bool(const char *key, bool val) {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::set_val_int(const char *key, int val) {
+OneError Payload::set_val_int(const char *key, int val) {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -253,7 +253,7 @@ Error Payload::set_val_int(const char *key, int val) {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::set_val_string(const char *key, const String &val) {
+OneError Payload::set_val_string(const char *key, const String &val) {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -277,7 +277,7 @@ Error Payload::set_val_string(const char *key, const String &val) {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::set_val_array(const char *key, const Array &val) {
+OneError Payload::set_val_array(const char *key, const Array &val) {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -301,7 +301,7 @@ Error Payload::set_val_array(const char *key, const Array &val) {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::set_val_object(const char *key, const Object &val) {
+OneError Payload::set_val_object(const char *key, const Object &val) {
     if (key == nullptr) {
         return ONE_ERROR_PAYLOAD_KEY_IS_NULLPTR;
     }
@@ -325,7 +325,7 @@ Error Payload::set_val_object(const char *key, const Object &val) {
     return ONE_ERROR_NONE;
 }
 
-Error Payload::set_val_root_object(const Object &val) {
+OneError Payload::set_val_root_object(const Object &val) {
     if (!_doc.IsObject()) {
         return ONE_ERROR_PAYLOAD_WRONG_TYPE_IS_EXPECTING_OBJECT;
     }
@@ -347,7 +347,7 @@ Message &Message::operator=(const Message &other) {
     return *this;
 }
 
-Error Message::init(Opcode code, std::pair<const char *, size_t> data) {
+OneError Message::init(Opcode code, std::pair<const char *, size_t> data) {
     _code = code;
     auto err = _payload.from_json(data);
     if (is_error(err)) {
@@ -358,7 +358,7 @@ Error Message::init(Opcode code, std::pair<const char *, size_t> data) {
     return ONE_ERROR_NONE;
 }
 
-Error Message::init(Opcode code, const Payload &payload) {
+OneError Message::init(Opcode code, const Payload &payload) {
     _code = code;
     _payload = payload;
     return ONE_ERROR_NONE;
@@ -383,7 +383,7 @@ const Payload &Message::payload() const {
 
 namespace messages {
 
-Error prepare_soft_stop(int timeout, Message &message) {
+OneError prepare_soft_stop(int timeout, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("timeout", timeout);
     if (is_error(err)) {
@@ -399,7 +399,7 @@ Error prepare_soft_stop(int timeout, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_allocated(const Array &array, Message &message) {
+OneError prepare_allocated(const Array &array, Message &message) {
     Payload payload;
     auto err = payload.set_val_array("data", array);
     if (is_error(err)) {
@@ -415,7 +415,7 @@ Error prepare_allocated(const Array &array, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_metadata(const Array &array, Message &message) {
+OneError prepare_metadata(const Array &array, Message &message) {
     Payload payload;
     auto err = payload.set_val_array("data", array);
     if (is_error(err)) {
@@ -431,7 +431,7 @@ Error prepare_metadata(const Array &array, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_live_state(int players, int max_players, const char *name, const char *map,
+OneError prepare_live_state(int players, int max_players, const char *name, const char *map,
                          const char *mode, const char *version, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("players", players);
@@ -473,7 +473,7 @@ Error prepare_live_state(int players, int max_players, const char *name, const c
     return ONE_ERROR_NONE;
 }
 
-Error prepare_host_information(const Object &information, Message &message) {
+OneError prepare_host_information(const Object &information, Message &message) {
     Payload payload;
     auto err = payload.set_val_root_object(information);
     if (is_error(err)) {
@@ -488,7 +488,7 @@ Error prepare_host_information(const Object &information, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-Error prepare_application_instance_information(const Object &information,
+OneError prepare_application_instance_information(const Object &information,
                                                Message &message) {
     Payload payload;
     auto err = payload.set_val_root_object(information);
@@ -504,7 +504,7 @@ Error prepare_application_instance_information(const Object &information,
     return ONE_ERROR_NONE;
 }
 
-Error prepare_application_instance_status(int status, Message &message) {
+OneError prepare_application_instance_status(int status, Message &message) {
     Payload payload;
     auto err = payload.set_val_int("status", status);
     if (is_error(err)) {

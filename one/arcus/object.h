@@ -22,7 +22,7 @@ public:
     Object &operator=(const Object &other);
     ~Object() = default;
 
-    Error set(const rapidjson::Value &object);
+    OneError set(const rapidjson::Value &object);
     const rapidjson::Value &get() const {
         return _doc;
     }
@@ -30,7 +30,7 @@ public:
     // Object management.
     void clear();
     bool is_empty() const;
-    Error remove_key(const char *key);
+    OneError remove_key(const char *key);
 
     // Type checks.
     bool is_val_bool(const char *key) const;
@@ -40,19 +40,19 @@ public:
     bool is_val_object(const char *key) const;
 
     // Getters.
-    Error val_bool(const char *key, bool &val) const;
-    Error val_int(const char *key, int &val) const;
-    Error val_string_size(const char *key, size_t &size) const;
-    Error val_string(const char *key, String &val) const;
-    Error val_array(const char *key, Array &val) const;
-    Error val_object(const char *key, Object &val) const;
+    OneError val_bool(const char *key, bool &val) const;
+    OneError val_int(const char *key, int &val) const;
+    OneError val_string_size(const char *key, size_t &size) const;
+    OneError val_string(const char *key, String &val) const;
+    OneError val_array(const char *key, Array &val) const;
+    OneError val_object(const char *key, Object &val) const;
 
     // Setters.
-    Error set_val_bool(const char *key, bool val);
-    Error set_val_int(const char *key, int val);
-    Error set_val_string(const char *key, const String &val);
-    Error set_val_array(const char *key, const Array &val);
-    Error set_val_object(const char *key, const Object &val);
+    OneError set_val_bool(const char *key, bool val);
+    OneError set_val_int(const char *key, int val);
+    OneError set_val_string(const char *key, const String &val);
+    OneError set_val_array(const char *key, const Array &val);
+    OneError set_val_object(const char *key, const Object &val);
 
 private:
     rapidjson::Document _doc;

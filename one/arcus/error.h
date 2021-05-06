@@ -7,8 +7,6 @@
 namespace i3d {
 namespace one {
 
-typedef OneError Error;
-
 const char *error_text(OneError);
 
 constexpr bool is_error(OneError err) {

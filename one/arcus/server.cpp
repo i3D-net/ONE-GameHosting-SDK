@@ -72,7 +72,7 @@ void Server::set_logger(const Logger &logger) {
     _logger = logger;
 }
 
-Error Server::init(unsigned int listen_port) {
+OneError Server::init(unsigned int listen_port) {
     const std::lock_guard<std::mutex> lock(_server);
 
     _listen_port = listen_port;
@@ -123,7 +123,7 @@ Error Server::init(unsigned int listen_port) {
     return ONE_ERROR_NONE;
 }
 
-Error Server::shutdown() {
+OneError Server::shutdown() {
     _logger.Log(LogLevel::Info, "server is shutting down");
 
     const std::lock_guard<std::mutex> lock(_server);
@@ -192,7 +192,7 @@ Server::Status Server::status() const {
     }
 }
 
-Error Server::listen() {
+OneError Server::listen() {
     if (_listen_socket == nullptr) {
         return ONE_ERROR_SERVER_SOCKET_IS_NULLPTR;
     }
@@ -232,7 +232,7 @@ bool Server::is_initialized() const {
     return (_listen_socket != nullptr);
 }
 
-Error Server::update_listen_socket() {
+OneError Server::update_listen_socket() {
     assert(_listen_socket != nullptr);
 
     if (!_is_listening) {
@@ -283,7 +283,7 @@ Error Server::update_listen_socket() {
     return ONE_ERROR_NONE;
 }
 
-Error Server::process_incoming_message(const Message &message) {
+OneError Server::process_incoming_message(const Message &message) {
     // Unlock and relock the server mutex when processing incoming messages to
     // allow the callback to be re-entrant on server functions (e.g. to send
     // an outgoing message in response to an incoming message).
@@ -338,7 +338,7 @@ Error Server::process_incoming_message(const Message &message) {
     }
 }
 
-Error Server::process_outgoing_message(const Message &message) {
+OneError Server::process_outgoing_message(const Message &message) {
 #ifdef ONE_ARCUS_SERVER_LOGGING
     OStringStream stream;
     stream << "outgoing opcode: " << static_cast<int>(message.code())
@@ -346,7 +346,7 @@ Error Server::process_outgoing_message(const Message &message) {
     _logger.Log(LogLevel::Info, stream.str());
 #endif
 
-    Error err = ONE_ERROR_NONE;
+    OneError err = ONE_ERROR_NONE;
     switch (message.code()) {
         case Opcode::live_state: {
             params::LiveStateResponse params;
@@ -402,10 +402,10 @@ void Server::close_client_connection() {
 #endif
 }
 
-Error Server::update_client_connection() {
+OneError Server::update_client_connection() {
     // If any errors are encountered while updating the connection, then close
     // the connection and socket. The client is expected to reconnect.
-    auto fail = [this](const Error passthrough_err) -> Error {
+    auto fail = [this](const OneError passthrough_err) -> OneError {
         close_client_connection();
         return passthrough_err;
     };
@@ -439,7 +439,7 @@ Error Server::update_client_connection() {
     return ONE_ERROR_NONE;
 }
 
-Error Server::update() {
+OneError Server::update() {
     const std::lock_guard<std::mutex> lock(_server);
 
     if (!is_initialized()) {
@@ -501,7 +501,7 @@ Error Server::update() {
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_live_state(int players, int max_players, const char *name,
+OneError Server::set_live_state(int players, int max_players, const char *name,
                              const char *map, const char *mode, const char *version,
                              Object *additional_data) {
     const std::lock_guard<std::mutex> lock(_server);
@@ -517,7 +517,7 @@ Error Server::set_live_state(int players, int max_players, const char *name,
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_application_instance_status(ApplicationInstanceStatus status) {
+OneError Server::set_application_instance_status(ApplicationInstanceStatus status) {
     const std::lock_guard<std::mutex> lock(_server);
 
     if (status == _status) return ONE_ERROR_NONE;
@@ -528,7 +528,7 @@ Error Server::set_application_instance_status(ApplicationInstanceStatus status) 
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
+OneError Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
                                      void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
@@ -541,7 +541,7 @@ Error Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
     return ONE_ERROR_NONE;
 }
 
-Error Server::send_live_state() {
+OneError Server::send_live_state() {
     Message message;
     auto err = messages::prepare_live_state(
         _game_state.players, _game_state.max_players, _game_state.name.c_str(),
@@ -560,7 +560,7 @@ Error Server::send_live_state() {
     return ONE_ERROR_NONE;
 }
 
-Error Server::send_application_instance_status() {
+OneError Server::send_application_instance_status() {
     Message message;
     OneError err = messages::prepare_application_instance_status((int)_status, message);
     if (is_error(err)) {
@@ -575,7 +575,7 @@ Error Server::send_application_instance_status() {
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_allocated_callback(std::function<void(void *, Array *)> callback,
+OneError Server::set_allocated_callback(std::function<void(void *, Array *)> callback,
                                      void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
@@ -588,7 +588,7 @@ Error Server::set_allocated_callback(std::function<void(void *, Array *)> callba
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_metadata_callback(std::function<void(void *, Array *)> callback,
+OneError Server::set_metadata_callback(std::function<void(void *, Array *)> callback,
                                     void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
@@ -601,7 +601,7 @@ Error Server::set_metadata_callback(std::function<void(void *, Array *)> callbac
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_host_information_callback(
+OneError Server::set_host_information_callback(
     std::function<void(void *, Object *)> callback, void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
@@ -614,7 +614,7 @@ Error Server::set_host_information_callback(
     return ONE_ERROR_NONE;
 }
 
-Error Server::set_application_instance_information_callback(
+OneError Server::set_application_instance_information_callback(
     std::function<void(void *, Object *)> callback, void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 

@@ -1,0 +1,9 @@
+#pragma once
+
+#define ONE_NAME "ONEPingSDK"
+#define ONE_VERSION "@PROJECT_VERSION@"
+// clang-format off
+#define ONE_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
+#define ONE_VERSION_MINOR @PROJECT_VERSION_MINOR@
+#define ONE_VERSION_PATCH @PROJECT_VERSION_PATCH@
+// clang-format on

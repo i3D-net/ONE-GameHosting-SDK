@@ -36,9 +36,9 @@ public:
     Client &operator=(const Client &) = delete;
     ~Client();
 
-    Error init(const char *address, unsigned int port);
+    OneError init(const char *address, unsigned int port);
     void shutdown();
-    Error update();
+    OneError update();
 
     enum class Status { uninitialized, connecting, handshake, ready, error };
     static String status_to_string(Status status);
@@ -48,11 +48,11 @@ public:
     //-------------------
     // Outgoing Messages.
 
-    Error send_soft_stop(int timeout);
-    Error send_allocated(Array &data);
-    Error send_metadata(Array &data);
-    Error send_host_information(Object &data);
-    Error send_application_instance_information(Object &data);
+    OneError send_soft_stop(int timeout);
+    OneError send_allocated(Array &data);
+    OneError send_metadata(Array &data);
+    OneError send_host_information(Object &data);
+    OneError send_application_instance_information(Object &data);
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
@@ -61,7 +61,7 @@ public:
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    Error set_live_state_callback(
+    OneError set_live_state_callback(
         std::function<void(void *, int, int, const String &, const String &,
                            const String &, const String &)>
             callback,
@@ -71,22 +71,22 @@ public:
     // received. The `void *data` is the user provided and will be passed as the first
     // argument of the callback when invoked. The `data` can be nullptr, the callback is
     // responsible to use the data properly.
-    Error set_application_instance_status_callback(
+    OneError set_application_instance_status_callback(
         std::function<void(void *, int)> callback, void *data);
 
 private:
-    Error process_incoming_message(const Message &message);
+    OneError process_incoming_message(const Message &message);
     // The server must have an active and ready listen connection in order to
     // send outgoing messages. If not, either ONE_ERROR_SERVER_CONNECTION_IS_NULLPTR or
     // ONE_ERROR_SERVER_CONNECTION_NOT_READY is returned and the message is
     // not sent.
-    Error process_outgoing_message(const Message &message);
+    OneError process_outgoing_message(const Message &message);
 
     bool is_initialized() const {
         return _socket != nullptr;
     }
 
-    Error connect();
+    OneError connect();
 
     mutable std::mutex _client;
 

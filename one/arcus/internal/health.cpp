@@ -13,7 +13,7 @@ HealthChecker::HealthChecker(size_t send_interval_seconds,
     _send_timer.sync_now();
 }
 
-Error HealthChecker::process_send(std::function<Error(const Message &m)> sender) {
+OneError HealthChecker::process_send(std::function<OneError(const Message &m)> sender) {
     const bool should_send = _send_timer.update();
     if (!should_send) return ONE_ERROR_NONE;
 

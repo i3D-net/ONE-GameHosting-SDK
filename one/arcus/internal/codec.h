@@ -70,25 +70,25 @@ bool validate_header(const Header &header);
 // will contain the number of byte read and be equal to: codec::header_size() +
 // header.length. The read_data_size is at least codec::header_size() and at most
 // codec::header_size() + codec::payload_max_size().
-Error data_to_message(const void *data, const size_t data_size, size_t &read_data_size,
+OneError data_to_message(const void *data, const size_t data_size, size_t &read_data_size,
                       Header &header, Message &message);
 
 // Convert a Message to byte data.
-Error message_to_data(const uint32_t packet_id, const Message &message,
+OneError message_to_data(const uint32_t packet_id, const Message &message,
                       size_t &data_length,
                       std::array<char, header_size() + payload_max_size()> &data);
 
 // Convert byte data to a Header. Length must be header_size().
-Error data_to_header(const void *data, size_t length, Header &header);
+OneError data_to_header(const void *data, size_t length, Header &header);
 
 // Convert a Header to byte data.
-Error header_to_data(const Header &header, std::array<char, header_size()> &data);
+OneError header_to_data(const Header &header, std::array<char, header_size()> &data);
 
 // Convert byte data to a Payload. Length must be at most payload_max_size().
-Error data_to_payload(const void *data, size_t length, Payload &payload);
+OneError data_to_payload(const void *data, size_t length, Payload &payload);
 
 // Convert a Payload to byte data.
-Error payload_to_data(const Payload &payload, size_t &payload_length,
+OneError payload_to_data(const Payload &payload, size_t &payload_length,
                       std::array<char, payload_max_size()> &data);
 
 }  // namespace codec

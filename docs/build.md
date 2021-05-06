@@ -15,6 +15,10 @@ In order to build the source you will need to ensure you have the following depe
     - Windows: [Visual Studio 2017, or build tools (without Editor)](https://visualstudio.microsoft.com/vs/older-downloads/)
     - Linux: GCC (7.5.0 tested)
 2. [CMake 3.17.4](https://cmake.org/files/v3.17/). This is used to configure and build the project. See the top of CMakeLists.txt for other CMake versions tested, if you are using a different version already.
+3. After the initial repository clone, make sure to initialize the git submodules with the following command:
+```
+git submodule update --init --recursive
+```
 
 Optional
 1. For documentation generation:

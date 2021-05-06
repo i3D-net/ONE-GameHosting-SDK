@@ -1,17 +1,16 @@
 set(UNIT_TEST tests)
 
 set(HEADER_FILES
-    harness.h
-    util.h
+    one/arcus/harness.h
+    one/arcus/util.h
 )
 
 set(SOURCE_FILES
-    harness.cpp
-    util.cpp
+    one/arcus/harness.cpp
+    one/arcus/util.cpp
 )
 
 add_library(one_tests ${SOURCE_FILES} ${HEADER_FILES})
-target_link_libraries(one_tests PRIVATE one_arcus)
 
 # Shared library mode has limited tests since only the exported dll surface is
 # available. This could be improved in the future by providing a dll interface
@@ -19,6 +18,7 @@ target_link_libraries(one_tests PRIVATE one_arcus)
 if(NOT SHARED_ARCUS_LIB)
     target_link_libraries(one_tests PRIVATE one_agent)
     target_link_libraries(one_tests PRIVATE one_game)
+    target_link_libraries(one_tests PRIVATE one_ping)
 endif()
 
 if(SHARED_ARCUS_LIB)
@@ -28,25 +28,32 @@ if(SHARED_ARCUS_LIB)
     )
 else()
     set(SOURCE_TEST_FILES
-        accumulator.cpp
-        allocator.cpp
-        agent.cpp
-        api.cpp
-        array.cpp
-        arcus.cpp
-        chaos.cpp
-        codec.cpp
-        concurrency.cpp
-        endian.cpp
-        error.cpp
-        game.cpp
-        integration.cpp
         main.cpp
-        message.cpp
-        object.cpp
-        parsing.cpp
-        ring.cpp
-        stress.cpp
+        one/arcus/accumulator.cpp
+        one/arcus/allocator.cpp
+        one/arcus/agent.cpp
+        one/arcus/api.cpp
+        one/arcus/array.cpp
+        one/arcus/arcus.cpp
+        one/arcus/chaos.cpp
+        one/arcus/codec.cpp
+        one/arcus/concurrency.cpp
+        one/arcus/endian.cpp
+        one/arcus/error.cpp
+        one/arcus/game.cpp
+        one/arcus/integration.cpp
+        one/arcus/message.cpp
+        one/arcus/object.cpp
+        one/arcus/parsing.cpp
+        one/arcus/ring.cpp
+        one/arcus/stress.cpp
+        one/ping/http.cpp
+        one/ping/icmp_socket.cpp
+        one/ping/pinger.cpp
+        one/ping/pingers.cpp
+        one/ping/site_information.cpp
+        one/ping/sites_endpoint.cpp
+        one/ping/sites_getter.cpp
     )
 endif()
 
@@ -54,14 +61,26 @@ add_executable(${UNIT_TEST} ${SOURCE_TEST_FILES})
 
 find_package(Threads REQUIRED)
 
+if(WIN32)
+set(CMAKE_USE_SCHANNEL ON)
+endif()
+
+set(CURL_DISABLE_TESTS ON)
+set(BUILD_CURL_EXE OFF)
+add_subdirectory(curl)
+
 target_compile_features(${UNIT_TEST} PRIVATE cxx_std_11)
+target_link_libraries(${UNIT_TEST} PRIVATE one_arcus)
+target_link_libraries(${UNIT_TEST} PRIVATE one_ping)
 target_link_libraries(${UNIT_TEST} PRIVATE one_tests)
 target_link_libraries(${UNIT_TEST} PRIVATE Threads::Threads)
+target_link_libraries(${UNIT_TEST} PRIVATE libcurl)
+
 if(WIN32)
 target_link_libraries(${UNIT_TEST} PRIVATE winmm.lib)
 endif()
 
-include_directories(catch2)
+include_directories(${PROJECT_SOURCE_DIR}/tests/catch2)
 include_directories(${PROJECT_SOURCE_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -72,6 +91,14 @@ add_custom_command(TARGET ${UNIT_TEST}
     DEPENDS one_arcus
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:one_arcus>
+        $<TARGET_FILE_DIR:${UNIT_TEST}>
+)
+
+add_custom_command(TARGET ${UNIT_TEST}
+    POST_BUILD
+    DEPENDS libcurl
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:libcurl>
         $<TARGET_FILE_DIR:${UNIT_TEST}>
 )
 
