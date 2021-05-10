@@ -508,6 +508,22 @@ I3dPingError pingers_create(I3dPingersPtr *pingers) {
     return I3D_PING_ERROR_NONE;
 }
 
+I3dPingError pingers_set_logger(I3dPingersPtr pingers, I3dPingLogFn log_cb,
+                                void *userdata) {
+    if (pingers == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_PINGERS_IS_NULLPTR;
+    }
+
+    auto wrapper = [log_cb](void *userdata, LogLevel level, const String &message) {
+        log_cb(userdata, static_cast<I3dPingLogLevel>(level), message.c_str());
+    };
+    Logger logger(wrapper, userdata);
+
+    auto p = (Pingers *)(pingers);
+    p->set_logger(logger);
+    return I3D_PING_ERROR_NONE;
+}
+
 void pingers_destroy(I3dPingersPtr pingers) {
     if (pingers == nullptr) {
         return;
@@ -568,56 +584,37 @@ I3dPingError pingers_size(I3dPingersPtr pingers, unsigned int *size) {
     return I3D_PING_ERROR_NONE;
 }
 
-I3dPingError pingers_last_time(I3dPingersPtr pingers, unsigned int pos,
-                               int *duration_ms) {
-    auto p = (Pingers *)(pingers);
-    if (p == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PINGERS_IS_NULLPTR;
-    }
-
-    if (duration_ms == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_LATEST_TIME_IS_NULLPTR;
-    }
-
-    auto err = p->last_time(pos, *duration_ms);
-    if (i3d_ping_is_error(err)) {
-        return err;
-    }
-
-    return I3D_PING_ERROR_NONE;
-}
-
-I3dPingError pingers_average_time(I3dPingersPtr pingers, unsigned int pos,
-                                  double *duration_ms) {
-    auto p = (Pingers *)(pingers);
-    if (p == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PINGERS_IS_NULLPTR;
-    }
-
-    if (duration_ms == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_AVERAGE_TIME_NULLPTR;
-    }
-
-    auto err = p->average_time(pos, *duration_ms);
-    if (i3d_ping_is_error(err)) {
-        return err;
-    }
-
-    return I3D_PING_ERROR_NONE;
-}
-
-I3dPingError pingers_ping_response_count(I3dPingersPtr pingers, unsigned int pos,
+I3dPingError i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos,
+                                         int *last_time, double *average_time,
                                          unsigned int *ping_response_count) {
     auto p = (Pingers *)(pingers);
     if (p == nullptr) {
         return I3D_PING_ERROR_VALIDATION_PINGERS_IS_NULLPTR;
     }
 
-    if (ping_response_count == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PING_COUNT_IS_NULLPTR;
+    if (last_time == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_LAST_TIME_IS_NULLPTR;
     }
 
-    auto err = p->ping_response_count(pos, *ping_response_count);
+    if (average_time == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_AVERAGE_TIME_NULLPTR;
+    }
+
+    if (last_time == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_PING_RESPONSE_COUNT_IS_NULLPTR;
+    }
+
+    auto err = p->last_time(pos, *last_time);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    err = p->average_time(pos, *average_time);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    err = p->ping_response_count(pos, *ping_response_count);
     if (i3d_ping_is_error(err)) {
         return err;
     }
@@ -924,13 +921,18 @@ I3dPingError i3d_ping_sites_getter_ipv4_list(I3dSitesGetterPtr sites_getter,
     return ping::sites_getter_ipv4_list(sites_getter, ip_list);
 }
 
-I3dPingError i3d_ping_sites_getter_list_site_ipv6_list(I3dSitesGetterPtr sites_getter,
-                                                       I3dIpListPtr ip_list) {
+I3dPingError i3d_ping_sites_getter_ipv6_list(I3dSitesGetterPtr sites_getter,
+                                             I3dIpListPtr ip_list) {
     return ping::sites_getter_ipv6_list(sites_getter, ip_list);
 }
 
 I3dPingError i3d_ping_pingers_create(I3dPingersPtr *pingers) {
     return ping::pingers_create(pingers);
+}
+
+I3dPingError i3d_ping_pingers_set_logger(I3dPingersPtr pingers, I3dPingLogFn log_cb,
+                                         void *userdata) {
+    return ping::pingers_set_logger(pingers, log_cb, userdata);
 }
 
 void i3d_ping_pingers_destroy(I3dPingersPtr pingers) {
@@ -954,19 +956,11 @@ I3dPingError i3d_ping_pingers_size(I3dPingersPtr pingers, unsigned int *size) {
     return ping::pingers_size(pingers, size);
 }
 
-I3dPingError i3d_ping_pingers_last_time(I3dPingersPtr pingers, unsigned int pos,
-                                        int *duration_ms) {
-    return ping::pingers_last_time(pingers, pos, duration_ms);
-}
-
-I3dPingError i3d_ping_pingers_average_time(I3dPingersPtr pingers, unsigned int pos,
-                                           double *duration_ms) {
-    return ping::pingers_average_time(pingers, pos, duration_ms);
-}
-
-I3dPingError i3d_ping_pingers_ping_response_count(I3dPingersPtr pingers, unsigned int pos,
-                                                  unsigned int *ping_response_count) {
-    return ping::pingers_ping_response_count(pingers, pos, ping_response_count);
+I3dPingError i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos,
+                                         int *last_time, double *average_time,
+                                         unsigned int *ping_response_count) {
+    return ping::i3d_ping_pingers_statistics(pingers, pos, last_time, average_time,
+                                             ping_response_count);
 }
 
 I3dPingError i3d_ping_pingers_at_least_one_site_has_been_pinged(I3dPingersPtr pingers,

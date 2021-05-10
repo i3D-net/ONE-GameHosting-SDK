@@ -8,10 +8,6 @@
 namespace i3d {
 namespace ping {
 
-namespace {
-constexpr size_t connection_retry_delay_seconds = 5;
-}
-
 // See: https://en.cppreference.com/w/cpp/language/value_initialization
 // C++11 Value initialization
 Pingers::Pingers() : _status(Status::uninitialized) {}
@@ -41,7 +37,7 @@ I3dPingError Pingers::init(const IpList &ip_list) {
 
     err = I3D_PING_ERROR_NONE;
 
-    for (auto i = 0; i < ips.size(); ++i) {
+    for (size_t i = 0; i < ips.size(); ++i) {
         err = _pingers[i].init(ips[i].c_str());
         if (i3d_ping_is_error(err)) {
             return err;

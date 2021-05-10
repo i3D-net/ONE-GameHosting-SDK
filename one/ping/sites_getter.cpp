@@ -7,10 +7,6 @@
 namespace i3d {
 namespace ping {
 
-namespace {
-constexpr size_t connection_retry_delay_seconds = 5;
-}
-
 // See: https://en.cppreference.com/w/cpp/language/value_initialization
 // C++11 Value initialization
 SitesGetter::SitesGetter() : _callbacks{}, _status(Status::uninitialized) {}
@@ -238,7 +234,7 @@ I3dPingError SitesGetter::ipv4_list(IpList &ip_list) const {
     String ip;
 
     // Only take the first ip of the site.
-    for (auto i = 0; i < _sites.size(); ++i) {
+    for (size_t i = 0; i < _sites.size(); ++i) {
         err = ipv4(i, 0, ip);
         if (i3d_ping_is_error(err)) {
             ip_list.clear();
@@ -260,7 +256,7 @@ I3dPingError SitesGetter::ipv6_list(IpList &ip_list) const {
     String ip;
 
     // Only take the first ip of the site.
-    for (auto i = 0; i < _sites.size(); ++i) {
+    for (size_t i = 0; i < _sites.size(); ++i) {
         err = ipv6(i, 0, ip);
         if (i3d_ping_is_error(err)) {
             ip_list.clear();
