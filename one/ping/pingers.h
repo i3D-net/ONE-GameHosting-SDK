@@ -34,7 +34,7 @@ public:
 
     Status status() const;
 
-    I3dPingError last_time(unsigned int pos, int &durantion_ms) const;
+    I3dPingError last_time(unsigned int pos, int &duration_ms) const;
     I3dPingError average_time(unsigned int pos, double &duration_ms) const;
     I3dPingError ping_response_count(unsigned int pos,
                                      unsigned int &response_count) const;

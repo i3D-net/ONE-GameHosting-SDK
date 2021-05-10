@@ -7,6 +7,9 @@
 //----------------------------------------------
 // ONE SDK object types forward declarations
 
+struct I3dIpList;
+typedef I3dIpList *I3dIpListPtr;
+
 struct I3dPingers;
 typedef I3dPingers *I3dPingersPtr;
 
@@ -45,7 +48,7 @@ public:
 
     // alloc and free are optional allocation override handlers. Both may be nullptr,
     // otherwise both are required.
-    bool init(const AllocationHooks &hooks);
+    bool init(I3dIpListPtr ip_list, const AllocationHooks &hooks);
     void shutdown();
 
     // Must called often (e.g. each frame). Updates the Ping Cient, which
@@ -56,8 +59,21 @@ public:
     static std::string status_to_string(Status status);
     Status status() const;
 
+    struct PingStatistics {
+        PingStatistics() : last_time(0), average_time(0.0), ping_response_count(0) {}
+
+        int last_time;
+        double average_time;
+        unsigned int ping_response_count;
+    };
+
+    bool statistics(unsigned int pos, PingStatistics &statistics) const;
+
+    bool at_least_one_site_has_been_pinged(bool &result) const;
+    bool all_sites_have_been_pinged(bool &result) const;
+
 private:
-    // The Arcus Server itself.
+    // The Pingers itself.
     mutable std::mutex _wrapper;
     I3dPingersPtr _pingers;
 };

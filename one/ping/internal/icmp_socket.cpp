@@ -100,13 +100,8 @@ I3dPingError IcmpSocket::init(const char *ipv4) {
         return I3D_PING_ERROR_SOCKET_TTL_SET_SOCKET_OPTION_FAIL;
     }
 
-    const unsigned int addr = inet_addr(_ipv4.c_str());
+    inet_pton(AF_INET, _ipv4.c_str(), &(_destination.sin_addr));
 
-    if (addr == INADDR_NONE) {
-        return I3D_PING_ERROR_SOCKET_INVALID_IPV4;
-    }
-
-    _destination.sin_addr.s_addr = addr;
     _destination.sin_family = AF_INET;
 #else
     _socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_ICMP);

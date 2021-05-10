@@ -7,7 +7,6 @@ include_directories(${PROJECT_SOURCE_DIR})
 
 set(HEADER_FILES
     log.h
-    i3d_ping_ip_list_wrapper.h
     i3d_pingers_wrapper.h
     i3d_sites_getter_wrapper.h
     ping.h
@@ -15,7 +14,6 @@ set(HEADER_FILES
 
 set(SOURCE_FILES
     log.cpp
-    i3d_ping_ip_list_wrapper.cpp
     i3d_pingers_wrapper.cpp
     i3d_sites_getter_wrapper.cpp
     ping.cpp

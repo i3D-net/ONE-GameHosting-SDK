@@ -101,8 +101,8 @@ I3D_PING_EXPORT void i3d_ping_allocator_set_realloc(void *(*callback)(void *,
 /// Logging level that is passed to the optional log callback function.
 /// \sa i3d_ping_sites_getter_create
 typedef enum I3dPingLogLevel {
-    I3D_PING_ERROR_LOG_LEVEL_INFO = 0,
-    I3D_PING_ERROR_LOG_LEVEL_ERROR
+    I3D_PING_LOG_LEVEL_INFO = 0,
+    I3D_PING_LOG_LEVEL_ERROR
 } I3dPingLogLevel;
 
 /// Creates a new Ping Sites. Create, update, shutdown and destroy should be called to
@@ -326,8 +326,8 @@ i3d_ping_sites_getter_ipv4_list(I3dSitesGetterPtr sites_getter, I3dIpListPtr ip_
 /// Get the IPv6 list of all the sites contained in the ping_site.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
 /// @param ip_list A non-null sites_getter pointer. Thread-safe.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_ipv6_list(
-    I3dSitesGetterPtr sites_getter, I3dIpListPtr ip_list);
+I3D_PING_EXPORT I3dPingError
+i3d_ping_sites_getter_ipv6_list(I3dSitesGetterPtr sites_getter, I3dIpListPtr ip_list);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -386,40 +386,23 @@ I3D_PING_EXPORT I3dPingError i3d_ping_pingers_update(I3dPingersPtr pingers);
 I3D_PING_EXPORT I3dPingError i3d_ping_pingers_status(I3dPingersPtr const pingers,
                                                      I3dPingersStatus *status);
 
-/// Get the country size of the site at the given position in the site list.
+/// Get the pingers size.
 /// @param pingers A non-null pingers pointer. Thread-safe.
 /// @param size Non-null pointer to set the size on.
 I3D_PING_EXPORT I3dPingError i3d_ping_pingers_size(I3dPingersPtr pingers,
                                                    unsigned int *size);
 
-/// Get the latest ping time in milliseconds of the site at the given position in the site
-/// list.
+/// Get the ping statistics (i.e.: last time, average time and ping response counts) of
+/// the site at the given position in the site list.
 /// @param pingers A non-null pingers pointer. Thread-safe.
 /// @param pos The position in the list . Must be less than
 /// i3d_ping_pingers_size.
-/// @param lastest_time Non-null pointer to set the time on.
-I3D_PING_EXPORT I3dPingError i3d_ping_pingers_last_time(I3dPingersPtr pingers,
-                                                        unsigned int pos,
-                                                        int *duration_ms);
-
-/// Get the average ping time in milliseconds of the site at the given position in the
-/// site list.
-/// @param pingers A non-null pingers pointer. Thread-safe.
-/// @param pos The position in the list . Must be less than
-/// i3d_ping_pingers_size.
-/// @param dc_location_id Non-null pointer to set the time on.
-I3D_PING_EXPORT I3dPingError i3d_ping_pingers_average_time(I3dPingersPtr pingers,
-                                                           unsigned int pos,
-                                                           double *duration_ms);
-
-/// Get the ping count of the site at the given position in the site
-/// list.
-/// @param pingers A non-null pingers pointer. Thread-safe.
-/// @param pos The position in the list . Must be less than
-/// i3d_ping_pingers_size.
-/// @param ping_count Non-null pointer to set the count on.
-I3D_PING_EXPORT I3dPingError i3d_ping_pingers_ping_response_count(
-    I3dPingersPtr pingers, unsigned int pos, unsigned int *ping_response_count);
+/// @param lastest_time Non-null pointer to set the last_time on.
+/// @param averate_time Non-null pointer to set the average_time on.
+/// @param ping_response_count Non-null pointer to set the ping response count on.
+I3D_PING_EXPORT I3dPingError
+i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos, int *duration_ms,
+                            double *average_time, unsigned int *ping_response_count);
 
 /// Gets true if at least one site was pinged recently.
 /// @param pingers A non-null pingers pointer. Thread-safe.

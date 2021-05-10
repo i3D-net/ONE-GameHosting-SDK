@@ -22,11 +22,11 @@ void log(void *userdata, I3dPingLogLevel level, const char *message) {
     // instead of a global logger.
 
     switch (level) {
-        case I3D_PING_ERROR_LOG_LEVEL_INFO: {
+        case I3D_PING_LOG_LEVEL_INFO: {
             L_INFO(std::string("ONELOG: ") + message);
             break;
         }
-        case I3D_PING_ERROR_LOG_LEVEL_ERROR: {
+        case I3D_PING_LOG_LEVEL_ERROR: {
             L_ERROR(std::string("ONELOG: ") + message);
             break;
         }
@@ -44,7 +44,7 @@ I3dPingersWrapper::~I3dPingersWrapper() {
     shutdown();
 }
 
-bool I3dPingersWrapper::init(const AllocationHooks &hooks) {
+bool I3dPingersWrapper::init(I3dIpListPtr ip_list, const AllocationHooks &hooks) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     if (_pingers != nullptr) {
@@ -94,8 +94,11 @@ bool I3dPingersWrapper::init(const AllocationHooks &hooks) {
         return false;
     }
 
-    //---------------
-    // Set callbacks.
+    err = i3d_ping_pingers_init(_pingers, ip_list);
+    if (i3d_ping_is_error(err)) {
+        L_ERROR(i3d_ping_error_text(err));
+        return false;
+    }
 
     L_INFO("I3dPingersWrapper init complete");
     return true;
@@ -157,6 +160,44 @@ I3dPingersWrapper::Status I3dPingersWrapper::status() const {
         default:
             return Status::unknown;
     }
+}
+
+bool I3dPingersWrapper::statistics(unsigned int pos, PingStatistics &statistics) const {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
+    I3dPingError err = i3d_ping_pingers_statistics(_pingers, pos, &(statistics.last_time),
+                                                   &(statistics.average_time),
+                                                   &(statistics.ping_response_count));
+    if (i3d_ping_is_error(err)) {
+        L_ERROR(i3d_ping_error_text(err));
+        return false;
+    }
+
+    return true;
+}
+
+bool I3dPingersWrapper::at_least_one_site_has_been_pinged(bool &result) const {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
+    I3dPingError err =
+        i3d_ping_pingers_at_least_one_site_has_been_pinged(_pingers, &result);
+    if (i3d_ping_is_error(err)) {
+        L_ERROR(i3d_ping_error_text(err));
+        return false;
+    }
+
+    return true;
+}
+bool I3dPingersWrapper::all_sites_have_been_pinged(bool &result) const {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
+    I3dPingError err = i3d_ping_pingers_all_sites_have_been_pinged(_pingers, &result);
+    if (i3d_ping_is_error(err)) {
+        L_ERROR(i3d_ping_error_text(err));
+        return false;
+    }
+
+    return true;
 }
 
 }  // namespace i3d_ping_integration
