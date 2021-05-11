@@ -55,7 +55,7 @@ public:
     // that the HTTP Get callback has succesfully finished.
     void update(bool quiet);
 
-    enum class Status { uninitialized = 0, initialized, ready, error, unknown };
+    enum class Status { uninitialized = 0, initialized, waiting, ready, error, unknown };
     static std::string status_to_string(Status status);
     Status status() const;
 

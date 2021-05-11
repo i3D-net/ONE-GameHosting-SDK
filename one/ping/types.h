@@ -1,5 +1,6 @@
 #pragma once
 
+#include <list>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -12,6 +13,10 @@ namespace ping {
 // See: https://en.cppreference.com/w/cpp/language/type_alias
 template <class T>
 using Vector = std::vector<T, StandardAllocator<T>>;
+
+// See: https://en.cppreference.com/w/cpp/language/type_alias
+template <class T>
+using List = std::list<T, StandardAllocator<T>>;
 
 // All std dynamic types in the one namespace must use the following types.
 typedef std::basic_string<char, std::char_traits<char>, StandardAllocator<char>> String;

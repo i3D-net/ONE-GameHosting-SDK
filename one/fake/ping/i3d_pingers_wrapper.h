@@ -60,10 +60,19 @@ public:
     Status status() const;
 
     struct PingStatistics {
-        PingStatistics() : last_time(0), average_time(0.0), ping_response_count(0) {}
+        PingStatistics()
+            : last_time(0)
+            , average_time(0.0)
+            , min_time(0)
+            , max_time(0.0)
+            , median_time(0)
+            , ping_response_count(0) {}
 
         int last_time;
         double average_time;
+        int min_time;
+        int max_time;
+        double median_time;
         unsigned int ping_response_count;
     };
 

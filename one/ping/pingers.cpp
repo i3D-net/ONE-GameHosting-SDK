@@ -118,6 +118,52 @@ I3dPingError Pingers::average_time(unsigned int pos, double &duration_ms) const 
 
     return I3D_PING_ERROR_NONE;
 }
+
+I3dPingError Pingers::min_time(unsigned int pos, int &duration_ms) const {
+    const std::lock_guard<std::mutex> lock(_ping);
+
+    if (_pingers.size() <= pos) {
+        return I3D_PING_ERROR_PINGERS_POS_IS_OUT_OF_RANGE;
+    }
+
+    auto err = _pingers[pos].min_time(duration_ms);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    return I3D_PING_ERROR_NONE;
+}
+
+I3dPingError Pingers::max_time(unsigned int pos, int &duration_ms) const {
+    const std::lock_guard<std::mutex> lock(_ping);
+
+    if (_pingers.size() <= pos) {
+        return I3D_PING_ERROR_PINGERS_POS_IS_OUT_OF_RANGE;
+    }
+
+    auto err = _pingers[pos].max_time(duration_ms);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    return I3D_PING_ERROR_NONE;
+}
+
+I3dPingError Pingers::median_time(unsigned int pos, double &duration_ms) const {
+    const std::lock_guard<std::mutex> lock(_ping);
+
+    if (_pingers.size() <= pos) {
+        return I3D_PING_ERROR_PINGERS_POS_IS_OUT_OF_RANGE;
+    }
+
+    auto err = _pingers[pos].median_time(duration_ms);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    return I3D_PING_ERROR_NONE;
+}
+
 I3dPingError Pingers::ping_response_count(unsigned int pos,
                                           unsigned int &response_count) const {
     const std::lock_guard<std::mutex> lock(_ping);

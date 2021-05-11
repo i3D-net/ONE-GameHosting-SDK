@@ -95,9 +95,6 @@ bool I3dSitesGetterWrapper::init(const AllocationHooks &hooks) {
         return false;
     }
 
-    //---------------
-    // Set callbacks.
-
     L_INFO("I3dPingSitesWrapper init complete");
     return true;
 }
@@ -132,6 +129,8 @@ std::string I3dSitesGetterWrapper::status_to_string(Status status) {
             return "uninitialized";
         case Status::initialized:
             return "initialized";
+        case Status::waiting:
+            return "waiting";
         case Status::ready:
             return "ready";
         case Status::error:
@@ -155,6 +154,8 @@ I3dSitesGetterWrapper::Status I3dSitesGetterWrapper::status() const {
             return Status::uninitialized;
         case I3D_SITES_GETTER_STATUS_INITIALIZED:
             return Status::initialized;
+        case I3D_SITES_GETTER_STATUS_WAITING:
+            return Status::waiting;
         case I3D_SITES_GETTER_STATUS_READY:
             return Status::ready;
         case I3D_SITES_GETTER_STATUS_ERROR:

@@ -165,9 +165,10 @@ I3dPingersWrapper::Status I3dPingersWrapper::status() const {
 bool I3dPingersWrapper::statistics(unsigned int pos, PingStatistics &statistics) const {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
-    I3dPingError err = i3d_ping_pingers_statistics(_pingers, pos, &(statistics.last_time),
-                                                   &(statistics.average_time),
-                                                   &(statistics.ping_response_count));
+    I3dPingError err = i3d_ping_pingers_statistics(
+        _pingers, pos, &(statistics.last_time), &(statistics.average_time),
+        &(statistics.min_time), &(statistics.max_time), &(statistics.median_time),
+        &(statistics.ping_response_count));
     if (i3d_ping_is_error(err)) {
         L_ERROR(i3d_ping_error_text(err));
         return false;
