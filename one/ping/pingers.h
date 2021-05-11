@@ -36,6 +36,9 @@ public:
 
     I3dPingError last_time(unsigned int pos, int &duration_ms) const;
     I3dPingError average_time(unsigned int pos, double &duration_ms) const;
+    I3dPingError min_time(unsigned int pos, int &duration_ms) const;
+    I3dPingError max_time(unsigned int pos, int &duration_ms) const;
+    I3dPingError median_time(unsigned int pos, double &duration_ms) const;
     I3dPingError ping_response_count(unsigned int pos,
                                      unsigned int &response_count) const;
 

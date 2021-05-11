@@ -26,14 +26,11 @@ I3dPingError SitesGetter::init() {
         return I3D_PING_ERROR_SITES_GETTER_ALREADY_INITIALIZED;
     }
 
-    _status = Status::initialized;
-
-    auto err = get_sites_information();
-    if (i3d_ping_is_error(err)) {
-        _status = Status::error;
-        return err;
+    if (_callbacks._http_get == nullptr) {
+        return I3D_PING_ERROR_SITES_GETTER_HTTP_GET_CALLBACK_NOT_SET;
     }
 
+    _status = Status::initialized;
     return I3D_PING_ERROR_NONE;
 }
 
@@ -54,7 +51,14 @@ I3dPingError SitesGetter::update() {
         case Status::uninitialized:
             return I3D_PING_ERROR_SITES_GETTER_NOT_INITIALIZED;
         case Status::initialized:
-            // Waiting for the HTTP endpoint response.
+            err = get_sites_information();
+            if (i3d_ping_is_error(err)) {
+                _status = Status::error;
+                return err;
+            }
+            return I3D_PING_ERROR_NONE;
+        case Status::waiting:
+            // Nothing to do while waiting.
             return I3D_PING_ERROR_NONE;
         case Status::error:
             err = get_sites_information();
@@ -274,6 +278,7 @@ I3dPingError SitesGetter::get_sites_information() {
         return I3D_PING_ERROR_SITES_GETTER_CALLBACK_IS_NULLPTR;
     }
 
+    _status = Status::waiting;
     _callbacks._http_get(_endpoint.url().c_str(), SitesGetter::parsing_callback, this,
                          _callbacks._http_get_userdata);
     return I3D_PING_ERROR_NONE;

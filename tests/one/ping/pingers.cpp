@@ -36,6 +36,9 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
 
     std::vector<int> last(size);
     std::vector<double> average(size);
+    std::vector<int> min(size);
+    std::vector<int> max(size);
+    std::vector<double> median(size);
     std::vector<unsigned int> ping_response_count(size);
     bool result = false;
     bool all_pigned_at_least_once = false;
@@ -47,6 +50,7 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
 
         for (auto i = 0; i < size; ++i) {
             err = i3d_ping_pingers_statistics(pingers, i, &(last[i]), &(average[i]),
+                                              &(min[i]), &(max[i]), &(median[i]),
                                               &(ping_response_count[i]));
 
             if (err == I3D_PING_ERROR_NONE) {
@@ -68,6 +72,7 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
 
     for (auto i = 0; i < size; ++i) {
         err = i3d_ping_pingers_statistics(pingers, i, &(last[i]), &(average[i]),
+                                          &(min[i]), &(max[i]), &(median[i]),
                                           &(ping_response_count[i]));
         REQUIRE(err == I3D_PING_ERROR_NONE);
         REQUIRE(0 < ping_response_count[i]);

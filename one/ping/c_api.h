@@ -35,6 +35,7 @@ extern "C" {
 typedef enum I3dSitesGetterStatus {
     I3D_SITES_GETTER_STATUS_UNINITIALIZED = 0,
     I3D_SITES_GETTER_STATUS_INITIALIZED,
+    I3D_SITES_GETTER_STATUS_WAITING,
     I3D_SITES_GETTER_STATUS_ERROR,
     I3D_SITES_GETTER_STATUS_READY
 } I3dSitesGetterStatus;
@@ -400,9 +401,9 @@ I3D_PING_EXPORT I3dPingError i3d_ping_pingers_size(I3dPingersPtr pingers,
 /// @param lastest_time Non-null pointer to set the last_time on.
 /// @param averate_time Non-null pointer to set the average_time on.
 /// @param ping_response_count Non-null pointer to set the ping response count on.
-I3D_PING_EXPORT I3dPingError
-i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos, int *duration_ms,
-                            double *average_time, unsigned int *ping_response_count);
+I3D_PING_EXPORT I3dPingError i3d_ping_pingers_statistics(
+    I3dPingersPtr pingers, unsigned int pos, int *last_time, double *average_time,
+    int *min_time, int *max_time, double *median_time, unsigned int *ping_response_count);
 
 /// Gets true if at least one site was pinged recently.
 /// @param pingers A non-null pingers pointer. Thread-safe.

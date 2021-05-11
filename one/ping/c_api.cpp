@@ -586,6 +586,8 @@ I3dPingError pingers_size(I3dPingersPtr pingers, unsigned int *size) {
 
 I3dPingError i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos,
                                          int *last_time, double *average_time,
+                                         int *min_time, int *max_time,
+                                         double *median_time,
                                          unsigned int *ping_response_count) {
     auto p = (Pingers *)(pingers);
     if (p == nullptr) {
@@ -600,7 +602,19 @@ I3dPingError i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos
         return I3D_PING_ERROR_VALIDATION_AVERAGE_TIME_NULLPTR;
     }
 
-    if (last_time == nullptr) {
+    if (min_time == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_MIN_TIME_IS_NULLPTR;
+    }
+
+    if (max_time == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_MAX_TIME_NULLPTR;
+    }
+
+    if (median_time == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_MEDIAN_TIME_IS_NULLPTR;
+    }
+
+    if (ping_response_count == nullptr) {
         return I3D_PING_ERROR_VALIDATION_PING_RESPONSE_COUNT_IS_NULLPTR;
     }
 
@@ -610,6 +624,21 @@ I3dPingError i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos
     }
 
     err = p->average_time(pos, *average_time);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    err = p->min_time(pos, *min_time);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    err = p->max_time(pos, *max_time);
+    if (i3d_ping_is_error(err)) {
+        return err;
+    }
+
+    err = p->median_time(pos, *median_time);
     if (i3d_ping_is_error(err)) {
         return err;
     }
@@ -958,8 +987,11 @@ I3dPingError i3d_ping_pingers_size(I3dPingersPtr pingers, unsigned int *size) {
 
 I3dPingError i3d_ping_pingers_statistics(I3dPingersPtr pingers, unsigned int pos,
                                          int *last_time, double *average_time,
+                                         int *min_time, int *max_time,
+                                         double *median_time,
                                          unsigned int *ping_response_count) {
     return ping::i3d_ping_pingers_statistics(pingers, pos, last_time, average_time,
+                                             min_time, max_time, median_time,
                                              ping_response_count);
 }
 
@@ -1003,3 +1035,4 @@ I3dPingError i3d_ping_ip_list_ip(I3dIpListPtr const ip_list, unsigned int pos, c
     return ping::ip_list_ip(ip_list, pos, ip, size);
 }
 }
+#include <one/ping/internal/pinger.h>
