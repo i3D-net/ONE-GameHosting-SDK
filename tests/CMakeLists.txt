@@ -24,7 +24,7 @@ endif()
 if(SHARED_ARCUS_LIB)
     set(SOURCE_TEST_FILES
         main.cpp
-        shared_lib.cpp
+        one/arcus/shared_lib.cpp
     )
 else()
     set(SOURCE_TEST_FILES

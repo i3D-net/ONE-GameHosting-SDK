@@ -14,6 +14,7 @@ typedef int socklen_t;
     #include <netinet/in.h>
     #include <sys/ioctl.h>
     #include <unistd.h>
+    #include <errno.h>
 
     #include <netinet/tcp.h>
 #endif
@@ -145,7 +146,10 @@ OneError Socket::bind(const char *ip, unsigned int port) {
     }
     sin.sin_family = AF_INET;
     const int result = ::bind(_socket, (sockaddr *)&sin, sizeof(sin));
-    if (result < 0) return ONE_ERROR_SOCKET_BIND_FAILED;
+    if (result < 0) {
+        set_last_error_text();
+        return ONE_ERROR_SOCKET_BIND_FAILED;
+    }
     return ONE_ERROR_NONE;
 }
 
@@ -157,7 +161,10 @@ OneError Socket::bind(unsigned int port) {
     sin.sin_addr.s_addr = INADDR_ANY;
     sin.sin_family = AF_INET;
     const int result = ::bind(_socket, (sockaddr *)&sin, sizeof(sin));
-    if (result < 0) return ONE_ERROR_SOCKET_BIND_FAILED;
+    if (result < 0) {
+        set_last_error_text();
+        return ONE_ERROR_SOCKET_BIND_FAILED;
+    }
     return ONE_ERROR_NONE;
 }
 
@@ -317,6 +324,30 @@ OneError Socket::receive(void *data, size_t length, size_t &length_received) {
     const auto err = last_error();
     if (is_error_try_again(err)) return ONE_ERROR_NONE;
     return ONE_ERROR_SOCKET_RECEIVE_FAILED;
+}
+
+const char *Socket::last_error_text() const {
+    return _last_error_string.data();
+}
+
+void Socket::set_last_error_text() {
+    int error = last_error();
+    auto buffer = _last_error_string.data();
+
+#ifdef ONE_WINDOWS
+    buffer[0] = '\0';  // Microsoft doesn't guarantee this on man page.
+
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,  // flags
+                  NULL,                                                        // lpsource
+                  error,                                      // message id
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),  // languageid
+                  buffer,                                     // output buffer
+                  sizeof(buffer),                             // size of buffer, bytes
+                  NULL);                                      // va_list of arguments
+#else
+    auto s = strerror(error);
+    std::strncpy(buffer, s, _last_error_string.size());
+#endif
 }
 
 }  // namespace one

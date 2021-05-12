@@ -2,6 +2,8 @@
 
 #include <one/arcus/c_platform.h>
 
+#include <array>
+
 #if defined(ONE_WINDOWS)
     #if defined(ONE_UNREAL_WINDOWS)
         #include <Windows/AllowWindowsPlatformTypes.h>
@@ -121,9 +123,17 @@ public:
     // to be an error and returns ONE_ERROR_NONE.
     OneError receive(void *data, size_t length, size_t &length_received);
 
+    // Error reporting.
+    const char *last_error_text() const;
+
 private:
     mutable SOCKET _socket;  // Mutable so that the copy constructor and operator can take
                              // ownership of the system socket.
+
+public:
+    void set_last_error_text();
+
+    std::array<char, 256> _last_error_string;
 };
 
 }  // namespace one

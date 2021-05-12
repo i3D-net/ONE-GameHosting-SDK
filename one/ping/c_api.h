@@ -479,7 +479,7 @@ I3D_PING_EXPORT I3dPingError i3d_ping_ip_list_ip_size(I3dIpListPtr const ip_list
 /// as i3d_ip_list_ip_size.
 I3D_PING_EXPORT I3dPingError i3d_ping_ip_list_ip(I3dIpListPtr const ip_list,
                                                  unsigned int pos, char *ip,
-                                                 unsigned int *size);
+                                                 unsigned int size);
 
 //------------------------------------------------------------------------------
 ///@}

@@ -772,14 +772,10 @@ I3dPingError ip_list_ip_size(I3dIpListPtr const ip_list, unsigned int pos,
 }
 
 I3dPingError ip_list_ip(I3dIpListPtr const ip_list, unsigned int pos, char *ip,
-                        unsigned int *size) {
+                        unsigned int size) {
     auto ips = (IpList *)(ip_list);
     if (ips == nullptr) {
         return I3D_PING_ERROR_VALIDATION_PINGERS_IS_NULLPTR;
-    }
-
-    if (size == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_SIZE_IS_NULLPTR;
     }
 
     String s;
@@ -788,7 +784,7 @@ I3dPingError ip_list_ip(I3dIpListPtr const ip_list, unsigned int pos, char *ip,
         return err;
     }
 
-    if (*size < static_cast<unsigned int>(s.size())) {
+    if (size < static_cast<unsigned int>(s.size())) {
         return I3D_PING_ERROR_VALIDATION_SIZE_IS_TOO_SMALL;
     }
 
@@ -1031,7 +1027,7 @@ I3dPingError i3d_ping_ip_list_ip_size(I3dIpListPtr const ip_list, unsigned int p
 }
 
 I3dPingError i3d_ping_ip_list_ip(I3dIpListPtr const ip_list, unsigned int pos, char *ip,
-                                 unsigned int *size) {
+                                 unsigned int size) {
     return ping::ip_list_ip(ip_list, pos, ip, size);
 }
 }
