@@ -214,6 +214,14 @@ OneError Server::listen() {
 
     auto err = _listen_socket->bind(_listen_port);
     if (is_error(err)) {
+#ifdef ONE_ARCUS_SERVER_LOGGING
+        _listen_socket->set_last_error_text();
+        OStringStream stream;
+        stream << "failed to bind socket with error text: "
+               << _listen_socket->last_error_text();
+        _logger.Log(LogLevel::Error, stream.str());
+#endif
+
         return err;
     }
 
@@ -502,8 +510,8 @@ OneError Server::update() {
 }
 
 OneError Server::set_live_state(int players, int max_players, const char *name,
-                             const char *map, const char *mode, const char *version,
-                             Object *additional_data) {
+                                const char *map, const char *mode, const char *version,
+                                Object *additional_data) {
     const std::lock_guard<std::mutex> lock(_server);
 
     _game_state.players = players;
@@ -529,7 +537,7 @@ OneError Server::set_application_instance_status(ApplicationInstanceStatus statu
 }
 
 OneError Server::set_soft_stop_callback(std::function<void(void *, int)> callback,
-                                     void *data) {
+                                        void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
     if (callback == nullptr) {
@@ -576,7 +584,7 @@ OneError Server::send_application_instance_status() {
 }
 
 OneError Server::set_allocated_callback(std::function<void(void *, Array *)> callback,
-                                     void *data) {
+                                        void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
     if (callback == nullptr) {
@@ -589,7 +597,7 @@ OneError Server::set_allocated_callback(std::function<void(void *, Array *)> cal
 }
 
 OneError Server::set_metadata_callback(std::function<void(void *, Array *)> callback,
-                                    void *data) {
+                                       void *data) {
     const std::lock_guard<std::mutex> lock(_server);
 
     if (callback == nullptr) {

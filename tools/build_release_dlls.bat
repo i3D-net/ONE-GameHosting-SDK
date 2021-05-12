@@ -33,9 +33,14 @@ IF EXIST ..\build\ (
 CALL .\build_release_windows_dll_64_mt.bat
 cd %ScriptsFolder%
 
-mkdir ..\%OutputDir%\Windows
-mkdir ..\%OutputDir%\Windows\x64
-copy ..\build\one\arcus\Release\one_arcus.dll ..\%OutputDir%\Windows\x64
+mkdir ..\%OutputDir%\Arcus
+mkdir ..\%OutputDir%\Arcus\Windows
+mkdir ..\%OutputDir%\Arcus\Windows\x64
+mkdir ..\%OutputDir%\Ping
+mkdir ..\%OutputDir%\Ping\Windows
+mkdir ..\%OutputDir%\Ping\Windows\x64
+copy ..\build\one\arcus\Release\one_arcus.dll ..\%OutputDir%\Arcus\Windows\x64
+copy ..\build\one\ping\Release\one_ping.dll ..\%OutputDir%\Ping\Windows\x64
 
 CALL .\clean_windows.bat
 cd %ScriptsFolder%
@@ -43,18 +48,25 @@ cd %ScriptsFolder%
 CALL .\build_release_windows_dll_32_mt.bat
 cd %ScriptsFolder%
 
-mkdir ..\%OutputDir%\Windows\x86
-copy ..\build\one\arcus\Release\one_arcus.dll ..\%OutputDir%\Windows\x86
+mkdir ..\%OutputDir%\Arcus\Windows\x86
+mkdir ..\%OutputDir%\Ping\Windows\x86
+copy ..\build\one\arcus\Release\one_arcus.dll ..\%OutputDir%\Arcus\Windows\x86
+copy ..\build\one\ping\Release\one_ping.dll ..\%OutputDir%\Ping\Windows\x86
 
 CALL .\clean_windows.bat
 
-mkdir %OutputDir%\Linux
-mkdir %OutputDir%\Linux\x86
-mkdir %OutputDir%\Linux\x64
+mkdir %OutputDir%\Arcus\Linux
+mkdir %OutputDir%\Arcus\Linux\x86
+mkdir %OutputDir%\Arcus\Linux\x64
+mkdir %OutputDir%\Ping\Linux
+mkdir %OutputDir%\Ping\Linux\x86
+mkdir %OutputDir%\Ping\Linux\x64
 
 docker build -t %DockerImageName%:latest -f %ScriptsFolder%/%Dockerfile% .
 docker rm %TempContainerName% >nul 2>&1
 docker run --name %TempContainerName% %DockerImageName%:latest
-docker cp %TempContainerName%:%ContainerOutputPath%/x86/libone_arcus.so ./%OutputDir%/Linux/x86
-docker cp %TempContainerName%:%ContainerOutputPath%/x64/libone_arcus.so ./%OutputDir%/Linux/x64
+docker cp %TempContainerName%:%ContainerOutputPath%/x86/libone_arcus.so ./%OutputDir%/Arcus/Linux/x86
+docker cp %TempContainerName%:%ContainerOutputPath%/x64/libone_arcus.so ./%OutputDir%/Arcus/Linux/x64
+docker cp %TempContainerName%:%ContainerOutputPath%/x86/libone_ping.so ./%OutputDir%/Ping/Linux/x86
+docker cp %TempContainerName%:%ContainerOutputPath%/x64/libone_ping.so ./%OutputDir%/Ping/Linux/x64
 docker rm %TempContainerName%
