@@ -79,7 +79,7 @@ I3dPingError IcmpSocket::update() {
 
 I3dPingError IcmpSocket::init(const char *ipv4) {
     if (ipv4 == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_IPV4_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     if (is_initialized()) {

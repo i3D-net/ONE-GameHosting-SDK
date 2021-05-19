@@ -12,7 +12,7 @@ I3dPingError SiteInformation::set_continent_id(int continent_id) {
 
 I3dPingError SiteInformation::set_country(const char *country) {
     if (country == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_COUNTRY_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     _country = country;
@@ -26,7 +26,7 @@ I3dPingError SiteInformation::set_dc_location_id(int dc_location_id) {
 
 I3dPingError SiteInformation::set_dc_location_name(const char *dc_location_name) {
     if (dc_location_name == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_DC_LOCATION_NAME_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     _dc_location_name = dc_location_name;
@@ -35,7 +35,7 @@ I3dPingError SiteInformation::set_dc_location_name(const char *dc_location_name)
 
 I3dPingError SiteInformation::set_hostname(const char *hostname) {
     if (hostname == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_HOSTNAME_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     _hostname = hostname;
@@ -44,7 +44,7 @@ I3dPingError SiteInformation::set_hostname(const char *hostname) {
 
 I3dPingError SiteInformation::push_back_ipv4(const char *ipv4) {
     if (ipv4 == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_IPV4_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     _ipv4.push_back(ipv4);
@@ -53,7 +53,7 @@ I3dPingError SiteInformation::push_back_ipv4(const char *ipv4) {
 
 I3dPingError SiteInformation::push_back_ipv6(const char *ipv6) {
     if (ipv6 == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_IPV6_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     _ipv6.push_back(ipv6);

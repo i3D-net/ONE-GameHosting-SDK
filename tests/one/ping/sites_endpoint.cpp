@@ -153,7 +153,7 @@ TEST_CASE("ping site endpoint parse invalid payload", "[ping site endpoint]") {
     Vector<SiteInformation> sites;
     SitesEndpoint endpoint;
     I3dPingError err = endpoint.parse_payload(nullptr, sites);
-    REQUIRE(err == I3D_PING_ERROR_VALIDATION_JSON_IS_NULLPTR);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR);
     std::string json = "{";
     err = endpoint.parse_payload(json.c_str(), sites);
     REQUIRE(err == I3D_PING_ERROR_DATA_PARSE_FAILED);

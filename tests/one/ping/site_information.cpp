@@ -42,13 +42,13 @@ TEST_CASE("site information invalid set", "[site information]") {
 
     I3dPingError err = I3D_PING_ERROR_NONE;
     err = site_information.set_country(nullptr);
-    REQUIRE(err == I3D_PING_ERROR_VALIDATION_COUNTRY_IS_NULLPTR);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR);
     err = site_information.set_dc_location_name(nullptr);
-    REQUIRE(err == I3D_PING_ERROR_VALIDATION_DC_LOCATION_NAME_IS_NULLPTR);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR);
     err = site_information.set_hostname(nullptr);
-    REQUIRE(err == I3D_PING_ERROR_VALIDATION_HOSTNAME_IS_NULLPTR);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR);
     err = site_information.push_back_ipv4(nullptr);
-    REQUIRE(err == I3D_PING_ERROR_VALIDATION_IPV4_IS_NULLPTR);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR);
     err = site_information.push_back_ipv6(nullptr);
-    REQUIRE(err == I3D_PING_ERROR_VALIDATION_IPV6_IS_NULLPTR);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR);
 }
