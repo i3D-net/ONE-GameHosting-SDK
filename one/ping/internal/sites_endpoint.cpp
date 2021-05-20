@@ -10,7 +10,7 @@ SitesEndpoint::SitesEndpoint() : _url("https://api.i3d.net/v3/pingsite") {}
 I3dPingError SitesEndpoint::parse_payload(const char *json,
                                           Vector<SiteInformation> &sites) const {
     if (json == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_JSON_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     rapidjson::Document doc;

@@ -102,7 +102,7 @@ I3dPingError SitesGetter::set_http_get_callback(
     const std::lock_guard<std::recursive_mutex> lock(_sites_getter);
 
     if (callback == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     _callbacks._http_get = callback;
