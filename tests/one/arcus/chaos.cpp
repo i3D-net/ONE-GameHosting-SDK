@@ -4,7 +4,7 @@
 #include <thread>
 
 #include <tests/one/arcus/harness.h>
-#include <one/fake/game/log.h>
+#include <one/fake/arcus/game/log.h>
 
 using namespace one_integration;
 using namespace i3d::one;

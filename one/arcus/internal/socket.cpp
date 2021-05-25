@@ -334,7 +334,10 @@ void Socket::set_last_error_text() {
     int error = last_error();
     auto buffer = _last_error_string.data();
 
-#ifdef ONE_WINDOWS
+#if defined(ONE_WINDOWS)
+    #if defined(ONE_UNREAL_WINDOWS)
+    buffer[0] = '\0';
+    #else
     buffer[0] = '\0';  // Microsoft doesn't guarantee this on man page.
 
     FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,  // flags
@@ -344,6 +347,7 @@ void Socket::set_last_error_text() {
                   buffer,                                     // output buffer
                   sizeof(buffer),                             // size of buffer, bytes
                   NULL);                                      // va_list of arguments
+    #endif
 #else
     auto s = strerror(error);
     std::strncpy(buffer, s, _last_error_string.size());

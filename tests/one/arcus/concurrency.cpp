@@ -5,11 +5,11 @@
 #include <map>
 #include <thread>
 
-#include <one/fake/agent/agent.h>
+#include <one/fake/arcus/agent/agent.h>
 #include <one/arcus/c_error.h>
-#include <one/fake/game/log.h>
-#include <one/fake/game/game.h>
-#include <one/fake/game/one_server_wrapper.h>
+#include <one/fake/arcus/game/log.h>
+#include <one/fake/arcus/game/game.h>
+#include <one/fake/arcus/game/one_server_wrapper.h>
 
 using namespace one_integration;
 using namespace i3d::one;

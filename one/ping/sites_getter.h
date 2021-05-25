@@ -33,7 +33,13 @@ public:
     void shutdown();
     I3dPingError update();
 
-    enum class Status { uninitialized, initialized, waiting, error, ready };
+    enum class Status {
+        uninitialized = 0,
+        initialized = 1,
+        waiting = 2,
+        error = 3,
+        ready = 4
+    };
     static String status_to_string(Status status);
 
     Status status() const;

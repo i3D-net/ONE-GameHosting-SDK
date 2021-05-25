@@ -1,8 +1,8 @@
 #pragma once
 
-#include <one/fake/agent/agent.h>
+#include <one/fake/arcus/agent/agent.h>
 #include <one/arcus/error.h>
-#include <one/fake/game/game.h>
+#include <one/fake/arcus/game/game.h>
 
 #include <unordered_map>
 #include <chrono>

@@ -1,7 +1,7 @@
 #include <catch.hpp>
 #include <tests/one/arcus/util.h>
 #include <one/arcus/error.h>
-#include <one/fake/agent/agent.h>
+#include <one/fake/arcus/agent/agent.h>
 #include <one/arcus/client.h>
 #include <one/arcus/error.h>
 

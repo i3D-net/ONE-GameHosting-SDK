@@ -1,7 +1,7 @@
 #pragma once
 
-#include <one/fake/agent/agent.h>
-#include <one/fake/game/game.h>
+#include <one/fake/arcus/agent/agent.h>
+#include <one/fake/arcus/game/game.h>
 
 #include <functional>
 
@@ -17,8 +17,12 @@ void end_high_resolution_sleep();
 // disable high resolution sleep.
 class ScopedHighResolutionSleepEnabler final {
 public:
-    ScopedHighResolutionSleepEnabler() { start_high_resolution_sleep(); }
-    ~ScopedHighResolutionSleepEnabler() { end_high_resolution_sleep(); }
+    ScopedHighResolutionSleepEnabler() {
+        start_high_resolution_sleep();
+    }
+    ~ScopedHighResolutionSleepEnabler() {
+        end_high_resolution_sleep();
+    }
 };
 
 // This will start and end high resolution sleep.

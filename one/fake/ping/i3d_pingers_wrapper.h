@@ -33,27 +33,12 @@ public:
     //------------
     // Life cycle.
 
-    struct AllocationHooks {
-        // The hooks are optional, they can be left null.
-        AllocationHooks() : alloc(nullptr), free(nullptr), realloc(nullptr) {}
-        AllocationHooks(std::function<void *(size_t)> alloc_in,
-                        std::function<void(void *)> free_in,
-                        std::function<void *(void *, size_t)> realloc_in)
-            : alloc(alloc_in), free(free_in), realloc(realloc_in) {}
-
-        std::function<void *(size_t)> alloc;
-        std::function<void(void *)> free;
-        std::function<void *(void *, size_t)> realloc;
-    };
-
-    // alloc and free are optional allocation override handlers. Both may be nullptr,
-    // otherwise both are required.
-    bool init(I3dIpListPtr ip_list, const AllocationHooks &hooks);
+    bool init(I3dIpListPtr ip_list);
     void shutdown();
 
     // Must called often (e.g. each frame). Updates the Ping Cient, which
     // update the i3D game server ping latency information.
-    void update(bool quiet);
+    bool update(bool quiet);
 
     enum class Status { uninitialized = 0, initialized, unknown };
     static std::string status_to_string(Status status);
@@ -76,6 +61,7 @@ public:
         unsigned int ping_response_count;
     };
 
+    bool size(unsigned int &size) const;
     bool statistics(unsigned int pos, PingStatistics &statistics) const;
 
     bool at_least_one_site_has_been_pinged(bool &result) const;

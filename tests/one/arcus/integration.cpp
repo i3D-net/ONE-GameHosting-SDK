@@ -1,7 +1,7 @@
 #include <catch.hpp>
 #include <tests/one/arcus/util.h>
 
-#include <one/fake/agent/agent.h>
+#include <one/fake/arcus/agent/agent.h>
 #include <one/arcus/array.h>
 #include <one/arcus/error.h>
 #include <one/arcus/internal/connection.h>
@@ -9,7 +9,7 @@
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
 #include <one/arcus/server.h>
-#include <one/fake/game/game.h>
+#include <one/fake/arcus/game/game.h>
 
 #include <chrono>
 

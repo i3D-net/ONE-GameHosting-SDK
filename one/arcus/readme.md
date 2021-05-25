@@ -8,7 +8,7 @@ This folder provides an implementation of the Arcus TCP protocol and the two act
 
 It also provides a C API, containing a C interface for the Server. Game developers integrating the SDK only need the dependencies in this arcus folder and should use the C API for integration.
 
-For easy integration, see the adjacent [Fake Game](../fake/game/readme.md) folder. It contains a C++ wrapper around the C API that can be used directly in the game as a basis for the final integration.
+For easy integration, see the adjacent [Fake Game](../fake/arcus/game/readme.md) folder. It contains a C++ wrapper around the C API that can be used directly in the game as a basis for the final integration.
 
 ## Design
 

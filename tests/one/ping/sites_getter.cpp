@@ -61,7 +61,26 @@ void http_callback(const char *url,
     REQUIRE(!http_data.get()->empty());
 
     parsing_callback(success, http_data.get()->c_str(), parsing_userdata);
-};
+}
+
+void test_callback(const char *url,
+                   void (*parsing_callback)(bool success, const char *json,
+                                            void *parsing_userdata),
+                   void *parsing_userdata, void *http_get_metadata) {
+
+    const std::string json =
+        "[{\"continentId\":5,\"country\":"
+        "\"CanadaCanadaCanadaCanadaCanadaCanadaCanadaCanadaCanadaCanadaCanada\","
+        "\"dcLocationId\":6,"
+        "\"dcLocationName\":\"i3d-us-east-1i3d-us-east-1i3d-us-east-1i3d-us-east-1i3d-us-"
+        "east-1\",\"hostname\":\"nlrtm1-pingbeacon1.sys.i3d.networknlrtm1-pingbeacon1."
+        "sys.i3d.network\",\"ipv4\":[\"213.163.660.5900\"],\"ipv6\":[\"2001:0db8:0000:"
+        "0000:"
+        "0000:0000:1428:57ab:2001:0db8:0000:0000:0000:0000:1428:57ab\"]}]";
+
+    parsing_callback(true, json.c_str(), parsing_userdata);
+}
+
 }  // namespace
 
 TEST_CASE("ping sites using libcurl get http callback", "[sites_getter]") {
@@ -91,53 +110,97 @@ TEST_CASE("ping sites using libcurl get http callback", "[sites_getter]") {
         i3d_ping_sites_getter_list_site_continent_id(sites_getter, 0, &site_continent_id);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     REQUIRE(site_continent_id == 5);
-    unsigned int country_size = 0;
-    err = i3d_ping_sites_getter_list_site_country_size(sites_getter, 0, &country_size);
+    char country[64];
+    err = i3d_ping_sites_getter_list_site_country(sites_getter, 0, country);
     REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(country_size == 11);
-    char country[11];
-    err = i3d_ping_sites_getter_list_site_country(sites_getter, 0, country, 11);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(std::string(country, 11) == "Netherlands");
+    REQUIRE(std::string(country) == "Netherlands");
     int dc_location_id = 0;
     err =
         i3d_ping_sites_getter_list_site_dc_location_id(sites_getter, 0, &dc_location_id);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     REQUIRE(dc_location_id == 6);
-    unsigned int dc_location_name_size = 0;
-    err = i3d_ping_sites_getter_list_site_dc_location_name_size(sites_getter, 0,
-                                                                &dc_location_name_size);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(dc_location_name_size == 13);
-    char dc_location_name[13];
+    char dc_location_name[64];
     err = i3d_ping_sites_getter_list_site_dc_location_name(sites_getter, 0,
-                                                           dc_location_name, 13);
+                                                           dc_location_name);
     REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(std::string(dc_location_name, 13) == "i3d-eu-west-1");
-    unsigned int hostname_size = 0;
-    err = i3d_ping_sites_getter_list_site_hostname_size(sites_getter, 0, &hostname_size);
+    REQUIRE(std::string(dc_location_name) == "i3d-eu-west-1");
+    char hostname[64];
+    err = i3d_ping_sites_getter_list_site_hostname(sites_getter, 0, hostname);
     REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(hostname_size == 34);
-    char hostname[34];
-    err = i3d_ping_sites_getter_list_site_hostname(sites_getter, 0, hostname, 34);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(std::string(hostname, 34) == "nlrtm1-pingbeacon1.sys.i3d.network");
+    REQUIRE(std::string(hostname) == "nlrtm1-pingbeacon1.sys.i3d.network");
     unsigned int ipv4_size = 0;
     err = i3d_ping_sites_getter_list_site_ipv4_size(sites_getter, 0, &ipv4_size);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     REQUIRE(ipv4_size == 1);
-    unsigned int ip_size = 0;
-    err = i3d_ping_sites_getter_list_site_ipv4_ip_size(sites_getter, 0, 0, &ip_size);
+    char ip[16];
+    err = i3d_ping_sites_getter_list_site_ipv4_ip(sites_getter, 0, 0, ip);
     REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(ip_size == 13);
-    char ip[13];
-    err = i3d_ping_sites_getter_list_site_ipv4_ip(sites_getter, 0, 0, ip, 13);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(std::string(ip, 13) == "213.163.66.59");
+    REQUIRE(std::string(ip) == "213.163.66.59");
     unsigned int ipv6_size = 0;
-    err = i3d_ping_sites_getter_list_site_ipv4_size(sites_getter, 0, &ipv6_size);
+    err = i3d_ping_sites_getter_list_site_ipv6_size(sites_getter, 0, &ipv6_size);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    REQUIRE(ipv6_size == 0);
+
+    i3d_ping_sites_getter_destroy(sites_getter);
+}
+
+TEST_CASE("ping sites using json callback to test payload size bigger than c_api buffers",
+          "[sites_getter]") {
+    I3dSitesGetterPtr sites_getter = nullptr;
+    I3dPingError err = I3D_PING_ERROR_NONE;
+
+    i3d_ping_sites_getter_create(&sites_getter);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+
+    err =
+        i3d_ping_sites_getter_set_http_get_callback(sites_getter, test_callback, nullptr);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    err = i3d_ping_sites_getter_init(sites_getter);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    err = i3d_ping_sites_getter_update(sites_getter);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    I3dSitesGetterStatus status;
+    err = i3d_ping_sites_getter_status(sites_getter, &status);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    REQUIRE(status == I3D_SITES_GETTER_STATUS_READY);
+    unsigned int size = 0;
+    err = i3d_ping_sites_getter_site_list_size(sites_getter, &size);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    REQUIRE(size == 1);
+    int site_continent_id = 0;
+    err =
+        i3d_ping_sites_getter_list_site_continent_id(sites_getter, 0, &site_continent_id);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    REQUIRE(site_continent_id == 5);
+    char country[64];
+    err = i3d_ping_sites_getter_list_site_country(sites_getter, 0, country);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_BUFFER_IS_TOO_SMALL);
+    int dc_location_id = 0;
+    err =
+        i3d_ping_sites_getter_list_site_dc_location_id(sites_getter, 0, &dc_location_id);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    REQUIRE(dc_location_id == 6);
+    char dc_location_name[64];
+    err = i3d_ping_sites_getter_list_site_dc_location_name(sites_getter, 0,
+                                                           dc_location_name);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_BUFFER_IS_TOO_SMALL);
+    char hostname[64];
+    err = i3d_ping_sites_getter_list_site_hostname(sites_getter, 0, hostname);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_BUFFER_IS_TOO_SMALL);
+    unsigned int ipv4_size = 0;
+    err = i3d_ping_sites_getter_list_site_ipv4_size(sites_getter, 0, &ipv4_size);
+    REQUIRE(err == I3D_PING_ERROR_NONE);
+    REQUIRE(ipv4_size == 1);
+    char ipv4[16];
+    err = i3d_ping_sites_getter_list_site_ipv4_ip(sites_getter, 0, 0, ipv4);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_BUFFER_IS_TOO_SMALL);
+    unsigned int ipv6_size = 0;
+    err = i3d_ping_sites_getter_list_site_ipv6_size(sites_getter, 0, &ipv6_size);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     REQUIRE(ipv6_size == 1);
+    char ipv6[46];
+    err = i3d_ping_sites_getter_list_site_ipv4_ip(sites_getter, 0, 0, ipv6);
+    REQUIRE(err == I3D_PING_ERROR_VALIDATION_BUFFER_IS_TOO_SMALL);
 
     i3d_ping_sites_getter_destroy(sites_getter);
 }

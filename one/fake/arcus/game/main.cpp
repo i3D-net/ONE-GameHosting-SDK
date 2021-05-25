@@ -1,6 +1,6 @@
-#include <one/fake/game/game.h>
+#include <one/fake/arcus/game/game.h>
 
-#include <one/fake/game/log.h>
+#include <one/fake/arcus/game/log.h>
 
 #include <chrono>
 #include <thread>
