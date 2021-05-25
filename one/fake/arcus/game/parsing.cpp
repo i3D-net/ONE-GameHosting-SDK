@@ -1,6 +1,6 @@
-#include <one/fake/game/parsing.h>
+#include <one/fake/arcus/game/parsing.h>
 
-#include <one/fake/game/log.h>
+#include <one/fake/arcus/game/log.h>
 
 namespace one_integration {
 

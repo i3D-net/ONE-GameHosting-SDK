@@ -39,8 +39,8 @@ endif()
 
 add_subdirectory(one/arcus)
 add_subdirectory(one/ping)
-add_subdirectory(one/fake/agent)
-add_subdirectory(one/fake/game)
+add_subdirectory(one/fake/arcus/agent)
+add_subdirectory(one/fake/arcus/game)
 add_subdirectory(one/fake/ping)
 
 set(PROJECT_ARCUS_PROTOCOL_VERSION V2)

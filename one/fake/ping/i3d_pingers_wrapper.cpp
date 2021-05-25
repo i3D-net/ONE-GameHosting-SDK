@@ -44,37 +44,12 @@ I3dPingersWrapper::~I3dPingersWrapper() {
     shutdown();
 }
 
-bool I3dPingersWrapper::init(I3dIpListPtr ip_list, const AllocationHooks &hooks) {
+bool I3dPingersWrapper::init(I3dIpListPtr ip_list) {
     const std::lock_guard<std::mutex> lock(_wrapper);
 
     if (_pingers != nullptr) {
         L_ERROR("already initialized");
         return false;
-    }
-
-    //----------------------
-    // Set custom allocator.
-
-    if (hooks.alloc && hooks.free && hooks.realloc) {
-        // Cache off the overrides so that they can be called within the lambdas
-        // because lambdas with captures may not be passed to the C API.
-        _alloc = hooks.alloc;
-        _free = hooks.free;
-        _realloc = hooks.realloc;
-        // Functions wrapper to remove lambda capture and convert to c interface (unsigned
-        // int).
-        auto alloc_wrapper = [](unsigned int bytes) -> void * {
-            return _alloc(static_cast<size_t>(bytes));
-        };
-
-        auto free_wrapper = [](void *p) -> void { _free(p); };
-        auto realloc_wrapper = [](void *p, unsigned int bytes) -> void * {
-            return _realloc(p, static_cast<size_t>(bytes));
-        };
-
-        i3d_ping_allocator_set_alloc(alloc_wrapper);
-        i3d_ping_allocator_set_free(free_wrapper);
-        i3d_ping_allocator_set_realloc(realloc_wrapper);
     }
 
     //-----------------------
@@ -117,7 +92,7 @@ void I3dPingersWrapper::shutdown() {
     _pingers = nullptr;
 }
 
-void I3dPingersWrapper::update(bool quiet) {
+bool I3dPingersWrapper::update(bool quiet) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     assert(_pingers != nullptr);
 
@@ -128,8 +103,10 @@ void I3dPingersWrapper::update(bool quiet) {
     I3dPingError err = i3d_ping_pingers_update(_pingers);
     if (i3d_ping_is_error(err)) {
         if (!quiet) L_ERROR(i3d_ping_error_text(err));
-        return;
+        return false;
     }
+
+    return true;
 }
 
 std::string I3dPingersWrapper::status_to_string(Status status) {
@@ -160,6 +137,18 @@ I3dPingersWrapper::Status I3dPingersWrapper::status() const {
         default:
             return Status::unknown;
     }
+}
+
+bool I3dPingersWrapper::size(unsigned int &size) const {
+    const std::lock_guard<std::mutex> lock(_wrapper);
+
+    I3dPingError err = i3d_ping_pingers_size(_pingers, &size);
+    if (i3d_ping_is_error(err)) {
+        L_ERROR(i3d_ping_error_text(err));
+        return false;
+    }
+
+    return true;
 }
 
 bool I3dPingersWrapper::statistics(unsigned int pos, PingStatistics &statistics) const {

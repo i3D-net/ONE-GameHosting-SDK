@@ -6,8 +6,8 @@
 #include <one/arcus/object.h>
 #include <one/arcus/types.h>
 
-#include <one/fake/agent/agent.h>
-#include <one/fake/agent/log.h>
+#include <one/fake/arcus/agent/agent.h>
+#include <one/fake/arcus/agent/log.h>
 
 using namespace std::chrono;
 using namespace i3d::one;
@@ -32,8 +32,7 @@ int main(int argc, char **argv) {
             return 1;
         }
 
-        for (int i = 1; i < argc; i++)
-        {
+        for (int i = 1; i < argc; i++) {
             if (strcmp(argv[i], "--stress") == 0) {
                 stressTest = true;
                 break;

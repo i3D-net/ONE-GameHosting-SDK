@@ -34,17 +34,17 @@ extern "C" {
 /// Status of a i3D Ping Sites.
 typedef enum I3dSitesGetterStatus {
     I3D_SITES_GETTER_STATUS_UNINITIALIZED = 0,
-    I3D_SITES_GETTER_STATUS_INITIALIZED,
-    I3D_SITES_GETTER_STATUS_WAITING,
-    I3D_SITES_GETTER_STATUS_ERROR,
-    I3D_SITES_GETTER_STATUS_READY
+    I3D_SITES_GETTER_STATUS_INITIALIZED = 1,
+    I3D_SITES_GETTER_STATUS_WAITING = 2,
+    I3D_SITES_GETTER_STATUS_ERROR = 3,
+    I3D_SITES_GETTER_STATUS_READY = 4
 } I3dSitesGetterStatus;
 
 ///
 /// Status of a i3D Pingers.
 typedef enum I3dPingersStatus {
     I3D_PINGERS_STATUS_UNINITIALIZED = 0,
-    I3D_PINGERS_STATUS_INITIALIZED
+    I3D_PINGERS_STATUS_INITIALIZED = 1
 } I3dPingersStatus;
 
 // See the c_error.h file for error values.
@@ -186,23 +186,15 @@ i3d_ping_sites_getter_site_list_size(I3dSitesGetterPtr sites_getter, unsigned in
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_continent_id(
     I3dSitesGetterPtr sites_getter, unsigned int pos, int *continent_id);
 
-/// Get the country size of the site at the given position in the site list.
-/// @param sites_getter A non-null sites_getter pointer. Thread-safe.
-/// @param pos The position in the list . Must be less than
-/// i3d_ping_sites_getter_site_list_size.
-/// @param size Non-null pointer to set the size on.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_country_size(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int *size);
-
 /// Get the country of the site at the given position in the site list.
+/// The maximum character size of a country is 63 chars and with the null terminated
+/// string the buffer size must be of 64.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
 /// @param pos The position in the list . Must be less than
 /// i3d_ping_sites_getter_site_list_size.
-/// @param country Non-null pointer to set the country on.
-/// @param size Size of the value buffer that can be written to. Must be at least as big
-/// as i3d_ping_sites_getter_list_site_country_size.
+/// @param country Non-null character array with size 64 to set the country on.
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_country(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, char *country, unsigned int size);
+    I3dSitesGetterPtr sites_getter, unsigned int pos, char country[64]);
 
 /// Get the data center location id of the site at the given position in the site
 /// list.
@@ -213,44 +205,25 @@ I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_country(
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_dc_location_id(
     I3dSitesGetterPtr sites_getter, unsigned int pos, int *dc_location_id);
 
-/// Get the data center location name size of the site at the given position in the site
-/// list.
-/// @param sites_getter A non-null sites_getter pointer. Thread-safe.
-/// @param pos The position in the list . Must be less than
-/// i3d_ping_sites_getter_site_list_size.
-/// @param size Non-null pointer to set the size on.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_dc_location_name_size(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int *size);
-
 /// Get the data center location name of the site at the given position in the site
-/// list.
+/// list. The maximum character size of an dc_location_name is 63 chars and with the null
+/// terminated string the buffer size must be of 64.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
 /// @param pos The position in the list . Must be less than
 /// i3d_ping_sites_getter_site_list_size.
-/// @param dc_location_name Non-null pointer to set the name on.
-/// @param size Size of the value buffer that can be written to. Must be at least as big
-/// as i3d_ping_sites_getter_list_site_dc_location_name_size.
+/// @param dc_location_name Non-null character array of size 64 to set the name on.
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_dc_location_name(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, char *dc_location_name,
-    unsigned int size);
-
-/// Get the hostname size of the site at the given position in the site list.
-/// @param sites_getter A non-null sites_getter pointer. Thread-safe.
-/// @param pos The position in the list . Must be less than
-/// i3d_ping_sites_getter_site_list_size.
-/// @param size Non-null pointer to set the size on.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_hostname_size(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int *size);
+    I3dSitesGetterPtr sites_getter, unsigned int pos, char dc_location_name[64]);
 
 /// Get the hostname of the site at the given position in the site list.
+/// The maximum character size of an hostname is 63 chars and with the null terminated
+/// string the buffer size must be of 64.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
 /// @param pos The position in the list . Must be less than
 /// i3d_ping_sites_getter_site_list_size.
-/// @param hostname Non-null pointer to set the name on.
-/// @param size Size of the value buffer that can be written to. Must be at least as big
-/// as i3d_ping_sites_getter_list_site_hostname_size.
+/// @param hostname Non-null character array of size 64 to set the name on.
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_hostname(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, char *hostname, unsigned int size);
+    I3dSitesGetterPtr sites_getter, unsigned int pos, char hostname[64]);
 
 /// Get the Ipv4 list size of the site at the given position in the site list.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
@@ -260,30 +233,17 @@ I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_hostname(
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_ipv4_size(
     I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int *size);
 
-/// Get the IPv4 size at the given position of the site at the given position in the site
-/// list.
-/// @param sites_getter A non-null sites_getter pointer. Thread-safe.
-/// @param pos The position in the list . Must be less than
-/// i3d_ping_sites_getter_site_list_size.
-/// @param ip_pos The position in the ip list . Must be less than
-/// i3d_ping_sites_getter_list_site_ip_size.
-/// @param size Non-null pointer to set the size on.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_ipv4_ip_size(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int ip_pos,
-    unsigned int *size);
-
 /// Get the IPv4 at the given position of the site at the given position in the site list.
+/// The maximum character size of an IPv6 is 15 chars and with the null terminated string
+/// the buffer size must be of 16.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
 /// @param pos The position in the list . Must be less than
 /// i3d_ping_sites_getter_site_list_size.
 /// @param ip_pos The position in the ip list . Must be less than
 /// i3d_ping_sites_getter_list_site_ip_size.
-/// @param ip Non-null pointer to set the ipv4 on.
-/// @param size Size of the value buffer that can be written to.  Must be at least as big
-/// as i3d_ping_sites_getter_list_site_ipv4_size.
-I3D_PING_EXPORT I3dPingError
-i3d_ping_sites_getter_list_site_ipv4_ip(I3dSitesGetterPtr sites_getter, unsigned int pos,
-                                        unsigned int ip_pos, char *ip, unsigned int size);
+/// @param ip Non-null character array of size 16 to set the ipv4 on.
+I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_ipv4_ip(
+    I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int ip_pos, char ip[16]);
 
 /// Get the Ipv6 list size of the site at the given position in the site list.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
@@ -293,30 +253,17 @@ i3d_ping_sites_getter_list_site_ipv4_ip(I3dSitesGetterPtr sites_getter, unsigned
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_ipv6_size(
     I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int *size);
 
-/// Get the IPv6 size at the given position of the site at the given position in the site
-/// list.
-/// @param sites_getter A non-null sites_getter pointer. Thread-safe.
-/// @param pos The position in the list . Must be less than
-/// i3d_ping_sites_getter_site_list_size.
-/// @param ip_pos The position in the ip list . Must be less than
-/// i3d_ping_sites_getter_list_site_ip_size.
-/// @param size Non-null pointer to set the size on.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_ipv6_ip_size(
-    I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int ip_pos,
-    unsigned int *size);
-
 /// Get the IPv6 at the given position of the site at the given position in the site list.
+/// The maximum character size of an IPv6 is 45 chars and with the null terminated string
+/// the buffer size must be of 46.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
 /// @param pos The position in the list . Must be less than
 /// i3d_ping_sites_getter_site_list_size.
 /// @param ip_pos The position in the ip list . Must be less than
 /// i3d_ping_sites_getter_list_site_ip_size.
-/// @param ip Non-null pointer to set the ipv6 on.
-/// @param size Size of the value buffer that can be written to. Must be at least as big
-/// as i3d_ping_sites_getter_list_site_ipv6_size.
-I3D_PING_EXPORT I3dPingError
-i3d_ping_sites_getter_list_site_ipv6_ip(I3dSitesGetterPtr sites_getter, unsigned int pos,
-                                        unsigned int ip_pos, char *ip, unsigned int size);
+/// @param ip Non-null character array of size 46 to set the ipv6 on.
+I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_list_site_ipv6_ip(
+    I3dSitesGetterPtr sites_getter, unsigned int pos, unsigned int ip_pos, char ip[46]);
 
 /// Get the IPv4 list of all the sites contained in the ping_site.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.

@@ -1,7 +1,7 @@
 #include <tests/one/arcus/harness.h>
 #include <tests/one/arcus/util.h>
 
-#include <one/fake/game/log.h>
+#include <one/fake/arcus/game/log.h>
 
 namespace i3d {
 namespace one {

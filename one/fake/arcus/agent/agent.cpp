@@ -1,8 +1,8 @@
-#include <one/fake/agent/agent.h>
+#include <one/fake/arcus/agent/agent.h>
 
 #include <stdlib.h>
 
-#include <one/fake/agent/log.h>
+#include <one/fake/arcus/agent/log.h>
 #include <one/arcus/message.h>
 #include <one/arcus/object.h>
 
@@ -95,7 +95,7 @@ OneError Agent::send_application_instance_information() {
     // Only a small subset of the available key/value pairs are used for demonstration.
     object.set_val_string("fleetId", "fleet_9876");
     object.set_val_int("hostId", 87654);
-    object.set_val_bool("isVirtual", false); // True if the host is a virtual machine.
+    object.set_val_bool("isVirtual", false);  // True if the host is a virtual machine.
     // ...
 
     auto err = _client.send_application_instance_information(object);

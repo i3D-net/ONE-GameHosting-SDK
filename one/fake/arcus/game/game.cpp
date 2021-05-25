@@ -1,11 +1,11 @@
-#include <one/fake/game/game.h>
+#include <one/fake/arcus/game/game.h>
 
 #include <assert.h>
 #include <ctime>
 #include <string>
 #include <sstream>
 
-#include <one/fake/game/log.h>
+#include <one/fake/arcus/game/log.h>
 
 namespace one_integration {
 

@@ -29,7 +29,7 @@ public:
         return _pingers.size();
     }
 
-    enum class Status { uninitialized, initialized, unknown };
+    enum class Status { uninitialized = 0, initialized = 1, unknown = 2 };
     static String status_to_string(Status status);
 
     Status status() const;
