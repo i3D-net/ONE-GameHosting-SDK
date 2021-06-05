@@ -111,17 +111,7 @@ int main(int argc, char **argv) {
     I3dSitesGetterWrapper sites_getter;
     I3dPingersWrapper pingers;
 
-    bool result = sites_getter.init();
-    if (!result) {
-        return -1;
-    }
-
-    result = sites_getter.set_http_get_callback(http_callback, nullptr);
-    if (!result) {
-        return -1;
-    }
-
-    result = sites_getter.init_http_callback();
+    bool result = sites_getter.init(http_callback, nullptr);
     if (!result) {
         return -1;
     }

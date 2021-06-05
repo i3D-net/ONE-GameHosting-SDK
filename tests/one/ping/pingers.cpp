@@ -29,9 +29,7 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
     REQUIRE(size == 4);
 
     I3dPingersPtr pingers = nullptr;
-    err = i3d_ping_pingers_create(&pingers);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-    err = i3d_ping_pingers_init(pingers, ip_list);
+    err = i3d_ping_pingers_create(&pingers, ip_list);
     REQUIRE(err == I3D_PING_ERROR_NONE);
 
     std::vector<int> last(size);

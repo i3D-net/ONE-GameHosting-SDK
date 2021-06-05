@@ -87,13 +87,7 @@ TEST_CASE("ping sites using libcurl get http callback", "[sites_getter]") {
     I3dSitesGetterPtr sites_getter = nullptr;
     I3dPingError err = I3D_PING_ERROR_NONE;
 
-    i3d_ping_sites_getter_create(&sites_getter);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-
-    err =
-        i3d_ping_sites_getter_set_http_get_callback(sites_getter, http_callback, nullptr);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-    err = i3d_ping_sites_getter_init(sites_getter);
+    i3d_ping_sites_getter_create(&sites_getter, http_callback, nullptr);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     err = i3d_ping_sites_getter_update(sites_getter);
     REQUIRE(err == I3D_PING_ERROR_NONE);
@@ -149,13 +143,7 @@ TEST_CASE("ping sites using json callback to test payload size bigger than c_api
     I3dSitesGetterPtr sites_getter = nullptr;
     I3dPingError err = I3D_PING_ERROR_NONE;
 
-    i3d_ping_sites_getter_create(&sites_getter);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-
-    err =
-        i3d_ping_sites_getter_set_http_get_callback(sites_getter, test_callback, nullptr);
-    REQUIRE(err == I3D_PING_ERROR_NONE);
-    err = i3d_ping_sites_getter_init(sites_getter);
+    i3d_ping_sites_getter_create(&sites_getter, test_callback, nullptr);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     err = i3d_ping_sites_getter_update(sites_getter);
     REQUIRE(err == I3D_PING_ERROR_NONE);
