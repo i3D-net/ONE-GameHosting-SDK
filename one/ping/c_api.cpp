@@ -34,14 +34,35 @@ void allocator_set_realloc(void *(*callback)(void *, unsigned int size)) {
     allocator::set_realloc(wrapper);
 }
 
-I3dPingError sites_getter_create(I3dSitesGetterPtr *sites_getter) {
+I3dPingError sites_getter_create(
+    I3dSitesGetterPtr *sites_getter,
+    void (*callback)(const char *url,
+                     void (*)(bool success, const char *json, void *parsing_userdata),
+                     void *parsing_userdata, void *http_get_metadata),
+    void *userdata) {
     if (sites_getter == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
+    }
+
+    if (callback == nullptr) {
         return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     auto p = allocator::create<SitesGetter>();
     if (p == nullptr) {
         return I3D_PING_ERROR_SITES_GETTER_ALLOCATION_FAILED;
+    }
+
+    auto err = p->set_http_get_callback(callback, userdata);
+    if (i3d_ping_is_error(err)) {
+        allocator::destroy<SitesGetter>(p);
+        return err;
+    }
+
+    err = p->init();
+    if (i3d_ping_is_error(err)) {
+        allocator::destroy<SitesGetter>(p);
+        return err;
     }
 
     *sites_getter = (I3dSitesGetterPtr)p;
@@ -73,15 +94,6 @@ void sites_getter_destroy(I3dSitesGetterPtr sites_getter) {
     allocator::destroy<SitesGetter>(p);
 }
 
-I3dPingError sites_getter_init(I3dSitesGetterPtr sites_getter) {
-    auto p = (SitesGetter *)(sites_getter);
-    if (p == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
-    }
-
-    return p->init();
-}
-
 I3dPingError sites_getter_update(I3dSitesGetterPtr sites_getter) {
     auto p = (SitesGetter *)(sites_getter);
     if (p == nullptr) {
@@ -104,24 +116,6 @@ I3dPingError sites_getter_status(I3dSitesGetterPtr const sites_getter,
 
     *status = static_cast<I3dSitesGetterStatus>(p->status());
     return I3D_PING_ERROR_NONE;
-}
-
-I3dPingError sites_getter_set_http_get_callback(
-    I3dSitesGetterPtr sites_getter,
-    void (*callback)(const char *url,
-                     void (*)(bool success, const char *json, void *parsing_userdata),
-                     void *parsing_userdata, void *http_get_metadata),
-    void *userdata) {
-    auto p = (SitesGetter *)(sites_getter);
-    if (p == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
-    }
-
-    if (callback == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
-    }
-
-    return p->set_http_get_callback(callback, userdata);
 }
 
 I3dPingError sites_getter_site_list_size(I3dSitesGetterPtr sites_getter,
@@ -401,14 +395,25 @@ I3dPingError sites_getter_ipv6_list(I3dSitesGetterPtr sites_getter,
     return p->ipv6_list(*ips);
 }
 
-I3dPingError pingers_create(I3dPingersPtr *pingers) {
+I3dPingError pingers_create(I3dPingersPtr *pingers, I3dIpListPtr const ip_list) {
     if (pingers == nullptr) {
+        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
+    }
+
+    auto ips = (IpList *)(ip_list);
+    if (ips == nullptr) {
         return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
     auto p = allocator::create<Pingers>();
     if (p == nullptr) {
         return I3D_PING_ERROR_SITES_GETTER_ALLOCATION_FAILED;
+    }
+
+    auto err = p->init(*ips);
+    if (i3d_ping_is_error(err)) {
+        allocator::destroy<Pingers>(p);
+        return err;
     }
 
     *pingers = (I3dPingersPtr)p;
@@ -438,20 +443,6 @@ void pingers_destroy(I3dPingersPtr pingers) {
 
     auto p = (Pingers *)(pingers);
     allocator::destroy<Pingers>(p);
-}
-
-I3dPingError pingers_init(I3dPingersPtr pingers, I3dIpListPtr const ip_list) {
-    auto p = (Pingers *)(pingers);
-    if (p == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
-    }
-
-    auto ips = (IpList *)(ip_list);
-    if (ips == nullptr) {
-        return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
-    }
-
-    return p->init(*ips);
 }
 
 I3dPingError pingers_update(I3dPingersPtr pingers) {
@@ -721,8 +712,13 @@ void i3d_ping_allocator_set_realloc(void *(*callback)(void *, unsigned int size)
     ping::allocator_set_realloc(callback);
 }
 
-I3dPingError i3d_ping_sites_getter_create(I3dSitesGetterPtr *sites_getter) {
-    return ping::sites_getter_create(sites_getter);
+I3dPingError i3d_ping_sites_getter_create(
+    I3dSitesGetterPtr *sites_getter,
+    void (*callback)(const char *url,
+                     void (*)(bool success, const char *json, void *parsing_userdata),
+                     void *parsing_userdata, void *http_get_metadata),
+    void *userdata) {
+    return ping::sites_getter_create(sites_getter, callback, userdata);
 }
 
 I3dPingError i3d_ping_sites_getter_set_logger(I3dSitesGetterPtr sites_getter,
@@ -734,10 +730,6 @@ void i3d_ping_sites_getter_destroy(I3dSitesGetterPtr sites_getter) {
     return ping::sites_getter_destroy(sites_getter);
 }
 
-I3dPingError i3d_ping_sites_getter_init(I3dSitesGetterPtr sites_getter) {
-    return ping::sites_getter_init(sites_getter);
-}
-
 I3dPingError i3d_ping_sites_getter_update(I3dSitesGetterPtr sites_getter) {
     return ping::sites_getter_update(sites_getter);
 }
@@ -745,15 +737,6 @@ I3dPingError i3d_ping_sites_getter_update(I3dSitesGetterPtr sites_getter) {
 I3dPingError i3d_ping_sites_getter_status(I3dSitesGetterPtr const sites_getter,
                                           I3dSitesGetterStatus *status) {
     return ping::sites_getter_status(sites_getter, status);
-}
-
-I3dPingError i3d_ping_sites_getter_set_http_get_callback(
-    I3dSitesGetterPtr sites_getter,
-    void (*http_get_callback)(const char *, void (*)(bool, const char *, void *), void *,
-                              void *),
-    void *userdata) {
-    return ping::sites_getter_set_http_get_callback(sites_getter, http_get_callback,
-                                                    userdata);
 }
 
 I3dPingError i3d_ping_sites_getter_site_list_size(I3dSitesGetterPtr sites_getter,
@@ -823,8 +806,8 @@ I3dPingError i3d_ping_sites_getter_ipv6_list(I3dSitesGetterPtr sites_getter,
     return ping::sites_getter_ipv6_list(sites_getter, ip_list);
 }
 
-I3dPingError i3d_ping_pingers_create(I3dPingersPtr *pingers) {
-    return ping::pingers_create(pingers);
+I3dPingError i3d_ping_pingers_create(I3dPingersPtr *pingers, I3dIpListPtr const ip_list) {
+    return ping::pingers_create(pingers, ip_list);
 }
 
 I3dPingError i3d_ping_pingers_set_logger(I3dPingersPtr pingers, I3dPingLogFn log_cb,
@@ -834,10 +817,6 @@ I3dPingError i3d_ping_pingers_set_logger(I3dPingersPtr pingers, I3dPingLogFn log
 
 void i3d_ping_pingers_destroy(I3dPingersPtr pingers) {
     return ping::pingers_destroy(pingers);
-}
-
-I3dPingError i3d_ping_pingers_init(I3dPingersPtr pingers, I3dIpListPtr const ip_list) {
-    return ping::pingers_init(pingers, ip_list);
 }
 
 I3dPingError i3d_ping_pingers_update(I3dPingersPtr pingers) {

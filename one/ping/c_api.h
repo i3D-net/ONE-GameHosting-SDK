@@ -119,8 +119,14 @@ typedef enum I3dPingLogLevel {
 /// @param sites_getter A null sites_getter pointer, which will be set to a new
 /// sites_getter. \sa i3d_ping_sites_getter_destroy \sa i3d_ping_sites_getter_update \sa
 /// i3d_ping_sites_getter_status
-I3D_PING_EXPORT I3dPingError
-i3d_ping_sites_getter_create(I3dSitesGetterPtr *sites_getter);
+/// @param http_get_callback A non-null callback that do the http request.
+/// @param userdata a nullable pointer that will be provided to the callback.
+I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_create(
+    I3dSitesGetterPtr *sites_getter,
+    void (*callback)(const char *url,
+                     void (*)(bool success, const char *json, void *parsing_userdata),
+                     void *parsing_userdata, void *http_get_metadata),
+    void *userdata);
 
 /// Log callback function to allow the integration to handle internal i3D Ping Sites
 /// logs with its own logger.
@@ -144,11 +150,6 @@ I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_set_logger(
 /// @param sites_getter A non-null sites_getter pointer.
 I3D_PING_EXPORT void i3d_ping_sites_getter_destroy(I3dSitesGetterPtr sites_getter);
 
-/// Init the sites_getter. This must be called once before calling
-/// i3d_ping_sites_getter_update.
-/// @param sites_getter A non-null sites_getter pointer. Thread-safe.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_init(I3dSitesGetterPtr sites_getter);
-
 /// Update the sites_getter. This must be called frequently until the HTTP Get callback
 /// has finished. The PingSites status will be ready then.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
@@ -160,18 +161,6 @@ I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_update(I3dSitesGetterPtr site
 /// @param status A pointer to a status enum value to be set.
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_status(
     I3dSitesGetterPtr const sites_getter, I3dSitesGetterStatus *status);
-
-/// Set the HTTP callback for the sites_getter. This must be called once before calling
-/// update.
-/// @param pingers A non-null pingers pointer. Thread-safe.
-/// @param http_get_callback A non-null callback that do the http request.
-/// @param userdata a nullable pointer that will be provided to the callback.
-I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_set_http_get_callback(
-    I3dSitesGetterPtr sites_getter,
-    void (*callback)(const char *url,
-                     void (*)(bool success, const char *json, void *parsing_userdata),
-                     void *parsing_userdata, void *http_get_metadata),
-    void *userdata);
 
 /// Get the site list size.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
@@ -298,7 +287,9 @@ i3d_ping_sites_getter_ipv6_list(I3dSitesGetterPtr sites_getter, I3dIpListPtr ip_
 /// \sa i3d_ping_pingers_destroy
 /// \sa i3d_ping_pingers_update
 /// \sa i3d_ping_pingers_status
-I3D_PING_EXPORT I3dPingError i3d_ping_pingers_create(I3dPingersPtr *pingers);
+/// @param ip_list Non-null pointer of an IpList.
+I3D_PING_EXPORT I3dPingError i3d_ping_pingers_create(I3dPingersPtr *pingers,
+                                                     I3dIpListPtr const ip_list);
 
 /// Sets a custom logger that can handle logs from inside of the pingers. By
 /// default the pingers will log to standard out.
@@ -315,12 +306,6 @@ I3D_PING_EXPORT I3dPingError i3d_ping_pingers_set_logger(I3dPingersPtr pingers,
 /// interacted with on other threads.
 /// @param pingers A non-null pingers pointer.
 I3D_PING_EXPORT void i3d_ping_pingers_destroy(I3dPingersPtr pingers);
-
-/// Init the pingers with an IpList.
-/// @param pingers A non-null pingers pointer. Thread-safe.
-/// @param ip_list Non-null pointer of an IpList.
-I3D_PING_EXPORT I3dPingError i3d_ping_pingers_init(I3dPingersPtr pingers,
-                                                   I3dIpListPtr const ip_list);
 
 /// Update the pingers. This must be called frequently (e.g. each frame)
 /// This will update the ping of all the ips in the ip_list.

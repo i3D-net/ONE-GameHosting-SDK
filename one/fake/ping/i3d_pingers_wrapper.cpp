@@ -55,7 +55,7 @@ bool I3dPingersWrapper::init(I3dIpListPtr ip_list) {
     //-----------------------
     // Create the i3D Ping Client.
 
-    I3dPingError err = i3d_ping_pingers_create(&_pingers);
+    I3dPingError err = i3d_ping_pingers_create(&_pingers, ip_list);
     if (i3d_ping_is_error(err)) {
         L_ERROR(i3d_ping_error_text(err));
         return false;
@@ -64,12 +64,6 @@ bool I3dPingersWrapper::init(I3dIpListPtr ip_list) {
     // Set custom logger - optional.
     err = i3d_ping_pingers_set_logger(_pingers, log,
                                       nullptr);  // null userdata as global log is used.
-    if (i3d_ping_is_error(err)) {
-        L_ERROR(i3d_ping_error_text(err));
-        return false;
-    }
-
-    err = i3d_ping_pingers_init(_pingers, ip_list);
     if (i3d_ping_is_error(err)) {
         L_ERROR(i3d_ping_error_text(err));
         return false;

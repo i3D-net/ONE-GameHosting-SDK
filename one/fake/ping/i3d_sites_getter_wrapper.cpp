@@ -39,18 +39,15 @@ I3dSitesGetterWrapper::~I3dSitesGetterWrapper() {
     shutdown();
 }
 
-bool I3dSitesGetterWrapper::init() {
-    const std::lock_guard<std::mutex> lock(_wrapper);
-
-    if (_sites_getter != nullptr) {
-        L_ERROR("already initialized");
-        return false;
-    }
-
+bool I3dSitesGetterWrapper::init(
+    void (*callback)(const char *url,
+                     void (*)(bool success, const char *json, void *parsing_userdata),
+                     void *parsing_userdata, void *http_get_metadata),
+    void *userdata) {
     //-----------------------
     // Create the i3D Ping Sites.
 
-    I3dPingError err = i3d_ping_sites_getter_create(&_sites_getter);
+    I3dPingError err = i3d_ping_sites_getter_create(&_sites_getter, callback, userdata);
     if (i3d_ping_is_error(err)) {
         L_ERROR(i3d_ping_error_text(err));
         return false;
@@ -66,23 +63,6 @@ bool I3dSitesGetterWrapper::init() {
     }
 
     L_INFO("I3dPingSitesWrapper init complete");
-    return true;
-}
-
-bool I3dSitesGetterWrapper::init_http_callback() {
-    const std::lock_guard<std::mutex> lock(_wrapper);
-
-    if (_sites_getter == nullptr) {
-        return false;
-    }
-
-    I3dPingError err = i3d_ping_sites_getter_init(_sites_getter);
-    if (i3d_ping_is_error(err)) {
-        L_ERROR(i3d_ping_error_text(err));
-        return false;
-    }
-
-    L_INFO("I3dPingSitesWrapper init with http callback complete");
     return true;
 }
 
@@ -152,23 +132,6 @@ I3dSitesGetterWrapper::Status I3dSitesGetterWrapper::status() const {
         default:
             return Status::unknown;
     }
-}
-
-bool I3dSitesGetterWrapper::set_http_get_callback(
-    void (*callback)(const char *url,
-                     void (*)(bool success, const char *json, void *parsing_userdata),
-                     void *parsing_userdata, void *http_get_metadata),
-    void *userdata) {
-    const std::lock_guard<std::mutex> lock(_wrapper);
-
-    I3dPingError err =
-        i3d_ping_sites_getter_set_http_get_callback(_sites_getter, callback, userdata);
-    if (i3d_ping_is_error(err)) {
-        L_ERROR(i3d_ping_error_text(err));
-        return false;
-    }
-
-    return true;
 }
 
 bool I3dSitesGetterWrapper::sites_size(size_t &size) const {

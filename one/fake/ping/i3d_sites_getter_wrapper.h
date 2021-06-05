@@ -33,8 +33,11 @@ public:
     //------------
     // Life cycle.
 
-    bool init();
-    bool init_http_callback();
+    bool init(void (*callback)(const char *url,
+                               void (*)(bool success, const char *json,
+                                        void *parsing_userdata),
+                               void *parsing_userdata, void *http_get_metadata),
+              void *userdata);
     void shutdown();
 
     // Must called often (e.g. each frame) until the status change to Ready. That means
@@ -44,12 +47,6 @@ public:
     enum class Status { uninitialized = 0, initialized, waiting, ready, error, unknown };
     static std::string status_to_string(Status status);
     Status status() const;
-
-    bool set_http_get_callback(
-        void (*callback)(const char *url,
-                         void (*)(bool success, const char *json, void *parsing_userdata),
-                         void *parsing_userdata, void *http_get_metadata),
-        void *userdata);
 
     bool sites_size(size_t &size) const;
 
