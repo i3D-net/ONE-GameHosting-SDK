@@ -1,3 +1,6 @@
+// This file contains an example of code needed in a game integration to
+// use the ping component.
+
 #include <one/fake/ping/i3d_allocator.h>
 #include <one/fake/ping/i3d_ip_list_wrapper.h>
 #include <one/fake/ping/i3d_pingers_wrapper.h>
@@ -15,13 +18,15 @@ using namespace i3d_ping_integration;
 
 namespace {
 
+// The game integration must supply its own HTTP hooks. For the purpose of this
+// example, this HTTP hook simply supplies a hard-coded response instead of
+// actually making the HTTP request.
+// To see an example with libcurl look at the [ping
+// tests](../../../tests/one/ping/sites_getter.cpp).
 void http_callback(const char *url,
                    void (*parsing_callback)(bool success, const char *json,
                                             void *parsing_userdata),
                    void *parsing_userdata, void *http_get_metadata) {
-    // We use a hardcoded string to avoid linking against curl outside of the tests.
-    // To see an example with libcurl go look at:
-    // https://git.i3d.net/one/ardentblue/one-game-sdk/-/blob/develop/tests/one/ping/sites_getter.cpp
 
     // A linted example.
     // [{
@@ -44,6 +49,8 @@ void http_callback(const char *url,
     // ...
     // }]
 
+    // This is the fake HTTP response. A real integration would make an HTTP
+    // request instead with the given URL parameters.
     const std::string json =
         "[{\"continentId\":5,\"country\":\"Netherlands\",\"dcLocationId\":6,"
         "\"dcLocationName\":\"i3d-eu-west-1\",\"hostname\":\"nlrtm1-pingbeacon1.sys.i3d."
@@ -91,6 +98,8 @@ void http_callback(const char *url,
         "\"hostname\":\"rumow1-pingbeacon1.sys.i3d.network\",\"ipv4\":[\"188.122.82.59\"]"
         ",\"ipv6\":[]}]";
 
+    // After the HTTP request has been made, the response is given back to the
+    // ping component.
     parsing_callback(true, json.c_str(), parsing_userdata);
 }
 
@@ -101,16 +110,14 @@ void sleep(int ms) {
 }  // namespace
 
 int main(int argc, char **argv) {
-    // Setting the global allocator functions.
-    // This needs only to be set once at startup.
+    // Override the allocator functions.
+    // This step is optional and provided just for example purposes, as it some
+    // games prefer to control all memory allocations.
     i3d_ping_allocator_set_alloc(allocation::alloc);
     i3d_ping_allocator_set_free(allocation::free);
     i3d_ping_allocator_set_realloc(allocation::realloc);
 
-    I3dIpListWrapper ip_list;
     I3dSitesGetterWrapper sites_getter;
-    I3dPingersWrapper pingers;
-
     bool result = sites_getter.init(http_callback, nullptr);
     if (!result) {
         return -1;
@@ -126,16 +133,17 @@ int main(int argc, char **argv) {
     }
 
     I3dSitesGetterWrapper::Status sites_getter_status = sites_getter.status();
-
     if (sites_getter_status != I3dSitesGetterWrapper::Status::ready) {
         return -1;
     }
 
+    I3dIpListWrapper ip_list;
     result = sites_getter.ipv4_list(ip_list.list());
     if (!result) {
         return -1;
     }
 
+    I3dPingersWrapper pingers;
     result = pingers.init(ip_list.list());
     if (!result) {
         return -1;
@@ -146,6 +154,8 @@ int main(int argc, char **argv) {
         return -1;
     }
 
+    // Update the pingers until it has finished. In a real integration this
+    // would be incorporated into a game update.
     bool all_pinged = false;
     for (auto i = 0; i < 100; ++i) {
         result = pingers.update(true);

@@ -39,8 +39,8 @@ mkdir ..\%OutputDir%\Arcus\Windows\x64
 mkdir ..\%OutputDir%\Ping
 mkdir ..\%OutputDir%\Ping\Windows
 mkdir ..\%OutputDir%\Ping\Windows\x64
-copy ..\build\one\arcus\Release\one_arcus.dll ..\%OutputDir%\Arcus\Windows\x64
-copy ..\build\one\ping\Release\one_ping.dll ..\%OutputDir%\Ping\Windows\x64
+copy ..\build\bin\Release\one_arcus.dll ..\%OutputDir%\Arcus\Windows\x64
+copy ..\build\bin\Release\one_ping.dll ..\%OutputDir%\Ping\Windows\x64
 
 CALL .\clean_windows.bat
 cd %ScriptsFolder%
@@ -50,8 +50,8 @@ cd %ScriptsFolder%
 
 mkdir ..\%OutputDir%\Arcus\Windows\x86
 mkdir ..\%OutputDir%\Ping\Windows\x86
-copy ..\build\one\arcus\Release\one_arcus.dll ..\%OutputDir%\Arcus\Windows\x86
-copy ..\build\one\ping\Release\one_ping.dll ..\%OutputDir%\Ping\Windows\x86
+copy ..\build\bin\Release\one_arcus.dll ..\%OutputDir%\Arcus\Windows\x86
+copy ..\build\bin\Release\one_ping.dll ..\%OutputDir%\Ping\Windows\x86
 
 CALL .\clean_windows.bat
 

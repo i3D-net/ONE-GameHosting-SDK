@@ -26,12 +26,4 @@ target_include_directories(one_ping_wrapper PUBLIC .)
 
 target_compile_features(one_ping_wrapper PUBLIC cxx_std_11)
 
-target_link_libraries(ping PRIVATE one_ping)
-
-add_custom_command(TARGET one_ping_wrapper
-    POST_BUILD
-    DEPENDS one_ping
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:one_ping>
-        $<TARGET_FILE_DIR:one_ping_wrapper>
-)
+target_link_libraries(one_ping_wrapper PRIVATE one_ping)

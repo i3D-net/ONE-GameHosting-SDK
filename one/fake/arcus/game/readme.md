@@ -5,7 +5,7 @@ This folder contains a fake game that uses the ONE Game Hosting SDK server API. 
 
 ## Dependencies
 
-A game integration requires the Arcus Server library located in one/server.
+A game integration requires the Arcus Server library located in one/arcus.
 
 ## ONE Arcus Server Wrapper
 

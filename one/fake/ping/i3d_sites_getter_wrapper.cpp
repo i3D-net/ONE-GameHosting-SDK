@@ -11,9 +11,9 @@
 namespace i3d_ping_integration {
 namespace {
 
-// Logger to pass into One.
+// Example, optional logger to pass to the API to receive logs of internal events.
 void log(void *userdata, I3dPingLogLevel level, const char *message) {
-    // userdata not used in this wrapper, but could point to instance of a logger
+    // userdata not used in this wrapper, but it could point to instance of a logger
     // instead of a global logger.
 
     switch (level) {
@@ -44,9 +44,7 @@ bool I3dSitesGetterWrapper::init(
                      void (*)(bool success, const char *json, void *parsing_userdata),
                      void *parsing_userdata, void *http_get_metadata),
     void *userdata) {
-    //-----------------------
-    // Create the i3D Ping Sites.
-
+    // Create the sites getter that will retrieve site information.
     I3dPingError err = i3d_ping_sites_getter_create(&_sites_getter, callback, userdata);
     if (i3d_ping_is_error(err)) {
         L_ERROR(i3d_ping_error_text(err));
@@ -73,8 +71,7 @@ void I3dSitesGetterWrapper::shutdown() {
         return;
     }
 
-    // Free all objects created via the ONE API. This also shuts down the server
-    // first, ending any active connection to it.
+    // Free the sites getter.
     i3d_ping_sites_getter_destroy(_sites_getter);
     _sites_getter = nullptr;
 }
@@ -83,6 +80,8 @@ bool I3dSitesGetterWrapper::update(bool quiet) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     assert(_sites_getter != nullptr);
 
+    // Update the sites getter, which will make http calls as needed until
+    // information is retrieved.
     I3dPingError err = i3d_ping_sites_getter_update(_sites_getter);
     if (i3d_ping_is_error(err)) {
         if (!quiet) L_ERROR(i3d_ping_error_text(err));

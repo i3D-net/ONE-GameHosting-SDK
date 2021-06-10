@@ -23,9 +23,9 @@ WORKDIR /one/tools
 
 RUN if [ -d ../build ]; then rm -Rf ../build; fi \
     && bash build_release_linux_so_32.sh \
-    && cp ../build/one/arcus/libone_arcus.so ../${OutputFolder}/x86 \
-    && cp ../build/one/ping/libone_ping.so ../${OutputFolder}/x86 \
+    && cp ../build/lib/libone_arcus.so ../${OutputFolder}/x86 \
+    && cp ../build/lib/libone_ping.so ../${OutputFolder}/x86 \
     && rm -Rf ../build \
     && bash build_release_linux_so_64.sh \
-    && cp ../build/one/arcus/libone_arcus.so ../${OutputFolder}/x64 \
-    && cp ../build/one/ping/libone_ping.so ../${OutputFolder}/x64 \
+    && cp ../build/lib/libone_arcus.so ../${OutputFolder}/x64 \
+    && cp ../build/lib/libone_ping.so ../${OutputFolder}/x64 \

@@ -4,7 +4,7 @@
 #include <mutex>
 #include <string>
 
-//----------------------------------------------
+//------------------------------------------
 // ONE SDK object types forward declarations
 
 struct I3dIpList;
@@ -15,10 +15,10 @@ typedef I3dSitesGetter *I3dSitesGetterPtr;
 
 namespace i3d_ping_integration {
 
-/// I3dSitesGettertWrapper encapsulates the integration for the i3D SitesGetter and
-/// provides a ping sites interface that hides the i3D Ping Client API implementation
-/// from the game. Errors are handled directly in the implementation of the
-/// wrapper.
+/// I3dSitesGettertWrapper encapsulates the integration for the i3D SitesGetter
+/// and provides a ping sites interface that hides the i3D Ping Client API
+/// implementation from the game. Errors are handled directly in the
+/// implementation of the wrapper.
 ///
 /// This is provided as a potential copy-paste initial integration solution for
 /// users that would like to hide the c-api under a game-specific C++ class, and
@@ -40,8 +40,8 @@ public:
               void *userdata);
     void shutdown();
 
-    // Must called often (e.g. each frame) until the status change to Ready. That means
-    // that the HTTP Get callback has succesfully finished.
+    // Must called often (e.g. each frame) until the status change to Ready.
+    // That means that the HTTP Get callback has succesfully finished.
     bool update(bool quiet);
 
     enum class Status { uninitialized = 0, initialized, waiting, ready, error, unknown };

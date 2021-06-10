@@ -86,22 +86,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 add_test(NAME ${UNIT_TEST} COMMAND ${UNIT_TEST})
 
-add_custom_command(TARGET ${UNIT_TEST}
-    POST_BUILD
-    DEPENDS one_arcus
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:one_arcus>
-        $<TARGET_FILE_DIR:${UNIT_TEST}>
-)
-
-add_custom_command(TARGET ${UNIT_TEST}
-    POST_BUILD
-    DEPENDS libcurl
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:libcurl>
-        $<TARGET_FILE_DIR:${UNIT_TEST}>
-)
-
 if (RUN_TEST_AFTER_BUILD)
     add_custom_command(
         TARGET ${UNIT_TEST}
@@ -112,4 +96,3 @@ if (RUN_TEST_AFTER_BUILD)
         COMMAND ${UNIT_TEST} ~[.] ~long:* ~soak:* ~soak-days:*
     )
 endif()
-
