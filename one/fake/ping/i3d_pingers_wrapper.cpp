@@ -90,10 +90,6 @@ bool I3dPingersWrapper::update(bool quiet) {
     const std::lock_guard<std::mutex> lock(_wrapper);
     assert(_pingers != nullptr);
 
-    // Updates the server, which handles client connections, and services
-    // outgoing and incoming messages.
-    // Any registered callbacks will called during update, if the corresponding
-    // messages are received.
     I3dPingError err = i3d_ping_pingers_update(_pingers);
     if (i3d_ping_is_error(err)) {
         if (!quiet) L_ERROR(i3d_ping_error_text(err));

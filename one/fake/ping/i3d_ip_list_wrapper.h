@@ -2,11 +2,14 @@
 
 #pragma once
 
-//----------------------------------------------
+//------------------------------------------
 // One SDK object types forward declarations
 
 struct I3dIpList;
 typedef I3dIpList *I3dIpListPtr;
+
+//--------------------------
+// C++ wrapping of ping api.
 
 namespace i3d_ping_integration {
 

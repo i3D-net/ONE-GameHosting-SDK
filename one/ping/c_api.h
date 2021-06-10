@@ -164,6 +164,7 @@ I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_status(
 
 /// Get the site list size.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
+/// @param size A non-null pointer to set the size on.
 I3D_PING_EXPORT I3dPingError
 i3d_ping_sites_getter_site_list_size(I3dSitesGetterPtr sites_getter, unsigned int *size);
 
@@ -330,8 +331,11 @@ I3D_PING_EXPORT I3dPingError i3d_ping_pingers_size(I3dPingersPtr pingers,
 /// @param pingers A non-null pingers pointer. Thread-safe.
 /// @param pos The position in the list . Must be less than
 /// i3d_ping_pingers_size.
-/// @param lastest_time Non-null pointer to set the last_time on.
-/// @param averate_time Non-null pointer to set the average_time on.
+/// @param last_time Non-null pointer to set the last_time on.
+/// @param average_time Non-null pointer to set the average_time on.
+/// @param min_time Non-null pointer to set the min_time on.
+/// @param max_time Non-null pointer to set the max_time on.
+/// @param median_time Non-null pointer to set the median_time on.
 /// @param ping_response_count Non-null pointer to set the ping response count on.
 I3D_PING_EXPORT I3dPingError i3d_ping_pingers_statistics(
     I3dPingersPtr pingers, unsigned int pos, int *last_time, double *average_time,
@@ -351,11 +355,12 @@ i3d_ping_pingers_all_sites_have_been_pinged(I3dPingersPtr pingers, bool *result)
 
 //------------------------------------------------------------------------------
 ///@}
-///@name IpList interface.
-/// The IpList contains the IpList passed between the I3dPingSitePtr and I3dPingersPtr.
+///@name I3dIpListPtr interface.
+/// The I3dIpListPtr contains the I3dIpListPtr passed between the I3dPingSitePtr and
+/// I3dPingersPtr.
 ///@{
 
-/// Creates a new IpList. Create and destroy should be called to
+/// Creates a new I3dIpListPtr. Create and destroy should be called to
 /// complete the life cycle. Thread-safe. A pointer to the I3dIpListPtr is passed in
 /// and the pointer will be set to newly created I3dIpListPtr. Use Example:
 ///     I3dIpListPtr *ip_list;
@@ -373,10 +378,10 @@ i3d_ping_pingers_all_sites_have_been_pinged(I3dPingersPtr pingers, bool *result)
 /// \sa i3d_ip_list_ip
 I3D_PING_EXPORT I3dPingError i3d_ping_ip_list_create(I3dIpListPtr *ip_list);
 
-/// Destroys a IpList instance created via IpList. Note although other pingers
-/// functions are thread safe, this one is not. A IpList must not be destroyed or
-/// interacted with on other threads.
-/// @param IpList A non-null ip_list pointer.
+/// Destroys a I3dIpListPtr instance created via i3d_ping_ip_list_create. Note although
+/// other pingers functions are thread safe, this one is not. A IpList must not be
+/// destroyed or interacted with on other threads.
+/// @param ip_list A non-null ip_list pointer.
 I3D_PING_EXPORT void i3d_ping_ip_list_destroy(I3dIpListPtr ip_list);
 
 /// Clears the IpList.

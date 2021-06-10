@@ -10,17 +10,22 @@ set(DOXYGEN_SHOW_FILES YES)
 
 doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/docs/build.md"
+    "${PROJECT_SOURCE_DIR}/docs/integration_arcus.md"
     "${PROJECT_SOURCE_DIR}/docs/integration_guide.md"
+    "${PROJECT_SOURCE_DIR}/docs/integration_ping.md"
     "${PROJECT_SOURCE_DIR}/docs/mainpage.md"
     "${PROJECT_SOURCE_DIR}/docs/readme.md"
     "${PROJECT_SOURCE_DIR}/docs/vscode.md"
-    "${PROJECT_SOURCE_DIR}/one/fake/arcus/agent/readme.md"
     "${PROJECT_SOURCE_DIR}/one/arcus/c_api.h"
     "${PROJECT_SOURCE_DIR}/one/arcus/c_error.h"
     "${PROJECT_SOURCE_DIR}/one/arcus/readme.md"
+    "${PROJECT_SOURCE_DIR}/one/fake/arcus/agent/readme.md"
     "${PROJECT_SOURCE_DIR}/one/fake/arcus/game/one_server_wrapper.cpp"
     "${PROJECT_SOURCE_DIR}/one/fake/arcus/game/one_server_wrapper.h"
     "${PROJECT_SOURCE_DIR}/one/fake/arcus/game/readme.md"
+    "${PROJECT_SOURCE_DIR}/one/ping/c_api.h"
+    "${PROJECT_SOURCE_DIR}/one/ping/c_error.h"
+    "${PROJECT_SOURCE_DIR}/one/ping/readme.md"
     "${PROJECT_SOURCE_DIR}/tests/readme.md"
     "${PROJECT_SOURCE_DIR}/readme.md"
 )

@@ -13,6 +13,9 @@ typedef I3dIpList *I3dIpListPtr;
 struct I3dPingers;
 typedef I3dPingers *I3dPingersPtr;
 
+//--------------------------
+// C++ wrapping of ping api.
+
 namespace i3d_ping_integration {
 
 /// I3dPingClientWrapper encapsulates the integration for the i3D Ping Client and

@@ -1,99 +1,137 @@
-// TODO wording
-# Fake Game
+# Fake Game showing use of Ping component
 
-This folder contains a fake game that uses the ONE Game Hosting SDK server API. The code here can be used both as a reference for how real game servers can integrate and use the Arcus library, or as a way to test the library for correctness.
+This folder contains a fake game that uses the ping component. The code here can be used both as a reference for how real game servers can integrate and use the library, or as a way to test the library for correctness.
 
 ## Dependencies
 
-A game integration requires the Arcus Server library located in one/server.
+A game integration requires the ping library located in one/ping.
 
-## ONE Arcus Server Wrapper
+## Overview
 
-The `game::OneServerWrapper` class, located in one_server_wrapper.h/.cpp, encapsulates the Arcus library's `c_api.h` calls within the game. The parsing.h/cpp files are utilities helping to read and write from key/value data in the Arcus messages.
+The i3d_ip_list_wrapper.h/cpp files provide utlities for working with lists returned by the API.
+
+The i3d_sites_getter_wrapper.h/cpp files provide access to a list of available servers on the i3D platform for games to connect to.
+
+The i3d_pingers_wrapper.h/cpp files allow for ping latency measurements to a given list of servers.
 
 The integration is intended to be as simple as possible, but please let us know if you have any suggestions for improvement.
 
-Below, the main points of an integration are summarized, however the one_server_wrapper.cpp may be referenced for a complete example.
+The main points of an integration are summarized below, however you may refer to the above files for complete working examples, including optional features such as logging and allocation hooks.
 
-### 1. Initialize, update and shutdown the ONE Game Hosting Arcus Server
+### 1. Get the list of servers on the i3D ONE Platform
 
-The aforementioned one_server_wrapper.cpp file handles all of the following however they are described here to illustrate the main usage pattern of c_api.h.
+The i3d_sites_getter_wrapper.cpp file handles all of the following however they are described here to illustrate the main usage pattern of the c_api.h.
 
-Initialization:
+Include headers
 ```c++
-// Set custom allocator, if needed.
-// one_allocator_set_alloc(my_alloc);
-// one_allocator_set_free(my_free);
-
-OneServerPtr server;
-// The first parameter is an optional logger, second is port, third is a pointer
-// to the server, which will be set to the newly created server.
-OneError err = one_server_create(null, 12345, &server);
-if (one_is_error(err)) {
-    // handle error...
-}
-
-// Optional - set custom logger.
-OneError err = one_server_set_logger(server, myLogFn, &myLogger);
-if (one_is_error(err)) {
-    // handle error...
-}
-
-// Set callbacks for incoming messages from the ONE platform:
-OneError err one_server_set_soft_stop_callback(server, soft_stop, this)
-if (one_is_error(err)) {
-    // handle error...
-}
-// See the "Arcus incoming message handlers" section of c_api.h for more functions.
-
-Update to service the connection and messages:
-```c++
-OneError err = one_server_update(server);
-if (one_is_error(err)) {
-    // handle error...
-    // Note that certain errors, such as ONE_ERROR_SOCKET_BIND_FAILED or
-    // ONE_ERROR_SERVER_RETRYING_LISTEN may be part of "normal" behavior, for
-    // example if a server restarts quickly and the port hasn't been recycled
-    // by the operating system yet.
-}
-
+#include <one/ping/c_api.h>
+#include <one/ping/c_error.h>
 ```
 
-Cleanup:
+Create the Sites Getter.
 ```c++
-// Destroy clears the server memory, which also shuts down any active
-// connection.
-one_server_destroy(server);
-```
-
-### 2. Set state for outgoing messages
-
-```c++
-OneError err = one_server_set_live_state(server, players, max_players,
-                                   name, map, mode, version, nullptr);
-if (one_is_error(err)) {
-    // handle error...
+I3dSitesGetterPtr sites_getter;
+I3dPingError err = i3d_ping_sites_getter_create(&sites_getter, callback, userdata);
+if (i3d_ping_is_error(err)) {
+    // Handle error.
+    // A text representation of the error can be obtained via:
+    // i3d_ping_error_text(err)), for easier debugging or logging.
 }
-// See the "Arcus outgoing property setters" section of c_api.h for more functions.
 ```
 
-### 3. Read incoming messages
-
-The callbacks, if registered as in the above initialization code, will be called during the call to one_server_update when the respective message is received.
-
-Example of soft stop callback in an integration:
+Update it to fetch the site information.
 ```c++
-// Tell the server to shutdown at the next appropriate time for its users (e.g.,
-// after a match end).
-void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
-    // This example assumes userdata was passed to the callback registration.
-    if (userdata == nullptr) {
-        // Handle error...
-        return;
+I3dPingError err = i3d_ping_sites_getter_update(sites_getter);
+if (i3d_ping_is_error(err)) {
+    // Handle error.
+}
+```
+
+Then the site information can be passed to the pinger, as shown in the following section. Make sure to destroy the sites getters to avoid a leak:
+```c++
+i3d_sites_getter_destroy(sites_getter);
+```
+
+### 2. Ping a list of servers to obtain latency readings
+
+The i3d_pingers_wrapper.cpp file handles all of the following however they are described here to illustrate the main usage pattern of the c_api.h.
+
+Include headers
+```c++
+#include <one/ping/c_api.h>
+#include <one/ping/c_error.h>
+```
+
+Get the server sites list to send to the pinger. This is a continuation of the previous section that shows how to use the sites getter API.
+```c++
+I3dIpListPtr ip_list
+I3dPingError err = i3d_ping_ip_list_create(&ip_list);
+if (i3d_ping_is_error(err)) {
+    // Handle error.
+}
+err = i3d_ping_sites_getter_ipv4_list(sites_getter, ip_list);
+if (i3d_ping_is_error(err)) {
+    // Handle error.
+}
+```
+
+Create the Pingers, passing it the ip_list from the previous step.
+```c++
+I3dPingersPtr pingers;
+I3dPingError err = i3d_ping_pingers_create(&pingers, ip_list);
+if (i3d_ping_is_error(err)) {
+    // Handle error.
+}
+```
+
+Update the pingers to process tcp pings and accumulate results.
+```c++
+    I3dPingError err = i3d_ping_pingers_update(_pingers);
+    if (i3d_ping_is_error(err)) {
+        // Handle error.
     }
+```
 
-    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+Statistics for each site can be queried by iterating. There are also utility functions `i3d_ping_pingers_at_least_one_site_has_been_pinged` and `all_sites_have_been_pinged` to check if data is available.
+```c++
+// Local storage struct for the results..
+struct PingStatistics {
+    PingStatistics()
+        : last_time(0)
+        , average_time(0.0)
+        , min_time(0)
+        , max_time(0.0)
+        , median_time(0)
+        , ping_response_count(0) {}
 
-    // Trigger the game server process to exit gracefully...
+    int last_time;
+    double average_time;
+    int min_time;
+    int max_time;
+    double median_time;
+    unsigned int ping_response_count;
+} statistics;
+
+// Iterate each site request.
+const int num_sites = i3d_ping_ip_list_size(ip_list);
+for (i := 0; i < num_sites, ++i) {
+    I3dPingError err = i3d_ping_pingers_statistics(
+        pingers, i, &(statistics.last_time), &(statistics.average_time),
+        &(statistics.min_time), &(statistics.max_time), &(statistics.median_time),
+        &(statistics.ping_response_count));
+    if (i3d_ping_is_error(err)) {
+        // Handle error.
+    }
+    if (statistics_last_time < 0) {
+        // No ping results for this site yet...
+        continue;
+    }
+    //...
 }
+```
+
+Make sure to destroy the ip_list and pingers when finished.
+```c++
+i3d_ping_ip_list_destroy(ip_list);
+i3d_ping_pingers_destroy(pingers);
 ```

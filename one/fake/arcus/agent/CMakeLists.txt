@@ -23,3 +23,4 @@ set(SOURCE_FILES
 
 add_library(one_agent ${SOURCE_FILES} ${HEADER_FILES})
 target_include_directories(one_agent PUBLIC .)
+target_link_libraries(one_agent PRIVATE one_game one_arcus)
