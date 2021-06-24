@@ -11,9 +11,9 @@ Alternatively to integrate binaries and headers:
 2. Copy the binaries found in build/one/ping.
 
 Either way, the following headers must be included in the game server:
-- one/arcus/c_api.h
-- one/arcus/c_error.h
-- one/arcus/c_platform.h
+- one/ping/c_api.h
+- one/ping/c_error.h
+- one/ping/c_platform.h
 
 ## Using the API
 
