@@ -151,7 +151,8 @@ I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_set_logger(
 I3D_PING_EXPORT void i3d_ping_sites_getter_destroy(I3dSitesGetterPtr sites_getter);
 
 /// Update the sites_getter. This must be called frequently until the HTTP Get callback
-/// has finished. The PingSites status will be ready then.
+/// has finished. The sites_getter status will be ready then. If the sites_getter status
+/// is error, calling i3d_ping_sites_getter_update again will resend the HTTP Get request.
 /// @param sites_getter A non-null sites_getter pointer. Thread-safe.
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_update(I3dSitesGetterPtr sites_getter);
 

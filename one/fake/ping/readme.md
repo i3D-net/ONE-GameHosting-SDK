@@ -1,6 +1,6 @@
-# Fake Game showing use of Ping component
+# Fake Ping showing use of Ping component
 
-This folder contains a fake game that uses the ping component. The code here can be used both as a reference for how real game servers can integrate and use the library, or as a way to test the library for correctness.
+This folder contains a fake ping that uses the ping component. The code here can be used both as a reference for how real game servers can integrate and use the library, or as a way to test the library for correctness.
 
 ## Dependencies
 
@@ -46,6 +46,31 @@ if (i3d_ping_is_error(err)) {
     // Handle error.
 }
 ```
+
+After calling update, one can check the site_getter status like this:
+```
+I3dSitesGetterStatus status;
+    I3dPingError err = i3d_ping_sites_getter_status(_sites_getter, &status);
+    if (i3d_ping_is_error(err)) {
+        L_ERROR(i3d_ping_error_text(err));
+        return Status::unknown;
+    }
+    switch (status) {
+        case I3D_SITES_GETTER_STATUS_UNINITIALIZED:
+            return Status::uninitialized;
+        case I3D_SITES_GETTER_STATUS_INITIALIZED:
+            return Status::initialized;
+        case I3D_SITES_GETTER_STATUS_WAITING:
+            return Status::waiting;
+        case I3D_SITES_GETTER_STATUS_READY:
+            return Status::ready;
+        case I3D_SITES_GETTER_STATUS_ERROR:
+            return Status::error;
+        default:
+            return Status::unknown;
+    }
+```
+The status `waiting` means that the site_getter is waiting for the HTTP Get request to finish. If the status is `error` it means the HTTP Get request failed and one needs to call `i3d_ping_sites_getter_update` again to resend the request. If the status is `ready`, it means that the site_getter has successfully fetch the sites information.
 
 Then the site information can be passed to the pinger, as shown in the following section. Make sure to destroy the sites getters to avoid a leak:
 ```c++
