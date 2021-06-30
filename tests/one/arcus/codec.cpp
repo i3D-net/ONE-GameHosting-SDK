@@ -212,8 +212,9 @@ TEST_CASE("message", "[codec]") {
     }
 
     {  // live state response
-        REQUIRE(!is_error(messages::prepare_live_state(
-            1, 16, "name test", "map test", "mode test", "version test", message)));
+        REQUIRE(!is_error(messages::prepare_live_state(1, 16, "name test", "map test",
+                                                       "mode test", "version test",
+                                                       nullptr, message)));
         data_length = 0;
         data_read = 0;
         header = {0};

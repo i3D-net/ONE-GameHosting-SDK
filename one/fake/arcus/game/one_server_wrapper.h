@@ -91,6 +91,10 @@ public:
     // the current state to the ONE Platform, when requested to do so.
     void set_game_state(const GameState &);
 
+    // Use to send reverse metadata to the ONE Platform, when requested to do so.
+    void send_reverse_metadata(const std::string &map, const std::string &mode,
+                               const std::string &type);
+
     // As defined in:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
     enum class ApplicationInstanceStatus { starting = 3, online = 4, allocated = 5 };
@@ -180,6 +184,22 @@ public:
             callback,
         void *userdata);
 
+    // Game metadata. Contains an optional JSON body with key value
+    // pairs for meta data. The keys and values are definable by the customer.
+    // The current values are matching the payload shown in the documentation at:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#custom-command-request
+    struct CustomCommandData {
+        CustomCommandData() : command(), argument() {}
+
+        std::string command;
+        std::string argument;
+    };
+    // Allows the game server to be notified of an incoming Custom
+    // Command message.
+    void set_custom_command_callback(
+        std::function<void(const CustomCommandData &data, void *userdata)> callback,
+        void *userdata);
+
 private:
     // Callbacks potentially called by the arcus server.
     static void soft_stop(void *userdata, int timeout_seconds);
@@ -187,6 +207,7 @@ private:
     static void metadata(void *userdata, void *metadata);
     static void host_information(void *userdata, void *information);
     static void application_instance_information(void *userdata, void *information);
+    static void custom_command(void *userdata, void *custom_command);
 
     // Parsing of message payloads.
     static bool extract_allocated_payload(OneArrayPtr array,
@@ -196,10 +217,17 @@ private:
                                                  HostInformationData &information);
     static bool extract_application_instance_information_payload(
         OneObjectPtr object, ApplicationInstanceInformationData &information);
+    static bool extract_custom_command_payload(OneArrayPtr array,
+                                               CustomCommandData &custom_command);
 
     // The Arcus Server itself.
     mutable std::mutex _wrapper;
     OneServerPtr _server;
+
+    OneArrayPtr _reverse_metadata_data;
+    OneObjectPtr _reverse_metadata_map;
+    OneObjectPtr _reverse_metadata_mode;
+    OneObjectPtr _reverse_metadata_type;
 
     //--------------------------------------------------------------------------
     // Callbacks.
@@ -219,6 +247,9 @@ private:
     std::function<void(const ApplicationInstanceInformationData &, void *)>
         _application_instance_information_callback;
     void *_application_instance_information_userdata;
+
+    std::function<void(const CustomCommandData &, void *)> _custom_command_callback;
+    void *_custom_command_userdata;
 };
 
 }  // namespace one_integration

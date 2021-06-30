@@ -50,6 +50,7 @@ public:
     int metadata_receive_count() const;
     int host_information_receive_count() const;
     int application_instance_information_receive_count() const;
+    int custom_command_receive_count() const;
 
     // Exposed for testing purposes, however use of this should be kept to a
     // minimum or removed. The game, as much as reasonable, should be tested as
@@ -83,6 +84,9 @@ public:
     }
     void set_player_count(int count);
 
+    void send_reverse_metadata(const std::string &map, const std::string &mode,
+                               const std::string &type);
+
 private:
     static void soft_stop_callback(int timeout, void *userdata);
     static void allocated_callback(const OneServerWrapper::AllocatedData &data,
@@ -93,6 +97,8 @@ private:
         const OneServerWrapper::HostInformationData &data, void *userdata);
     static void application_instance_information_callback(
         const OneServerWrapper::ApplicationInstanceInformationData &data, void *userdata);
+    static void custom_command_callback(const OneServerWrapper::CustomCommandData &data,
+                                        void *userdata);
 
     // This update the game startup matchmaking status: none -> stating -> delay ->
     // online.
@@ -112,6 +118,7 @@ private:
     int _metadata_receive_count;
     int _host_information_receive_count;
     int _application_instance_information_receive_count;
+    int _custom_command_receive_count;
 
     // Log level.
     bool _quiet;
@@ -154,6 +161,8 @@ private:
     MatchStatus _match_status;
 
     void set_match_status(MatchStatus status);
+
+    int _number_message_to_send;
 };
 
 namespace allocation {

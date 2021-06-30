@@ -24,6 +24,10 @@ struct MetaDataRequest {
     Array _data;
 };
 
+struct ReverseMetaDataResponse {
+    Array _data;
+};
+
 struct LiveStateResponse {
     int _players;
     int _max_players;
@@ -47,49 +51,61 @@ struct ApplicationInstanceSetStatusRequest {
     int _status;
 };
 
+struct CustomCommandRequest {
+    Array _data;
+};
+
 }  // namespace params
 
 namespace validation {
 OneError soft_stop(const Message &message, params::SoftStopRequest &params);
 OneError allocated(const Message &message, params::AllocatedRequest &params);
 OneError metadata(const Message &message, params::MetaDataRequest &params);
+OneError reverse_metadata(const Message &message,
+                          params::ReverseMetaDataResponse &params);
 OneError live_state(const Message &message, params::LiveStateResponse &params);
 OneError host_information(const Message &message,
-                                params::HostInformationResponse &params);
+                          params::HostInformationResponse &params);
 OneError application_instance_information(
     const Message &message, params::ApplicationInstanceInformationResponse &params);
-OneError application_instance_status(
-    const Message &message, params::ApplicationInstanceSetStatusRequest &params);
+OneError application_instance_status(const Message &message,
+                                     params::ApplicationInstanceSetStatusRequest &params);
+OneError custom_command(const Message &message, params::CustomCommandRequest &params);
 }  // namespace validation
 
 namespace invocation {
 
 OneError soft_stop(const Message &message, std::function<void(void *, int)> callback,
-                void *data);
+                   void *data);
 
 OneError allocated(const Message &message, std::function<void(void *, Array *)> callback,
-                void *data);
+                   void *data);
 
 OneError metadata(const Message &message, std::function<void(void *, Array *)> callback,
-               void *data);
+                  void *data);
 
-OneError live_state(
-    const Message &message,
-    std::function<void(void *, int, int, const String &, const String &,
-                       const String &, const String &)>
-        callback,
-    void *data);
+OneError reverse_metadata(const Message &message,
+                          std::function<void(void *, Array *)> callback, void *data);
+
+OneError live_state(const Message &message,
+                    std::function<void(void *, int, int, const String &, const String &,
+                                       const String &, const String &)>
+                        callback,
+                    void *data);
 
 OneError host_information(const Message &message,
-                                std::function<void(void *, Object *)> callback,
-                                void *data);
+                          std::function<void(void *, Object *)> callback, void *data);
 
-OneError application_instance_information(
-    const Message &message, std::function<void(void *, Object *)> callback, void *data);
+OneError application_instance_information(const Message &message,
+                                          std::function<void(void *, Object *)> callback,
+                                          void *data);
 
 OneError application_instance_status(const Message &message,
-                                              std::function<void(void *, int)> callback,
-                                              void *data);
+                                     std::function<void(void *, int)> callback,
+                                     void *data);
+
+OneError custom_command(const Message &message,
+                        std::function<void(void *, Array *)> callback, void *data);
 
 }  // namespace invocation
 

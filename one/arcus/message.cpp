@@ -431,10 +431,39 @@ OneError prepare_metadata(const Array &array, Message &message) {
     return ONE_ERROR_NONE;
 }
 
-OneError prepare_live_state(int players, int max_players, const char *name, const char *map,
-                         const char *mode, const char *version, Message &message) {
+OneError prepare_reverse_metadata(const Array &array, Message &message) {
     Payload payload;
-    auto err = payload.set_val_int("players", players);
+    auto err = payload.set_val_array("data", array);
+    if (is_error(err)) {
+        return err;
+    }
+
+    message.reset();
+    err = message.init(Opcode::reverse_metadata, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+OneError
+
+prepare_live_state(int players, int max_players, const char *name, const char *map,
+                   const char *mode, const char *version, Object *additional_data,
+                   Message &message) {
+    Payload payload;
+
+    auto err = ONE_ERROR_NONE;
+
+    if (additional_data != nullptr) {
+        err = payload.set_val_root_object(*additional_data);
+        if (is_error(err)) {
+            return err;
+        }
+    }
+
+    err = payload.set_val_int("players", players);
     if (is_error(err)) {
         return err;
     }
@@ -489,7 +518,7 @@ OneError prepare_host_information(const Object &information, Message &message) {
 }
 
 OneError prepare_application_instance_information(const Object &information,
-                                               Message &message) {
+                                                  Message &message) {
     Payload payload;
     auto err = payload.set_val_root_object(information);
     if (is_error(err)) {
@@ -512,6 +541,22 @@ OneError prepare_application_instance_status(int status, Message &message) {
     }
 
     err = message.init(Opcode::application_instance_status, payload);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+OneError prepare_custom_command(const Array &array, Message &message) {
+    Payload payload;
+    auto err = payload.set_val_array("data", array);
+    if (is_error(err)) {
+        return err;
+    }
+
+    message.reset();
+    err = message.init(Opcode::custom_command, payload);
     if (is_error(err)) {
         return err;
     }

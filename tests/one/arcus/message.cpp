@@ -223,6 +223,16 @@ TEST_CASE("message prepare", "[message]") {
         REQUIRE(p.is_val_array("data"));
     }
 
+    {  // reverse metadata
+        m.reset();
+        Array reverse_metadata;
+        REQUIRE(!is_error(messages::prepare_reverse_metadata(reverse_metadata, m)));
+        REQUIRE(m.code() == Opcode::reverse_metadata);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+        REQUIRE(p.is_val_array("data"));
+    }
+
     {  // live_state
         m.reset();
         const int players = 1;
@@ -234,7 +244,7 @@ TEST_CASE("message prepare", "[message]") {
 
         REQUIRE(!is_error(messages::prepare_live_state(players, max_players, name.c_str(),
                                                        map.c_str(), mode.c_str(),
-                                                       version.c_str(), m)));
+                                                       version.c_str(), nullptr, m)));
         REQUIRE(m.code() == Opcode::live_state);
         auto p = m.payload();
         REQUIRE(p.is_empty() == false);
@@ -290,5 +300,15 @@ TEST_CASE("message prepare", "[message]") {
         int s = 0;
         REQUIRE(!is_error(p.val_int("status", s)));
         REQUIRE(s == status);
+    }
+
+    {  // custom command
+        m.reset();
+        Array custom_command;
+        REQUIRE(!is_error(messages::prepare_custom_command(custom_command, m)));
+        REQUIRE(m.code() == Opcode::custom_command);
+        auto p = m.payload();
+        REQUIRE(p.is_empty() == false);
+        REQUIRE(p.is_val_array("data"));
     }
 }

@@ -119,7 +119,7 @@ typedef enum I3dPingLogLevel {
 /// @param sites_getter A null sites_getter pointer, which will be set to a new
 /// sites_getter. \sa i3d_ping_sites_getter_destroy \sa i3d_ping_sites_getter_update \sa
 /// i3d_ping_sites_getter_status
-/// @param http_get_callback A non-null callback that do the http request.
+/// @param callback A non-null callback that do the http request.
 /// @param userdata a nullable pointer that will be provided to the callback.
 I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_create(
     I3dSitesGetterPtr *sites_getter,

@@ -38,6 +38,7 @@ public:
     OneError send_soft_stop(int timeout);
     OneError send_allocated(Array &array);
     OneError send_metadata(Array &array);
+    OneError send_custom_command(Array &array);
 
     // Set live_state callback.
     OneError set_live_state_callback(
@@ -56,6 +57,21 @@ public:
         return _client;
     }
 
+    int live_state_receive_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _live_state_receive_count;
+    }
+
+    int application_instance_status_receive_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _application_instance_status_receive_count;
+    }
+
+    int reverse_meta_data_receive_count() const {
+        const std::lock_guard<std::mutex> lock(_agent);
+        return _application_instance_status_receive_count;
+    }
+
     int host_information_send_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
         return _host_information_send_count;
@@ -66,14 +82,9 @@ public:
         return _application_instance_information_send_count;
     }
 
-    int live_state_receive_count() const {
+    int custom_command_send_count() const {
         const std::lock_guard<std::mutex> lock(_agent);
-        return _live_state_receive_count;
-    }
-
-    int application_instance_status_receive_count() const {
-        const std::lock_guard<std::mutex> lock(_agent);
-        return _application_instance_status_receive_count;
+        return _custom_command_send_count;
     }
 
 private:
@@ -86,8 +97,10 @@ private:
 
     int _live_state_receive_count;
     int _host_information_send_count;
+    int _reverse_metadata_count;
     int _application_instance_information_send_count;
     int _application_instance_status_receive_count;
+    int _custom_command_send_count;
 
     mutable std::mutex _agent;
 };

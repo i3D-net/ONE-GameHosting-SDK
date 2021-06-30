@@ -86,12 +86,15 @@ namespace messages {
 OneError prepare_soft_stop(int timeout, Message &message);
 OneError prepare_allocated(const Array &array, Message &message);
 OneError prepare_metadata(const Array &array, Message &message);
-OneError prepare_live_state(int players, int max_players, const char *name, const char *map,
-                         const char *mode, const char *version, Message &message);
+OneError prepare_reverse_metadata(const Array &array, Message &message);
+OneError prepare_live_state(int players, int max_players, const char *name,
+                            const char *map, const char *mode, const char *version,
+                            Object *additional_data, Message &message);
 OneError prepare_host_information(const Object &information, Message &message);
 OneError prepare_application_instance_information(const Object &information,
-                                               Message &message);
+                                                  Message &message);
 OneError prepare_application_instance_status(int status, Message &message);
+OneError prepare_custom_command(const Array &array, Message &message);
 
 }  // namespace messages
 

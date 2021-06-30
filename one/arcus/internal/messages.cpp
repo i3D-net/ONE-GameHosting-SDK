@@ -68,6 +68,26 @@ OneError metadata(const Message &message, params::MetaDataRequest &params) {
     return ONE_ERROR_NONE;
 }
 
+OneError reverse_metadata(const Message &message,
+                          params::ReverseMetaDataResponse &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::reverse_metadata) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_REVERSE_METADATA;
+    }
+
+    const auto &payload = message.payload();
+    auto err = payload.val_array("data", params._data);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
 OneError live_state(const Message &message, params::LiveStateResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
@@ -112,7 +132,8 @@ OneError live_state(const Message &message, params::LiveStateResponse &params) {
     return ONE_ERROR_NONE;
 }
 
-OneError host_information(const Message &message, params::HostInformationResponse &params) {
+OneError host_information(const Message &message,
+                          params::HostInformationResponse &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -151,8 +172,8 @@ OneError application_instance_information(
     return ONE_ERROR_NONE;
 }
 
-OneError application_instance_status(const Message &message,
-                                  params::ApplicationInstanceSetStatusRequest &params) {
+OneError application_instance_status(
+    const Message &message, params::ApplicationInstanceSetStatusRequest &params) {
     const auto code = message.code();
     if (!is_opcode_supported(code)) {
         return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
@@ -171,12 +192,31 @@ OneError application_instance_status(const Message &message,
     return ONE_ERROR_NONE;
 }
 
+OneError custom_command(const Message &message, params::CustomCommandRequest &params) {
+    const auto code = message.code();
+    if (!is_opcode_supported(code)) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_SUPPORTED;
+    }
+
+    if (code != Opcode::custom_command) {
+        return ONE_ERROR_MESSAGE_OPCODE_NOT_MATCHING_EXPECTING_CUSTOM_COMMAND;
+    }
+
+    const auto &payload = message.payload();
+    auto err = payload.val_array("data", params._data);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
 }  // namespace validation
 
 namespace invocation {
 
 OneError soft_stop(const Message &message, std::function<void(void *, int)> callback,
-                void *data) {
+                   void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -192,7 +232,7 @@ OneError soft_stop(const Message &message, std::function<void(void *, int)> call
 }
 
 OneError allocated(const Message &message, std::function<void(void *, Array *)> callback,
-                void *data) {
+                   void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -208,7 +248,7 @@ OneError allocated(const Message &message, std::function<void(void *, Array *)> 
 }
 
 OneError metadata(const Message &message, std::function<void(void *, Array *)> callback,
-               void *data) {
+                  void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -223,11 +263,27 @@ OneError metadata(const Message &message, std::function<void(void *, Array *)> c
     return ONE_ERROR_NONE;
 }
 
+OneError reverse_metadata(const Message &message,
+                          std::function<void(void *, Array *)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::ReverseMetaDataResponse params;
+    const auto err = validation::reverse_metadata(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, &params._data);
+    return ONE_ERROR_NONE;
+}
+
 OneError live_state(const Message &message,
-                 std::function<void(void *, int, int, const String &, const String &,
-                                    const String &, const String &)>
-                     callback,
-                 void *data) {
+                    std::function<void(void *, int, int, const String &, const String &,
+                                       const String &, const String &)>
+                        callback,
+                    void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -244,7 +300,7 @@ OneError live_state(const Message &message,
 }
 
 OneError host_information(const Message &message,
-                       std::function<void(void *, Object *)> callback, void *data) {
+                          std::function<void(void *, Object *)> callback, void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -260,8 +316,8 @@ OneError host_information(const Message &message,
 }
 
 OneError application_instance_information(const Message &message,
-                                       std::function<void(void *, Object *)> callback,
-                                       void *data) {
+                                          std::function<void(void *, Object *)> callback,
+                                          void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -277,7 +333,8 @@ OneError application_instance_information(const Message &message,
 }
 
 OneError application_instance_status(const Message &message,
-                                  std::function<void(void *, int)> callback, void *data) {
+                                     std::function<void(void *, int)> callback,
+                                     void *data) {
     if (callback == nullptr) {
         return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
     }
@@ -289,6 +346,22 @@ OneError application_instance_status(const Message &message,
     }
 
     callback(data, params._status);
+    return ONE_ERROR_NONE;
+}
+
+OneError custom_command(const Message &message,
+                        std::function<void(void *, Array *)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_MESSAGE_CALLBACK_IS_NULLPTR;
+    }
+
+    params::CustomCommandRequest params;
+    const auto err = validation::custom_command(message, params);
+    if (is_error(err)) {
+        return err;
+    }
+
+    callback(data, &params._data);
     return ONE_ERROR_NONE;
 }
 
