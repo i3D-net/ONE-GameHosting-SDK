@@ -23,7 +23,8 @@ struct ClientCallbacks {
                        const String &)>
         _live_state;
     void *_live_state_userdata;
-
+    std::function<void(void *, Array *)> _reverse_metadata;
+    void *_reverse_metadata_userdata;
     std::function<void(void *, int)> _application_instance_status;
     void *_application_instance_status_userdata;
 };
@@ -53,6 +54,7 @@ public:
     OneError send_metadata(Array &data);
     OneError send_host_information(Object &data);
     OneError send_application_instance_information(Object &data);
+    OneError send_custom_command(Array &data);
 
     //------------------------------------------------------------------------------
     // Callbacks to be notified of all possible incoming Arcus messages.
@@ -65,14 +67,21 @@ public:
         std::function<void(void *, int, int, const String &, const String &,
                            const String &, const String &)>
             callback,
-        void *data);
+        void *userdata);
+
+    // set the callback for when a reverse metadata message in received.
+    // The `void *data` is the user provided and will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    OneError set_reverse_metadata_callback(std::function<void(void *, Array *)> callback,
+                                           void *userdata);
 
     // set the callback for when an application_instance_status message in
     // received. The `void *data` is the user provided and will be passed as the first
     // argument of the callback when invoked. The `data` can be nullptr, the callback is
     // responsible to use the data properly.
     OneError set_application_instance_status_callback(
-        std::function<void(void *, int)> callback, void *data);
+        std::function<void(void *, int)> callback, void *userdata);
 
 private:
     OneError process_incoming_message(const Message &message);

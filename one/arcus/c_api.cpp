@@ -467,6 +467,16 @@ OneError object_copy(OneObjectPtr source, OneObjectPtr destination) {
     return ONE_ERROR_NONE;
 }
 
+OneError object_clear(OneObjectPtr object) {
+    if (object == nullptr) {
+        return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
+    }
+
+    auto s = (Object *)object;
+    s->clear();
+    return ONE_ERROR_NONE;
+}
+
 OneError object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {
     if (object == nullptr) {
         return ONE_ERROR_VALIDATION_OBJECT_IS_NULLPTR;
@@ -868,6 +878,20 @@ OneError server_set_live_state(OneServerPtr server, int players, int max_players
     return s->set_live_state(players, max_players, name, map, mode, version, object);
 }
 
+OneError server_send_reverse_metadata(OneServerPtr server, OneArrayPtr data) {
+    auto s = reinterpret_cast<Server *>(server);
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    auto d = reinterpret_cast<Array *>(data);
+    if (d == nullptr) {
+        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
+    }
+
+    return s->send_reverse_metadata(d);
+}
+
 OneError server_set_application_instance_status(OneServerPtr server,
                                                 OneApplicationInstanceStatus status) {
     auto s = reinterpret_cast<Server *>(server);
@@ -952,6 +976,22 @@ OneError server_set_application_instance_information_callback(
     }
 
     s->set_application_instance_information_callback(callback, userdata);
+    return ONE_ERROR_NONE;
+}
+
+OneError server_set_custom_command_callback(OneServerPtr server,
+                                            void (*callback)(void *, void *),
+                                            void *userdata) {
+    auto s = (Server *)server;
+    if (s == nullptr) {
+        return ONE_ERROR_VALIDATION_SERVER_IS_NULLPTR;
+    }
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    s->set_custom_command_callback(callback, userdata);
     return ONE_ERROR_NONE;
 }
 
@@ -1117,6 +1157,10 @@ OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination) {
     return one::object_copy(source, destination);
 }
 
+OneError one_object_clear(OneObjectPtr object) {
+    return one::object_clear(object);
+}
+
 OneError one_object_is_val_bool(OneObjectPtr object, const char *key, bool *result) {
     return one::object_is_val_bool(object, key, result);
 }
@@ -1212,6 +1256,10 @@ OneError one_server_set_live_state(OneServerPtr server, int players, int max_pla
                                       version, additional_data);
 }
 
+OneError one_server_send_reverse_metadata(OneServerPtr server, OneArrayPtr data) {
+    return one::server_send_reverse_metadata(server, data);
+}
+
 OneError one_server_set_application_instance_status(OneServerPtr server,
                                                     OneApplicationInstanceStatus status) {
     return one::server_set_application_instance_status(server, status);
@@ -1245,6 +1293,11 @@ OneError one_server_set_application_instance_information_callback(
     OneServerPtr server, void (*callback)(void *, void *), void *userdata) {
     return one::server_set_application_instance_information_callback(server, callback,
                                                                      userdata);
+}
+
+OneError one_server_set_custom_command_callback(
+    OneServerPtr server, void (*callback)(void *userdata, void *object), void *userdata) {
+    return one::server_set_custom_command_callback(server, callback, userdata);
 }
 
 void one_allocator_set_alloc(void *(*callback)(unsigned int size)) {

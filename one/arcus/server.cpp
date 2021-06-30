@@ -62,7 +62,8 @@ Server::Server()
     , _status(ApplicationInstanceStatus::starting)
     , _should_send_status(false)
     , _callbacks{}
-    , _last_listen_attempt_time(steady_clock::duration::zero()) {}
+    , _last_listen_attempt_time(steady_clock::duration::zero())
+    , _additional_data(nullptr) {}
 
 Server::~Server() {
     shutdown();
@@ -104,6 +105,12 @@ OneError Server::init(unsigned int listen_port) {
         return ONE_ERROR_SERVER_SOCKET_ALLOCATION_FAILED;
     }
 
+    _additional_data = allocator::create<Object>();
+    if (_additional_data == nullptr) {
+        shutdown();
+        return ONE_ERROR_SERVER_OBJECT_ALLOCATION_FAILED;
+    }
+
     const auto max_incoming = Connection::max_message_default;
     const auto max_outgoing = Connection::max_message_default;
     _client_connection = allocator::create<Connection>(max_incoming, max_outgoing);
@@ -141,6 +148,11 @@ OneError Server::shutdown() {
     if (_client_socket != nullptr) {
         allocator::destroy<Socket>(_client_socket);
         _client_socket = nullptr;
+    }
+
+    if (_additional_data != nullptr) {
+        allocator::destroy<Object>(_additional_data);
+        _additional_data = nullptr;
     }
 
     shutdown_socket_system();
@@ -341,6 +353,13 @@ OneError Server::process_incoming_message(const Message &message) {
             return invocation::application_instance_information(
                 message, _callbacks._application_instance_information,
                 _callbacks._application_instance_information_data);
+        case Opcode::custom_command:
+            if (_callbacks._custom_command == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::custom_command(message, _callbacks._custom_command,
+                                              _callbacks._custom_command_userdata);
         default:
             return ONE_ERROR_NONE;
     }
@@ -359,6 +378,15 @@ OneError Server::process_outgoing_message(const Message &message) {
         case Opcode::live_state: {
             params::LiveStateResponse params;
             err = validation::live_state(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::reverse_metadata: {
+            params::ReverseMetaDataResponse params;
+            err = validation::reverse_metadata(message, params);
             if (is_error(err)) {
                 return err;
             }
@@ -514,12 +542,19 @@ OneError Server::set_live_state(int players, int max_players, const char *name,
                                 Object *additional_data) {
     const std::lock_guard<std::mutex> lock(_server);
 
+    if (additional_data == nullptr) {
+        _additional_data = nullptr;
+    } else {
+        (*_additional_data) = *additional_data;
+    }
+
     _game_state.players = players;
     _game_state.max_players = max_players;
     _game_state.name = name;
     _game_state.map = map;
     _game_state.mode = mode;
     _game_state.version = version;
+    _game_state.additional_data = _additional_data;
     _game_state_was_set = true;
 
     return ONE_ERROR_NONE;
@@ -554,7 +589,27 @@ OneError Server::send_live_state() {
     auto err = messages::prepare_live_state(
         _game_state.players, _game_state.max_players, _game_state.name.c_str(),
         _game_state.map.c_str(), _game_state.mode.c_str(), _game_state.version.c_str(),
-        message);
+        _game_state.additional_data, message);
+
+    if (is_error(err)) {
+        return err;
+    }
+
+    err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
+OneError Server::send_reverse_metadata(Array *data) {
+    if (data == nullptr) {
+        return ONE_ERROR_VALIDATION_DATA_IS_NULLPTR;
+    }
+
+    Message message;
+    auto err = messages::prepare_reverse_metadata(*data, message);
 
     if (is_error(err)) {
         return err;
@@ -632,6 +687,17 @@ OneError Server::set_application_instance_information_callback(
 
     _callbacks._application_instance_information = callback;
     _callbacks._application_instance_information_data = data;
+    return ONE_ERROR_NONE;
+}
+
+OneError Server::set_custom_command_callback(
+    std::function<void(void *, Array *)> callback, void *data) {
+    if (callback == nullptr) {
+        return ONE_ERROR_SERVER_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._custom_command = callback;
+    _callbacks._custom_command_userdata = data;
     return ONE_ERROR_NONE;
 }
 

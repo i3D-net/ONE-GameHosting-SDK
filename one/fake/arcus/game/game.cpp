@@ -59,6 +59,7 @@ Game::Game()
     , _metadata_receive_count(0)
     , _host_information_receive_count(0)
     , _application_instance_information_receive_count(0)
+    , _custom_command_receive_count(0)
     , _quiet(false)
     , _players(0)
     , _name()
@@ -74,7 +75,8 @@ Game::Game()
     , _max_players(0)
     , _match_duration(0)
     , _match_start_time(steady_clock::duration::zero())
-    , _match_status(MatchStatus::none) {}
+    , _match_status(MatchStatus::none)
+    , _number_message_to_send(0) {}
 
 Game::~Game() {
     _one_server.shutdown();
@@ -118,6 +120,7 @@ bool Game::init(unsigned int port, int max_players, const std::string &name,
     _one_server.set_host_information_callback(host_information_callback, this);
     _one_server.set_application_instance_information_callback(
         application_instance_information_callback, this);
+    _one_server.set_custom_command_callback(custom_command_callback, this);
 
     return (_one_server.status() == OneServerWrapper::Status::waiting_for_client);
 }
@@ -200,6 +203,11 @@ void Game::update() {
             L_INFO("ending process as a delayed response to a soft stop request");
             exit(0);
         }
+    }
+
+    if (0 < _number_message_to_send) {
+        _one_server.send_reverse_metadata("map", "mode", "type");
+        --_number_message_to_send;
     }
 
     _one_server.update(_quiet);
@@ -313,10 +321,21 @@ int Game::application_instance_information_receive_count() const {
     return _application_instance_information_receive_count;
 }
 
+int Game::custom_command_receive_count() const {
+    const std::lock_guard<std::mutex> lock(_game);
+    return _custom_command_receive_count;
+}
+
 void Game::set_player_count(int count) {
     if (count == _players) return;
     _players = count;
     update_arcus_server_game_state();
+}
+
+void Game::send_reverse_metadata(const std::string &map, const std::string &mode,
+                                 const std::string &type) {
+    const std::lock_guard<std::mutex> lock(_game);
+    _one_server.send_reverse_metadata(map, mode, type);
 }
 
 void Game::soft_stop_callback(int timeout, void *userdata) {
@@ -350,20 +369,6 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
         return;
     }
 
-    switch (game->_matchmaking_status) {
-        case MatchmakingStatus::online:
-            L_INFO("game is ready to process allocated messsage.");
-            break;
-        case MatchmakingStatus::allocated:
-            L_INFO("game is already allocated: skipping allocated message.");
-            return;
-        case MatchmakingStatus::none:
-        case MatchmakingStatus::starting:
-        default:
-            L_INFO("game is not ready to process allocated: skipping allocated message.");
-            return;
-    }
-
     // A real game would use the given matchmaking here to host a match and
     // set its Application Instance Status to allocated when ready to accept
     // players.
@@ -378,6 +383,20 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
     }
 
     game->_allocated_receive_count++;
+
+    switch (game->_matchmaking_status) {
+        case MatchmakingStatus::online:
+            L_INFO("game is ready to process allocated messsage.");
+            break;
+        case MatchmakingStatus::allocated:
+            L_INFO("game is already allocated: skipping allocated message.");
+            return;
+        case MatchmakingStatus::none:
+        case MatchmakingStatus::starting:
+        default:
+            L_INFO("game is not ready to process allocated: skipping allocated message.");
+            return;
+    }
 
     game->_max_players = data.players;
     game->_match_duration = seconds(data.duration);
@@ -440,6 +459,30 @@ void Game::application_instance_information_callback(
     }
 
     game->_application_instance_information_receive_count++;
+}
+
+void Game::custom_command_callback(const OneServerWrapper::CustomCommandData &data,
+                                   void *userdata) {
+    auto game = reinterpret_cast<Game *>(userdata);
+    if (game == nullptr) {
+        L_ERROR("null game");
+        return;
+    }
+
+    // A real game could use information here for debugging or other purposes.
+    if (!game->is_quiet()) {
+        L_INFO("custom command called:");
+        L_INFO("\tcommand:" + data.command);
+        L_INFO("\targument:" + data.argument);
+    }
+
+    try {
+        game->_number_message_to_send += std::stoi(data.argument);
+    } catch (...) {
+        L_ERROR("unable to convert: " + data.argument + " into an integer");
+    }
+
+    game->_custom_command_receive_count++;
 }
 
 }  // namespace one_integration

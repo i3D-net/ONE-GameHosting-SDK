@@ -118,6 +118,19 @@ int main(int argc, char **argv) {
                             log_info("sending allocated");
                             agent.send_allocated(array);
 
+                            Array data;
+                            Object command;
+                            command.set_val_string("key", "command");
+                            command.set_val_string("value", "command-1");
+                            Object argument;
+                            argument.set_val_string("key", "argument");
+                            argument.set_val_string("value", "10");
+
+                            data.push_back_object(command);
+                            data.push_back_object(argument);
+
+                            log_info("sending custom command");
+                            agent.send_custom_command(data);
                             break;
                         }
                         default: {
@@ -139,6 +152,20 @@ int main(int argc, char **argv) {
 
                             log_info("sending metadata");
                             agent.send_metadata(metadata);
+
+                            Array data;
+                            Object command;
+                            command.set_val_string("key", "command");
+                            command.set_val_string("value", "command-1");
+                            Object argument;
+                            argument.set_val_string("key", "argument");
+                            argument.set_val_string("value", "2");
+
+                            data.push_back_object(command);
+                            data.push_back_object(argument);
+
+                            log_info("sending custom command");
+                            agent.send_custom_command(data);
 
                             break;
                         }

@@ -269,6 +269,19 @@ OneError Client::send_application_instance_information(Object &data) {
     return ONE_ERROR_NONE;
 }
 
+OneError Client::send_custom_command(Array &data) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    Message message;
+    messages::prepare_custom_command(data, message);
+    auto err = process_outgoing_message(message);
+    if (is_error(err)) {
+        return err;
+    }
+
+    return ONE_ERROR_NONE;
+}
+
 OneError Client::set_live_state_callback(
     std::function<void(void *, int, int, const String &, const String &, const String &,
                        const String &)>
@@ -282,6 +295,19 @@ OneError Client::set_live_state_callback(
 
     _callbacks._live_state = callback;
     _callbacks._live_state_userdata = userdata;
+    return ONE_ERROR_NONE;
+}
+
+OneError Client::set_reverse_metadata_callback(
+    std::function<void(void *, Array *)> callback, void *userdata) {
+    const std::lock_guard<std::mutex> lock(_client);
+
+    if (callback == nullptr) {
+        return ONE_ERROR_VALIDATION_CALLBACK_IS_NULLPTR;
+    }
+
+    _callbacks._reverse_metadata = callback;
+    _callbacks._reverse_metadata_userdata = userdata;
     return ONE_ERROR_NONE;
 }
 
@@ -307,6 +333,13 @@ OneError Client::process_incoming_message(const Message &message) {
 
             return invocation::live_state(message, _callbacks._live_state,
                                           _callbacks._live_state_userdata);
+        case Opcode::reverse_metadata:
+            if (_callbacks._reverse_metadata == nullptr) {
+                return ONE_ERROR_NONE;
+            }
+
+            return invocation::reverse_metadata(message, _callbacks._reverse_metadata,
+                                                _callbacks._reverse_metadata_userdata);
         case Opcode::application_instance_status:
             if (_callbacks._application_instance_status == nullptr) {
                 return ONE_ERROR_NONE;
@@ -362,6 +395,15 @@ OneError Client::process_outgoing_message(const Message &message) {
         case Opcode::application_instance_information: {
             params::ApplicationInstanceInformationResponse params;
             err = validation::application_instance_information(message, params);
+            if (is_error(err)) {
+                return err;
+            }
+
+            break;
+        }
+        case Opcode::custom_command: {
+            params::CustomCommandRequest params;
+            err = validation::custom_command(message, params);
             if (is_error(err)) {
                 return err;
             }

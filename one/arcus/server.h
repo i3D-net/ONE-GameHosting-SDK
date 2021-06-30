@@ -35,6 +35,8 @@ struct ServerCallbacks {
     void *_host_information_data;
     std::function<void(void *, Object *)> _application_instance_information;
     void *_application_instance_information_data;
+    std::function<void(void *, Array *)> _custom_command;
+    void *_custom_command_userdata;
 };
 
 // An Arcus Server is designed for use by a Game. It allows an Arcus One Agent
@@ -79,8 +81,11 @@ public:
     //------------------------------------------------------------------------------
     // Property setters.
 
-    OneError set_live_state(int players, int max_players, const char *name, const char *map,
-                         const char *mode, const char *version, Object *additional_data);
+    OneError set_live_state(int players, int max_players, const char *name,
+                            const char *map, const char *mode, const char *version,
+                            Object *additional_data);
+
+    OneError send_reverse_metadata(Array *data);
 
     // Must match api standards.
     enum class ApplicationInstanceStatus { starting = 3, online = 4, allocated = 5 };
@@ -93,28 +98,29 @@ public:
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
-    OneError set_soft_stop_callback(std::function<void(void *, int)> callback, void *data);
+    OneError set_soft_stop_callback(std::function<void(void *, int)> callback,
+                                    void *data);
 
     // set the callback for when a allocated message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     OneError set_allocated_callback(std::function<void(void *, Array *)> callback,
-                                 void *data);
+                                    void *data);
 
     // set the callback for when a metadata message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     OneError set_metadata_callback(std::function<void(void *, Array *)> callback,
-                                void *data);
+                                   void *data);
 
     // set the callback for when a host_information message in received.
     // The `void *data` is the user provided and will be passed as the first argument
     // of the callback when invoked.
     // The `data` can be nullptr, the callback is responsible to use the data properly.
     OneError set_host_information_callback(std::function<void(void *, Object *)> callback,
-                                        void *data);
+                                           void *data);
 
     // set the callback for when a application_instance_information message in
     // received. The `void *data` is the user provided and will be passed as the first
@@ -122,6 +128,13 @@ public:
     // responsible to use the data properly.
     OneError set_application_instance_information_callback(
         std::function<void(void *, Object *)> callback, void *data);
+
+    // set the callback for when a custom command message in received.
+    // The `void *data` is the user provided and will be passed as the first argument
+    // of the callback when invoked.
+    // The `data` can be nullptr, the callback is responsible to use the data properly.
+    OneError set_custom_command_callback(std::function<void(void *, Array *)> callback,
+                                         void *data);
 
 private:
     struct GameState {
@@ -176,6 +189,8 @@ private:
 
     ServerCallbacks _callbacks;
     steady_clock::time_point _last_listen_attempt_time;
+
+    Object *_additional_data;
 };
 
 }  // namespace one

@@ -191,6 +191,8 @@ ONE_EXPORT void one_array_destroy(OneArrayPtr array);
 
 /// Makes a copy of the array. The destination must have been created via
 /// one_array_create.
+/// @param source A pointer that will be copied into the destination.
+/// @param destination A pointer where the destination will be copied into.
 ONE_EXPORT OneError one_array_copy(OneArrayPtr source, OneArrayPtr destination);
 
 /// Clears the array to an empty initialized state.
@@ -331,7 +333,14 @@ ONE_EXPORT void one_object_destroy(OneObjectPtr object);
 
 /// Makes a copy of the object. The destination must have been created via
 /// one_object_create.
+/// @param source A pointer that will be copied into the destination.
+/// @param destination A pointer where the destination will be copied into.
 ONE_EXPORT OneError one_object_copy(OneObjectPtr source, OneObjectPtr destination);
+
+/// Clears the content of the object. The object must have been created via
+/// one_object_create.
+/// @param object A non-null OneArrayPtr.
+ONE_EXPORT OneError one_object_clear(OneObjectPtr object);
 
 //------------------------------------------------------------------------------
 ///@}
@@ -437,6 +446,14 @@ ONE_EXPORT OneError one_server_set_live_state(OneServerPtr server, int players,
                                               const char *version,
                                               OneObjectPtr additional_data);
 
+/// Send the reverse metadata message to the ONE Platform. This should be
+/// called when needed to send user defined metadata back to the ONE Platform.
+/// Thread-safe.
+/// @param server A non-null server pointer.
+/// @param data Any key/value pairs set on this object will be added.
+ONE_EXPORT OneError one_server_send_reverse_metadata(OneServerPtr server,
+                                                     OneArrayPtr data);
+
 /// This should be called at the least when the state changes, but it is safe to
 /// call more often if it is more convenient to do so - data is only sent out if
 /// there are changes from the previous call. Thread-safe.
@@ -501,6 +518,16 @@ ONE_EXPORT OneError one_server_set_host_information_callback(
 ///                 the message is received from the Client.
 /// @param userdata Optional user data that will be passed back to the callback.
 ONE_EXPORT OneError one_server_set_application_instance_information_callback(
+    OneServerPtr server, void (*callback)(void *userdata, void *object), void *userdata);
+
+/// Register the callback to be notified of a custom_command.
+/// Thread-safe.
+/// The `void *object` will be of type OneArrayPtr or the callback will error out.
+/// @param server Non-null server pointer.
+/// @param callback Callback to be called during a call to one_server_update, if
+///                 the message is received from the Client.
+/// @param userdata Optional user data that will be passed back to the callback.
+ONE_EXPORT OneError one_server_set_custom_command_callback(
     OneServerPtr server, void (*callback)(void *userdata, void *object), void *userdata);
 
 ///@}

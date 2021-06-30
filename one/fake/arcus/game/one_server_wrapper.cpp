@@ -50,7 +50,9 @@ OneServerWrapper::OneServerWrapper()
     , _host_information_callback(nullptr)
     , _host_information_userdata(nullptr)
     , _application_instance_information_callback(nullptr)
-    , _application_instance_information_userdata(nullptr) {}
+    , _application_instance_information_userdata(nullptr)
+    , _custom_command_callback(nullptr)
+    , _custom_command_userdata(nullptr) {}
 
 OneServerWrapper::~OneServerWrapper() {
     shutdown();
@@ -94,6 +96,33 @@ bool OneServerWrapper::init(unsigned int port, const AllocationHooks &hooks) {
 
     // Each game server must have one corresponding arcus server.
     OneError err = one_server_create(port, &_server);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return false;
+    }
+
+    //-----------------------
+    // Create the buffers.
+
+    err = one_array_create(&_reverse_metadata_data);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return false;
+    }
+
+    err = one_object_create(&_reverse_metadata_map);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return false;
+    }
+
+    err = one_object_create(&_reverse_metadata_mode);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return false;
+    }
+
+    err = one_object_create(&_reverse_metadata_type);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
         return false;
@@ -144,6 +173,12 @@ bool OneServerWrapper::init(unsigned int port, const AllocationHooks &hooks) {
         return false;
     }
 
+    err = one_server_set_custom_command_callback(_server, custom_command, this);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return false;
+    }
+
     L_INFO("OneServerWrapper init complete");
     return true;
 }
@@ -159,6 +194,14 @@ void OneServerWrapper::shutdown() {
     // first, ending any active connection to it.
     one_server_destroy(_server);
     _server = nullptr;
+    one_array_destroy(_reverse_metadata_data);
+    _reverse_metadata_data = nullptr;
+    one_object_destroy(_reverse_metadata_map);
+    _reverse_metadata_map = nullptr;
+    one_object_destroy(_reverse_metadata_mode);
+    _reverse_metadata_mode = nullptr;
+    one_object_destroy(_reverse_metadata_type);
+    _reverse_metadata_type = nullptr;
 }
 
 void OneServerWrapper::update(bool quiet) {
@@ -240,10 +283,94 @@ void OneServerWrapper::set_game_state(const GameState &state) {
         state.mode.c_str(), state.version.c_str(), nullptr);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
+        return;
     }
 
     // If custom data was added, then make sure to destroy the object.
     // one_object_destroy(object);
+}
+
+void OneServerWrapper::send_reverse_metadata(const std::string &map,
+                                             const std::string &mode,
+                                             const std::string &type) {
+    // If the game wishes to send and coordinate the processing of reverse metadata to the
+    // ONE Platform, it can add that data here as an object with additional keys. Note
+    // that these key are user defined. The one showed here are matching the example in
+    // the online documentation.
+
+    OneError err = one_array_clear(_reverse_metadata_data);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    err = one_object_clear(_reverse_metadata_map);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    err = one_object_clear(_reverse_metadata_mode);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    err = one_object_clear(_reverse_metadata_type);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+
+    err = one_object_set_val_string(_reverse_metadata_map, "key", "map");
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    err = one_object_set_val_string(_reverse_metadata_map, "value", map.c_str());
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    one_object_set_val_string(_reverse_metadata_mode, "key", "mode");
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    one_object_set_val_string(_reverse_metadata_mode, "value", mode.c_str());
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    one_object_set_val_string(_reverse_metadata_type, "key", "type");
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    one_object_set_val_string(_reverse_metadata_type, "value", type.c_str());
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+
+    one_array_push_back_object(_reverse_metadata_data, _reverse_metadata_map);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    one_array_push_back_object(_reverse_metadata_data, _reverse_metadata_mode);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+    one_array_push_back_object(_reverse_metadata_data, _reverse_metadata_type);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
+
+    err = one_server_send_reverse_metadata(_server, _reverse_metadata_data);
+    if (one_is_error(err)) {
+        L_ERROR(one_error_text(err));
+        return;
+    }
 }
 
 void OneServerWrapper::set_application_instance_status(ApplicationInstanceStatus status) {
@@ -289,6 +416,13 @@ void OneServerWrapper::set_application_instance_information_callback(
     void *userdata) {
     _application_instance_information_callback = callback;
     _application_instance_information_userdata = userdata;
+}
+
+void OneServerWrapper::set_custom_command_callback(
+    std::function<void(const CustomCommandData &data, void *userdata)> callback,
+    void *userdata) {
+    _custom_command_callback = callback;
+    _custom_command_userdata = userdata;
 }
 
 // Tell the server to shutdown at the next appropriate time for its users (e.g.,
@@ -428,6 +562,36 @@ void OneServerWrapper::application_instance_information(void *userdata,
     L_INFO("invoking application instance information callback");
     wrapper->_application_instance_information_callback(
         information_payload, wrapper->_application_instance_information_userdata);
+}
+
+void OneServerWrapper::custom_command(void *userdata, void *custom_command) {
+    if (userdata == nullptr) {
+        L_ERROR("userdata is nullptr");
+        return;
+    }
+
+    if (metadata == nullptr) {
+        L_ERROR("metadata is nullptr");
+        return;
+    }
+
+    auto wrapper = reinterpret_cast<OneServerWrapper *>(userdata);
+    assert(wrapper->_server != nullptr);
+
+    if (wrapper->_custom_command_callback == nullptr) {
+        L_INFO("custom command callback is nullptr");
+        return;
+    }
+
+    auto array = reinterpret_cast<OneArrayPtr>(custom_command);
+    CustomCommandData custom_command_payload;
+    if (!extract_custom_command_payload(array, custom_command_payload)) {
+        L_ERROR("failed to extract custom command payload");
+        return;
+    }
+
+    wrapper->_custom_command_callback(custom_command_payload,
+                                      wrapper->_custom_command_userdata);
 }
 
 bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
@@ -575,6 +739,43 @@ bool OneServerWrapper::extract_application_instance_information_payload(
     }
 
     // ... add more field parsing as needed.
+
+    return true;
+}
+
+bool OneServerWrapper::extract_custom_command_payload(OneArrayPtr array,
+                                                      CustomCommandData &custom_command) {
+    if (array == nullptr) {
+        L_ERROR("array is nullptr");
+        return false;
+    }
+
+    auto callback = [&](const size_t total_number_of_keys, const std::string &key,
+                        const std::string &value) {
+        if (total_number_of_keys != 2) {
+            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
+                    ") expected 3 instead");
+            return false;
+        }
+
+        if (key == "command") {
+            custom_command.command = value;
+            return true;
+        }
+
+        if (key == "argument") {
+            custom_command.argument = value;
+            return true;
+        }
+
+        L_ERROR("key(" + key + ") is not handled");
+        return false;
+    };
+
+    if (!Parsing::extract_key_value_payload(array, callback)) {
+        L_ERROR("failed to extract key/value payload");
+        return false;
+    }
 
     return true;
 }

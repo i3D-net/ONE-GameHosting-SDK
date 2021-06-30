@@ -605,7 +605,7 @@ OneError Connection::process_outgoing_messages() {
 #ifdef ONE_ARCUS_CONNECTION_LOGGING
         log(*_socket, [&](OStringStream &stream) {
             stream << "connection sent message opcode: " << (int)message.code();
-            ;
+            stream << "message payload" << message.payload().to_json();
         });
 #endif
     }

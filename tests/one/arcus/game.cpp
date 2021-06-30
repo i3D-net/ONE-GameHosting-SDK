@@ -104,39 +104,42 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     {
         REQUIRE(agent.send_soft_stop(1000) == 0);
 
+        pump_updates(10, 1, agent, game);
         bool passed = wait_until(200, [&]() {
             agent.update();
             game.update();
             return game.soft_stop_receive_count() == 1;
         });
+        REQUIRE(passed);
     }
 
     // allocated.
     {
-        Object map;
-        auto err = map.set_val_string("key", "map");
+        Object players;
+        auto err = players.set_val_string("key", "players");
         REQUIRE(!is_error(err));
-        err = map.set_val_string("value", "islands_large");
+        err = players.set_val_string("value", "10");
         REQUIRE(!is_error(err));
 
-        Object max_players;
-        err = max_players.set_val_string("key", "maxPlayers");
+        Object duration;
+        err = duration.set_val_string("key", "duration");
         REQUIRE(!is_error(err));
-        err = max_players.set_val_string("value", "16");
+        err = duration.set_val_string("value", "16");
         REQUIRE(!is_error(err));
 
         Array data;
-        data.push_back_object(map);
-        data.push_back_object(max_players);
+        data.push_back_object(players);
+        data.push_back_object(duration);
 
         REQUIRE(agent.send_allocated(data) == 0);
 
+        pump_updates(10, 1, agent, game);
         bool passed = wait_until(200, [&]() {
             agent.update();
             game.update();
-            return game.allocated_receive_count() == 1 &&
-                   agent.application_instance_status_receive_count() == 1;
+            return game.allocated_receive_count() == 1;
         });
+        REQUIRE(passed);
     }
 
     // metadata.
@@ -167,11 +170,55 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         Array array;
         REQUIRE(agent.send_metadata(data) == 0);
 
+        pump_updates(10, 1, agent, game);
         bool passed = wait_until(200, [&]() {
             agent.update();
             game.update();
-            return game.allocated_receive_count() == 1;
+            return game.metadata_receive_count() == 1;
         });
+        REQUIRE(passed);
+    }
+
+    // reverse metadata.
+    {
+        game.send_reverse_metadata("islands_large", "BR", "squads");
+
+        pump_updates(10, 1, agent, game);
+        bool passed = wait_until(200, [&]() {
+            agent.update();
+            game.update();
+            return agent.reverse_meta_data_receive_count() == 1;
+        });
+        REQUIRE(passed);
+    }
+
+    // custom command.
+    {
+        Object command;
+        auto err = command.set_val_string("key", "command");
+        REQUIRE(!is_error(err));
+        err = command.set_val_string("value", "custom command");
+        REQUIRE(!is_error(err));
+
+        Object argument;
+        err = argument.set_val_string("key", "argument");
+        REQUIRE(!is_error(err));
+        err = argument.set_val_string("value", "argument 1");
+        REQUIRE(!is_error(err));
+
+        Array data;
+        data.push_back_object(command);
+        data.push_back_object(argument);
+
+        REQUIRE(agent.send_custom_command(data) == 0);
+
+        pump_updates(10, 1, agent, game);
+        bool passed = wait_until(200, [&]() {
+            agent.update();
+            game.update();
+            return game.custom_command_receive_count() == 1;
+        });
+        REQUIRE(passed);
     }
 
     //--------------------------------------------------------------------------
@@ -184,6 +231,7 @@ TEST_CASE("agent and game messaging", "[fake game]") {
         // is established.
         REQUIRE(agent.live_state_receive_count() == 1);
         game.set_player_count(game.player_count() + 1);
+        pump_updates(10, 1, agent, game);
         bool passed = wait_until(200, [&]() {
             game.update();
             agent.update();
