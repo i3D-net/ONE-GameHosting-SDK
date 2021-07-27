@@ -31,7 +31,7 @@ TEST_CASE("pinger statistics", "[pinger]") {
 
     for (auto i = 0; i < 100; ++i) {
         err = pinger.update();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         REQUIRE(err == I3D_PING_ERROR_NONE);
 
         err = pinger.last_time(last);
@@ -48,6 +48,7 @@ TEST_CASE("pinger statistics", "[pinger]") {
 
     for (auto i = 0; i < 100; ++i) {
         err = pinger.update();
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         REQUIRE(err == I3D_PING_ERROR_NONE);
 
         err = pinger.last_time(last);

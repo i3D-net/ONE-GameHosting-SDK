@@ -9,6 +9,8 @@
 #include <thread>
 
 TEST_CASE("pingers pinging sites", "[pingers]") {
+    std::this_thread::sleep_for(std::chrono::seconds(2));
+
     I3dIpListPtr ip_list = nullptr;
     I3dPingError err = I3D_PING_ERROR_NONE;
 
