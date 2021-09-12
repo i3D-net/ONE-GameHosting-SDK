@@ -58,7 +58,7 @@ typedef enum OneServerStatus {
 } OneServerStatus;
 
 /// Status of a game server. As defined in:
-/// https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
+/// https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-status
 typedef enum OneApplicationInstanceStatus {
     ONE_SERVER_STARTING = 3,
     ONE_SERVER_ONLINE = 4,

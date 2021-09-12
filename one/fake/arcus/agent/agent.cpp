@@ -72,6 +72,10 @@ OneError Agent::init(const char *addr, unsigned int port) {
             if (_quiet) {
                 return;
             }
+
+            // See
+            // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#reverse-metadata
+            // for more details.
             log_info("reverse metadata request received:");
             Object map;
             data->val_object(0, map);

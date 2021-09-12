@@ -96,7 +96,7 @@ public:
                                const std::string &type);
 
     // As defined in:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-set-status-request
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-status
     enum class ApplicationInstanceStatus { starting = 3, online = 4, allocated = 5 };
 
     // Sets the Arcus application instance status. The game server must set
@@ -121,7 +121,7 @@ public:
     // The allocation request has a optional JSON body. The keys and values are definable
     // by the customer. The current values are matching the payload shown in the
     // documentation at:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#allocated-request
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#allocated
     struct AllocatedData {
         AllocatedData() : players(0), duration(0) {}
 
@@ -136,7 +136,7 @@ public:
     // Game metadata. Contains an optional JSON body with key value
     // pairs for meta data. The keys and values are definable by the customer.
     // The current values are matching the payload shown in the documentation at:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#meta-data-request
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#metadata
     struct MetaDataData {
         MetaDataData() : map(), mode(), type() {}
 
@@ -150,7 +150,7 @@ public:
         void *userdata);
 
     // The host information response has a payload as defined at:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information-response
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information
     // In this example only a handfull of fields are used for simplicity.
     struct HostInformationData {
         HostInformationData() : id(0), server_id(0), server_name() {}
@@ -166,7 +166,7 @@ public:
         void *userdata);
 
     // The application instance information response has a payload as defined at:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information-response
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information
     // In this example only a handfull of fields are used for simplicity.
     struct ApplicationInstanceInformationData {
         ApplicationInstanceInformationData() : fleet_id(), host_id(0), is_virtual(0) {}
@@ -187,7 +187,7 @@ public:
     // Game metadata. Contains an optional JSON body with key value
     // pairs for meta data. The keys and values are definable by the customer.
     // The current values are matching the payload shown in the documentation at:
-    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#custom-command-request
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#custom-command
     struct CustomCommandData {
         CustomCommandData() : command(), argument() {}
 
