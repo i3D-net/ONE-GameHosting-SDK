@@ -604,6 +604,7 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
     // Optional - the game can require and read allocated keys to configure
     // the server. This is to mirror the documentation example here:
     // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#allocated
+
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
         if (total_number_of_keys != 2) {
@@ -640,6 +641,10 @@ bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
         L_ERROR("array is nullptr");
         return false;
     }
+
+    // Optional - the game can require and read metadata keys to configure
+    // the server. This is to mirror the documentation example here:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#metadata
 
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
@@ -683,6 +688,9 @@ bool OneServerWrapper::extract_host_information_payload(
         return false;
     }
 
+    // The full details of the host information payload can be found here:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#host-information
+
     OneError err = one_object_val_int(object, "id", &information.id);
     if (one_is_error(err)) {
         L_ERROR(one_error_text(err));
@@ -715,6 +723,10 @@ bool OneServerWrapper::extract_application_instance_information_payload(
         L_ERROR("object is nullptr.");
         return false;
     }
+
+    // The full details of the host application instance information payload can be found
+    // here:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#applicationinstance-information
 
     if (!Parsing::extract_string(object, "fleetId", [&](const std::string &value) {
             information.fleet_id = value;
@@ -749,6 +761,10 @@ bool OneServerWrapper::extract_custom_command_payload(OneArrayPtr array,
         L_ERROR("array is nullptr");
         return false;
     }
+
+    // Optional - the game can require and custom command keys to perform certain tasks on
+    // the server. This is to mirror the documentation example here:
+    // https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/request-response/#custom-command
 
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
