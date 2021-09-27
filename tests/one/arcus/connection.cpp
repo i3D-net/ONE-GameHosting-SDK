@@ -44,7 +44,7 @@ void pump_updates_with_logs(int count, int ms_per_loop, Agent &agent) {
     });
 }
 
-TEST_CASE("single game connecting to multiple agents", "[concurrency]") {
+TEST_CASE("connect:single game connecting to multiple agents", "[concurrency]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19112;
 
@@ -69,7 +69,7 @@ TEST_CASE("single game connecting to multiple agents", "[concurrency]") {
     game.shutdown();
 }
 
-TEST_CASE("single agent connecting to multiple games", "[concurrency]") {
+TEST_CASE("connect:single agent connecting to multiple games", "[concurrency]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19112;
 
@@ -91,7 +91,7 @@ TEST_CASE("single agent connecting to multiple games", "[concurrency]") {
     }
 }
 
-TEST_CASE("multiple agents connecting to multiple games", "[concurrency]") {
+TEST_CASE("connect:multiple agents connecting to multiple games", "[concurrency]") {
     const auto address = "127.0.0.1";
     const unsigned int port = 19112;
 
