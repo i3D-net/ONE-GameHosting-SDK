@@ -4,10 +4,10 @@ set(HEADER_FILES
     c_error.h
     c_platform.h
     error.h
-    internal/icmp_socket.h
     internal/pinger.h
     internal/sites_endpoint.h
     internal/site_information.h
+    internal/udp_socket.h
     internal/version.h
     ip_list.h
     logger.h
@@ -21,10 +21,10 @@ set(SOURCE_FILES
     c_api.cpp
     c_error.cpp
     error.cpp
-    internal/icmp_socket.cpp
     internal/pinger.cpp
     internal/sites_endpoint.cpp
     internal/site_information.cpp
+    internal/udp_socket.cpp
     ip_list.cpp
     pingers.cpp
     sites_getter.cpp

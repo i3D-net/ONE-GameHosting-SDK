@@ -32,49 +32,6 @@ const int INVALID_SOCKET = -1;
 namespace i3d {
 namespace ping {
 
-// ICMP packet types
-#define I3D_PING_ICMP_ECHO_REPLY 0
-#define I3D_PING_ICMP_DEST_UNREACH 3
-#define I3D_PING_ICMP_TTL_EXPIRE 11
-#define I3D_PING_ICMP_ECHO_REQUEST 8
-
-// Minimum ICMP packet size, in bytes
-#define I3D_PING_ICMP_MIN 8
-
-#ifdef _MSC_VER
-    // The following two structures need to be packed tightly, but unlike
-    // Borland C++, Microsoft C++ does not do this by default.
-    #pragma pack(1)
-#endif
-
-struct IPHeader {
-    unsigned char header_lenght : 4;
-    unsigned char version : 4;
-    unsigned char type_of_service;
-    unsigned short total_lenght;
-    unsigned short uid;
-    unsigned short flags;
-    unsigned char time_to_live;
-    unsigned char protocol;
-    unsigned short checksum;
-    unsigned long source_ip;
-    unsigned long destination_ip;
-    char buffer[1024];
-};
-
-struct ICMPHeader {
-    unsigned char type;
-    unsigned char type_sub_code;
-    unsigned short checksum;
-    unsigned short id;
-    unsigned short seq;
-    unsigned long timestamp;  // not part of ICMP, but we need it
-};
-
-#ifdef _MSC_VER
-    #pragma pack()
-#endif
-
 // Must be called before using Socket. Safe to call multiple times. Calls to
 // init_socket_system must have matching calls to shutdown_socket_system.
 // The first init call does the initializing. Any calls after the first init
@@ -88,12 +45,12 @@ I3dPingError init_socket_system();
 // calls decrement counters matching the number of times init was called.
 I3dPingError shutdown_socket_system();
 
-class IcmpSocket final {
+class UdpSocket final {
 public:
-    IcmpSocket();
-    IcmpSocket(const IcmpSocket &) = default;
-    IcmpSocket &operator=(const IcmpSocket &) = default;
-    ~IcmpSocket() = default;
+    UdpSocket();
+    UdpSocket(const UdpSocket &) = default;
+    UdpSocket &operator=(const UdpSocket &) = default;
+    ~UdpSocket() = default;
 
     const String &ipv4() const {
         return _ipv4;
@@ -101,7 +58,7 @@ public:
 
     I3dPingError update();
 
-    I3dPingError init(const char *ipv4);
+    I3dPingError init(const char *ipv4, int port);
 
     enum class Status { uninitialized, initialized, ping_sent, ping_received, error };
 
@@ -118,7 +75,6 @@ private:
     unsigned short checksum(unsigned short *buffer, int size) const;
     I3dPingError send_ping();
     I3dPingError receive_ping();
-    I3dPingError decode_reply();
 
     I3dPingError ready_for_read(int timeout, bool &is_ready);
     I3dPingError ready_for_send(int timeout, bool &is_ready);
@@ -132,16 +88,14 @@ private:
     String _ipv4;
 
     SOCKET _socket;
-    int _time_to_live;
     sockaddr_in _destination;
     sockaddr_in _source;
-    ICMPHeader _icmp_header;
-    IPHeader _receive_buffer;
 
+    unsigned long _timestamp_send;
     int _time_milliseconds;
     Status _status;
-    unsigned int _current_sequence_number;
-    static unsigned int _sequence_number;
+
+    const std::string _data;
 };
 
 }  // namespace ping

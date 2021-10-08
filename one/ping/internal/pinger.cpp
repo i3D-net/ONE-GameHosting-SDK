@@ -78,7 +78,9 @@ I3dPingError Pinger::init(const char *ipv4) {
         return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
-    auto err = _socket.init(ipv4);
+    // TODO fixme
+    int port = 1024;
+    auto err = _socket.init(ipv4, port);
     if (i3d_ping_is_error(err)) {
         return err;
     }

@@ -49,12 +49,12 @@ else()
         one/arcus/ring.cpp
         one/arcus/stress.cpp
         one/ping/http.cpp
-        one/ping/icmp_socket.cpp
         one/ping/pinger.cpp
         one/ping/pingers.cpp
         one/ping/site_information.cpp
         one/ping/sites_endpoint.cpp
         one/ping/sites_getter.cpp
+        one/ping/udp_socket.cpp
     )
 endif()
 
