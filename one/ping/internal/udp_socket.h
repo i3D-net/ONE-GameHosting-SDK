@@ -91,11 +91,13 @@ private:
     sockaddr_in _destination;
     sockaddr_in _source;
 
+    unsigned long _counter;
     unsigned long _timestamp_send;
     int _time_milliseconds;
     Status _status;
 
-    const std::string _data;
+    const std::string _base_data;
+    std::string _data;
 };
 
 }  // namespace ping

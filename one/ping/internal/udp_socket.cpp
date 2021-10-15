@@ -1,5 +1,7 @@
 #include <one/ping/internal/udp_socket.h>
 
+#include <array>
+
 #ifdef I3D_PING_LINUX
     #include <time.h>
 #endif
@@ -32,10 +34,11 @@ UdpSocket::UdpSocket()
     : _socket(INVALID_SOCKET)
     , _destination{}
     , _source{}
+    , _counter(0)
     , _timestamp_send(0)
     , _time_milliseconds(0)
     , _status(Status::uninitialized)
-    , _data("Hello Arcus") {}
+    , _base_data("Hello Arcus ") {}
 
 I3dPingError UdpSocket::update() {
     I3dPingError err = I3D_PING_ERROR_NONE;
@@ -154,16 +157,21 @@ I3dPingError UdpSocket::send_ping() {
         return I3D_PING_ERROR_SOCKET_NOT_READY;
     }
 
+    _counter += 1;
     _timestamp_send = get_tick_count();
 
+    _data = _base_data + std::to_string(_counter);
+
 #ifdef I3D_PING_WINDOWS
-    const int byte_wrote = ::sendto(_socket, (char *)_data.c_str(), _data.size(), 0,
+    // +1 to take the '\0' at the end.
+    const int byte_wrote = ::sendto(_socket, (char *)_data.c_str(), _data.size() + 1, 0,
                                     (sockaddr *)&_destination, sizeof(_destination));
     if (byte_wrote == SOCKET_ERROR) {
         return I3D_PING_ERROR_SOCKET_SEND_FAIL;
     }
 #else
-    const int byte_wrote = ::sendto(_socket, (char *)_data.c_str(), _data.size(), 0,
+    // +1 to take the '\0' at the end.
+    const int byte_wrote = ::sendto(_socket, (char *)_data.c_str(), _data.size() + 1, 0,
                                     (sockaddr *)&_destination, sizeof(_destination));
     if (byte_wrote < 0) {
         return I3D_PING_ERROR_SOCKET_SEND_FAIL;
@@ -190,17 +198,13 @@ I3dPingError UdpSocket::receive_ping() {
         return I3D_PING_ERROR_SOCKET_NOT_READY;
     }
 
-    char buffer[100];
-
-    for (int i = 0; i < 100; ++i) {
-        buffer[i] = '\0';
-    }
-
+    std::array<char, 1024> buffer = {'\0'};
     int byte_read = 0;
 
 #ifdef I3D_PING_WINDOWS
     int from_length = sizeof(_source);
-    byte_read = recvfrom(_socket, &buffer[0], 100, 0, (sockaddr *)&_source, &from_length);
+    byte_read = recvfrom(_socket, buffer.data(), buffer.size(), 0, (sockaddr *)&_source,
+                         &from_length);
     if (byte_read == SOCKET_ERROR) {
         if (WSAGetLastError() == WSAEMSGSIZE) {
             return I3D_PING_ERROR_SOCKET_RECEIVE_BUFFER_TOO_SMALL;
@@ -210,14 +214,28 @@ I3dPingError UdpSocket::receive_ping() {
     }
 #else
     unsigned int from_length = sizeof(_source);
-    byte_read = recvfrom(_socket, buffer[0], 100, 0, (sockaddr *)&_source, &from_length);
+    byte_read = recvfrom(_socket, buffer.data(), buffer.size(), 0, (sockaddr *)&_source,
+                         &from_length);
     if (byte_read < 0) {
         return I3D_PING_ERROR_SOCKET_RECEIVE_ERROR;
     }
 #endif
+    bool equal = false;
 
-    const std::string mirror_reply(buffer, byte_read);
-    if (mirror_reply != _data) {
+    if (_data.size() < buffer.size()) {
+        for (unsigned int i = 2; i < _data.size(); ++i) {
+            // Skipping the first two characters since they are '\0'.
+            if (buffer[i] != _data[i]) {
+                break;
+            }
+        }
+
+        if (buffer[_data.size()] == '\0') {
+            equal = true;
+        }
+    }
+
+    if (!equal) {
         return I3D_PING_ERROR_SOCKET_INVALID_REPLY;
     }
 

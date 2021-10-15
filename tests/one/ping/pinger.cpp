@@ -21,7 +21,7 @@ TEST_CASE("pinger statistics", "[pinger]") {
     err = pinger.average_time(average);
     REQUIRE(err == I3D_PING_ERROR_PINGER_IS_UNINITIALIZED);
 
-    err = pinger.init("8.8.8.8");
+    err = pinger.init("213.163.66.59");
     REQUIRE(err == I3D_PING_ERROR_NONE);
 
     err = pinger.last_time(last);
@@ -29,7 +29,7 @@ TEST_CASE("pinger statistics", "[pinger]") {
     err = pinger.average_time(average);
     REQUIRE(err == I3D_PING_ERROR_PINGER_INVALID_TIME);
 
-    for (auto i = 0; i < 100; ++i) {
+    for (auto i = 0; i < 1000; ++i) {
         err = pinger.update();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         REQUIRE(err == I3D_PING_ERROR_NONE);
@@ -46,7 +46,7 @@ TEST_CASE("pinger statistics", "[pinger]") {
     REQUIRE(err == I3D_PING_ERROR_NONE);
     REQUIRE(last == average);
 
-    for (auto i = 0; i < 100; ++i) {
+    for (auto i = 0; i < 1000; ++i) {
         err = pinger.update();
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
         REQUIRE(err == I3D_PING_ERROR_NONE);
