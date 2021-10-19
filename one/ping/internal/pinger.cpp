@@ -78,7 +78,9 @@ I3dPingError Pinger::init(const char *ipv4) {
         return I3D_PING_ERROR_VALIDATION_PARAM_IS_NULLPTR;
     }
 
-    auto err = _socket.init(ipv4);
+    // The UDP port is 3075 by default on all the ping sites.
+    const int port = 3075;
+    auto err = _socket.init(ipv4, port);
     if (i3d_ping_is_error(err)) {
         return err;
     }

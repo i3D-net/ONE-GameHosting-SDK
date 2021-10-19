@@ -1,7 +1,7 @@
 #include <one/ping/pingers.h>
 
 #include <one/ping/allocator.h>
-#include <one/ping/internal/icmp_socket.h>
+#include <one/ping/internal/udp_socket.h>
 
 //#define ONE_ARCUS_CLIENT_LOGGING
 
