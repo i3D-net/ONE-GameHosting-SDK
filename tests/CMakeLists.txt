@@ -38,6 +38,7 @@ else()
         one/arcus/chaos.cpp
         one/arcus/codec.cpp
         one/arcus/concurrency.cpp
+        one/arcus/connection.cpp
         one/arcus/endian.cpp
         one/arcus/error.cpp
         one/arcus/game.cpp

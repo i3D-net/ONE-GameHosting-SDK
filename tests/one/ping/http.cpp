@@ -46,7 +46,7 @@ std::size_t callback(const char *in, std::size_t size, std::size_t num,
 }  // namespace
 
 TEST_CASE("libcurl https GET with json response", "[http]") {
-    const std::string url = "http://date.jsontest.com/";
+    const std::string url = "https://api.i3d.net/v3/pingsite";
 
     CURL *curl;
     CURLcode res;
@@ -82,10 +82,6 @@ TEST_CASE("libcurl https GET with json response", "[http]") {
     long http_code(0);
     curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
 
-    // To avoid out of quota error.
-    if (http_code == 503) {
-        return;
-    }
     REQUIRE(http_code == 200);
     REQUIRE(!http_data.get()->empty());
 
