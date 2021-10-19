@@ -38,7 +38,10 @@ UdpSocket::UdpSocket()
     , _timestamp_send(0)
     , _time_milliseconds(0)
     , _status(Status::uninitialized)
-    , _base_data("Hello Arcus ") {}
+    , _base_data("Hello Arcus ")  // The base data must have a size greather than 2, since
+                                  // the ping endpoint mirror the reply with the first two
+                                  // byte flipped to '\0'.
+{}
 
 I3dPingError UdpSocket::update() {
     I3dPingError err = I3D_PING_ERROR_NONE;
@@ -163,14 +166,14 @@ I3dPingError UdpSocket::send_ping() {
     _data = _base_data + std::to_string(_counter);
 
 #ifdef I3D_PING_WINDOWS
-    // +1 to take the '\0' at the end.
+    // +1 to send the '\0' at the end.
     const int byte_wrote = ::sendto(_socket, (char *)_data.c_str(), _data.size() + 1, 0,
                                     (sockaddr *)&_destination, sizeof(_destination));
     if (byte_wrote == SOCKET_ERROR) {
         return I3D_PING_ERROR_SOCKET_SEND_FAIL;
     }
 #else
-    // +1 to take the '\0' at the end.
+    // +1 to send the '\0' at the end.
     const int byte_wrote = ::sendto(_socket, (char *)_data.c_str(), _data.size() + 1, 0,
                                     (sockaddr *)&_destination, sizeof(_destination));
     if (byte_wrote < 0) {
@@ -201,6 +204,12 @@ I3dPingError UdpSocket::receive_ping() {
     std::array<char, 1024> buffer = {'\0'};
     int byte_read = 0;
 
+    // The buffer must be at least bigger than data, to take into acount the trailing
+    // '\0'.
+    if (buffer.size() < _data.size() + 1) {
+        return I3D_PING_ERROR_SOCKET_RECEIVE_BUFFER_TOO_SMALL;
+    }
+
 #ifdef I3D_PING_WINDOWS
     int from_length = sizeof(_source);
     byte_read = recvfrom(_socket, buffer.data(), buffer.size(), 0, (sockaddr *)&_source,
@@ -220,22 +229,30 @@ I3dPingError UdpSocket::receive_ping() {
         return I3D_PING_ERROR_SOCKET_RECEIVE_ERROR;
     }
 #endif
-    bool equal = false;
+    // Taking into acount the trailing '\0'.
+    if (buffer.size() < _data.size() + 1) {
+        return I3D_PING_ERROR_SOCKET_INVALID_REPLY;
+    }
 
-    if (_data.size() < buffer.size()) {
-        for (unsigned int i = 2; i < _data.size(); ++i) {
-            // Skipping the first two characters since they are '\0'.
-            if (buffer[i] != _data[i]) {
-                break;
-            }
-        }
+    // The ping endpoint will mirror the sent reply with the first two byte changed to
+    // '\0'.
+    if (buffer[0] != '\0') {
+        return I3D_PING_ERROR_SOCKET_INVALID_REPLY;
+    }
 
-        if (buffer[_data.size()] == '\0') {
-            equal = true;
+    if (buffer[1] != '\0') {
+        return I3D_PING_ERROR_SOCKET_INVALID_REPLY;
+    }
+
+    // Skipping the first two characters since they are '\0'.
+    for (unsigned int i = 2; i < _data.size(); ++i) {
+        if (buffer[i] != _data[i]) {
+            return I3D_PING_ERROR_SOCKET_INVALID_REPLY;
         }
     }
 
-    if (!equal) {
+    // Checking the trailing '\0' as it was explicitly sent.
+    if (buffer[_data.size()] != '\0') {
         return I3D_PING_ERROR_SOCKET_INVALID_REPLY;
     }
 
