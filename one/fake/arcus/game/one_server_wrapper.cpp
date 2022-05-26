@@ -445,12 +445,10 @@ void OneServerWrapper::soft_stop(void *userdata, int timeout_seconds) {
 
 void OneServerWrapper::allocated(void *userdata, void *allocated) {
     if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
         return;
     }
 
     if (allocated == nullptr) {
-        L_ERROR("allocated is nullptr");
         return;
     }
 
@@ -458,18 +456,13 @@ void OneServerWrapper::allocated(void *userdata, void *allocated) {
     assert(wrapper->_server != nullptr);
 
     if (wrapper->_allocated_callback == nullptr) {
-        L_INFO("allocated callback is nullptr");
         return;
     }
 
     auto array = reinterpret_cast<OneArrayPtr>(allocated);
 
     AllocatedData allocated_payload;
-    if (!extract_allocated_payload(array, allocated_payload)) {
-        L_ERROR("failed to extract allocated payload");
-        return;
-    }
-
+    extract_allocated_payload(array, allocated_payload);
     wrapper->_allocated_callback(allocated_payload, wrapper->_allocated_userdata);
 }
 
@@ -616,7 +609,7 @@ bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
 
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
-        if (total_number_of_keys != 3) {
+        if (total_number_of_keys < 3) {
             return false;
         }
 
