@@ -488,28 +488,22 @@ void OneServerWrapper::metadata(void *userdata, void *metadata) {
     assert(wrapper->_server != nullptr);
 
     if (wrapper->_metadata_callback == nullptr) {
-        L_INFO("meta data callback is nullptr");
         return;
     }
 
     auto array = reinterpret_cast<OneArrayPtr>(metadata);
     MetaDataData metadata_payload;
-    if (!extract_metadata_payload(array, metadata_payload)) {
-        L_ERROR("failed to extract meta data payload");
-        return;
-    }
+    extract_metadata_payload(array, metadata_payload);
 
     wrapper->_metadata_callback(metadata_payload, wrapper->_metadata_userdata);
 }
 
 void OneServerWrapper::host_information(void *userdata, void *information) {
     if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
         return;
     }
 
     if (information == nullptr) {
-        L_ERROR("information is nullptr");
         return;
     }
 
@@ -517,17 +511,12 @@ void OneServerWrapper::host_information(void *userdata, void *information) {
     assert(wrapper->_server != nullptr);
 
     if (wrapper->_host_information_callback == nullptr) {
-        L_INFO("host information callback is nullptr");
         return;
     }
 
     auto object = reinterpret_cast<OneObjectPtr>(information);
     HostInformationData information_payload;
-    if (!extract_host_information_payload(object, information_payload)) {
-        L_ERROR("failed to extract host information payload");
-        return;
-    }
-
+    extract_host_information_payload(object, information_payload);
     wrapper->_host_information_callback(information_payload,
                                         wrapper->_host_information_userdata);
 }
@@ -535,12 +524,10 @@ void OneServerWrapper::host_information(void *userdata, void *information) {
 void OneServerWrapper::application_instance_information(void *userdata,
                                                         void *information) {
     if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
         return;
     }
 
     if (information == nullptr) {
-        L_ERROR("information is nullptr");
         return;
     }
 
@@ -548,30 +535,22 @@ void OneServerWrapper::application_instance_information(void *userdata,
     assert(wrapper->_server != nullptr);
 
     if (wrapper->_application_instance_information_callback == nullptr) {
-        L_INFO("application instance information callback is nullptr");
         return;
     }
 
     auto object = reinterpret_cast<OneObjectPtr>(information);
     ApplicationInstanceInformationData information_payload;
-    if (!extract_application_instance_information_payload(object, information_payload)) {
-        L_ERROR("failed to extract host application instance information payload");
-        return;
-    }
-
-    L_INFO("invoking application instance information callback");
+    extract_application_instance_information_payload(object, information_payload);
     wrapper->_application_instance_information_callback(
         information_payload, wrapper->_application_instance_information_userdata);
 }
 
 void OneServerWrapper::custom_command(void *userdata, void *custom_command) {
     if (userdata == nullptr) {
-        L_ERROR("userdata is nullptr");
         return;
     }
 
     if (metadata == nullptr) {
-        L_ERROR("metadata is nullptr");
         return;
     }
 
@@ -579,17 +558,12 @@ void OneServerWrapper::custom_command(void *userdata, void *custom_command) {
     assert(wrapper->_server != nullptr);
 
     if (wrapper->_custom_command_callback == nullptr) {
-        L_INFO("custom command callback is nullptr");
         return;
     }
 
     auto array = reinterpret_cast<OneArrayPtr>(custom_command);
     CustomCommandData custom_command_payload;
-    if (!extract_custom_command_payload(array, custom_command_payload)) {
-        L_ERROR("failed to extract custom command payload");
-        return;
-    }
-
+    extract_custom_command_payload(array, custom_command_payload);
     wrapper->_custom_command_callback(custom_command_payload,
                                       wrapper->_custom_command_userdata);
 }
@@ -597,7 +571,6 @@ void OneServerWrapper::custom_command(void *userdata, void *custom_command) {
 bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
                                                  AllocatedData &allocated_data) {
     if (array == nullptr) {
-        L_ERROR("array is nullptr");
         return false;
     }
 
@@ -608,8 +581,6 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
         if (total_number_of_keys < 2) {
-            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
-                    ") expected 2 instead");
             return false;
         }
 
@@ -623,12 +594,10 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
             return true;
         }
 
-        L_ERROR("key(" + key + ") is not handled");
         return false;
     };
 
     if (!Parsing::extract_key_value_payload(array, callback)) {
-        L_ERROR("failed to extract key/value payload");
         return false;
     }
 
@@ -638,7 +607,6 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
 bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
                                                 MetaDataData &metadata) {
     if (array == nullptr) {
-        L_ERROR("array is nullptr");
         return false;
     }
 
@@ -649,8 +617,6 @@ bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
         if (total_number_of_keys != 3) {
-            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
-                    ") expected 3 instead");
             return false;
         }
 
@@ -669,12 +635,10 @@ bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
             return true;
         }
 
-        L_ERROR("key(" + key + ") is not handled");
         return false;
     };
 
     if (!Parsing::extract_key_value_payload(array, callback)) {
-        L_ERROR("failed to extract key/value payload");
         return false;
     }
 
@@ -684,7 +648,6 @@ bool OneServerWrapper::extract_metadata_payload(OneArrayPtr array,
 bool OneServerWrapper::extract_host_information_payload(
     OneObjectPtr object, OneServerWrapper::HostInformationData &information) {
     if (object == nullptr) {
-        L_ERROR("object is nullptr.");
         return false;
     }
 
@@ -693,13 +656,11 @@ bool OneServerWrapper::extract_host_information_payload(
 
     OneError err = one_object_val_int(object, "id", &information.id);
     if (one_is_error(err)) {
-        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_object_val_int(object, "serverId", &information.server_id);
     if (one_is_error(err)) {
-        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -707,7 +668,6 @@ bool OneServerWrapper::extract_host_information_payload(
             information.server_name = value;
             return true;
         })) {
-        L_ERROR("failed to extract serverName key");
         return false;
     }
 
@@ -720,7 +680,6 @@ bool OneServerWrapper::extract_application_instance_information_payload(
     OneObjectPtr object,
     OneServerWrapper::ApplicationInstanceInformationData &information) {
     if (object == nullptr) {
-        L_ERROR("object is nullptr.");
         return false;
     }
 
@@ -732,21 +691,16 @@ bool OneServerWrapper::extract_application_instance_information_payload(
             information.fleet_id = value;
             return true;
         })) {
-        L_ERROR("failed to extract fleetId");
         return false;
     }
 
     OneError err = one_object_val_int(object, "hostId", &information.host_id);
     if (one_is_error(err)) {
-        L_ERROR("failed to extract hostId");
-        L_ERROR(one_error_text(err));
         return false;
     }
 
     err = one_object_val_bool(object, "isVirtual", &information.is_virtual);
     if (one_is_error(err)) {
-        L_ERROR("failed to extract isVirtual");
-        L_ERROR(one_error_text(err));
         return false;
     }
 
@@ -758,7 +712,6 @@ bool OneServerWrapper::extract_application_instance_information_payload(
 bool OneServerWrapper::extract_custom_command_payload(OneArrayPtr array,
                                                       CustomCommandData &custom_command) {
     if (array == nullptr) {
-        L_ERROR("array is nullptr");
         return false;
     }
 
@@ -769,8 +722,6 @@ bool OneServerWrapper::extract_custom_command_payload(OneArrayPtr array,
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
         if (total_number_of_keys != 2) {
-            L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
-                    ") expected 3 instead");
             return false;
         }
 
@@ -784,12 +735,10 @@ bool OneServerWrapper::extract_custom_command_payload(OneArrayPtr array,
             return true;
         }
 
-        L_ERROR("key(" + key + ") is not handled");
         return false;
     };
 
     if (!Parsing::extract_key_value_payload(array, callback)) {
-        L_ERROR("failed to extract key/value payload");
         return false;
     }
 
