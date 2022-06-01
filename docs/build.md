@@ -19,6 +19,11 @@ In order to build the source you will need to ensure you have the following depe
 ```
 git submodule update --init --recursive
 ```
+4. On linux, ensure Open SSL is installed (used by curl, for testing, as of 2022-06-01):
+```
+sudo apt-get update
+sudo apt-get install libssl-dev
+```
 
 Optional
 1. For documentation generation:
@@ -60,7 +65,7 @@ __build_release_dlls.bat__ will build dll/so libraries for Windows and Linux, ou
 
 To load the repository in Visual Studio, first build and then open the generated solution file located at build/OneGameHostingSDK.sln.
 
-For working on the SDK in Visual Studio Code, IDE tips are located [here](docs/vscode.md).
+For working on the SDK in Visual Studio Code, IDE tips are located [here](vscode.md).
 
 ## Documentation Build
 
