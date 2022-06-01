@@ -607,7 +607,7 @@ bool OneServerWrapper::extract_allocated_payload(OneArrayPtr array,
 
     auto callback = [&](const size_t total_number_of_keys, const std::string &key,
                         const std::string &value) {
-        if (total_number_of_keys != 2) {
+        if (total_number_of_keys < 2) {
             L_ERROR("got total number of keys(" + std::to_string(total_number_of_keys) +
                     ") expected 2 instead");
             return false;
