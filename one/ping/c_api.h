@@ -130,6 +130,7 @@ I3D_PING_EXPORT I3dPingError i3d_ping_sites_getter_create(
 
 /// Log callback function to allow the integration to handle internal i3D Ping Sites
 /// logs with its own logger.
+/// @param userdata Optional user data that will be passed back to the callback.
 /// @param level The severity of the logged information.
 /// @param message The actual message.
 /// \sa i3d_ping_sites_getter_create

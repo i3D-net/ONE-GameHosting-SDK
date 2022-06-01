@@ -140,6 +140,7 @@ ONE_EXPORT OneError one_server_create(unsigned int port, OneServerPtr *server);
 
 /// Log callback function to allow the integration to handle internal ONE Server
 /// logs with its own logger.
+/// @param userdata Optional user data that will be passed back to the callback.
 /// @param level The severity of the logged information.
 /// @param message The actual message.
 /// \sa one_server_create

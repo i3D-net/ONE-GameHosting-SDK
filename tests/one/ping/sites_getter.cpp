@@ -98,7 +98,8 @@ TEST_CASE("ping sites using libcurl get http callback", "[sites_getter]") {
     unsigned int size = 0;
     err = i3d_ping_sites_getter_site_list_size(sites_getter, &size);
     REQUIRE(err == I3D_PING_ERROR_NONE);
-    REQUIRE(size == 15);
+    // The number of sites can change over time, so just make sure at least something was pinged.
+    REQUIRE(size > 0);
     int site_continent_id = 0;
     err =
         i3d_ping_sites_getter_list_site_continent_id(sites_getter, 0, &site_continent_id);
