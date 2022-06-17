@@ -7,6 +7,7 @@
 
 #include <chrono>
 #include <thread>
+#include <iostream>
 
 TEST_CASE("pingers pinging sites", "[pingers]") {
     std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -19,7 +20,7 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
 
     err = i3d_ping_ip_list_push_back(ip_list, "213.163.66.59");
     REQUIRE(err == I3D_PING_ERROR_NONE);
-    err = i3d_ping_ip_list_push_back(ip_list, "162.244.54.59");
+    err = i3d_ping_ip_list_push_back(ip_list, "43.239.136.59");
     REQUIRE(err == I3D_PING_ERROR_NONE);
     err = i3d_ping_ip_list_push_back(ip_list, "162.244.52.59");
     REQUIRE(err == I3D_PING_ERROR_NONE);
@@ -65,6 +66,19 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
             err = i3d_ping_pingers_all_sites_have_been_pinged(pingers,
                                                               &all_pigned_at_least_once);
             REQUIRE(err == I3D_PING_ERROR_NONE);
+        }
+    }
+
+    for (auto i = 0; i < size; ++i) {
+        err = i3d_ping_pingers_statistics(pingers, i, &(last[i]), &(average[i]),
+                                          &(min_time[i]), &(max_time[i]), &(median[i]),
+                                          &(ping_response_count[i]));
+        if (err != I3D_PING_ERROR_NONE) {
+            char ip[256];
+            err = i3d_ping_ip_list_ip(ip_list, i, ip, sizeof(ip));
+            if (err == I3D_PING_ERROR_NONE) {
+                std::cout << "failed to ping site with IP(" << ip << ")" << std::endl;
+            }
         }
     }
 
