@@ -217,10 +217,14 @@ OneError Server::listen() {
         return ONE_ERROR_SERVER_ALREADY_LISTENING;
     }
 
+    // Check if server has already listened and should delay before attempting again.
+    const steady_clock::time_point _time_zero(steady_clock::duration::zero());
     const auto now = steady_clock::now();
-    const size_t delta = duration_cast<seconds>(now - _last_listen_attempt_time).count();
-    if (delta <= listen_retry_delay_seconds) {
-        return ONE_ERROR_SERVER_RETRYING_LISTEN;
+    if (_last_listen_attempt_time != _time_zero) { // If this isn't the first time listening...
+        const size_t delta = duration_cast<seconds>(now - _last_listen_attempt_time).count();
+        if (delta <= listen_retry_delay_seconds) { // ...and not enough time has passed since the previous listen.
+            return ONE_ERROR_SERVER_RETRYING_LISTEN;
+        }
     }
     _last_listen_attempt_time = now;
 
