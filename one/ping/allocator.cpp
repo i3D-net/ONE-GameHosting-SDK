@@ -1,6 +1,7 @@
 #include <one/ping/allocator.h>
 
 #include <assert.h>
+#include <cstdlib>
 
 namespace i3d {
 namespace ping {
