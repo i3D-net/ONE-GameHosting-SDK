@@ -8,6 +8,7 @@
 #include <chrono>
 #include <thread>
 #include <iostream>
+#include <cstring>
 
 namespace {
 std::size_t callback(const char *in, std::size_t size, std::size_t num,
@@ -107,22 +108,14 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
 
     for (int i=0; i< amount_of_ping_sites; i++) {
         char ip[16];
+        memset(ip, 0, sizeof(ip));
         err = i3d_ping_sites_getter_list_site_ipv4_ip(sites_getter, i, 0, ip);
         REQUIRE(err == I3D_PING_ERROR_NONE);
 
         err = i3d_ping_ip_list_push_back(ip_list, ip);
         REQUIRE(err == I3D_PING_ERROR_NONE);
     }
-    // err = i3d_ping_ip_list_push_back(ip_list, "162.244.52.60");
-    // REQUIRE(err == I3D_PING_ERROR_NONE);
-    // err = i3d_ping_ip_list_push_back(ip_list, "109.200.208.52");
-    // REQUIRE(err == I3D_PING_ERROR_NONE);
-    // err = i3d_ping_ip_list_push_back(ip_list, "138.128.136.54");
-    // REQUIRE(err == I3D_PING_ERROR_NONE);
-    // unsigned int size = 0;
-    // err = i3d_ping_ip_list_size(ip_list, &size);
-    // REQUIRE(err == I3D_PING_ERROR_NONE);
-    // REQUIRE(size == 4);
+
 
     I3dPingersPtr pingers = nullptr;
     err = i3d_ping_pingers_create(&pingers, ip_list);
@@ -167,7 +160,8 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
                                           &(min_time[i]), &(max_time[i]), &(median[i]),
                                           &(ping_response_count[i]));
         if (err != I3D_PING_ERROR_NONE) {
-            char ip[256];
+            char ip[16];
+            memset(ip, 0, sizeof(ip));
             err = i3d_ping_ip_list_ip(ip_list, i, ip, sizeof(ip));
             if (err == I3D_PING_ERROR_NONE) {
                 std::cout << "failed to ping site with IP(" << ip << ")" << std::endl;
