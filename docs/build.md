@@ -17,7 +17,7 @@ In order to build the source you will need to ensure you have the following depe
 2. [CMake 3.17.4](https://cmake.org/files/v3.17/). This is used to configure and build the project. See the top of CMakeLists.txt for other CMake versions tested, if you are using a different version already.
 3. After the initial repository clone, make sure to initialize the git submodules with the following command:
 ```
-git submodule update --init --recursive
+git submodule update --init --recursive --remote
 ```
 4. On linux, ensure Open SSL is installed (used by curl, for testing, as of 2022-06-01):
 ```

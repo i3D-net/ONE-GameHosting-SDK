@@ -30,7 +30,7 @@ The documentation for the entire ONE Platform can be found [here](https://www.i3
 
 The below are not provided or part of current goals. Please [add an issue](https://github.com/i3D-net/ONE-GameHosting-SDK/issues) for change requests!
 
-1. Testing on Linux distros other than Ubuntu 18.04.
+1. Testing on Linux distros other than Ubuntu 18.04, Ubuntu 20.04 and Ubuntu 22.04
 
 ### Layout
 
