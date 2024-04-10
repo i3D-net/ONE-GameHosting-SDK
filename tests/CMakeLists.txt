@@ -53,7 +53,6 @@ else()
         one/ping/pingers.cpp
         one/ping/site_information.cpp
         one/ping/sites_endpoint.cpp
-        one/ping/sites_getter.cpp
         one/ping/udp_socket.cpp
     )
 endif()
