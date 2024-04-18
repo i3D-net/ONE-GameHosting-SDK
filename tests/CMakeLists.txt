@@ -62,7 +62,7 @@ add_executable(${UNIT_TEST} ${SOURCE_TEST_FILES})
 find_package(Threads REQUIRED)
 
 if(WIN32)
-set(CMAKE_USE_SCHANNEL ON)
+set(CURL_USE_SCHANNEL ON)
 endif()
 
 set(CURL_DISABLE_TESTS ON)
