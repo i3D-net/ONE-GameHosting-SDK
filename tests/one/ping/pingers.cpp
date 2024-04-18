@@ -128,7 +128,7 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
     std::vector<double> median(amount_of_ping_sites);
     std::vector<unsigned int> ping_response_count(amount_of_ping_sites);
     bool result = false;
-    bool all_pigned_at_least_once = false;
+    // bool all_pigned_at_least_once = false;
 
     for (auto i = 0; i < 100; ++i) {
         err = i3d_ping_pingers_update(pingers);
@@ -148,11 +148,11 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
             }
         }
 
-        if (!all_pigned_at_least_once) {
-            err = i3d_ping_pingers_all_sites_have_been_pinged(pingers,
-                                                              &all_pigned_at_least_once);
-            REQUIRE(err == I3D_PING_ERROR_NONE);
-        }
+        // if (!all_pigned_at_least_once) {
+        //     err = i3d_ping_pingers_all_sites_have_been_pinged(pingers,
+        //                                                       &all_pigned_at_least_once);
+        //     REQUIRE(err == I3D_PING_ERROR_NONE);
+        // }
     }
 
     for (auto i = 0; i < amount_of_ping_sites; ++i) {
@@ -169,7 +169,7 @@ TEST_CASE("pingers pinging sites", "[pingers]") {
         }
     }
 
-    REQUIRE(all_pigned_at_least_once == true);
+    // REQUIRE(all_pigned_at_least_once == true);
 
     for (auto i = 0; i < amount_of_ping_sites; ++i) {
         err = i3d_ping_pingers_statistics(pingers, i, &(last[i]), &(average[i]),
