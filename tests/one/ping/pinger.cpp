@@ -21,7 +21,7 @@ TEST_CASE("pinger statistics", "[pinger]") {
     err = pinger.average_time(average);
     REQUIRE(err == I3D_PING_ERROR_PINGER_IS_UNINITIALIZED);
 
-    err = pinger.init("213.163.66.59");
+    err = pinger.init("213.163.66.54");
     REQUIRE(err == I3D_PING_ERROR_NONE);
 
     err = pinger.last_time(last);
