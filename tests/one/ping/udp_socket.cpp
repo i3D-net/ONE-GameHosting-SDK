@@ -13,13 +13,13 @@ TEST_CASE("udp socket life cycle", "[icmp socket]") {
 #ifdef I3D_PING_WINDOWS
     init_socket_system();
     UdpSocket socket;
-    auto err = socket.init("213.163.66.59", 3075);
+    auto err = socket.init("213.163.66.54", 3075);
     REQUIRE(err == I3D_PING_ERROR_NONE);
 
     shutdown_socket_system();
 #else
     UdpSocket socket;
-    auto err = socket.init("213.163.66.59", 3075);
+    auto err = socket.init("213.163.66.54", 3075);
     REQUIRE(err == I3D_PING_ERROR_NONE);
 #endif
 }
@@ -33,7 +33,7 @@ TEST_CASE("ping host", "[icmp socket]") {
     auto err = socket.time_milliseconds(time);
     REQUIRE(err == I3D_PING_ERROR_SOCKET_INVALID_TIME);
 
-    err = socket.init("213.163.66.59", 3075);
+    err = socket.init("213.163.66.54", 3075);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     err = socket.time_milliseconds(time);
     REQUIRE(err == I3D_PING_ERROR_SOCKET_INVALID_TIME);
@@ -69,7 +69,7 @@ TEST_CASE("udp reset", "[icmp socket]") {
     auto err = socket.time_milliseconds(time);
     REQUIRE(err == I3D_PING_ERROR_SOCKET_INVALID_TIME);
 
-    err = socket.init("213.163.66.59", 3075);
+    err = socket.init("213.163.66.54", 3075);
     REQUIRE(err == I3D_PING_ERROR_NONE);
     err = socket.time_milliseconds(time);
     REQUIRE(err == I3D_PING_ERROR_SOCKET_INVALID_TIME);
