@@ -5,11 +5,10 @@
 #include <chrono>
 #include <thread>
 
-using namespace std::chrono;
 using namespace one_integration;
 
 void sleep(int ms) {
-    std::this_thread::sleep_for(milliseconds(ms));
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
 }
 
 int main(int argc, char **argv) {
@@ -30,11 +29,11 @@ int main(int argc, char **argv) {
         }
     }
 
-    seconds delay(0);
+    std::chrono::seconds delay(0);
 
     if (argc >= 4) {
         unsigned int second_delay = strtol(argv[3], nullptr, 10);
-        delay = seconds(second_delay);
+        delay = std::chrono::seconds(second_delay);
     }
 
     if (argc > 4) {

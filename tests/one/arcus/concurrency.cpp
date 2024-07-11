@@ -15,7 +15,7 @@ using namespace one_integration;
 using namespace i3d::one;
 
 void init_game(Game *game, unsigned int port) {
-    game->init(port, 16, "name", "map", "mode", "version", seconds(0));
+    game->init(port, 16, "name", "map", "mode", "version", std::chrono::seconds(0));
 }
 
 void init_agent(Agent *agent, const char *address, int port) {

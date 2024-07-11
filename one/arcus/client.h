@@ -7,8 +7,6 @@
 #include <one/arcus/error.h>
 #include <one/arcus/types.h>
 
-using namespace std::chrono;
-
 namespace i3d {
 namespace one {
 
@@ -106,7 +104,7 @@ private:
     Connection *_connection;
     bool _is_connected;
     ClientCallbacks _callbacks;
-    steady_clock::time_point _last_connection_attempt_time;
+    std::chrono::steady_clock::time_point _last_connection_attempt_time;
 };
 
 }  // namespace one

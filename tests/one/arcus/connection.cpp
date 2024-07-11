@@ -49,7 +49,7 @@ TEST_CASE("connect:single game connecting to multiple agents", "[concurrency]") 
     const unsigned int port = 19112;
 
     Game game;
-    game.init(port, 16, "name", "map", "mode", "version", seconds(0));
+    game.init(port, 16, "name", "map", "mode", "version", std::chrono::seconds(0));
     game.set_quiet(false);
 
     for (int i = 0; i < 100; ++i) {
@@ -81,7 +81,7 @@ TEST_CASE("connect:single agent connecting to multiple games", "[concurrency]") 
 
         Game *game = new Game();
         REQUIRE(game != nullptr);
-        game->init(port, 16, "name", "map", "mode", "version", seconds(0));
+        game->init(port, 16, "name", "map", "mode", "version", std::chrono::seconds(0));
         game->set_quiet(false);
 
         pump_updates_with_logs(10, 1, agent, *game);
@@ -104,7 +104,7 @@ TEST_CASE("connect:multiple agents connecting to multiple games", "[concurrency]
 
         Game *game = new Game();
         REQUIRE(game != nullptr);
-        game->init(port, 16, "name", "map", "mode", "version", seconds(0));
+        game->init(port, 16, "name", "map", "mode", "version", std::chrono::seconds(0));
         game->set_quiet(false);
 
         pump_updates_with_logs(10, 1, *agent, *game);
@@ -124,7 +124,7 @@ TEST_CASE("connect:multiple agents connecting to multiple games", "[concurrency]
 
         Game *game = new Game();
         REQUIRE(game != nullptr);
-        game->init(port, 16, "name", "map", "mode", "version", seconds(0));
+        game->init(port, 16, "name", "map", "mode", "version", std::chrono::seconds(0));
         game->set_quiet(false);
 
         pump_updates_with_logs(10, 1, *agent, *game);

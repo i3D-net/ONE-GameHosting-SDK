@@ -21,8 +21,7 @@ TEST_CASE("life cycle", "[fake game]") {
     auto alloc_before = allocation::alloc_count();
     auto free_before = allocation::free_count();
     Game game;
-    REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version",
-                      seconds(0)));
+    REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version", std::chrono::seconds(0)));
     game.shutdown();
     REQUIRE(allocation::alloc_count() > 0);
     auto alloc_after = allocation::alloc_count();
@@ -33,8 +32,7 @@ TEST_CASE("life cycle", "[fake game]") {
 
 TEST_CASE("connection error handling", "[fake game]") {
     Game game;
-    REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version",
-                      seconds(0)));
+    REQUIRE(game.init(19001, 54, "test game", "test map", "test mode", "test version", std::chrono::seconds(0)));
 
     // Connect a client socket to fake a scriptable agent.
     Socket client;
@@ -87,9 +85,8 @@ TEST_CASE("agent and game messaging", "[fake game]") {
     const unsigned int port = 19002;
 
     Game game;
-    REQUIRE(game.init(port, 16, "name", "map", "mode", "version", seconds(0)));
-    REQUIRE(game.one_server_wrapper().status() ==
-            OneServerWrapper::Status::waiting_for_client);
+    REQUIRE(game.init(port, 16, "name", "map", "mode", "version", std::chrono::seconds(0)));
+    REQUIRE(game.one_server_wrapper().status() == OneServerWrapper::Status::waiting_for_client);
 
     Agent agent;
     REQUIRE(agent.init(address, port) == 0);

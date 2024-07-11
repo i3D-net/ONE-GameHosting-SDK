@@ -62,7 +62,7 @@ Server::Server()
     , _status(ApplicationInstanceStatus::starting)
     , _should_send_status(false)
     , _callbacks{}
-    , _last_listen_attempt_time(steady_clock::duration::zero())
+    , _last_listen_attempt_time(std::chrono::steady_clock::duration::zero())
     , _additional_data(nullptr) {}
 
 Server::~Server() {
@@ -218,10 +218,10 @@ OneError Server::listen() {
     }
 
     // Check if server has already listened and should delay before attempting again.
-    const steady_clock::time_point _time_zero(steady_clock::duration::zero());
-    const auto now = steady_clock::now();
+    const std::chrono::steady_clock::time_point _time_zero(std::chrono::steady_clock::duration::zero());
+    const auto now = std::chrono::steady_clock::now();
     if (_last_listen_attempt_time != _time_zero) { // If this isn't the first time listening...
-        const size_t delta = duration_cast<seconds>(now - _last_listen_attempt_time).count();
+        const size_t delta = std::chrono::duration_cast<std::chrono::seconds>(now - _last_listen_attempt_time).count();
         if (delta <= listen_retry_delay_seconds) { // ...and not enough time has passed since the previous listen.
             return ONE_ERROR_SERVER_RETRYING_LISTEN;
         }

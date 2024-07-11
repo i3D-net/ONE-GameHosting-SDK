@@ -2,8 +2,6 @@
 
 #include <chrono>
 
-using namespace std::chrono;
-
 namespace i3d {
 namespace one {
 
@@ -24,7 +22,7 @@ public:
 
 private:
     long long _interval;
-    steady_clock::time_point _last_trigger_time;
+    std::chrono::steady_clock::time_point _last_trigger_time;
 };
 
 }  // namespace one
