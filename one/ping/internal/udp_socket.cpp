@@ -142,7 +142,6 @@ I3dPingError UdpSocket::reset() {
         default:
             return I3D_PING_ERROR_SOCKET_CANNOT_BE_RESET;
     }
-    return I3D_PING_ERROR_NONE;
 }
 
 I3dPingError UdpSocket::send_ping() {
