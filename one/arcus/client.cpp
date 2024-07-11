@@ -29,7 +29,7 @@ Client::Client()
     , _connection(nullptr)
     , _is_connected(false)
     , _callbacks{}
-    , _last_connection_attempt_time(steady_clock::duration::zero()) {}
+    , _last_connection_attempt_time(std::chrono::steady_clock::duration::zero()) {}
 
 Client::~Client() {
     shutdown();
@@ -110,9 +110,9 @@ OneError Client::update() {
 
     // If not connected, attempt to connect at an interval.
     if (!_is_connected) {
-        const auto now = steady_clock::now();
+        const auto now = std::chrono::steady_clock::now();
         const size_t delta =
-            duration_cast<seconds>(now - _last_connection_attempt_time).count();
+            std::chrono::duration_cast<std::chrono::seconds>(now - _last_connection_attempt_time).count();
         if (delta > connection_retry_delay_seconds) {
             _last_connection_attempt_time = now;
             auto error = connect();
@@ -139,7 +139,7 @@ OneError Client::update() {
         _socket->close();
         _is_connected = false;
         _last_connection_attempt_time =
-            steady_clock::time_point(steady_clock::duration::zero());
+            std::chrono::steady_clock::time_point(std::chrono::steady_clock::duration::zero());
         _socket->init();
         return passthrough_err;
     };

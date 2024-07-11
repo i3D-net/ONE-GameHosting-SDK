@@ -15,7 +15,7 @@ Harness::Harness(const char *address, unsigned int port)
     , _re(_rd())
     , _uniform_dist(0, 100) {
     _game.init(port, 16, "test name", "test map", "test mode", "test version",
-               seconds(0));
+               std::chrono::seconds(0));
     _game.set_quiet(true);
     _agent.init(address, port);
     _agent.set_quiet(true);
@@ -63,7 +63,7 @@ void Harness::set_before_agent_update_callback(
     _before_agent_update_callback = callback;
 }
 
-void Harness::run(seconds duration, milliseconds sleep) {
+void Harness::run(std::chrono::seconds duration, std::chrono::milliseconds sleep) {
     for_sleep_duration(duration, sleep, [&]() {
         const std::lock_guard<std::mutex> lock(_run);
 

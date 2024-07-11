@@ -66,15 +66,15 @@ Game::Game()
     , _map()
     , _mode()
     , _version()
-    , _exit_time(steady_clock::duration::zero())
+    , _exit_time(std::chrono::steady_clock::duration::zero())
     , _is_exit_time_enabled(false)
     , _matchmaking_status(MatchmakingStatus::none)
     , _previous_matchmaking_status(MatchmakingStatus::none)
     , _transition_delay(0)
-    , _started_time(steady_clock::duration::zero())
+    , _started_time(std::chrono::steady_clock::duration::zero())
     , _max_players(0)
     , _match_duration(0)
-    , _match_start_time(steady_clock::duration::zero())
+    , _match_start_time(std::chrono::steady_clock::duration::zero())
     , _match_status(MatchStatus::none)
     , _number_message_to_send(0) {}
 
@@ -84,7 +84,7 @@ Game::~Game() {
 
 bool Game::init(unsigned int port, int max_players, const std::string &name,
                 const std::string &map, const std::string &mode,
-                const std::string &version, seconds delay) {
+                const std::string &version, std::chrono::seconds delay) {
     const std::lock_guard<std::mutex> lock(_game);
 
     std::srand(std::time(nullptr));
@@ -198,8 +198,8 @@ void Game::update() {
     const std::lock_guard<std::mutex> lock(_game);
 
     if (_is_exit_time_enabled) {
-        const auto time_zero = steady_clock::time_point(steady_clock::duration::zero());
-        if (_exit_time != time_zero && steady_clock::now() > _exit_time) {
+        const auto time_zero = std::chrono::steady_clock::time_point(std::chrono::steady_clock::duration::zero());
+        if (_exit_time != time_zero && std::chrono::steady_clock::now() > _exit_time) {
             L_INFO("ending process as a delayed response to a soft stop request");
             exit(0);
         }
@@ -218,10 +218,10 @@ void Game::update_startup() {
         case MatchmakingStatus::none:
             L_INFO("matchmaking status: starting");
             _matchmaking_status = MatchmakingStatus::starting;
-            _started_time = steady_clock::now();
+            _started_time = std::chrono::steady_clock::now();
             return;
         case MatchmakingStatus::starting:
-            if (_transition_delay < steady_clock::now() - _started_time) {
+            if (_transition_delay < std::chrono::steady_clock::now() - _started_time) {
                 L_INFO("matchamking status: online");
                 _matchmaking_status = MatchmakingStatus::online;
             }
@@ -241,7 +241,7 @@ void Game::update_match() {
         case MatchStatus::joining:
             if (_players == _max_players) {
                 L_INFO("maximum number of player reached");
-                _match_start_time = steady_clock::now();
+                _match_start_time = std::chrono::steady_clock::now();
                 set_match_status(MatchStatus::playing);
                 return;
             }
@@ -249,7 +249,7 @@ void Game::update_match() {
             ++_players;
             return;
         case MatchStatus::playing:
-            if (_match_duration < steady_clock::now() - _match_start_time) {
+            if (_match_duration < std::chrono::steady_clock::now() - _match_start_time) {
                 L_INFO("match duration has elapsed");
                 set_match_status(MatchStatus::leaving);
             }
@@ -287,7 +287,7 @@ void Game::set_match_status(MatchStatus status) {
         case MatchStatus::none:
             _players = 0;
             _max_players = 0;
-            _match_duration = seconds(0);
+            _match_duration = std::chrono::seconds(0);
             break;
         default:
             break;
@@ -353,7 +353,7 @@ void Game::soft_stop_callback(int timeout, void *userdata) {
 
     if (game->_is_exit_time_enabled) {
         auto delay_seconds = std::rand() % (2 * timeout);
-        game->_exit_time = steady_clock::now() + seconds(delay_seconds);
+        game->_exit_time = std::chrono::steady_clock::now() + std::chrono::seconds(delay_seconds);
         std::ostringstream stream;
         stream << "will shut down process in seconds: " << delay_seconds;
         L_INFO(stream.str().c_str());
@@ -399,7 +399,7 @@ void Game::allocated_callback(const OneServerWrapper::AllocatedData &data,
     }
 
     game->_max_players = data.players;
-    game->_match_duration = seconds(data.duration);
+    game->_match_duration = std::chrono::seconds(data.duration);
     game->set_match_status(MatchStatus::joining);
 
     game->_matchmaking_status = MatchmakingStatus::allocated;

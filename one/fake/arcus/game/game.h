@@ -7,8 +7,6 @@
 #include <string>
 #include <mutex>
 
-using namespace std::chrono;
-
 namespace one_integration {
 
 /// A fake Game server. It owns a OneServerWrapper member that encapsulates
@@ -34,7 +32,7 @@ public:
 
     bool init(unsigned int port, int max_players, const std::string &name,
               const std::string &map, const std::string &mode, const std::string &version,
-              seconds delay);
+              std::chrono::seconds delay);
     void shutdown();
 
     void alter_game_state();
@@ -135,7 +133,7 @@ private:
 
     // A planned time to exit the process, configured as a response to a
     // soft_stop message from the ONE Platform.
-    steady_clock::time_point _exit_time;
+    std::chrono::steady_clock::time_point _exit_time;
     bool _is_exit_time_enabled;
 
     // These states match the expectation of the ONE Platform. Allocated is
@@ -147,13 +145,13 @@ private:
 
     // This delay is to simulate a delay between the starting & online state.
     std::chrono::seconds _transition_delay;
-    steady_clock::time_point _started_time;
+    std::chrono::steady_clock::time_point _started_time;
 
     // Example match configuration extracted from the allocated message received
     // from the ONE Platform.
     int _max_players;
     std::chrono::seconds _match_duration;
-    steady_clock::time_point _match_start_time;
+    std::chrono::steady_clock::time_point _match_start_time;
 
     // This states are using internally for match simulation purpose. They are unrelated
     // to the ONE Platform.
