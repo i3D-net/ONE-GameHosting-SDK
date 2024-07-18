@@ -39,6 +39,8 @@ void Accumulator::peek(size_t length, void **data) {
     }
     assert(data);
     assert(length <= _size);
+    // 'length' is only used for assertion, a void cast prevents unreferenced formal parameter warning.
+    (void)length;   
     *data = _buffer;
 }
 
