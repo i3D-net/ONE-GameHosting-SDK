@@ -240,7 +240,7 @@ I3dPingError SitesGetter::ipv4_list(IpList &ip_list) const {
     // Only take the first ip of the site.
     for (size_t i = 0; i < _sites.size(); ++i) {
         assert(i <= UINT_MAX);
-        err = ipv4((unsigned int)i, 0, ip);
+        err = ipv4(static_cast<unsigned int>(i), 0, ip);
         if (i3d_ping_is_error(err)) {
             ip_list.clear();
             return err;
@@ -263,7 +263,7 @@ I3dPingError SitesGetter::ipv6_list(IpList &ip_list) const {
     // Only take the first ip of the site.
     for (size_t i = 0; i < _sites.size(); ++i) {
         assert(i <= UINT_MAX);        
-        err = ipv6((unsigned int)i, 0, ip);
+        err = ipv6(static_cast<unsigned int>(i), 0, ip);
         if (i3d_ping_is_error(err)) {
             ip_list.clear();
             return err;
