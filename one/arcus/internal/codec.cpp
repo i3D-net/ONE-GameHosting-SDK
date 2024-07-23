@@ -90,7 +90,7 @@ OneError message_to_data(const uint32_t packet_id, const Message &message,
     header.opcode = static_cast<char>(message.code());
     header.packet_id = packet_id;
     assert(payload_length <= UINT32_MAX);
-    header.length = (uint32_t) payload_length;
+    header.length = static_cast<uint32_t>(payload_length);
 
     std::array<char, header_size()> header_data;
     err = header_to_data(header, header_data);
