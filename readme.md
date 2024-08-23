@@ -1,18 +1,23 @@
-# i3D.net [ONE Game Hosting](https://www.i3d.net/docs/one/odp/) SDK
+# i3D.net ONE Game Hosting SDK
 
-The ONE Game Hosting SDK facilitates communication with the i3D.net ONE Platform, providing seamless scaling for game servers!
+The i3D ONE Game Hosting platform is dynamic scaling and deployment service for game servers. This SDK facilitates communication between game servers and the hosting platform using our [Arcus component](one/arcus/readme.md). Additionaly the SDK offers a [Ping client library](one/ping/readme.md) (to assist in matchmaking) and accompanying SDK tools and documentation for testing, integration and development.
 
-- [Build](docs/build.md) – How to build and test the repository.
-- [Integration Guide](docs/integration_guide.md) – How to integrate the Arcus API into a Game Server.
-
-The i3D.net Game Hosting SDK works on Windows and Linux.
-If something doesn’t work, please [file an issue](https://github.com/i3D-net/ONE-GameHosting-SDK/issues).
-
-## Overview
+## SDK Overview
 
 Version: 1.0.0
 
-The complete documentation for the ONE Platform can be found [here](https://www.i3d.net/docs/one/), however the previously mentioned [Integration Guide](docs/integration_guide.md) covers all requirements to integrate the ONE Platform into a Game Server.
+The documentation included with this SDK covers all practical requirements to integrate the platform into a game. The complete documentation for i3D ONE Game Hosting is available on the [i3D.net website](https://www.i3d.net/docs/one/odp/). 
+
+- [build guide](build.md) demonstrates to build and test the repository.
+
+- [one/arcus/](one/arcus/readme.md) is the server component that enables communication between the game server and the scaling environment of i3D ONE Game Hosting. It is to be integrated into the game server. It hosts a TCP server for communication and contains a C/C++ implementation of the Arcus protocol and messages.
+- [one/ping/](one/ping/readme.md) is a client library that provides a way to obtain ping-server addresses from the ONE backend and offers utilities to ping these servers as part of the matchmaking features in a game's player client code.
+- [one/fake/](one/fake/readme.md) provides samples for integration, development and testing of SDK components.
+- [tests/](tests/readme.md) contains all automated tests for the SDK source code.
+- [tools/](tools/readme.md) provides build scripts and start scripts.
+- [doxygen/](doxygen/readme.md) is the configuration and build target folder for documenation generated from the source.
+
+The i3D.net ONE Game Hosting SDK is supported on Windows and Linux, please file any issues [here](https://github.com/i3D-net/ONE-GameHosting-SDK/issues).
 
 ### Major Goals
 
@@ -20,25 +25,14 @@ The complete documentation for the ONE Platform can be found [here](https://www.
 2. Easy-to-use C API interface for maximum language compatibility.
 3. Source-only build allowing for "copy and drop-in" of files.
 4. Supported platforms:
-    - Windows 10 Pro with Visual Studio 2017, 2019, 2022 and VSCode
+    - Windows 10 Pro with Visual Studio 2017, 2019 or VSCode
     - Ubuntu 18.04, Ubuntu 20.04, Ubuntu 22.04 with VSCode
-
-### Layout
-
-The SDK consists of code to support game integration of the One Game Hosting service and provides addional components that aid in testing and development.
-
-1. [Arcus](one/arcus/readme.md) is the server library that enables communication between the Game Server and the scaling environment in the One Hosting Platform. It is to be integrated into the Game Server. It provides a TCP server for communication and contains a C/C++ implementation of the Arcus protocol and messages.
-2. [Ping](one/ping/readme.md) is a client library that provides a way to obtain ping-server addresses from the ONE backend and offers utilities to ping these servers as part of the matchmaking features in a game's player client code.
-3. [Fake](one/fake/readme.md) contains samples for integration, development and testing of SDK components. 
-4. [Tests](tests/readme.md) contains all automated tests for the SDK source code.
-5. [Docs](docs/readme.md) contains additional readme files and DOxygen configuration.
 
 ## Game Engine Plugins
 
 ### Unity
 
-The [ONE-GameHosting-SDK-Unity github repository](https://github.com/i3D-net/ONE-GameHosting-SDK-Unity) offers Unity support via a hostingplugin, a clientplugin and example projects.
-
+The [ONE-GameHosting-SDK-Unity](https://github.com/i3D-net/ONE-GameHosting-SDK-Unity) github repository presents a hosting plugin, a client plugin and example projects for Unity.
 ### Unreal Engine
 
-The [ONE-GameHosting-SDK-Unreal github repository](https://github.com/i3D-net/ONE-GameHosting-SDK-Unreal) offers Unity support via a hosting plugin, a client plugin and example projects. The plugins can also be installed via the [Unreal marketplace](https://www.unrealengine.com/marketplace/en-US/profile/i3D.net+Performance+Hosting).
+The [ONE-GameHosting-SDK-Unreal](https://github.com/i3D-net/ONE-GameHosting-SDK-Unreal) github repository offers a hosting plugin, a client plugin and example projects for Unreal Engine. The plugins can also be installed from the [Unreal Marketplace](https://www.unrealengine.com/marketplace/en-US/profile/i3D.net+Performance+Hosting).

@@ -1,4 +1,4 @@
-# Build
+# Build guide
 
 Prebuilt binaries are currently not supplied. The integration code is very lightweight. Integrations have two options:
 
@@ -7,7 +7,7 @@ Prebuilt binaries are currently not supplied. The integration code is very light
 
 Building the repository in either case is recommended as it will also create a fake agent executable to aid testing of your game server without deploying to the remote ONE Platform.
 
-## Requirements
+## Requirements 
 
 In order to build the source you will need to ensure you have the following dependencies installed on your system.
 

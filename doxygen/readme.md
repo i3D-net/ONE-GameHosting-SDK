@@ -1,4 +1,4 @@
-# Docs
+# Doxygen
 
 Configuration and build target folder for documenation generated from the source.
 
