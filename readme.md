@@ -6,7 +6,7 @@ The i3D ONE Game Hosting platform is dynamic scaling and deployment service for 
 
 Version: 1.0.0
 
-The documentation included with this SDK covers all practical requirements to integrate the platform into a game. The complete documentation for i3D ONE Game Hosting is available on the [i3D.net website](https://www.i3d.net/docs/one/odp/). 
+The documentation included with this SDK covers all practical requirements to integrate the platform into a game. The complete documentation for i3D ONE Game Hosting is available on the [i3D.net website](https://www.i3d.net/docs/one/odp/).
 
 - [build guide](build.md) demonstrates to build and test the repository.
 
@@ -33,6 +33,7 @@ The i3D.net ONE Game Hosting SDK is supported on Windows and Linux, please file 
 ### Unity
 
 The [ONE-GameHosting-SDK-Unity](https://github.com/i3D-net/ONE-GameHosting-SDK-Unity) github repository presents a hosting plugin, a client plugin and example projects for Unity.
+
 ### Unreal Engine
 
 The [ONE-GameHosting-SDK-Unreal](https://github.com/i3D-net/ONE-GameHosting-SDK-Unreal) github repository offers a hosting plugin, a client plugin and example projects for Unreal Engine. The plugins can also be installed from the [Unreal Marketplace](https://www.unrealengine.com/marketplace/en-US/profile/i3D.net+Performance+Hosting).

@@ -7,9 +7,35 @@ Prebuilt binaries are currently not supplied. The integration code is very light
 
 Building the repository in either case is recommended as it will also create a fake agent executable to aid testing of your game server without deploying to the remote ONE Platform.
 
-## Requirements 
+## Requirements
 
-In order to build the source you will need to ensure you have the following dependencies installed on your system.
+~~In order to build the source you will need to ensure you have the following dependencies installed on your system.~~
+
+- Windows VS2019
+  - [Visual Studio Build Tools 2019](https://aka.ms/vs/16/release/vs_buildtools.exe) or Visual Studio 2019
+    with: MSVC 142 (v14.29) compiler,  Windows 10 SDK (10.0.10941.0)
+  - [cmake 3.17.4 or higher](https://cmake.org/download/)
+
+- Windows VS2022
+  - [Visual Studio Build Tools 2022](https://aka.ms/vs/17/release/vs_buildtools.exe) or Visual Studio 2022
+    with: MSVC 143 (v14.41) compiler,  Windows 11 SDK (10.0.22621.0)
+  - [cmake 3.23 or higher](https://cmake.org/download/)
+
+- Ubuntu18.04
+  - GCC
+  - cmake
+
+- Ubuntu20.04
+  - GCC
+  - cmake
+
+- Ubuntu22.04
+  - GCC
+  - cmake
+
+- Debian 12
+  - GCC
+  - cmake
 
 1. A C++ compiler is needed.
     - Windows: [Visual Studio 2017, or build tools (without Editor)](https://visualstudio.microsoft.com/vs/older-downloads/)
@@ -52,6 +78,7 @@ A clean is needed in most cases when building with different settings.
 ## Clean
 
 Run either script in the root:
+
 - clean_windows.bat
 - clean_linux.sh
 
