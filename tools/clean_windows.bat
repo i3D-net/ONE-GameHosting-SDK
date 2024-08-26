@@ -1,3 +1,9 @@
-cd ..
-del /f /s /q build 1>nul
-rmdir /s /q build
+@echo off
+setlocal EnableDelayedExpansion
+
+set BUILD_DIR=%~dp0..\build
+
+rmdir /s /q %BUILD_DIR%
+
+endlocal
+exit /b !errorlevel!
