@@ -60,6 +60,7 @@ if (one_is_error(err)) {
 ```
 
 Cleanup:
+
 ```c++
 // Destroy clears the server memory, which also shuts down any active
 // connection.

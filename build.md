@@ -2,54 +2,74 @@
 
 Prebuilt binaries are currently not supplied. The integration code is very lightweight. Integrations have two options:
 
-1. Copy the code in one/arcus directly into the game engine and build directly as part of the regular build.
-2. Or build the repository with the following instructions, and then copy required headers and binaries. Binaries will be output into the build folder, e.g. the build/one/arcus/release/one_arcus.lib.
+1. Copy the code in one/arcus directly into the game engine and build directly as part of a project build.
+2. Or build the complete repository using the following instructions, and then copy required headers and binaries.
+   Binaries will be output into the build folder, e.g. build/bin/Release/tests.exe or build/lib/Release/one_arcus.lib.
 
 Building the repository in either case is recommended as it will also create a fake agent executable to aid testing of your game server without deploying to the remote ONE Platform.
 
-## Requirements
+## Requirements / dependencies
 
-~~In order to build the source you will need to ensure you have the following dependencies installed on your system.~~
+### Windows build tools
 
-- Windows VS2019
+- MSVC (Microsoft Visual C++ compiler)
+- cmake
+- git
+
+The following Windows configurations are tested and supported:
+
+- Windows 10 (VS2019)
   - [Visual Studio Build Tools 2019](https://aka.ms/vs/16/release/vs_buildtools.exe) or Visual Studio 2019
     with: MSVC 142 (v14.29) compiler,  Windows 10 SDK (10.0.10941.0)
   - [cmake 3.17.4 or higher](https://cmake.org/download/)
 
-- Windows VS2022
+- Windows 10 (VS2022)
   - [Visual Studio Build Tools 2022](https://aka.ms/vs/17/release/vs_buildtools.exe) or Visual Studio 2022
     with: MSVC 143 (v14.41) compiler,  Windows 11 SDK (10.0.22621.0)
   - [cmake 3.23 or higher](https://cmake.org/download/)
 
-- Ubuntu18.04
-  - GCC
-  - cmake
+### Linux build tools
+
+Linux (Ubuntu and Debian are supported)
+
+- build-essential package (gcc/g++/make)
+- cmake
+- libssl-dev (openssl)
+- git
+
+Dependencies can be installed using apt:
+
+```sh
+sudo apt update
+sudo apt install build-essential cmake libssl-dev git
+```
+
+The following Linux configurations are tested and supported:
 
 - Ubuntu20.04
-  - GCC
-  - cmake
+  - GCC/G++ (v4.9.3) / make (v4.2.1)
+  - cmake 3.16.3 or higher
+  - libssl-dev (v1.1.1)
 
 - Ubuntu22.04
-  - GCC
-  - cmake
+  - GCC/G++ (v4.11.2) / make (v4.3.4)
+  - cmake 3.22.1 or higher
+  - libssl-dev (v3.0.2)
 
 - Debian 12
-  - GCC
-  - cmake
+  - GCC/G++ (v4.12.2) / make (v4.3.4)
+  - cmake 3.25.1 or higher
+  - libssl-dev (v3.0.13)
 
-1. A C++ compiler is needed.
-    - Windows: [Visual Studio 2017, or build tools (without Editor)](https://visualstudio.microsoft.com/vs/older-downloads/)
-    - Linux: GCC (7.5.0 tested)
-2. [CMake 3.17.4](https://cmake.org/files/v3.17/). This is used to configure and build the project. See the top of CMakeLists.txt for other CMake versions tested, if you are using a different version already.
-3. After the initial repository clone, make sure to initialize the git submodules with the following command:
-```
+## Build steps
+
+After the initial repository clone, make sure to initialize the git submodules with the following command:
+
+```git-bash
 git submodule update --init --recursive
 ```
-4. On linux, ensure Open SSL is installed (used by curl, for testing, as of 2022-06-01):
-```
-sudo apt-get update
-sudo apt-get install libssl-dev
-```
+
+## Documentation Generation
 
 Optional
 1. For documentation generation:
@@ -57,7 +77,7 @@ Optional
         1. [doxygen](https://www.doxygen.nl/manual/install.html#install_bin_windows)
         2. [graphviz](https://graphviz.org/download/)
     - Ubuntu:
-        1. `sudo apt-get update`
+        1. > sudo apt-get update
         2. `sudo apt-get install doxygen graphviz`
 2. For buiding Linux libraries on Windows:
     - [Docker](https://www.docker.com/products/docker-desktop)

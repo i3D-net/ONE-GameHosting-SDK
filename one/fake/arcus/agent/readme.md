@@ -6,13 +6,13 @@ The Fake Agent provided here uses the arcus library to simulate all of the agent
 
 It is *not* intended to be included in the game server's build nor is it required to build the server or accompanying arcus folder libraries.
 
-### Connecting against your game server with the fake agent.
+## Connecting against your game server with the fake agent
 
 1. Build the repository.
 2. Run run_fake_agent_release.sh (or debug, as needed).
 3. The agent will run, and connect to the game server immediately.
 
-### Using the fake game.
+## Using the fake game
 
 The fake game can be run instead of your game server to ensure things are working as expected in your environment.
 
