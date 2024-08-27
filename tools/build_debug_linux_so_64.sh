@@ -1,15 +1,3 @@
 #!/bin/bash
-
-cd ..
-mkdir -p build
-
-# -S and -B options are not supported on CMake versions below 1.13, so enter
-# build folder instead and run `cmake ..``.
-# cmake -S . -B ./build
-cd build
-CFLAGS=-m64
-CXXFLAGS=-m64
-cmake -DSHARED_ARCUS_LIB=ON ..
-cd ..
-
-cmake --build ./build --config Debug --target all
+cmake -S ../ -B ../build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=-m64 -DCMAKE_C_FLAGS=-m64 -DSHARED_ARCUS_LIB=ON
+cmake --build ../build/ --target all

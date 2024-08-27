@@ -1,4 +1,2 @@
 #!/bin/bash
-
-cd ..
-rm -r build
+rm -r ../build

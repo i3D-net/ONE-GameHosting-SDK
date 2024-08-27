@@ -1,13 +1,3 @@
 #!/bin/bash
-cd ..
-mkdir -p build
-
-# -S and -B options are not supported on CMake versions below 1.13, so enter
-# build folder instead and run `cmake ..``.
-# cmake -S . -B ./build
-cd build
-CFLAGS=-m32 CXXFLAGS=-m32
-cmake ..
-cd ..
-
-cmake --build ./build --config Debug --target all
+cmake -S ../ -B ../build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS=-m32 -DCMAKE_C_FLAGS=-m32
+cmake --build ../build/ --target all
