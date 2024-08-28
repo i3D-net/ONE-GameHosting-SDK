@@ -44,6 +44,12 @@ sudo apt update
 sudo apt install build-essential cmake libssl-dev git
 ```
 
+When compiling for 32bit on a 64bit linux system additional 32bit dependencies are required and can be installed using apt:
+
+```sh
+sudo apt install install gcc-multilib g++-multilib libssl-dev:i386
+```
+
 The following Linux configurations are tested and supported:
 
 - Ubuntu20.04
@@ -63,7 +69,7 @@ The following Linux configurations are tested and supported:
 
 ## Build steps
 
-After the initial repository clone, make sure to initialize the git submodules with the following command:
+After the initial repository clone, make sure to initialize the git submodules. On windows make sure to use git-bash for this:
 
 ```git-bash
 git submodule update --init --recursive
