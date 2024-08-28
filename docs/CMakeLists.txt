@@ -7,6 +7,8 @@ set(DOXYGEN_DISTRIBUTE_GROUP_DOC YES)
 set(DOXYGEN_PROJECT_NAME "Game Hosting SDK")
 set(DOXYGEN_SHOW_FILES YES)
 
+set(DOXYGEN_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/docs")
+
 doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/docs/build.md"
     "${PROJECT_SOURCE_DIR}/docs/integration_arcus.md"
