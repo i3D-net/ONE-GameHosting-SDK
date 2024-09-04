@@ -42,13 +42,6 @@ Dependencies can be installed using apt:
 ```sh
 sudo apt update
 sudo apt install build-essential cmake libssl-dev git
-```
-
-When compiling for 32bit on a 64bit linux system additional 32bit dependencies are required and can be installed using apt:
-
-```sh
-sudo apt install install gcc-multilib g++-multilib libssl-dev:i386
-```
 
 The following Linux configurations are tested and supported:
 
@@ -95,7 +88,7 @@ Build scripts for both platforms can be found in the tools folder. The build scr
 `build_<debug_or_release>_<platform>_<shared_or_static_library>_<architecture>`
 Windows will also have a trailing `mt` or `mtdll` for the code generation CRT configuration (Multi Threaded vs Multi Threaded DLL).
 
-For example build_release_windows_32_dll_mt.bat will configure and build on windows a release, 32 bit, multi-threaded (MT option in MSVC) dll library.
+For example build_release_windows_dll_mt.bat will configure and build on windows a release, multi-threaded (MT option in MSVC) dll library.
 
 Running a build script will build the source, run tests and output results to the build folder.
 
