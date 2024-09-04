@@ -2,7 +2,7 @@
 
 ## Build Scripts
 
-The Buildscript provides the following conmpile options for building the sdk libraries and fake-examples
+The build script provides the following compile options for building the sdk libraries and fake-examples
 
 - Debug or Release Build:
   `_debug` or `_release` options specify whether to build the SDK in debug or release mode.
@@ -17,9 +17,14 @@ For example:
 
 `tools\windows\build_debug_lib_mtdll.bat` Builds the SDK as a static library with dynamic linking of the MSVC runtime in debug mode.
 
+## Clean Script
+
+`tools\windows\clean.bat` Cleans the build folder. Recommended before running a different build script.
+
 ## Test Scripts
 
-There are several option for running compiled tests. Test scripts are provided for the three most common used collections of tests.
+Several tests-cases and test-collections are available after a successful build of the SDK as a **static** library.
+Test scripts are provided for the three most common used collections of tests.
 
 - short test
     `tools\windows\test_release_short.bat` or `tools\windows\test_debug_short.bat`
@@ -30,7 +35,7 @@ There are several option for running compiled tests. Test scripts are provided f
 - soak test (very high usage over a very long period on multiple threads)
     `tools\windows\test_release_soak.bat` or `tools\windows\test_debug_soak.bat`
 
-Its also possible to run sing / individual tests.
+Its also possible to run single / individual tests or other test groups.
 After compilation the `tests.exe` is available in the `build\bin\Release\` or `build\bin\Debug\` directory.
 
 `tests.exe -?` displays help
@@ -41,7 +46,7 @@ After compilation the `tests.exe` is available in the `build\bin\Release\` or `b
 
 ## Run Scripts
 
-The run script provide a quick execution of the compiled fake/example executables from the tools folders.
-After a succesfull build the fake executables are locatated in the `build\bin\Release\` or `build\bin\Debug\` directory.
+The run script provide a quick test execution of the compiled fake/example executables from the tools folders.
+After a build the fake executables are located in the `build\bin\Release\` or `build\bin\Debug\` directory.
 
 For more information about the fake/examples see: [one/fake](/one/fake/readme.md)
