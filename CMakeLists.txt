@@ -62,7 +62,7 @@ configure_file(
 # Testing only available if this is the main app
 # Emergency override MODERN_CMAKE_BUILD_TESTING provided as well
 if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING))
-  set(RUN_TEST_AFTER_BUILD true)
+  set(RUN_TEST_AFTER_BUILD false)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)

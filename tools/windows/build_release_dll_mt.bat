@@ -1,10 +1,10 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set SRC_DIR=%~dp0..
-set BUILD_DIR=%~dp0..\build
-set BUILD_OPTIONS=host=x64 -A x64
-set BUILD_CONFIG=Debug
+set SRC_DIR=%~dp0..\..
+set BUILD_DIR=%~dp0..\..\build
+set BUILD_OPTIONS=host=x64 -A x64 -DBUILD_MSVC_MT=ON -DSHARED_ARCUS_LIB=ON
+set BUILD_CONFIG=Release
 
 cmake -S %SRC_DIR% -B %BUILD_DIR% -T %BUILD_OPTIONS%
 if !errorlevel! neq 0 (

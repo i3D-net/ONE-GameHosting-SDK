@@ -1,8 +1,8 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-set SRC_DIR=%~dp0..
-set BUILD_DIR=%~dp0..\build
+set SRC_DIR=%~dp0..\..
+set BUILD_DIR=%~dp0..\..\build
 set BUILD_OPTIONS=host=x64 -A x64 -DBUILD_MSVC_MT=ON
 set BUILD_CONFIG=Debug
 
