@@ -61,6 +61,7 @@ configure_file(
 
 # Testing only available if this is the main app
 # Emergency override MODERN_CMAKE_BUILD_TESTING provided as well
+# Automatic testing is disabled in favor of seperate build and test scripts.
 if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING))
   set(RUN_TEST_AFTER_BUILD false)
   include(CTest)
