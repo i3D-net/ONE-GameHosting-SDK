@@ -1,36 +1,18 @@
-# Build guide
+# Build guide for linux systems
 
-Prebuilt binaries are currently not supplied. The integration code is very lightweight. Integrations have two options:
+As the integration code is very lightweight, prebuilt binaries are not supplied with the SDK. There are two integration options:
 
-1. Copy the code in one/arcus directly into the game engine and build directly as part of a project build.
-2. Or build the complete repository using the following instructions, and then copy required headers and binaries.
-   Binaries will be output into the build folder, e.g. build/bin/Release/tests.exe or build/lib/Release/one_arcus.lib.
+1. Copy the source code from one/arcus or one/ping directly into the game-server or game-client and compile them as part of a project build.
 
-Building the repository in either case is recommended as it will also create a fake agent executable to aid testing of your game server without deploying to the remote ONE Platform.
+2. Build the complete repository first using the instructions below, and then copy required headers and libraries. All binaries are placed into the build folder, e.g. `/build/lib/one_arcus.lib` or `/build/bin/tests`.
 
-## Requirements / dependencies
+Building the repository is recommended in either case, as the build will also create a fake agent executable. The fake agent can be used to test your game server before deploying it to the remote ONE Platform. For more information about the fake agent see [one/fake](/one/fake/readme.md)
 
-### Windows build tools
+## Build requirements
 
-- MSVC (Microsoft Visual C++ compiler)
-- cmake
-- git
+### Build tools
 
-The following Windows configurations are tested and supported:
-
-- Windows 10 (VS2019)
-  - [Visual Studio Build Tools 2019](https://aka.ms/vs/16/release/vs_buildtools.exe) or Visual Studio 2019
-    with: MSVC 142 (v14.29) compiler,  Windows 10 SDK (10.0.10941.0)
-  - [cmake 3.17.4 or higher](https://cmake.org/download/)
-
-- Windows 10 (VS2022)
-  - [Visual Studio Build Tools 2022](https://aka.ms/vs/17/release/vs_buildtools.exe) or Visual Studio 2022
-    with: MSVC 143 (v14.41) compiler,  Windows 11 SDK (10.0.22621.0)
-  - [cmake 3.23 or higher](https://cmake.org/download/)
-
-### Linux build tools
-
-Linux (Ubuntu and Debian are supported)
+Ubuntu and Debian are supported
 
 - build-essential package (gcc/g++/make)
 - cmake
@@ -42,6 +24,7 @@ Dependencies can be installed using apt:
 ```sh
 sudo apt update
 sudo apt install build-essential cmake libssl-dev git
+```
 
 The following Linux configurations are tested and supported:
 
@@ -60,69 +43,68 @@ The following Linux configurations are tested and supported:
   - cmake 3.25.1 or higher
   - libssl-dev (v3.0.13)
 
-## Build steps
+### Optional build tools
 
-After the initial repository clone, make sure to initialize the git submodules. On windows make sure to use git-bash for this:
+For automatic documentation generation:
+
+- Doxygen
+- Graphviz
+
+```bash
+sudo apt update
+sudo apt-get install doxygen graphviz`
+```
+
+### Preparation
+
+After the initial repository clone, make sure to initialize the git submodules.
 
 ```git-bash
 git submodule update --init --recursive
 ```
 
-## Documentation Generation
+## Build
 
-Optional
-1. For documentation generation:
-    - Windows:
-        1. [doxygen](https://www.doxygen.nl/manual/install.html#install_bin_windows)
-        2. [graphviz](https://graphviz.org/download/)
-    - Ubuntu:
-        1. > sudo apt-get update
-        2. `sudo apt-get install doxygen graphviz`
-2. For buiding Linux libraries on Windows:
-    - [Docker](https://www.docker.com/products/docker-desktop)
+Build scripts can be found in the `/tools/linux` folder. Scripts are provided with different build options, according to the following naming convention:
 
-## Steps
+`build_<debug_or_release>_<static_or_shared_library>.sh`
 
-Build scripts for both platforms can be found in the tools folder. The build scripts naming follows the following convention:
+- Debug or release build:
+`_debug or _release` options specify whether to build the SDK in debug or release mode.
 
-`build_<debug_or_release>_<platform>_<shared_or_static_library>_<architecture>`
-Windows will also have a trailing `mt` or `mtdll` for the code generation CRT configuration (Multi Threaded vs Multi Threaded DLL).
+- Static or dynamic Library:
+`_a or _so` options specify whether to build the SDK as a static library (`.a`) or a dynamic library (`.so`).
 
-For example build_release_windows_dll_mt.bat will configure and build on windows a release, multi-threaded (MT option in MSVC) dll library.
-
-Running a build script will build the source, run tests and output results to the build folder.
-
-A clean is needed in most cases when building with different settings.
+Example: `/tools/linux/build_debug_a.sh`
+Builds the SDK as a static library in debug mode.
 
 ## Clean
 
-Run either script in the root:
+A clean of the build folder is needed before switching to a script with different build settings. The clean script `clean.sh` can be also found in and should be run from the `/tools/linux` folder.
 
-- clean_windows.bat
-- clean_linux.sh
+## Test
 
-Cleaning is not required when changing between debug and release builds with other settings being equal.
+Several tests-cases and test-collections are available after a successful build of the SDK as a static library. Test scripts are provided for the three most common used collections of tests and are located in the  `/tools/linux` folder.
 
-## Automated build
+- short test
+`test_short.sh` or `test_short.sh`
 
-__build_release_dlls.bat__ will build dll/so libraries for Windows and Linux, outputing them to a shared_lib_build folder in the root. Docker is required, see Requirements.
+- long test (continuous test maintaining connection)
+`test_long.sh` or `test_long.sh`
 
-## IDE
+- soak test (very high usage over a very long period on multiple threads)
+`test_soak.sh` or `test_soak.sh`
 
-To load the repository in Visual Studio, first build and then open the generated solution file located at build/OneGameHostingSDK.sln.
+Its also possible to run single tests or other test groups. After compilation the `tests` program is available in the `/build/bin` directory.
 
-For working on the SDK in Visual Studio Code, IDE tips are located [here](vscode.md).
+`tests -?` displays help
 
-## Documentation Build
+`tests -l` lists all test cases
 
-The doxygen documentation is built automatically if CMake is able to find the doxygen installed on your system.
+`test hello` runs a single test case (e.g. hello test)
 
-## Testing
+## Alternative build methods
 
-As noted above, short tests are run at the end of the cmake build, by default.
+### Documentation build
 
-Run the following bash scripts from within the tools folder to run longer tests:
-- run_tests_debug_long.sh
-- run_tests_debug_soak.sh
-
-Use the `build/tests/debug/tests.exe -?` option for all commands.
+The Doxygen source generated documentation is built automatically from every build script if CMake is able to find an installed version of Doxygen on your system.
