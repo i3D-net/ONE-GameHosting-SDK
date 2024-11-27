@@ -4,4 +4,4 @@ shared_lib_build/
 /b.bat
 .vs/
 CMakeLists.txt.user
-docs/html
+docs/html/

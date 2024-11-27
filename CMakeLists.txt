@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.10.2...3.17.2)
+cmake_minimum_required(VERSION 3.16)
 
 project(ONEGameHostingSDK
   VERSION 
-  0.9.0 
+  1.0.0 
   LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -61,8 +61,9 @@ configure_file(
 
 # Testing only available if this is the main app
 # Emergency override MODERN_CMAKE_BUILD_TESTING provided as well
+# Automatic testing is disabled in favor of seperate build and test scripts.
 if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING))
-  set(RUN_TEST_AFTER_BUILD true)
+  set(RUN_TEST_AFTER_BUILD false)
   include(CTest)
   enable_testing()
   add_subdirectory(tests)
