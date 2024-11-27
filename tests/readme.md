@@ -1,4 +1,4 @@
-# ONE Game Hosting SDK Tests
+# Tests
 
 All tests for the SDK are contained and managed here.
 
@@ -6,7 +6,7 @@ All tests for the SDK are contained and managed here.
 
 The excellent external Catch2 testing framework is used.
 
-https://github.com/catchorg/Catch2
+<https://github.com/catchorg/Catch2>
 
 tag: `v2.13.9`
 Commit: `b1b5cb812277f367387844aab46eb2d3b15d03cd`

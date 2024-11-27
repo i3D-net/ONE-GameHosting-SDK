@@ -1,4 +1,4 @@
-# i3D.net ONE Game Hosting SDK
+# i3D.net ONE Game Hosting SDK {#mainpage}
 
 The i3D ONE Game Hosting platform is dynamic scaling and deployment service for game servers. This SDK facilitates communication between game servers and the hosting platform using our [Arcus component](one/arcus/readme.md). An Arcus server is hosted on the game server and the Hosting Platform connects to the game server using an Agent.
 

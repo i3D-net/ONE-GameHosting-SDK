@@ -1,7 +1,13 @@
 # Fakes
 
-The folders here contain apps or libraries that use the main SDK components. These server multiple purposes:
+The folders here contain apps or libraries that use the main SDK components.
 
-- illustrate how to use the libraries
+- [fake/arcus/agent](arcus/agent/readme.md)
+- [fake/arcus/game](arcus/game/readme.md)
+- [fake/ping](ping/readme.md)
 
-- provide black-box testing instruments for the automated tests
+These serve multiple purposes:
+
+1) illustrate how to use the libraries
+
+2) provide black-box testing instruments for the automated tests

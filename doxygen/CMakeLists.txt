@@ -16,6 +16,7 @@ doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/one/fake/arcus/game/one_server_wrapper.h"
     "${PROJECT_SOURCE_DIR}/one/ping/c_api.h"
     "${PROJECT_SOURCE_DIR}/one/ping/c_error.h"
+
     "${PROJECT_SOURCE_DIR}/one/fake/arcus/agent/readme.md"
     "${PROJECT_SOURCE_DIR}/one/fake/arcus/game/readme.md"
     "${PROJECT_SOURCE_DIR}/one/fake/readme.md"
@@ -26,7 +27,7 @@ doxygen_add_docs(docs
     "${PROJECT_SOURCE_DIR}/tools/windows/readme.md"
     "${PROJECT_SOURCE_DIR}/tools/linux/readme.md"
     "${PROJECT_SOURCE_DIR}/tools/all/readme.md"
-    "${PROJECT_SOURCE_DIR}/doxygen/readme.md"
+    "${PROJECT_SOURCE_DIR}/tools/readme.md"
     "${PROJECT_SOURCE_DIR}/vscode.md"
     "${PROJECT_SOURCE_DIR}/build-windows.md"
     "${PROJECT_SOURCE_DIR}/build-linux.md"
