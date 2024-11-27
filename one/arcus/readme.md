@@ -2,7 +2,7 @@
 
 ## Summary
 
-Arcus is the TCP communication protocol and Message API used to communicate between the ONE Platform Agent and Game Servers. See the [ONE Platform Arcus documentation](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/) for details.
+Arcus is the TCP communication protocol and Message API that is used for communication between the ONE Platform Agent and Game Servers. See the [ONE Platform Arcus documentation](https://www.i3d.net/docs/one/odp/Game-Integration/Management-Protocol/Arcus-V2/) for protocol details.
 
 This folder provides an implementation of the Arcus TCP protocol and the two actors that communicate with each other in Arcus - the Server (used by the Game Server) and Client (used by the Agent).
 
