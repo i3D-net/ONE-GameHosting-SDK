@@ -31,7 +31,7 @@ Either way, the following headers must be included in the game server:
 
 ### Using the API
 
-For C++ game engines, the additional C++ code in one/fake/arcus/game is can be used in your integration to wrap the C API and provide easy-to-use C++ interfaces for the game engine.
+For C++ game engines, the additional C++ code in one/fake/arcus/game can be used in your integration to wrap the C API and provide easy-to-use C++ interfaces for the game engine.
 
 The ONE Server Wrapper, defined in one/fake/arcus/game/one_server_wrapper.cpp, is the core of this sample. It is a C++ header/cpp wrapper around the ONE Arcus Server API that:
 
