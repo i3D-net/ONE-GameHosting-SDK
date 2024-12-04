@@ -39,11 +39,11 @@ The ONE Server Wrapper, defined in one/fake/arcus/game/one_server_wrapper.cpp, i
 - contains in-source code comments explaining the motivation and purpose of the API calls from the user's perspective
 - can be directly copied and used as a head-start for developers integrating the library into their own engines
 
-See the [Fake Game readme](../one/fake/arcus/game/readme.md) for details.
+See the [Fake Game readme](../fake/arcus/game/readme.md) for details.
 
 ### Testing and Deploying
 
-While developing the integration, the Game Server may be tested by building and running the [Fake Agent](../one/fake/arcus/agent/readme.md). The fake agent can connect to a running instance of the game server, to test the basics of the integration without needing to deploy to the remote ONE Platform.
+While developing the integration, the Game Server may be tested by building and running the [Fake Agent](../fake/arcus/agent/readme.md). The fake agent can connect to a running instance of the game server, to test the basics of the integration without needing to deploy to the remote ONE Platform.
 
 Once the integration is complete, the Game Server must be deployed to the ONE Platform for final testing. This consists of the following steps:
 
