@@ -8,7 +8,7 @@ A game integration requires the ping library located in one/ping.
 
 ## Overview
 
-The i3d_ip_list_wrapper.h/cpp files provide utlities for working with lists returned by the API.
+The i3d_ip_list_wrapper.h/cpp files provide utilities for working with lists returned by the API.
 
 The i3d_sites_getter_wrapper.h/cpp files provide access to a list of available servers on the i3D platform for games to connect to.
 
@@ -23,12 +23,14 @@ The main points of an integration are summarized below, however you may refer to
 The i3d_sites_getter_wrapper.cpp file handles all of the following however they are described here to illustrate the main usage pattern of the c_api.h.
 
 Include headers
+
 ```c++
 #include <one/ping/c_api.h>
 #include <one/ping/c_error.h>
 ```
 
 Create the Sites Getter.
+
 ```c++
 I3dSitesGetterPtr sites_getter;
 I3dPingError err = i3d_ping_sites_getter_create(&sites_getter, callback, userdata);
@@ -40,6 +42,7 @@ if (i3d_ping_is_error(err)) {
 ```
 
 Update it to fetch the site information.
+
 ```c++
 I3dPingError err = i3d_ping_sites_getter_update(sites_getter);
 if (i3d_ping_is_error(err)) {
@@ -48,6 +51,7 @@ if (i3d_ping_is_error(err)) {
 ```
 
 After calling update, one can check the site_getter status like this:
+
 ```
 I3dSitesGetterStatus status;
     I3dPingError err = i3d_ping_sites_getter_status(_sites_getter, &status);
@@ -70,9 +74,11 @@ I3dSitesGetterStatus status;
             return Status::unknown;
     }
 ```
+
 The status `waiting` means that the site_getter is waiting for the HTTP Get request to finish. If the status is `error` it means the HTTP Get request failed and one needs to call `i3d_ping_sites_getter_update` again to resend the request. If the status is `ready`, it means that the site_getter has successfully fetch the sites information.
 
 Then the site information can be passed to the pinger, as shown in the following section. Make sure to destroy the sites getters to avoid a leak:
+
 ```c++
 i3d_sites_getter_destroy(sites_getter);
 ```
@@ -82,12 +88,14 @@ i3d_sites_getter_destroy(sites_getter);
 The i3d_pingers_wrapper.cpp file handles all of the following however they are described here to illustrate the main usage pattern of the c_api.h.
 
 Include headers
+
 ```c++
 #include <one/ping/c_api.h>
 #include <one/ping/c_error.h>
 ```
 
 Get the server sites list to send to the pinger. This is a continuation of the previous section that shows how to use the sites getter API.
+
 ```c++
 I3dIpListPtr ip_list
 I3dPingError err = i3d_ping_ip_list_create(&ip_list);
@@ -101,6 +109,7 @@ if (i3d_ping_is_error(err)) {
 ```
 
 Create the Pingers, passing it the ip_list from the previous step.
+
 ```c++
 I3dPingersPtr pingers;
 I3dPingError err = i3d_ping_pingers_create(&pingers, ip_list);
@@ -110,6 +119,7 @@ if (i3d_ping_is_error(err)) {
 ```
 
 Update the pingers to process tcp pings and accumulate results.
+
 ```c++
     I3dPingError err = i3d_ping_pingers_update(_pingers);
     if (i3d_ping_is_error(err)) {
@@ -118,6 +128,7 @@ Update the pingers to process tcp pings and accumulate results.
 ```
 
 Statistics for each site can be queried by iterating. There are also utility functions `i3d_ping_pingers_at_least_one_site_has_been_pinged` and `all_sites_have_been_pinged` to check if data is available.
+
 ```c++
 // Local storage struct for the results..
 struct PingStatistics {
@@ -156,6 +167,7 @@ for (i := 0; i < num_sites, ++i) {
 ```
 
 Make sure to destroy the ip_list and pingers when finished.
+
 ```c++
 i3d_ping_ip_list_destroy(ip_list);
 i3d_ping_pingers_destroy(pingers);

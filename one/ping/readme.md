@@ -37,7 +37,7 @@ The sites and pingers wrappers, located at one/fake/ping/i3d_sites_getter_wrappe
 - contains in-source code comments explaining the motivation and purpose of the API calls from the user's perspective
 - can be directly copied and used as a head-start for developers integrating the library into their own engines
 
-See the [Fake Game readme](../one/fake/ping/readme.md) for details.
+See the [Fake Game readme](../fake/ping/readme.md) for details.
 
 ### Testing
 
